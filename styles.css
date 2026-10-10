@@ -1,0 +1,84 @@
+/* Complementos ao Tailwind: animações e ajustes finos. */
+
+.toast-anim {
+  animation: toast-in 0.25s ease;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-anim {
+  animation: modal-in 0.18s ease;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.drawer-anim {
+  animation: drawer-in 0.22s ease;
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Sidebar recolhida (estado em js/tema.js, classe no <html>). */
+html.sidebar-fechada [data-sidebar] {
+  display: none !important;
+}
+
+/* Controles nativos (calendário do input date, select, scrollbar) seguem o tema. */
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Menu lateral no celular: abre por cima do conteúdo (js/shell.js). */
+@media (max-width: 767px) {
+  html.menu-aberto [data-sidebar] {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+  }
+}
+
+/* Impressão de documentos (certificado): só a folha. */
+@media print {
+  [data-sidebar], header, #toast-root, #demo-root, [data-nao-imprimir] { display: none !important; }
+}
