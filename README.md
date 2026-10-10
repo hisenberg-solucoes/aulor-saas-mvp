@@ -6,7 +6,7 @@ Protótipo navegável de um ERP para escolas de cursos livres. Usa uma escola fi
 - [ROTEIRO_DEMO.md](ROTEIRO_DEMO.md): demonstração comercial de 10 minutos.
 - [BACKLOG.md](BACKLOG.md): backlog até o SaaS real, riscos e decisões pendentes.
 
-**Demonstração online:** https://andrehinckel.github.io/aulor-saas-mvp/ (os dados ficam no navegador de quem abre; use *Demonstração › Restaurar dados iniciais* para recomeçar).
+**Demonstração online:** https://hisenberg-solucoes.github.io/aulor-saas-mvp/ (os dados ficam no navegador de quem abre; use *Demonstração › Restaurar dados iniciais* para recomeçar).
 
 ## Rodar localmente
 
