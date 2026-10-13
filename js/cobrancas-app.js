@@ -12,7 +12,7 @@
 
   function lembrete(item) {
     const a = item.aluno;
-    const destinatario = a.responsavel && (Aulor.idade(a.nascimento) ?? 99) < 18 ? a.responsavel : a;
+    const destinatario = Aulor.contatoCobranca(a);
     const cursos = [...new Set(item.parcelas.map((l) => Aulor.curso(Aulor.turma(Aulor.matricula(l.matriculaId).turmaId).cursoId).nome))].join(' e ');
     const texto = `Olá, ${destinatario.nome.split(' ')[0]}! Aqui é da ${Aulor.escola().nome}. Consta em aberto ${item.parcelas.length === 1 ? 'a parcela' : `${item.parcelas.length} parcelas`} do curso ${cursos}${destinatario !== a ? ` de ${a.nome.split(' ')[0]}` : ''}, com vencimento em ${item.parcelas.map((l) => dataBr(l.vencimento)).join(', ')}, no total de ${moeda(item.total)}. Se já pagou, por favor desconsidere. Quer que a gente envie a segunda via?`;
     return { texto, telefone: destinatario.telefone };
@@ -37,7 +37,7 @@
             <tbody>${lista.map((i, k) => {
               const l = lembrete(i);
               return `<tr>
-                <td><a class="font-medium text-slate-900 dark:text-neutral-100 hover:underline" href="aluno.html?id=${i.aluno.id}">${esc(i.aluno.nome)}</a>${i.aluno.responsavel ? `<p class="text-xs text-slate-500 dark:text-neutral-400">Resp.: ${esc(i.aluno.responsavel.nome)}</p>` : ''}</td>
+                <td><a class="font-medium text-slate-900 dark:text-neutral-100 hover:underline" href="aluno.html?id=${i.aluno.id}">${esc(i.aluno.nome)}</a>${Aulor.contatoCobranca(i.aluno) !== i.aluno ? `<p class="text-xs text-slate-500 dark:text-neutral-400">Quem paga: ${esc(Aulor.contatoCobranca(i.aluno).nome)}</p>` : ''}</td>
                 <td class="whitespace-nowrap tabular-nums">${telefoneFmt(l.telefone)}</td>
                 <td class="num">${i.parcelas.length}</td>
                 <td class="num">${i.maiorAtraso} dias</td>

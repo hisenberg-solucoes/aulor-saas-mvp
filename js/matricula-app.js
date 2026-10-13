@@ -71,7 +71,7 @@
                 <div class="flex justify-between font-semibold"><dt>Total</dt><dd class="tabular-nums">${moeda(m.valorFinal)}</dd></div>
                 <div class="flex justify-between pt-2 border-t border-slate-100 dark:border-neutral-900"><dt class="text-slate-500 dark:text-neutral-400">Parcelamento</dt><dd>${m.parcelas}× · 1º venc. ${dataCurta(m.primeiroVencimento)}</dd></div>
                 <div class="flex justify-between"><dt class="text-slate-500 dark:text-neutral-400">Forma</dt><dd>${esc(nomeForma(m.formaPagamento))}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500 dark:text-neutral-400">Quem paga</dt><dd>${m.pagador === 'responsavel' && a.responsavel ? esc(a.responsavel.nome) : 'O aluno'}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500 dark:text-neutral-400">Quem paga</dt><dd>${m.pagador === 'responsavel' ? esc(Aulor.responsavelFinanceiro(a)?.nome ?? 'Responsável financeiro') : 'O aluno'}</dd></div>
               </dl>
             </section>
             <section class="painel p-5">

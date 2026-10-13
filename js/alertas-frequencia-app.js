@@ -27,8 +27,9 @@
 
   function contato({ m, f }) {
     const a = Aulor.aluno(m.alunoId);
-    const menor = a.responsavel && (Aulor.idade(a.nascimento) ?? 99) < 18;
-    const quem = menor ? a.responsavel : a;
+    const resp = Aulor.ehMenor(a) ? Aulor.responsavelPrincipal(a) : null;
+    const menor = !!resp;
+    const quem = resp ?? a;
     const curso = Aulor.curso(Aulor.turma(m.turmaId).cursoId).nome;
     const texto = `Olá, ${quem.nome.split(' ')[0]}! Aqui é da ${Aulor.escola().nome}. Sentimos falta ${menor ? `de ${a.nome.split(' ')[0]}` : 'de você'} nas aulas de ${curso}: a frequência está em ${f.percentual}% e o mínimo para o certificado é ${min}%. Podemos ajudar em algo?`;
     return { quem, texto, menor };

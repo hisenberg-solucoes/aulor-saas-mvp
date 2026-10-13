@@ -12,8 +12,7 @@
   const cfg = Aulor.config().financeiro;
   const hoje = Aulor.hoje();
 
-  function proximoVencimento() {
-    const dia = cfg.diaVencimentoPadrao;
+  function proximoVencimento(dia = cfg.diaVencimentoPadrao) {
     const desteMes = `${hoje.slice(0, 8)}${String(dia).padStart(2, '0')}`;
     return desteMes > hoje ? desteMes : Aulor.somarMeses(desteMes, 1, dia);
   }
@@ -148,7 +147,7 @@
     if (a) {
       const ativas = Aulor.matriculasDoAluno(a.id).filter((m) => m.status === 'ativa');
       const deve = Aulor.estaInadimplente(a.id);
-      infoAluno.innerHTML = info([['Celular', telefoneFmt(a.telefone)], ['Responsável', a.responsavel ? esc(a.responsavel.nome) : 'O próprio aluno'], ['Cursando agora', ativas.length ? esc(ativas.map((m) => Aulor.curso(Aulor.turma(m.turmaId).cursoId).nome).join(', ')) : 'Nenhum curso']])
+      infoAluno.innerHTML = info([['Celular', telefoneFmt(a.telefone)], ['Responsável financeiro', Aulor.responsavelFinanceiro(a) ? esc(Aulor.responsavelFinanceiro(a).nome) : 'O próprio aluno'], ['Cursando agora', ativas.length ? esc(ativas.map((m) => Aulor.curso(Aulor.turma(m.turmaId).cursoId).nome).join(', ')) : 'Nenhum curso']])
         + (deve && Shell.pode('receber') ? '<p class="mt-2 text-xs text-red-700 dark:text-red-400">Atenção: este aluno tem parcela vencida em outra matrícula.</p>' : '');
     } else infoAluno.innerHTML = '';
 
@@ -156,16 +155,25 @@
     infoTurma.innerHTML = t ? info([['Professor', esc(Aulor.professor(t.professorId).nome)], ['Período', `${dataBr(t.inicio)} a ${dataBr(t.fim)}`], ['Local', esc(t.local || '—')]]) : '';
 
     // "Quem paga" só é remontado quando o aluno muda (assim a escolha não se perde a cada tecla).
+    // Nessa hora também aplica as preferências da aba "Endereço e pagamento" do aluno.
     const pagador = form.querySelector('[data-pagador]');
     if (pagador.dataset.montado !== (a?.id ?? '-')) {
       pagador.dataset.montado = a?.id ?? '-';
-      pagador.innerHTML = a?.responsavel ? `
+      const fin = a && Aulor.responsavelFinanceiro(a);
+      const pagaResp = fin && a.cobranca?.pagador !== 'aluno';
+      pagador.innerHTML = fin ? `
       <fieldset><legend class="rotulo">Quem paga</legend>
         <div class="flex gap-4 text-sm pt-1.5">
-          <label class="flex items-center gap-2"><input type="radio" name="pagador" value="responsavel" checked>${esc(a.responsavel.nome.split(' ')[0])} (responsável)</label>
-          <label class="flex items-center gap-2"><input type="radio" name="pagador" value="aluno">O aluno</label>
+          <label class="flex items-center gap-2"><input type="radio" name="pagador" value="responsavel" ${pagaResp ? 'checked' : ''}>${esc(fin.nome.split(' ')[0])} (responsável)</label>
+          <label class="flex items-center gap-2"><input type="radio" name="pagador" value="aluno" ${pagaResp ? '' : 'checked'}>O aluno</label>
         </div>
       </fieldset>` : '<input type="hidden" name="pagador" value="aluno">';
+      const forma = Aulor.FORMAS_PAGAMENTO.find((f) => f.id === a?.cobranca?.formaPreferida);
+      if (forma) {
+        form.querySelector('[name="formaPagamento"]').value = forma.id;
+        form.querySelector('[data-name="formaPagamento"] [data-combo-rotulo]').textContent = forma.nome;
+      }
+      if (a?.cobranca?.diaVencimento) form.querySelector('[name="primeiroVencimento"]').value = proximoVencimento(a.cobranca.diaVencimento);
     }
 
     const sim = Aulor.simularMatricula({ ...d, valorCurso: d.valorCurso || 0 });

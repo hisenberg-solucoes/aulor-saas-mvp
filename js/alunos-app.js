@@ -61,7 +61,7 @@
               <thead><tr><th>Aluno</th><th>Celular</th><th>Curso</th><th>Situação</th>${verFin ? '<th>Financeiro</th>' : ''}</tr></thead>
               <tbody>${lista.map(({ a, s, ms, deve }) => `
                 <tr data-href="aluno.html?id=${a.id}">
-                  <td><div class="flex items-center gap-3 min-w-[14rem] max-w-[18rem]">${avatar(a.nome)}<div class="min-w-0"><a href="aluno.html?id=${a.id}" class="font-medium text-slate-900 dark:text-neutral-100 hover:underline">${esc(a.nome)}</a><p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(a.email || 'sem e-mail')}${a.responsavel ? ' · com responsável' : ''}</p></div></div></td>
+                  <td><div class="flex items-center gap-3 min-w-[14rem] max-w-[18rem]">${avatar(a.nome)}<div class="min-w-0"><a href="aluno.html?id=${a.id}" class="font-medium text-slate-900 dark:text-neutral-100 hover:underline">${esc(a.nome)}</a><p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(a.email || 'sem e-mail')}${Aulor.ehMenor(a) ? ' · menor de idade' : ''}</p></div></div></td>
                   <td class="whitespace-nowrap tabular-nums">${telefoneFmt(a.telefone)}</td>
                   <td class="max-w-[11rem] truncate" title="${esc(ms.filter((m) => m.status !== 'cancelada').map((m) => Aulor.curso(Aulor.turma(m.turmaId).cursoId).nome).join(', '))}">${cursosDoAluno(ms)}</td>
                   <td>${status(s.tom, s.nome)}</td>
