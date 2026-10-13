@@ -27,6 +27,8 @@ const Semente = (() => {
   const SOBRENOMES = ['Almeida', 'Andrade', 'Barbosa', 'Barros', 'Cardoso', 'Carvalho', 'Castro', 'Correia', 'Costa', 'Dias', 'Farias', 'Fernandes', 'Freitas', 'Gomes', 'Lima', 'Machado', 'Martins', 'Melo', 'Moraes', 'Moreira', 'Nascimento', 'Oliveira', 'Pereira', 'Pinto', 'Ramos', 'Rezende', 'Rocha', 'Santana', 'Santos', 'Silva', 'Soares', 'Souza', 'Teixeira', 'Vieira', 'Batista', 'Campos', 'Cunha', 'Mendonça', 'Pacheco', 'Tavares'];
   const DOMINIOS = ['gmail.com', 'gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com.br'];
   const PARENTESCOS = ['Mãe', 'Pai', 'Mãe', 'Avó', 'Tio'];
+  const RUAS = ['Rua das Acácias', 'Rua dos Ipês', 'Rua Santa Catarina', 'Avenida Brasil', 'Rua Piauí', 'Rua Sergipe', 'Rua Maranhão', 'Rua Belo Horizonte', 'Rua Espírito Santo', 'Rua das Orquídeas', 'Avenida das Flores', 'Rua Pernambuco'];
+  const BAIRROS = ['Centro', 'Gleba Palhano', 'Jardim Higienópolis', 'Vila Nova', 'Jardim Bandeirantes', 'Cinco Conjuntos', 'Jardim Igapó', 'Vila Casoni', 'Aeroporto', 'Jardim Ouro Branco'];
 
   const sem = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
@@ -69,22 +71,100 @@ const Semente = (() => {
     { id: 'cu2', codigo: 'EXA', nome: 'Excel Avançado', area: 'Informática', modalidade: 'hibrido', cargaHoraria: 32, valor: 890, parcelasSugeridas: 4,
       descricao: 'Funções de busca, Power Query e painéis para quem já usa Excel no trabalho.',
       modulos: [{ nome: 'Funções lógicas e de busca', cargaHoraria: 10 }, { nome: 'Tabelas dinâmicas e Power Query', cargaHoraria: 12 }, { nome: 'Dashboards', cargaHoraria: 10 }] },
-    { id: 'cu3', codigo: 'PY', nome: 'Lógica de Programação com Python', area: 'Programação', modalidade: 'presencial', cargaHoraria: 40, valor: 1290, parcelasSugeridas: 5,
+    { id: 'cu3', modeloCertificadoId: 'mc2', codigo: 'PY', nome: 'Lógica de Programação com Python', area: 'Programação', modalidade: 'presencial', cargaHoraria: 40, valor: 1290, parcelasSugeridas: 5,
       descricao: 'Primeiro contato com programação: lógica, Python e um projeto final.',
       modulos: [{ nome: 'Lógica e algoritmos', cargaHoraria: 8 }, { nome: 'Python básico', cargaHoraria: 12 }, { nome: 'Listas, dicionários e funções', cargaHoraria: 10 }, { nome: 'Projeto final', cargaHoraria: 10 }] },
-    { id: 'cu4', codigo: 'WEB', nome: 'Desenvolvimento Web: HTML, CSS e JavaScript', area: 'Programação', modalidade: 'online', cargaHoraria: 60, valor: 1790, parcelasSugeridas: 6,
+    { id: 'cu4', modeloCertificadoId: 'mc2', codigo: 'WEB', nome: 'Desenvolvimento Web: HTML, CSS e JavaScript', area: 'Programação', modalidade: 'online', cargaHoraria: 60, valor: 1790, parcelasSugeridas: 6,
       descricao: 'Construção de sites responsivos, do HTML ao JavaScript, com portfólio publicado.',
       modulos: [{ nome: 'HTML semântico', cargaHoraria: 12 }, { nome: 'CSS e layout responsivo', cargaHoraria: 18 }, { nome: 'JavaScript', cargaHoraria: 22 }, { nome: 'Projeto de portfólio', cargaHoraria: 8 }] },
     { id: 'cu5', codigo: 'DSG', nome: 'Design Gráfico com Photoshop e Canva', area: 'Design', modalidade: 'presencial', cargaHoraria: 36, valor: 1090, parcelasSugeridas: 4,
       descricao: 'Fundamentos de design e produção de peças para redes sociais e impressos.',
       modulos: [{ nome: 'Fundamentos de design', cargaHoraria: 8 }, { nome: 'Photoshop', cargaHoraria: 16 }, { nome: 'Canva para redes sociais', cargaHoraria: 8 }, { nome: 'Portfólio', cargaHoraria: 4 }] },
-    { id: 'cu6', codigo: 'ADM', nome: 'Assistente Administrativo', area: 'Administração', modalidade: 'presencial', cargaHoraria: 60, valor: 1350, parcelasSugeridas: 6,
+    { id: 'cu6', modeloCertificadoId: 'mc3', codigo: 'ADM', nome: 'Assistente Administrativo', area: 'Administração', modalidade: 'presencial', cargaHoraria: 60, valor: 1350, parcelasSugeridas: 6,
       descricao: 'Rotinas de escritório, departamento pessoal, financeiro básico e atendimento.',
       modulos: [{ nome: 'Rotinas administrativas', cargaHoraria: 16 }, { nome: 'Departamento pessoal', cargaHoraria: 12 }, { nome: 'Financeiro básico', cargaHoraria: 14 }, { nome: 'Atendimento e comunicação', cargaHoraria: 10 }, { nome: 'Informática aplicada', cargaHoraria: 8 }] },
     { id: 'cu7', codigo: 'ATV', nome: 'Atendimento e Vendas', area: 'Administração', modalidade: 'presencial', cargaHoraria: 20, valor: 490, parcelasSugeridas: 2,
       descricao: 'Técnicas de atendimento, negociação e pós-venda. Sem turma aberta no momento.',
       modulos: [] },
   ];
+
+  // Responsáveis com papéis, endereço e preferências de pagamento. Sorteio próprio,
+  // no fim, para não mudar os demais dados da escola (o roteiro depende deles).
+  function complementarAlunos(db, hoje) {
+    const rnd = prng(20261010);
+    const r = (min, max) => min + Math.floor(rnd() * (max - min + 1));
+    const escolher = (lista) => lista[Math.floor(rnd() * lista.length)];
+    const chance = (p) => rnd() < p;
+    const pessoa = (sobrenome, parentesco, papeis) => ({ nome: `${escolher(parentesco === 'Pai' || parentesco === 'Tio' ? NOMES_M : NOMES_F)} ${sobrenome}`, cpf: cpfComDv(String(r(100000000, 999999999))), telefone: `439${r(80000000, 99999999)}`, email: '', parentesco, papeis });
+    db.alunos.forEach((a) => {
+      const sobrenome = a.nome.split(' ').pop();
+      const ms = db.matriculas.filter((m) => m.alunoId === a.id);
+      const resp = [];
+      if (a.responsavel) {
+        resp.push({ ...a.responsavel, email: `${a.responsavel.nome.split(' ')[0].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()}.${sobrenome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()}@gmail.com`, papeis: ['legal', 'financeiro'] });
+        if (chance(0.5)) resp.push(pessoa(sobrenome, resp[0].parentesco === 'Pai' ? 'Mãe' : 'Pai', ['legal', 'emergencia']));
+      } else if (chance(0.25)) resp.push(pessoa(escolher(SOBRENOMES), escolher(['Mãe', 'Cônjuge', 'Irmã', 'Pai']), ['emergencia']));
+      a.responsaveis = resp.map((x, i) => ({ id: `r${i + 1}`, ...x }));
+      a.rg = chance(0.85) ? `${r(4, 15)}.${r(100, 999)}.${r(100, 999)}-${r(0, 9)}` : '';
+      a.origem = chance(0.9) ? escolher(['Indicação', 'Indicação', 'Instagram', 'Instagram', 'Google', 'WhatsApp', 'Passou na frente', 'Empresa ou parceria']) : '';
+      a.endereco = ms.length || chance(0.3)
+        ? { cep: `860${r(10, 99)}${r(100, 999)}`, logradouro: escolher(RUAS), numero: String(r(12, 2400)), complemento: chance(0.3) ? `Apto ${r(11, 1204)}` : '', bairro: escolher(BAIRROS), cidade: 'Londrina', uf: 'PR' }
+        : { cep: '', logradouro: '', numero: '', complemento: '', bairro: '', cidade: '', uf: '' };
+      const ultima = ms[ms.length - 1];
+      a.cobranca = { pagador: a.responsavel ? 'responsavel' : 'aluno', formaPreferida: ultima?.formaPagamento ?? '', diaVencimento: ultima && ultima.parcelas > 1 ? Number(ultima.primeiroVencimento.slice(8)) : null };
+      delete a.responsavel;
+    });
+  }
+
+  // Quatro modelos para a demo mostrar a escolha por curso: o padrão, um de
+  // programação, um clássico em retrato e um rascunho. Datas relativas a hoje.
+  function modelosCertificado(hoje) {
+    const dia = (n) => Aulor.somarDias(hoje, n);
+    const LEI = 'Certificado de curso livre, de formação inicial e continuada, nos termos da Lei nº 9.394/96 (art. 42).';
+    const verso = (extra = {}) => ({ mostrar: true, titulo: 'Conteúdo programático', mostrarCargaPorItem: true, mostrarRequisitos: true, textoLivre: LEI, ...extra });
+    const direcao = { nome: 'Marina Azevedo', cargo: 'Diretora' };
+    return [
+      {
+        id: 'mc1', nome: 'Padrão Atlas', descricao: 'Paisagem com moldura dupla nas cores da escola.', padrao: true, status: 'ativo', atualizadoEm: dia(-48),
+        aparencia: { orientacao: 'paisagem', fonte: 'moderna', moldura: 'dupla', corPrimaria: '#0F3D4E', corDestaque: '#C47A3A' },
+        frente: {
+          rotuloTopo: 'Certificado de conclusão', titulo: 'Certificado', introducao: 'Certificamos que', mostrarCpf: true,
+          corpo: 'concluiu o curso livre **{{curso}}**, na modalidade {{modalidade}}, realizado de {{inicio}} a {{fim}}, com carga horária de **{{cargaHoraria}}** e frequência de {{frequencia}}.',
+          localData: '{{cidade}}, {{dataEmissao}}.', assinaturas: [direcao, { nome: '{{professor}}', cargo: 'Professor(a) do curso' }],
+        },
+        verso: verso(),
+      },
+      {
+        id: 'mc2', nome: 'Programação', descricao: 'Faixa lateral e verso com os módulos e o projeto final.', padrao: false, status: 'ativo', atualizadoEm: dia(-12),
+        aparencia: { orientacao: 'paisagem', fonte: 'moderna', moldura: 'lateral', corPrimaria: '#1E293B', corDestaque: '#0E7490' },
+        frente: {
+          rotuloTopo: 'Trilha de programação', titulo: 'Certificado', introducao: 'Certificamos que', mostrarCpf: true,
+          corpo: 'concluiu **{{curso}}** na turma {{turma}}, de {{inicio}} a {{fim}}, somando **{{cargaHoraria}}** de aulas práticas e projeto final orientado por {{professor}}.',
+          localData: '{{cidade}}, {{dataEmissao}}.', assinaturas: [direcao, { nome: '{{professor}}', cargo: 'Instrutor(a)' }],
+        },
+        verso: verso({ titulo: 'O que foi estudado' }),
+      },
+      {
+        id: 'mc3', nome: 'Clássico em retrato', descricao: 'Serifado, filete fino, para cursos de gestão e administração.', padrao: false, status: 'ativo', atualizadoEm: dia(-30),
+        aparencia: { orientacao: 'retrato', fonte: 'classica', moldura: 'simples', corPrimaria: '#5B2333', corDestaque: '#A8844A' },
+        frente: {
+          rotuloTopo: '', titulo: 'Certificado', introducao: 'A Atlas Cursos Profissionalizantes certifica que', mostrarCpf: true,
+          corpo: 'concluiu com aproveitamento o curso livre de **{{curso}}**, com carga horária de **{{cargaHoraria}}**, realizado de {{inicio}} a {{fim}}.',
+          localData: '{{cidade}}, {{dataEmissao}}.', assinaturas: [direcao, { nome: 'Coordenação pedagógica', cargo: 'Atlas Cursos' }],
+        },
+        verso: verso({ mostrarCargaPorItem: false }),
+      },
+      {
+        id: 'mc4', nome: 'Workshop de curta duração', descricao: 'Sem verso, para cursos de até 20 horas.', padrao: false, status: 'rascunho', atualizadoEm: dia(-2),
+        aparencia: { orientacao: 'paisagem', fonte: 'moderna', moldura: 'simples', corPrimaria: '#8A4F20', corDestaque: '#C47A3A' },
+        frente: {
+          rotuloTopo: 'Certificado de participação', titulo: 'Participação', introducao: 'Certificamos que', mostrarCpf: false,
+          corpo: 'participou de **{{curso}}**, com {{cargaHoraria}}, em {{fim}}.', localData: '{{cidade}}, {{dataEmissao}}.', assinaturas: [direcao],
+        },
+        verso: verso({ mostrar: false }),
+      },
+    ];
+  }
 
   function gerar(hoje) {
     const rnd = prng(20261009);
@@ -104,16 +184,11 @@ const Semente = (() => {
       config: {
         academico: { frequenciaMinima: 75, justificadaContaPresenca: true },
         financeiro: { diaVencimentoPadrao: 10, parcelasMaximas: 12, multaPercentual: 2, jurosMensalPercentual: 1, descontoMaximoPercentual: 30, bloquearCertificadoInadimplente: false },
-        certificado: {
-          titulo: 'Certificado', introducao: 'Certificamos que',
-          corpo: 'concluiu o curso livre **{{curso}}**, na modalidade {{modalidade}}, realizado de {{inicio}} a {{fim}}, com carga horária de **{{cargaHoraria}}** e frequência de {{frequencia}}.',
-          corPrimaria: '#0F3D4E', corDestaque: '#C47A3A', mostrarVerso: true,
-          assinaturas: [{ nome: 'Marina Azevedo', cargo: 'Diretora' }, { nome: '{{professor}}', cargo: 'Professor(a) do curso' }],
-        },
       },
       assinatura: { planoId: 'gestao', condicoes: {} },
+      modelosCertificado: modelosCertificado(hoje),
       professores: PROFESSORES.map((p) => ({ ...p, ativo: true })),
-      cursos: CURSOS.map((c) => ({ ...c, modulos: c.modulos.map((m) => ({ ...m })), ativo: true })),
+      cursos: CURSOS.map((c) => ({ modeloCertificadoId: null, ...c, modulos: c.modulos.map((m) => ({ ...m })), ativo: true })),
       turmas: [], aulas: [], alunos: [], matriculas: [], lancamentos: [], certificados: [],
     };
     const curso = (id) => db.cursos.find((c) => c.id === id);
@@ -321,6 +396,10 @@ const Semente = (() => {
     // ---------- Conclusão da turma antiga + certificados emitidos ----------
 
     const t1 = turma('tu1');
+    const copiaModelo = (c) => {
+      const m = db.modelosCertificado.find((x) => x.id === c.modeloCertificadoId) ?? db.modelosCertificado.find((x) => x.padrao);
+      return JSON.parse(JSON.stringify({ id: m.id, nome: m.nome, aparencia: m.aparencia, frente: m.frente, verso: m.verso }));
+    };
     db.matriculas.filter((m) => m.turmaId === 'tu1').forEach((m, i) => {
       const realizadas = db.aulas.filter((a) => a.turmaId === 'tu1' && a.status === 'realizada' && a.data >= m.data);
       const validas = realizadas.filter((a) => ['P', 'J'].includes(a.presencas[m.id])).length;
@@ -337,6 +416,7 @@ const Semente = (() => {
         matriculaId: m.id, alunoId: a.id, turmaId: t1.id, emitidoEm: somarDias(t1.concluidaEm, r(1, 4)), emitidoPor: 'Paula Ribeiro',
         status: 'valido', canceladoEm: null, motivoCancelamento: '',
         dados: { aluno: a.nome, cpf: a.cpf, curso: c.nome, modalidade: 'Presencial', cargaHoraria: c.cargaHoraria, inicio: t1.inicio, fim: t1.fim, turma: t1.codigo, professor: prof(t1.professorId).nome, frequencia: freq, matricula: '', modulos: c.modulos },
+        modelo: copiaModelo(c),
       });
     });
 
@@ -397,6 +477,7 @@ const Semente = (() => {
     });
 
     db.lancamentos = lanc;
+    complementarAlunos(db, hoje);
     return db;
   }
 

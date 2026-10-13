@@ -111,6 +111,46 @@ test('chamada, conclusão e certificado respeitam a frequência mínima', () => 
   if (devedor) assert.equal(Aulor.elegibilidade(devedor).id, 'bloqueado');
 });
 
+test('modelos de certificado: padrão, escolha do curso e cópia na emissão', () => {
+  const { Aulor } = contexto('2026-10-09');
+  const padrao = Aulor.modeloPadrao();
+  assert.equal(Aulor.modelosCertificado().filter((m) => m.padrao).length, 1);
+  assert.equal(Aulor.modeloDoCurso(Aulor.curso('cu1')).id, padrao.id, 'sem escolha usa o padrão');
+  assert.equal(Aulor.modeloDoCurso(Aulor.curso('cu3')).id, 'mc2');
+  Aulor.certificados().forEach((c) => assert.ok(c.modelo?.aparencia, 'emitido da semente guarda o modelo'));
+
+  // Novo nasce rascunho: o curso que o escolher continua no padrão até ativar.
+  const { modelo } = Aulor.criarModelo({ nome: 'Noturno', copiarDe: 'mc2' });
+  assert.equal(modelo.status, 'rascunho');
+  assert.ok(Aulor.criarModelo({ nome: ' noturno ' }).erros, 'nome repetido');
+  Aulor.curso('cu1').modeloCertificadoId = modelo.id;
+  assert.equal(Aulor.modeloDoCurso(Aulor.curso('cu1')).id, padrao.id);
+  assert.ok(Aulor.definirModeloPadrao(modelo.id).erros, 'rascunho não vira padrão');
+  assert.ok(!Aulor.atualizarDadosModelo(modelo.id, { nome: 'Noturno', status: 'ativo' }).erros);
+  assert.equal(Aulor.modeloDoCurso(Aulor.curso('cu1')).id, modelo.id);
+
+  const invalido = { ...modelo, frente: { ...modelo.frente, corpo: 'concluiu {{cursoo}}' } };
+  assert.equal(Aulor.salvarConteudoModelo(modelo.id, invalido).erros[0].campo, 'frente.corpo');
+  assert.ok(Aulor.salvarConteudoModelo(modelo.id, { ...modelo, aparencia: { ...modelo.aparencia, moldura: 'xadrez' } }).erros);
+
+  // Emitido guarda a cópia: editar o modelo depois não muda o certificado.
+  Aulor.chamadasPendentes().forEach((a) => Aulor.registrarChamada(a.id, { presencas: Object.fromEntries(Aulor.participantes(a).map((x) => [x.id, 'P'])) }));
+  assert.ok(!Aulor.concluirTurma('tu2', 'Camila').erros);
+  const m = Aulor.matriculasDaTurma('tu2').find((x) => Aulor.elegibilidade(x).id === 'elegivel');
+  Aulor.curso(Aulor.turma('tu2').cursoId).modeloCertificadoId = modelo.id;
+  const { certificado } = Aulor.emitirCertificado(m.id, 'Paula');
+  assert.equal(certificado.modelo.id, modelo.id);
+  Aulor.salvarConteudoModelo(modelo.id, { ...modelo, frente: { ...modelo.frente, titulo: 'Outro título' } });
+  assert.notEqual(certificado.modelo.frente.titulo, 'Outro título');
+  assert.equal(Aulor.emitidosComModelo(modelo.id).length, 1);
+
+  assert.ok(Aulor.excluirModelo(padrao.id).erros, 'padrão não se exclui');
+  assert.ok(!Aulor.definirModeloPadrao(modelo.id).erros);
+  assert.ok(!Aulor.excluirModelo('mc2').erros);
+  assert.equal(Aulor.curso('cu3').modeloCertificadoId, null, 'curso volta para o padrão');
+  assert.equal(Aulor.duplicarModelo(modelo.id).modelo.nome, 'Noturno (cópia)');
+});
+
 test('turma nova gera aulas até a carga horária do curso', () => {
   const { Aulor } = contexto('2026-10-09');
   const r = Aulor.criarTurma({ cursoId: 'cu1', professorId: 'pr1', capacidade: 10, inicio: '2026-11-03', local: 'Sala 1', agenda: { formato: 'presencial', recorrencia: 'semanal', periodos: [{ dias: ['ter', 'qui'], inicio: '19:00', fim: '21:00' }] } });
@@ -170,4 +210,38 @@ test('turmas em risco: mínimo da turma ou metade das vagas, nível pelo prazo',
   assert.equal(Aulor.riscoTurma(t).nivel, 'atencao');
   t.capacidade = 12;
   assert.equal(Aulor.riscoTurma(t), null, '4 de 12 vagas = 33%');
+});
+
+test('aluno: responsáveis com papéis, endereço e quem paga', () => {
+  const { Aulor } = contexto('2026-10-10');
+  const base = { nome: 'Teo Lima', cpf: '529.982.247-25', telefone: '43999990000', nascimento: '2011-05-02' };
+  assert.equal(Aulor.criarAluno(base).erros?.[0]?.campo, 'respNome', 'menor sem responsável');
+  const { aluno: a } = Aulor.criarAluno({ ...base, respNome: 'Rita Lima', respTelefone: '43988880000', respParentesco: 'Mãe' });
+  assert.deepEqual(Array.from(a.responsaveis[0].papeis), ['legal', 'financeiro']);
+  assert.equal(a.cobranca.pagador, 'responsavel');
+  assert.equal(Aulor.contatoCobranca(a).nome, 'Rita Lima');
+  // Novo financeiro tira o papel de quem tinha.
+  Aulor.salvarResponsavel(a.id, { nome: 'Caio Lima', telefone: '43977770000', papel_financeiro: '1' });
+  assert.equal(Aulor.responsavelFinanceiro(a).nome, 'Caio Lima');
+  assert.deepEqual(Array.from(a.responsaveis[0].papeis), ['legal']);
+  // Único responsável legal de um menor não sai.
+  assert.ok(Aulor.removerResponsavel(a.id, 'r1').erro);
+  // Quem paga as matrículas também não sai enquanto for ele quem paga.
+  assert.ok(Aulor.removerResponsavel(a.id, 'r2').erro);
+  assert.equal(Aulor.atualizarEnderecoPagamento(a.id, { pagador: 'aluno', diaVencimento: '30' }).erros?.[0]?.campo, 'diaVencimento');
+  assert.ok(!Aulor.atualizarEnderecoPagamento(a.id, { pagador: 'aluno', cep: '86010-190', cidade: 'Londrina', uf: 'pr', diaVencimento: '15' }).erros);
+  assert.equal(a.endereco.uf, 'PR');
+  assert.equal(Aulor.contatoCobranca(a), a);
+  assert.ok(!Aulor.removerResponsavel(a.id, 'r2').erro);
+});
+
+test('semente: todo menor tem responsável legal e o modelo antigo sumiu', () => {
+  const { Aulor } = contexto('2026-10-10');
+  Aulor.alunos().forEach((a) => {
+    assert.equal(a.responsavel, undefined);
+    assert.ok(Array.isArray(a.responsaveis) && a.endereco && a.cobranca, a.nome);
+    if (Aulor.ehMenor(a)) assert.ok(a.responsaveis.some((r) => r.papeis.includes('legal')), `${a.nome} sem responsável legal`);
+    assert.ok(a.responsaveis.filter((r) => r.papeis.includes('financeiro')).length <= 1);
+    if (a.cobranca.pagador === 'responsavel') assert.ok(Aulor.responsavelFinanceiro(a));
+  });
 });

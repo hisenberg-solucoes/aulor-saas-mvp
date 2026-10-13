@@ -3,9 +3,8 @@
 // CSS e marcação reaproveitados do motor de templates do protótipo
 // original (js/templates-certificado-motor.js): HTML com CSS próprio,
 // sem Tailwind, para sair igual na tela, na prévia e na impressão.
-// No MVP há UM modelo por escola, montado com os dados da escola e as
-// preferências de Configurações › Certificado. Editor de vários modelos
-// fica para depois.
+// A aparência e os textos vêm de um modelo (Aulor.modelosCertificado):
+// o do curso na emissão, ou a cópia guardada no certificado emitido.
 // ============================================================
 
 const Certificado = (() => {
@@ -20,11 +19,8 @@ const Certificado = (() => {
     return String(texto ?? '').split('**').map((p, i) => (i % 2 ? `<strong>${trecho(p)}</strong>` : trecho(p))).join('');
   }
 
-  const VARIAVEIS = [
-    ['aluno', 'Nome do aluno'], ['cpf', 'CPF do aluno'], ['curso', 'Curso'], ['modalidade', 'Modalidade'], ['cargaHoraria', 'Carga horária'],
-    ['inicio', 'Início'], ['fim', 'Término'], ['frequencia', 'Frequência final'], ['professor', 'Professor'], ['turma', 'Código da turma'],
-    ['cidade', 'Cidade da escola'], ['dataEmissao', 'Data de emissão'], ['codigoValidacao', 'Código de validação'],
-  ];
+  const VARIAVEIS = Aulor.VARIAVEIS_CERTIFICADO;
+  const FONTES = { moderna: "'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif", classica: "Georgia, 'Times New Roman', Times, serif" };
 
   const urlValidacao = () => `${location.origin}${location.pathname.replace(/[^/]*$/, '')}validar.html`;
 
@@ -68,6 +64,9 @@ const Certificado = (() => {
 .cert-assinatura-linha{height:1px;background:currentColor;opacity:.45;margin:0 auto .45em;width:11em}
 .cert-assinatura b{display:block;font-weight:600}
 .cert-assinatura span{opacity:.7}
+.cert-folha[data-orientacao="retrato"] .cert-base{flex-direction:column-reverse;align-items:center;text-align:center;gap:1.6em}
+.cert-folha[data-orientacao="retrato"] .cert-titulo{font-size:2em}
+.cert-folha[data-orientacao="retrato"] .cert-texto{max-width:92%}
 .cert-verso-topo{display:flex;align-items:baseline;justify-content:space-between;gap:1em;border-bottom:2px solid var(--cert-primaria);padding-bottom:.5em}
 .cert-verso-titulo{font-size:1.45em;font-weight:600;color:var(--cert-primaria);letter-spacing:.06em;text-transform:uppercase}
 .cert-verso-ref{font-size:.8em;opacity:.7;text-align:right}
@@ -105,10 +104,13 @@ const Certificado = (() => {
     estilosInjetados = true;
   }
 
-  // Modelo da escola (cores, textos, assinaturas) a partir das configurações.
-  function modelo(cfg = Aulor.config().certificado) {
-    const e = Aulor.escola();
-    return { cfg, escola: e, cores: `--cert-primaria:${esc(cfg.corPrimaria)};--cert-destaque:${esc(cfg.corDestaque)};--cert-texto:#1E293B;--cert-fonte:'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif` };
+  // Abre a folha com as cores, a fonte, a orientação e a moldura do modelo.
+  function abrirFolha(modelo, lado) {
+    const a = modelo.aparencia;
+    const vars = `--cert-primaria:${esc(a.corPrimaria)};--cert-destaque:${esc(a.corDestaque)};--cert-texto:#1E293B;--cert-fonte:${esc(FONTES[a.fonte] ?? FONTES.moderna)}`;
+    const moldura = a.moldura === 'nenhuma' ? '' : `<div class="cert-moldura-${esc(a.moldura)}"></div>`;
+    const marca = lado === 'frente' && a.moldura === 'dupla' ? '<div class="cert-marca"></div>' : '';
+    return `<div class="cert-folha" data-lado="${lado}" data-orientacao="${esc(a.orientacao)}" style="${vars}"><div class="cert-corpo">${moldura}${marca}`;
   }
 
   // Variáveis do texto a partir do certificado emitido (snapshot do momento da emissão).
@@ -133,25 +135,26 @@ const Certificado = (() => {
 
   const iniciais = (nome) => String(nome ?? '').trim().split(/\s+/).filter((p) => p.length > 2).map((p) => p[0]).join('').slice(0, 2).toUpperCase() || 'A';
 
-  function frente(m, dados, { cancelado = false } = {}) {
-    const { cfg, escola } = m;
+  function frente(modelo, dados, { cancelado = false } = {}) {
+    const f = modelo.frente;
+    const escola = Aulor.escola();
     const r = (x) => substituir(x, dados);
     const validacao = Aulor.temModulo('validacao_publica') ? `Valide em ${urlValidacao()}` : 'Autenticidade confirmada pela secretaria da escola';
-    const assinaturas = (cfg.assinaturas ?? []).map((s) => `<div class="cert-assinatura"><div class="cert-assinatura-linha"></div><b>${r(s.nome)}</b><span>${r(s.cargo)}</span></div>`).join('');
-    return `<div class="cert-folha" data-lado="frente" data-orientacao="paisagem" style="${m.cores}"><div class="cert-corpo"><div class="cert-moldura-dupla"></div><div class="cert-marca"></div>
+    const assinaturas = (f.assinaturas ?? []).map((s) => `<div class="cert-assinatura"><div class="cert-assinatura-linha"></div><b>${r(s.nome)}</b><span>${r(s.cargo)}</span></div>`).join('');
+    return `${abrirFolha(modelo, 'frente')}
       ${cancelado ? '<div style="position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:2"><span style="transform:rotate(-18deg);border:.25em solid #b91c1c;color:#b91c1c;font-weight:700;font-size:3.2em;letter-spacing:.2em;padding:.1em .5em;opacity:.75">CANCELADO</span></div>' : ''}
       <div class="cert-conteudo">
-        <div class="cert-topo"><div class="cert-logo"><div class="cert-logo-mono">${esc(iniciais(escola.nome))}</div><div class="cert-inst">${esc(escola.nome)}<small>${esc(escola.cidade)} — ${esc(escola.uf)}${escola.cnpj ? ` · CNPJ ${esc(Documento.fmtCnpj(escola.cnpj))}` : ''}</small></div></div><p class="cert-rotulo">Certificado de conclusão</p></div>
+        <div class="cert-topo"><div class="cert-logo"><div class="cert-logo-mono">${esc(iniciais(escola.nome))}</div><div class="cert-inst">${esc(escola.nome)}<small>${esc(escola.cidade)} — ${esc(escola.uf)}${escola.cnpj ? ` · CNPJ ${esc(Documento.fmtCnpj(escola.cnpj))}` : ''}</small></div></div>${f.rotuloTopo ? `<p class="cert-rotulo">${r(f.rotuloTopo)}</p>` : ''}</div>
         <div class="cert-centro">
-          <p class="cert-titulo">${r(cfg.titulo)}</p>
-          ${cfg.introducao ? `<p class="cert-intro">${r(cfg.introducao)}</p>` : ''}
+          <p class="cert-titulo">${r(f.titulo)}</p>
+          ${f.introducao ? `<p class="cert-intro">${r(f.introducao)}</p>` : ''}
           <p class="cert-aluno">${esc(dados.aluno)}</p>
-          ${dados.cpf ? `<p class="cert-cpf">CPF ${esc(dados.cpf)}</p>` : ''}
-          <p class="cert-texto">${r(cfg.corpo)}</p>
+          ${f.mostrarCpf && dados.cpf ? `<p class="cert-cpf">CPF ${esc(dados.cpf)}</p>` : ''}
+          <p class="cert-texto">${r(f.corpo)}</p>
         </div>
         <div class="cert-base">
           <div class="cert-local">
-            <p>${r('{{cidade}}, {{dataEmissao}}.')}</p>
+            ${f.localData ? `<p>${r(f.localData)}</p>` : ''}
             <p class="cert-codigo">Código de validação <b>${esc(dados.codigoValidacao)}</b></p>
             <p class="cert-validacao">${esc(validacao)}</p>
           </div>
@@ -160,47 +163,49 @@ const Certificado = (() => {
       </div></div></div>`;
   }
 
-  function verso(m, dados) {
+  function verso(modelo, dados) {
+    const v = modelo.verso;
+    const r = (x) => substituir(x, dados);
     const mods = dados.modulos ?? [];
     const lista = mods.length
-      ? `<ol class="cert-lista" data-colunas="${mods.length > 6 ? 2 : 1}">${mods.map((x) => `<li><div class="cert-item"><b>${esc(x.nome)}</b></div><span class="cert-horas">${esc(x.cargaHoraria)} h</span></li>`).join('')}</ol>`
+      ? `<ol class="cert-lista" data-colunas="${mods.length > 6 ? 2 : 1}">${mods.map((x) => `<li><div class="cert-item"><b>${esc(x.nome)}</b></div>${v.mostrarCargaPorItem ? `<span class="cert-horas">${esc(x.cargaHoraria)} h</span>` : ''}</li>`).join('')}</ol>`
       : '<p class="cert-vazio">Curso sem módulos cadastrados.</p>';
     const requisitos = [`Frequência de ${dados.frequencia} (mínimo exigido: ${dados.minimo}%).`, `Carga horária cumprida: ${dados.cargaHoraria}, de ${dados.inicio} a ${dados.fim}.`, `Turma ${dados.turma}${dados.professor ? `, com ${dados.professor}` : ''}.`];
-    return `<div class="cert-folha" data-lado="verso" data-orientacao="paisagem" style="${m.cores}"><div class="cert-corpo"><div class="cert-moldura-dupla"></div><div class="cert-conteudo">
-      <div class="cert-verso-topo"><p class="cert-verso-titulo">Conteúdo programático</p><p class="cert-verso-ref">${esc(dados.aluno)}<br>${esc(dados.curso)} · ${esc(dados.cargaHoraria)}</p></div>
+    return `${abrirFolha(modelo, 'verso')}<div class="cert-conteudo">
+      <div class="cert-verso-topo"><p class="cert-verso-titulo">${r(v.titulo)}</p><p class="cert-verso-ref">${esc(dados.aluno)}<br>${esc(dados.curso)} · ${esc(dados.cargaHoraria)}</p></div>
       <div class="cert-verso-meio">
         ${lista}
-        <div><p class="cert-req-titulo">Requisitos cumpridos</p><ul class="cert-requisitos">${requisitos.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
-        <p class="cert-livre">Certificado de curso livre, de formação inicial e continuada, nos termos da Lei nº 9.394/96 (art. 42).</p>
+        ${v.mostrarRequisitos ? `<div><p class="cert-req-titulo">Requisitos cumpridos</p><ul class="cert-requisitos">${requisitos.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+        ${v.textoLivre ? `<p class="cert-livre">${r(v.textoLivre)}</p>` : ''}
       </div>
-      <p class="cert-rodape">${esc(m.escola.nome)} · ${esc(m.escola.cidade)} · Código de validação ${esc(dados.codigoValidacao)}</p>
+      <p class="cert-rodape">${esc(Aulor.escola().nome)} · ${esc(Aulor.escola().cidade)} · Código de validação ${esc(dados.codigoValidacao)}</p>
     </div></div></div>`;
   }
 
-  function folhas(dados, { cfg, cancelado = false } = {}) {
+  // `lados`: 'frente', 'verso' ou os dois (verso só se o modelo imprime verso).
+  function folhas(dados, { modelo = Aulor.modeloPadrao(), cancelado = false, lados = ['frente', 'verso'] } = {}) {
     injetarEstilos();
-    const m = modelo(cfg);
-    return frente(m, dados, { cancelado }) + (m.cfg.mostrarVerso ? verso(m, dados) : '');
+    return (lados.includes('frente') ? frente(modelo, dados, { cancelado }) : '') + (lados.includes('verso') && modelo.verso.mostrar ? verso(modelo, dados) : '');
   }
 
-  // Imprime só as folhas (A4 paisagem). "Salvar como PDF" no diálogo do navegador gera o arquivo.
-  function imprimir(dados) {
+  // Imprime só as folhas (A4 na orientação do modelo). "Salvar como PDF" no diálogo do navegador gera o arquivo.
+  function imprimir(dados, modelo = Aulor.modeloPadrao()) {
     injetarEstilos();
     document.getElementById('cert-impressao')?.remove();
     document.getElementById('cert-pagina')?.remove();
     const pagina = document.createElement('style');
     pagina.id = 'cert-pagina';
-    pagina.textContent = '@page{size:A4 landscape;margin:0}';
+    pagina.textContent = `@page{size:A4 ${modelo.aparencia.orientacao === 'retrato' ? 'portrait' : 'landscape'};margin:0}`;
     document.head.appendChild(pagina);
     const area = document.createElement('div');
     area.id = 'cert-impressao';
     area.style.display = 'none';
-    area.innerHTML = folhas(dados);
+    area.innerHTML = folhas(dados, { modelo });
     document.body.appendChild(area);
     const limpar = () => { area.remove(); pagina.remove(); window.removeEventListener('afterprint', limpar); };
     window.addEventListener('afterprint', limpar);
     window.print();
   }
 
-  return { VARIAVEIS, substituir, dadosDe, dadosExemplo, folhas, imprimir, urlValidacao };
+  return { VARIAVEIS, FONTES, substituir, dadosDe, dadosExemplo, folhas, imprimir, urlValidacao };
 })();

@@ -37,8 +37,9 @@ Os testes cobrem as regras do motor (parcelas, matrícula → financeiro → tur
 | `js/permissoes-motor.js`, `js/permissoes-app.js` | Motor e telas de perfis, reaproveitados do original |
 | `js/shell.js` | Menu por módulos (os mesmos grupos do original), cabeçalho, sessão de demonstração e controle de acesso (permissão + plano) |
 | `js/base.js`, `js/ui-form.js`, `js/formularios.js` | Componentes de tela e formulários compartilhados |
-| `js/certificado.js` | Render e impressão do certificado (CSS do original) |
+| `js/certificado.js` | Render e impressão do certificado a partir de um modelo (CSS do original) |
+| `js/modelos-certificado-ui.js` | Peças comuns da lista e do editor de modelos de certificado |
 | `js/*-app.js` | Uma por página |
 | `_tools/gerar_paginas.py` | Gera os `.html` (mesmo esqueleto; o layout vem do `shell.js`). Para criar uma tela, acrescente-a em `PAGINAS` e em `Shell.MENU` |
 
-Os dados ficam no `localStorage` deste navegador (`aulor-mvp-dados-v1` e `aulor-mvp-acessos-v1`). Em **Demonstração › Restaurar dados iniciais**, a escola é gerada de novo. Isso existe só para demonstrar: não é isolamento entre escolas nem segurança.
+Os dados ficam no `localStorage` deste navegador (`aulor-mvp-dados-v3` e `aulor-mvp-acessos-v1`). Em **Demonstração › Restaurar dados iniciais**, a escola é gerada de novo. Isso existe só para demonstrar: não é isolamento entre escolas nem segurança.

@@ -16,12 +16,14 @@ function campo(nome, rotulo, valor = '', { tipo = 'text', obrigatorio = false, e
     </div>`;
 }
 
+// Sem `aluno`: cadastro rápido (o responsável informado vira legal e financeiro).
+// Com `aluno`: edição da aba Dados; responsáveis e endereço têm formulários próprios.
 function abrirFormAluno({ aluno = null, aoSalvar }) {
-  const r = aluno?.responsavel ?? {};
+  const origens = Aulor.ORIGENS.map((o) => ({ id: o, nome: o }));
   const { form } = modalFormulario({
     id: 'form-aluno',
-    titulo: aluno ? 'Editar aluno' : 'Cadastrar aluno',
-    subtitulo: aluno ? aluno.nome : 'Só o essencial para matricular. O resto pode ser completado depois.',
+    titulo: aluno ? 'Editar dados do aluno' : 'Cadastrar aluno',
+    subtitulo: aluno ? aluno.nome : 'Só o essencial para matricular. Endereço e outros responsáveis podem ser completados depois, na ficha.',
     rotulo: aluno ? 'Salvar' : 'Cadastrar',
     largura: 'xl',
     foco: '#f-nome',
@@ -29,19 +31,26 @@ function abrirFormAluno({ aluno = null, aoSalvar }) {
       <div class="grid sm:grid-cols-2 gap-4">
         ${campo('nome', 'Nome completo', aluno?.nome, { obrigatorio: true, classe: 'sm:col-span-2', extra: 'autocomplete="off"' })}
         ${campo('cpf', 'CPF', aluno ? Documento.fmtCpf(aluno.cpf) : '', { obrigatorio: true, extra: 'data-mascara="cpf" placeholder="000.000.000-00"' })}
+        ${campo('rg', 'RG', aluno?.rg)}
+        ${campo('nascimento', 'Data de nascimento', aluno?.nascimento, { tipo: 'date', dica: 'Menor de 18 anos exige responsável legal.' })}
+        <div>
+          <label class="rotulo" for="f-origem">Como conheceu a escola</label>
+          ${campoCombo('origem', origens, aluno?.origem ?? '', { vazio: 'Não informado', opcional: true })}
+          ${ERRO('origem')}
+        </div>
         ${campo('telefone', 'Celular (WhatsApp)', aluno?.telefone ? telefoneFmt(aluno.telefone) : '', { obrigatorio: true, tipo: 'tel', extra: 'placeholder="(43) 99999-0000"' })}
         ${campo('email', 'E-mail', aluno?.email, { tipo: 'email' })}
-        ${campo('nascimento', 'Data de nascimento', aluno?.nascimento, { tipo: 'date', dica: 'Menor de 18 anos exige responsável.' })}
       </div>
-      <details data-responsavel class="rounded-lg border border-slate-200 dark:border-neutral-800" ${aluno?.responsavel ? 'open' : ''}>
-        <summary class="cursor-pointer select-none px-4 py-3 text-sm font-medium text-slate-700 dark:text-neutral-200">Responsável financeiro <span class="font-normal text-slate-400">— obrigatório para menores de idade</span></summary>
+      ${aluno ? '' : `
+      <details data-responsavel class="rounded-lg border border-slate-200 dark:border-neutral-800">
+        <summary class="cursor-pointer select-none px-4 py-3 text-sm font-medium text-slate-700 dark:text-neutral-200">Responsável <span class="font-normal text-slate-400">— obrigatório para menores de idade; entra como legal e quem paga</span></summary>
         <div class="grid sm:grid-cols-2 gap-4 px-4 pb-4">
-          ${campo('respNome', 'Nome do responsável', r.nome, { classe: 'sm:col-span-2' })}
-          ${campo('respCpf', 'CPF do responsável', r.cpf ? Documento.fmtCpf(r.cpf) : '', { extra: 'data-mascara="cpf"' })}
-          ${campo('respTelefone', 'Celular do responsável', r.telefone ? telefoneFmt(r.telefone) : '', { tipo: 'tel' })}
-          ${campo('respParentesco', 'Parentesco', r.parentesco, { extra: 'placeholder="Mãe, pai, avó…"' })}
+          ${campo('respNome', 'Nome do responsável', '', { classe: 'sm:col-span-2' })}
+          ${campo('respCpf', 'CPF do responsável', '', { extra: 'data-mascara="cpf"' })}
+          ${campo('respTelefone', 'Celular do responsável', '', { tipo: 'tel' })}
+          ${campo('respParentesco', 'Parentesco', '', { extra: 'placeholder="Mãe, pai, avó…"' })}
         </div>
-      </details>
+      </details>`}
       <div>
         <label for="f-observacoes" class="rotulo">Observações</label>
         <textarea id="f-observacoes" name="observacoes" rows="2" class="campo" placeholder="Ex.: prefere contato à tarde">${esc(aluno?.observacoes ?? '')}</textarea>
@@ -60,7 +69,90 @@ function abrirFormAluno({ aluno = null, aoSalvar }) {
   // Ao informar nascimento de menor, abre o bloco do responsável.
   form.querySelector('#f-nascimento').addEventListener('change', (e) => {
     const idade = Aulor.idade(e.target.value);
-    if (idade != null && idade < 18) form.querySelector('[data-responsavel]').open = true;
+    if (idade != null && idade < 18) form.querySelector('[data-responsavel]')?.setAttribute('open', '');
+  });
+}
+
+function abrirFormResponsavel({ aluno, responsavel = null, aoSalvar }) {
+  const r = responsavel ?? { papeis: Aulor.ehMenor(aluno) && !(aluno.responsaveis ?? []).length ? ['legal', 'financeiro'] : [] };
+  modalFormulario({
+    id: 'form-responsavel',
+    titulo: responsavel ? 'Editar responsável' : 'Novo responsável',
+    subtitulo: `Responsável por ${aluno.nome}`,
+    rotulo: responsavel ? 'Salvar' : 'Incluir',
+    largura: 'lg',
+    foco: '#f-nome',
+    corpo: `
+      <div class="grid sm:grid-cols-2 gap-4">
+        ${campo('nome', 'Nome completo', r.nome, { obrigatorio: true, classe: 'sm:col-span-2', extra: 'autocomplete="off"' })}
+        ${campo('parentesco', 'Parentesco', r.parentesco, { extra: 'placeholder="Mãe, pai, avó, cônjuge…"' })}
+        ${campo('cpf', 'CPF', r.cpf ? Documento.fmtCpf(r.cpf) : '', { extra: 'data-mascara="cpf"', dica: 'Obrigatório na prática para quem paga (sai no boleto).' })}
+        ${campo('telefone', 'Celular (WhatsApp)', r.telefone ? telefoneFmt(r.telefone) : '', { obrigatorio: true, tipo: 'tel' })}
+        ${campo('email', 'E-mail', r.email, { tipo: 'email' })}
+      </div>
+      <fieldset>
+        <legend class="rotulo">Papéis <span class="text-red-600">*</span></legend>
+        <div class="space-y-2 pt-1">
+          ${Aulor.PAPEIS_RESPONSAVEL.map((p) => `
+          <label class="flex items-start gap-3 text-sm cursor-pointer">
+            <input type="checkbox" name="papel_${p.id}" value="1" class="check mt-0.5" ${r.papeis.includes(p.id) ? 'checked' : ''}>
+            <span><b class="font-medium">${p.nome}</b> <span class="text-slate-500 dark:text-neutral-400">— ${p.descricao}${p.id === 'financeiro' ? ' Marcar aqui tira o papel de quem tinha.' : ''}</span></span>
+          </label>`).join('')}
+        </div>
+        ${ERRO('papeis')}
+      </fieldset>`,
+    aoSalvar: (fd) => {
+      const res = Aulor.salvarResponsavel(aluno.id, Object.fromEntries(fd.entries()), responsavel?.id ?? null);
+      if (res.erros) return res.erros;
+      aoSalvar();
+      return [];
+    },
+  });
+}
+
+function abrirFormEnderecoPagamento({ aluno, aoSalvar }) {
+  const e = aluno.endereco ?? {};
+  const c = aluno.cobranca ?? {};
+  const fin = Aulor.responsavelFinanceiro(aluno);
+  modalFormulario({
+    id: 'form-endereco',
+    titulo: 'Endereço e pagamento',
+    subtitulo: aluno.nome,
+    rotulo: 'Salvar',
+    largura: 'xl',
+    foco: '#f-cep',
+    corpo: `
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        ${campo('cep', 'CEP', e.cep ? e.cep.replace(/(\d{5})(\d{3})/, '$1-$2') : '', { extra: 'inputmode="numeric" placeholder="00000-000"' })}
+        ${campo('logradouro', 'Logradouro', e.logradouro, { classe: 'col-span-2 sm:col-span-3' })}
+        ${campo('numero', 'Número', e.numero)}
+        ${campo('complemento', 'Complemento', e.complemento)}
+        ${campo('bairro', 'Bairro', e.bairro, { classe: 'col-span-2' })}
+        ${campo('cidade', 'Cidade', e.cidade, { classe: 'col-span-2 sm:col-span-3' })}
+        ${campo('uf', 'UF', e.uf, { extra: 'maxlength="2" style="text-transform:uppercase"' })}
+      </div>
+      <div class="pt-4 border-t border-slate-200 dark:border-neutral-800 grid sm:grid-cols-2 gap-4">
+        <fieldset class="sm:col-span-2">
+          <legend class="rotulo">Quem paga <span class="text-red-600">*</span></legend>
+          <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm pt-1">
+            <label class="flex items-center gap-2"><input type="radio" name="pagador" value="aluno" ${c.pagador !== 'responsavel' ? 'checked' : ''}>O próprio aluno</label>
+            <label class="flex items-center gap-2 ${fin ? '' : 'opacity-50'}"><input type="radio" name="pagador" value="responsavel" ${c.pagador === 'responsavel' ? 'checked' : ''} ${fin ? '' : 'disabled'}>${fin ? `${esc(fin.nome)} (responsável financeiro)` : 'Responsável financeiro (cadastre na aba Responsáveis)'}</label>
+          </div>
+          ${ERRO('pagador')}
+        </fieldset>
+        <div>
+          <label class="rotulo" for="f-formaPreferida">Forma de pagamento preferida</label>
+          ${campoCombo('formaPreferida', Aulor.FORMAS_PAGAMENTO, c.formaPreferida ?? '', { vazio: 'Sem preferência', opcional: true })}
+          ${ERRO('formaPreferida')}
+        </div>
+        ${campo('diaVencimento', 'Dia de vencimento preferido', c.diaVencimento ?? '', { tipo: 'number', extra: `min="1" max="28" placeholder="Padrão da escola: ${Aulor.config().financeiro.diaVencimentoPadrao}"`, dica: 'Usado como sugestão na próxima matrícula.' })}
+      </div>`,
+    aoSalvar: (fd) => {
+      const res = Aulor.atualizarEnderecoPagamento(aluno.id, Object.fromEntries(fd.entries()));
+      if (res.erros) return res.erros;
+      aoSalvar();
+      return [];
+    },
   });
 }
 
@@ -243,6 +335,11 @@ function abrirFormCurso({ curso = null, aoSalvar }) {
         ${campo('cargaHoraria', 'Carga horária (h)', curso?.cargaHoraria, { tipo: 'number', obrigatorio: true, extra: 'min="1" step="0.5"' })}
         ${campo('valor', 'Valor de referência (R$)', curso?.valor, { tipo: 'number', extra: 'min="0" step="0.01"', dica: 'Sugerido na matrícula; pode ser negociado.' })}
         ${campo('parcelasSugeridas', 'Parcelas sugeridas', curso?.parcelasSugeridas ?? 1, { tipo: 'number', extra: `min="1" max="${Aulor.config().financeiro.parcelasMaximas}"` })}
+        <div>
+          <label class="rotulo" for="f-modeloCertificadoId">Modelo do certificado</label>
+          ${campoCombo('modeloCertificadoId', Aulor.modelosCertificado().filter((m) => !m.padrao && (m.status === 'ativo' || m.id === curso?.modeloCertificadoId)).map((m) => ({ id: m.id, nome: m.nome, descricao: m.status === 'ativo' ? m.descricao : `${Aulor.STATUS_MODELO[m.status].nome}: emite com o padrão` })), curso?.modeloCertificadoId ?? '', { opcional: true, vazio: 'Padrão da escola' })}
+          ${ERRO('modeloCertificadoId')}
+        </div>
       </div>
       <datalist id="areas-curso">${areas.map((a) => `<option value="${esc(a)}">`).join('')}</datalist>
       <div>

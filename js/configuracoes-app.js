@@ -1,7 +1,7 @@
 // ============================================================
 // Configurações da escola: dados, regras acadêmicas, preferências
-// financeiras e plano contratado. O modelo do certificado usa o mesmo
-// formulário, servido em templates-certificado.html (grupo Pedagógico).
+// financeiras e plano contratado. Os modelos de certificado têm tela própria
+// (templates-certificado.html, grupo Pedagógico).
 // As regras daqui são lidas pelo motor (não há valor fixo nas telas).
 // ============================================================
 
@@ -14,8 +14,7 @@
     { id: 'financeiro', nome: 'Financeiro' },
     { id: 'plano', nome: 'Plano' },
   ];
-  const soModelo = document.body.dataset.pagina === 'modelo-certificado';
-  const aba = soModelo ? 'certificado' : ABAS.some((a) => a.id === parametroUrl('aba')) ? parametroUrl('aba') : 'escola';
+  const aba = ABAS.some((a) => a.id === parametroUrl('aba')) ? parametroUrl('aba') : 'escola';
   const podeEditar = Shell.pode('configuracoes', 'editar');
   const dis = podeEditar ? '' : 'disabled';
 
@@ -97,37 +96,6 @@
       </section>`;
   }
 
-  function abaCertificado() {
-    const c = Aulor.config().certificado;
-    return `
-      <div class="grid xl:grid-cols-2 gap-5 items-start">
-        ${cartao('Texto, cores e assinaturas', 'Use as variáveis entre chaves duplas para os dados de cada aluno.', `
-          <div class="grid grid-cols-2 gap-4">
-            ${campo('corPrimaria', 'Cor principal', c.corPrimaria, { tipo: 'color', extra: 'style="height:2.5rem;padding:.25rem"' })}
-            ${campo('corDestaque', 'Cor de destaque', c.corDestaque, { tipo: 'color', extra: 'style="height:2.5rem;padding:.25rem"' })}
-            ${campo('titulo', 'Título', c.titulo)}
-            ${campo('introducao', 'Introdução', c.introducao)}
-          </div>
-          <div>
-            <label class="rotulo" for="f-corpo">Texto <span class="text-red-600">*</span></label>
-            <textarea id="f-corpo" name="corpo" rows="4" class="campo font-mono text-xs">${esc(c.corpo)}</textarea>
-            ${ERRO('corpo')}
-            <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">Variáveis: ${Certificado.VARIAVEIS.map(([v, n]) => `<code title="${esc(n)}" class="px-1 rounded bg-slate-100 dark:bg-neutral-900">{{${v}}}</code>`).join(' ')}. <b>**negrito**</b>.</p>
-          </div>
-          <div class="grid sm:grid-cols-2 gap-4">
-            ${campo('ass1Nome', 'Assinatura 1', c.assinaturas[0]?.nome)}
-            ${campo('ass1Cargo', 'Cargo 1', c.assinaturas[0]?.cargo)}
-            ${campo('ass2Nome', 'Assinatura 2', c.assinaturas[1]?.nome, { dica: 'Use {{professor}} para o professor da turma.' })}
-            ${campo('ass2Cargo', 'Cargo 2', c.assinaturas[1]?.cargo)}
-          </div>
-          ${caixa('mostrarVerso', 'Imprimir verso com conteúdo programático e requisitos', c.mostrarVerso)}`, 'Certificados já emitidos não mudam de texto.')}
-        <div class="space-y-3 xl:sticky xl:top-0">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Prévia com dados de exemplo</p>
-          <div data-previa class="space-y-3"></div>
-        </div>
-      </div>`;
-  }
-
   function abaPlano() {
     const ass = Aulor.assinatura();
     const p = Planos.efetivo(ass);
@@ -183,12 +151,10 @@
   }
 
   function render() {
-    const corpo = { escola: abaEscola, academico: abaAcademico, financeiro: abaFinanceiro, certificado: abaCertificado, plano: abaPlano }[aba]();
+    const corpo = { escola: abaEscola, academico: abaAcademico, financeiro: abaFinanceiro, plano: abaPlano }[aba]();
     tela.innerHTML = `
       <div class="max-w-6xl mx-auto">
-        ${soModelo
-          ? cabecalhoPagina({ titulo: 'Layout do certificado', subtitulo: 'Um modelo para todos os cursos da escola. A prévia usa dados de exemplo; certificados já emitidos não mudam.' })
-          : `${cabecalhoPagina({ titulo: 'Escola e regras', subtitulo: 'O básico para a escola operar. Sem painel técnico.' })}${abasHtml(ABAS, aba)}`}
+        ${cabecalhoPagina({ titulo: 'Escola e regras', subtitulo: 'O básico para a escola operar. Sem painel técnico.' })}${abasHtml(ABAS, aba)}
         ${corpo}
       </div>`;
     ligar();
@@ -204,16 +170,6 @@
       toast('Configurações salvas');
       render();
     });
-    if (aba === 'certificado') {
-      const previa = () => {
-        const d = Object.fromEntries(new FormData(form).entries());
-        const cfg = { ...Aulor.config().certificado, titulo: d.titulo, introducao: d.introducao, corpo: d.corpo, corPrimaria: d.corPrimaria, corDestaque: d.corDestaque, mostrarVerso: !!d.mostrarVerso, assinaturas: [{ nome: d.ass1Nome, cargo: d.ass1Cargo }, { nome: d.ass2Nome, cargo: d.ass2Cargo }].filter((s) => s.nome) };
-        tela.querySelector('[data-previa]').innerHTML = Certificado.folhas(Certificado.dadosExemplo(), { cfg });
-      };
-      form.addEventListener('input', previa);
-      form.addEventListener('change', previa);
-      previa();
-    }
     if (aba === 'plano') {
       const input = tela.querySelector('#sim-alunos');
       const saida = tela.querySelector('[data-sim]');

@@ -18,7 +18,7 @@ O backend (`../Aulor`) tem hoje só o contexto **Platform** implementado: tenant
 
 **Classroom:** chamada (todos presentes por padrão), diário, frequência, pendências de chamada, conclusão da turma com resultado por aluno.
 
-**Certificados:** modelo da escola, PDF gerado no servidor, código único, página pública de validação com CPF mascarado, cancelamento.
+**Certificados:** modelos por curso com um padrão da escola (cópia do modelo guardada na emissão), PDF gerado no servidor, código único, página pública de validação com CPF mascarado, cancelamento.
 
 **Operação**
 - Importação de alunos, cursos e turmas por planilha (CSV/Excel). Sem isso a escola não sai das planilhas.
@@ -32,9 +32,10 @@ O backend (`../Aulor`) tem hoje só o contexto **Platform** implementado: tenant
 - Portal do aluno: parcelas, frequência, certificados.
 - Contrato de matrícula em PDF e assinatura eletrônica.
 - Cancelamento e reposição de aula, feriados, transferência de turma, trancamento.
-- Notas e avaliações simples; mais de um modelo de certificado; QR code.
+- Notas e avaliações simples; QR code; logo, fundo e assinatura em imagem nos modelos de certificado.
 - Relatórios exportáveis: recebimentos, inadimplência, frequência, matrículas por período.
 - Contas a pagar recorrentes; categorias editáveis.
+- Responsável como cadastro próprio, compartilhado entre irmãos (no MVP ele fica dentro do aluno); busca de endereço pelo CEP.
 - Cobrança do próprio SaaS (faturamento por alunos ativos).
 
 ## Funcionalidades avançadas do Institucional

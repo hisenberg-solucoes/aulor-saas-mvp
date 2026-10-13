@@ -22,7 +22,7 @@ Para o dono de uma escola com cerca de 200 alunos. A escola fictícia é a **Atl
 | 6:15 | Minhas aulas › Chamada | Em **Hoje**, toque em **Fazer chamada**. Todos começam presentes; marque uma falta e toque em **Salvar chamada** | "Um toque por aluno, durante a aula. A frequência é recalculada na hora; quem cai abaixo do mínimo aparece para a coordenação." |
 | 7:15 | Voltar como Marina | Desligue o modo celular. Abra a turma **EXC-2026-2**, que mostra "Aguardando conclusão", e clique em **Concluir turma** | "Fechou o curso: o sistema aplica a frequência mínima de 75%. Dez aprovados, um reprovado por frequência, sem planilha." |
 | 8:15 | Certificados | **Prontos para emitir** › **Emitir selecionados**. Abra um certificado, mostre **Imprimir ou salvar PDF** e **Copiar link de validação**; cole o link numa aba nova | "Quem recebe o certificado confere a autenticidade pelo código. O reprovado não aparece aqui." |
-| 9:15 | Configurações › Perfis de acesso e Escola e regras | Mostre os perfis (Secretaria, Financeiro, Coordenação, Professor), a frequência mínima, multa e juros, e o **Layout do certificado** | "Você ajusta as regras da sua escola sem chamar ninguém." |
+| 9:15 | Configurações › Perfis de acesso e Escola e regras | Mostre os perfis (Secretaria, Financeiro, Coordenação, Professor), a frequência mínima, multa e juros, e os **Modelos de certificado** (o curso de Python usa o modelo Programação; os demais, o padrão) | "Você ajusta as regras da sua escola sem chamar ninguém." |
 | 10:00 | Fecho | — | Pergunte como a escola faz hoje a matrícula, a cobrança e a chamada. |
 
 ## Se perguntarem

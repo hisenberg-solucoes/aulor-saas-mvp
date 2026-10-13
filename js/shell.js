@@ -87,7 +87,7 @@ const Shell = (() => {
     { grupo: 'pedagogico', href: 'aulas.html', nome: 'Aulas e chamadas', nomeProfessor: 'Minhas aulas', icone: 'aulas', features: ['frequencia', 'minhas-aulas'] },
     { grupo: 'pedagogico', href: 'alertas-frequencia.html', nome: 'Alertas de frequência', icone: 'alertas', features: ['frequencia'] },
     { grupo: 'pedagogico', href: 'certificados.html', nome: 'Certificados', icone: 'certificados', features: ['certificados'] },
-    { grupo: 'pedagogico', href: 'templates-certificado.html', nome: 'Layout do certificado', icone: 'template', features: ['configuracoes'] },
+    { grupo: 'pedagogico', href: 'templates-certificado.html', nome: 'Modelos de certificado', icone: 'template', features: ['configuracoes'] },
     { grupo: 'financeiro', href: 'financeiro.html', nome: 'Financeiro', icone: 'financeiro', features: ['receber', 'pagar'] },
     { grupo: 'financeiro', href: 'cobrancas.html', nome: 'Cobranças', icone: 'cobrancas', features: ['receber'] },
     { grupo: 'pessoas', href: 'professores.html', nome: 'Professores', icone: 'professores', features: ['professores'] },
@@ -98,7 +98,7 @@ const Shell = (() => {
   const ALIAS = {
     'aluno.html': 'alunos.html', 'curso.html': 'cursos.html', 'turma.html': 'turmas.html',
     'matricula.html': 'matriculas.html', 'matricula-nova.html': 'matriculas.html', 'chamada.html': 'aulas.html',
-    'certificado.html': 'certificados.html', 'perfil.html': 'perfis.html',
+    'certificado.html': 'certificados.html', 'modelo-certificado.html': 'templates-certificado.html', 'perfil.html': 'perfis.html',
   };
 
   // ---------- Sessão (demonstração: escolher o usuário, sem senha) ----------
