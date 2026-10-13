@@ -67,7 +67,7 @@ function iniciais(nome) {
 const BOTAO_PRI = 'btn-pri';
 const BOTAO_CANCELAR = 'btn-sec';
 const CAMPO_BUSCA = 'campo pl-8';
-const SELECT_FILTRO = 'rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 py-2 text-sm text-slate-700 dark:text-neutral-200 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400';
+const SELECT_FILTRO = 'max-w-full rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 py-2 text-sm text-slate-700 dark:text-neutral-200 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400';
 
 // ---------- Ícones (heroicons outline) ----------
 
@@ -103,18 +103,45 @@ function toast(mensagem, tipo = 'ok') {
 // ---------- Modal ----------
 
 let aoTeclarModal = null;
+// Clique no fundo e Esc fecham o modal, mas não descartam um formulário alterado sem perguntar.
+// Cancelar e o X (data-fechar-modal) continuam fechando direto: são escolhas explícitas.
 function abrirModal(conteudoHtml, largura = 'max-w-lg') {
   const root = document.getElementById('modal-root');
   root.innerHTML = `
     <div class="fixed inset-0 z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div data-fechar-modal class="absolute inset-0 bg-slate-900/50 dark:bg-black/70"></div>
+      <div data-fundo-modal class="absolute inset-0 bg-slate-900/50 dark:bg-black/70"></div>
       <div role="dialog" aria-modal="true" class="modal-anim relative w-full ${largura} max-h-[92vh] flex flex-col bg-white dark:bg-neutral-950 rounded-t-xl sm:rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xl">
         ${conteudoHtml}
       </div>
     </div>`;
   root.querySelectorAll('[data-fechar-modal]').forEach((b) => b.addEventListener('click', fecharModal));
+  const dialogo = root.querySelector('[role="dialog"]');
+  const estado = () => [...dialogo.querySelectorAll('form')].map((f) => new URLSearchParams(new FormData(f)).toString()).join('|');
+  let inicial = null;
+  const continuar = () => {
+    dialogo.querySelector('[data-descartar]')?.remove();
+    dialogo.querySelector('input:not([type="hidden"]), textarea, [data-combo-gatilho]')?.focus();
+  };
+  setTimeout(() => { inicial = estado(); }); // depois que quem abriu preencheu combos e máscaras
+  const tentarFechar = () => {
+    if (inicial === null || estado() === inicial) return fecharModal();
+    if (dialogo.querySelector('[data-descartar]')) return dialogo.querySelector('[data-continuar]').focus();
+    dialogo.insertAdjacentHTML('afterbegin', `
+      <div data-descartar role="alertdialog" aria-label="Alterações não salvas" class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 border-b border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 rounded-t-xl text-sm text-amber-900 dark:text-amber-200">
+        <span>Sair sem salvar? O que você preencheu será perdido.</span>
+        <span class="flex gap-2"><button type="button" data-continuar class="btn-sec btn-pequeno">Continuar editando</button><button type="button" data-sair class="btn-perigo btn-pequeno">Sair sem salvar</button></span>
+      </div>`);
+    const aviso = dialogo.querySelector('[data-descartar]');
+    aviso.querySelector('[data-continuar]').addEventListener('click', continuar);
+    aviso.querySelector('[data-sair]').addEventListener('click', fecharModal);
+    aviso.querySelector('[data-continuar]').focus();
+  };
+  root.querySelector('[data-fundo-modal]').addEventListener('click', tentarFechar);
   if (aoTeclarModal) document.removeEventListener('keydown', aoTeclarModal);
-  aoTeclarModal = (e) => { if (e.key === 'Escape') fecharModal(); };
+  aoTeclarModal = (e) => {
+    if (e.key !== 'Escape') return;
+    if (dialogo.querySelector('[data-descartar]')) continuar(); else tentarFechar();
+  };
   document.addEventListener('keydown', aoTeclarModal);
   return root;
 }
@@ -139,7 +166,8 @@ function confirmar({ titulo, mensagem, detalhe = '', rotulo = 'Confirmar', tom =
     </div>`, 'max-w-md');
   root.querySelectorAll('[data-fechar-modal]').forEach((b) => b.addEventListener('click', fecharModal));
   root.querySelector('[data-confirmar]').addEventListener('click', () => { fecharModal(); aoConfirmar(); });
-  root.querySelector('[data-confirmar]').focus();
+  // Em ação destrutiva, o foco começa no Cancelar: Enter por reflexo não apaga nada.
+  root.querySelector(tom === 'perigo' ? '[data-fechar-modal]' : '[data-confirmar]').focus();
 }
 
 // ---------- Peças de tela ----------

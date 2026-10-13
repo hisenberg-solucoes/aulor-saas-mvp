@@ -510,12 +510,19 @@ const Aulor = (() => {
     return { aluno: a };
   }
 
+  // Por que o responsável não pode sair agora (null = pode). A tela consulta antes de pedir confirmação.
+  function bloqueioRemoverResponsavel(a, r) {
+    if (ehMenor(a) && r.papeis.includes('legal') && !responsaveisDe(a).some((x) => x !== r && x.papeis.includes('legal'))) return { papel: 'legal', erro: 'Aluno menor de idade precisa de um responsável legal. Cadastre outro antes de remover.' };
+    if (r.papeis.includes('financeiro') && a.cobranca?.pagador === 'responsavel') return { papel: 'financeiro', erro: `${r.nome.split(' ')[0]} é quem paga. Marque outro responsável como financeiro ou mude "Quem paga" em Endereço e pagamento.` };
+    return null;
+  }
+
   function removerResponsavel(alunoId, respId) {
     const a = aluno(alunoId);
     const r = responsaveisDe(a).find((x) => x.id === respId);
     if (!r) return { erro: 'Responsável não encontrado.' };
-    if (ehMenor(a) && r.papeis.includes('legal') && !responsaveisDe(a).some((x) => x !== r && x.papeis.includes('legal'))) return { erro: 'Aluno menor de idade precisa de um responsável legal. Cadastre outro antes de remover.' };
-    if (r.papeis.includes('financeiro') && a.cobranca?.pagador === 'responsavel') return { erro: `${r.nome.split(' ')[0]} é quem paga. Marque outro responsável como financeiro ou mude "Quem paga" em Endereço e pagamento.` };
+    const bloqueio = bloqueioRemoverResponsavel(a, r);
+    if (bloqueio) return { erro: bloqueio.erro };
     a.responsaveis = responsaveisDe(a).filter((x) => x !== r);
     salvar();
     return { aluno: a };
@@ -1216,7 +1223,7 @@ const Aulor = (() => {
     frequencia, alunosEmRisco,
     situacaoLancamento, diasAtraso, encargos, gerarParcelas, inadimplentes, estaInadimplente, resumoMes,
     situacaoAluno, alunosAtivos,
-    validarAluno, criarAluno, atualizarAluno, salvarResponsavel, removerResponsavel, atualizarEnderecoPagamento,
+    validarAluno, criarAluno, atualizarAluno, salvarResponsavel, bloqueioRemoverResponsavel, removerResponsavel, atualizarEnderecoPagamento,
     ORIGENS, PAPEIS_RESPONSAVEL, UFS, ehMenor, responsavelFinanceiro, responsavelPrincipal, contatoCobranca, criarCurso, atualizarCurso, criarProfessor, atualizarProfessor,
     turmaTemChamada, criarTurma, atualizarTurma,
     validarMatricula, simularMatricula, matricular, cancelarMatricula,

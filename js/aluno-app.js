@@ -129,17 +129,75 @@
       </div>`;
   }
 
+  // Faixa-resumo acima das abas: responde no balcão "está em dia, o que cursa e com quem eu falo".
+  const bloco = (rotulo, corpo) => `<div class="px-5 py-4 min-w-0"><p class="text-xs font-medium text-slate-500 dark:text-neutral-400">${rotulo}</p>${corpo}</div>`;
+  const valor = (texto, cor = 'text-slate-900 dark:text-neutral-100') => `<p class="mt-1 font-display text-lg font-semibold leading-snug ${cor}">${texto}</p>`;
+  const linha = (texto) => `<p class="mt-0.5 text-sm text-slate-600 dark:text-neutral-300">${texto}</p>`;
+  const zap = (tel) => (tel ? ` <a class="link text-xs ml-1" target="_blank" rel="noopener" href="https://wa.me/55${tel}">WhatsApp</a>` : '');
+
+  function blocoFinanceiro(a, parcelas) {
+    const linkParcelas = `<a class="link text-xs" href="aluno.html?id=${a.id}&aba=financeiro">Ver parcelas</a>`;
+    const devido = Aulor.inadimplentes().find((i) => i.aluno.id === a.id);
+    if (devido) {
+      const antiga = devido.parcelas.reduce((x, l) => (l.vencimento < x.vencimento ? l : x));
+      const lembrete = lembreteCobranca(devido);
+      const receber = Shell.pode('receber', 'registrar') ? `<button type="button" data-baixar="${antiga.id}" class="btn-sec btn-pequeno">Receber ${dataCurta(antiga.vencimento)}</button>` : '';
+      return bloco('Financeiro', `
+        ${valor(`${moeda(devido.total)} vencido`, 'text-red-700 dark:text-red-400 tabular-nums')}
+        ${linha(`${devido.parcelas.length === 1 ? '1 parcela' : `${devido.parcelas.length} parcelas`} · a mais antiga há ${devido.maiorAtraso} ${devido.maiorAtraso === 1 ? 'dia' : 'dias'}`)}
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          ${receber}
+          <button type="button" data-copiar-lembrete class="btn-sec btn-pequeno">${ICONE.copiar}Copiar lembrete</button>
+          <a class="btn-sec btn-pequeno" target="_blank" rel="noopener" href="https://wa.me/55${lembrete.telefone}?text=${encodeURIComponent(lembrete.texto)}">WhatsApp</a>
+        </div>`);
+    }
+    const proxima = parcelas.find((l) => Aulor.situacaoLancamento(l) === 'a_vencer');
+    if (proxima) return bloco('Financeiro', `${valor('Em dia', 'text-emerald-700 dark:text-emerald-400')}${linha(`Próxima: <span class="tabular-nums">${moeda(proxima.valor)}</span> ${quando(proxima.vencimento)} (${dataCurta(proxima.vencimento)})`)}<div class="mt-2">${linkParcelas}</div>`);
+    if (parcelas.length) return bloco('Financeiro', `${valor('Tudo pago', 'text-emerald-700 dark:text-emerald-400')}${linha(`${parcelas.length} ${parcelas.length === 1 ? 'parcela recebida' : 'parcelas recebidas'}`)}<div class="mt-2">${linkParcelas}</div>`);
+    return bloco('Financeiro', `${valor('Sem cobranças')}${linha('Nenhuma parcela gerada ainda.')}`);
+  }
+
+  function blocoCurso(a, ms) {
+    const ativas = ms.filter((m) => m.status === 'ativa');
+    const m = ativas[0] ?? ms.find((x) => x.status === 'concluida') ?? ms[0];
+    if (!m) return bloco('Curso', `${valor('Sem matrícula')}${linha('Matricule em uma turma para gerar as parcelas e acompanhar a frequência.')}`);
+    const t = Aulor.turma(m.turmaId);
+    const nome = `<a class="hover:underline" href="matricula.html?id=${m.id}">${esc(Aulor.curso(t.cursoId).nome)}</a>`;
+    if (m.status === 'ativa') {
+      const outros = ativas.length > 1 ? ` · <a class="link" href="aluno.html?id=${a.id}&aba=matriculas">+${ativas.length - 1} ${ativas.length > 2 ? 'cursos' : 'curso'}</a>` : '';
+      return bloco('Cursando', `${valor(nome)}${linha(`Turma <a class="hover:underline" href="turma.html?id=${t.id}">${esc(t.codigo)}</a> · até ${dataBr(t.fim)}${outros}`)}<div class="mt-2">${barraFrequencia(Aulor.frequencia(m))}</div>`);
+    }
+    if (m.status === 'concluida') return bloco('Último curso', `${valor(nome)}${linha(`Concluído em ${dataBr(t.fim)} · ${m.resultado === 'aprovado' ? 'Aprovado' : 'Reprovado por frequência'}`)}`);
+    return bloco('Curso', `${valor('Sem curso ativo')}${linha(`Matrícula em ${nome} cancelada em ${dataBr(m.canceladaEm)}`)}`);
+  }
+
+  function blocoContato(a) {
+    const menor = Aulor.ehMenor(a);
+    const r = (a.cobranca?.pagador === 'responsavel' && Aulor.responsavelFinanceiro(a)) || (menor ? Aulor.responsavelPrincipal(a) : null);
+    if (r) {
+      return bloco('Com quem falar', `${valor(esc(r.nome))}${linha(esc([r.parentesco, ...r.papeis.map((p) => NOME_PAPEL[p])].filter(Boolean).join(' · ')))}<p class="mt-2 text-sm tabular-nums text-slate-700 dark:text-neutral-200">${telefoneFmt(r.telefone)}${zap(r.telefone)}</p>`);
+    }
+    if (menor) return bloco('Com quem falar', `${valor('Sem responsável legal', 'text-amber-700 dark:text-amber-400')}${linha('Aluno menor de idade precisa de pai, mãe ou tutor.')}<div class="mt-2"><a class="link text-xs" href="aluno.html?id=${a.id}&aba=responsaveis">Cadastrar responsável</a></div>`);
+    return bloco('Com quem falar', `${valor('O próprio aluno')}${linha('Paga e recebe os avisos.')}<p class="mt-2 text-sm tabular-nums text-slate-700 dark:text-neutral-200">${telefoneFmt(a.telefone)}${zap(a.telefone)}</p>`);
+  }
+
+  function resumo(a, ms, parcelas, verFin) {
+    const blocos = [verFin && blocoFinanceiro(a, parcelas), blocoCurso(a, ms), blocoContato(a)].filter(Boolean);
+    return `<section data-resumo aria-label="Resumo do aluno" class="painel mb-5 grid ${blocos.length === 3 ? 'lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]' : 'lg:grid-cols-2'} divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-neutral-800">${blocos.join('')}</section>`;
+  }
+
   function render() {
     const a = Aulor.aluno(id);
     if (!a) { tela.innerHTML = vazio('Aluno não encontrado', '', '<a class="btn-sec" href="alunos.html">Voltar para Alunos</a>'); return; }
     const s = Aulor.situacaoAluno(a);
     const ms = Aulor.matriculasDoAluno(a.id);
     const parcelas = Aulor.lancamentosDoAluno(a.id).filter((l) => l.status !== 'cancelado');
-    const deve = Aulor.estaInadimplente(a.id);
     const idade = Aulor.idade(a.nascimento);
     const verFin = Shell.pode('receber');
     const editar = Shell.pode('alunos', 'editar');
-    const aberto = parcelas.filter((l) => l.status === 'aberto').reduce((x, l) => x + l.valor, 0);
+    const somar = (sit) => parcelas.filter((l) => Aulor.situacaoLancamento(l) === sit).reduce((x, l) => x + l.valor, 0);
+    const vencido = somar('vencido');
+    const aVencer = somar('a_vencer');
     const abas = [
       { id: 'dados', nome: 'Dados' },
       { id: 'responsaveis', nome: 'Responsáveis', n: (a.responsaveis ?? []).length },
@@ -158,7 +216,7 @@
         <section class="painel" data-parcelas>
           <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-2">
             <h3 class="font-display font-semibold">Parcelas de todas as matrículas</h3>
-            <span class="text-xs text-slate-500 dark:text-neutral-400">${aberto ? `${moeda(aberto)} em aberto` : 'Nada em aberto'}</span>
+            <span class="text-xs text-slate-500 dark:text-neutral-400 tabular-nums">${vencido || aVencer ? [vencido && `<span class="font-medium text-red-700 dark:text-red-400">${moeda(vencido)} vencido</span>`, aVencer && `${moeda(aVencer)} a vencer`].filter(Boolean).join(' · ') : 'Nada em aberto'}</span>
           </div>
           ${tabelaParcelas(parcelas, { mostrarCurso: true })}
         </section>`,
@@ -166,7 +224,8 @@
     tela.innerHTML = `
       <div class="max-w-6xl mx-auto">
         ${parametroUrl('novo') ? `<div class="mb-4 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-200 flex flex-wrap items-center justify-between gap-2">Cadastro criado. Próximo passo: matricular em uma turma. ${Shell.pode('matriculas', 'criar') ? `<a class="font-semibold underline" href="matricula-nova.html?aluno=${a.id}">Matricular agora</a>` : ''}</div>` : ''}
-        ${cabecalhoPagina({ titulo: `${esc(a.nome)} <span class="align-middle ml-1">${pilula(s.tom, s.nome)}</span>${deve && verFin ? ` <span class="align-middle">${pilula('perigo', 'Parcela vencida')}</span>` : ''}`, subtitulo: `${idade != null ? `${idade} anos · ` : ''}CPF ${cpfFmt(a.cpf)} · ${telefoneFmt(a.telefone)}${a.endereco?.cidade ? ` · ${esc(a.endereco.cidade)}/${esc(a.endereco.uf)}` : ''} · aluno desde ${dataBr(a.criadoEm)}`, voltar: { href: 'alunos.html', rotulo: 'Alunos' }, acoes })}
+        ${cabecalhoPagina({ titulo: `${esc(a.nome)} <span class="align-middle ml-1">${pilula(s.tom, s.nome)}</span>`, subtitulo: `${idade != null ? `${idade} anos · ` : ''}CPF ${cpfFmt(a.cpf)} · ${telefoneFmt(a.telefone)}${a.endereco?.cidade ? ` · ${esc(a.endereco.cidade)}/${esc(a.endereco.uf)}` : ''} · aluno desde ${dataBr(a.criadoEm)}`, voltar: { href: 'alunos.html', rotulo: 'Alunos' }, acoes })}
+        ${resumo(a, ms, parcelas, verFin)}
         ${abasHtml(abas, aba)}
         ${corpo}
       </div>`;
@@ -175,11 +234,20 @@
 
   function ligar(a) {
     tela.querySelectorAll('[data-editar]').forEach((b) => b.addEventListener('click', () => abrirFormAluno({ aluno: a, aoSalvar: () => { toast('Dados atualizados'); render(); } })));
-    tela.querySelectorAll('[data-editar-endereco]').forEach((b) => b.addEventListener('click', () => abrirFormEnderecoPagamento({ aluno: a, aoSalvar: () => { toast('Endereço e pagamento atualizados'); render(); } })));
-    tela.querySelector('[data-novo-resp]')?.addEventListener('click', () => abrirFormResponsavel({ aluno: a, aoSalvar: () => { toast('Responsável incluído'); render(); } }));
+    const novoResp = () => abrirFormResponsavel({ aluno: a, aoSalvar: () => { toast('Responsável incluído'); render(); } });
+    const editarPagamento = () => abrirFormEnderecoPagamento({ aluno: a, aoSalvar: () => { toast('Endereço e pagamento atualizados'); render(); } });
+    tela.querySelector('[data-novo-resp]')?.addEventListener('click', novoResp);
+    tela.querySelectorAll('[data-editar-endereco]').forEach((b) => b.addEventListener('click', editarPagamento));
     tela.querySelectorAll('[data-editar-resp]').forEach((b) => b.addEventListener('click', () => abrirFormResponsavel({ aluno: a, responsavel: a.responsaveis.find((r) => r.id === b.dataset.editarResp), aoSalvar: () => { toast('Responsável atualizado'); render(); } })));
     tela.querySelectorAll('[data-remover-resp]').forEach((b) => b.addEventListener('click', () => {
       const r = a.responsaveis.find((x) => x.id === b.dataset.removerResp);
+      // A regra é checada antes da confirmação: em vez de "confirmar e falhar", explica e oferece a saída.
+      const bloqueio = Aulor.bloqueioRemoverResponsavel(a, r);
+      if (bloqueio) {
+        const legal = bloqueio.papel === 'legal';
+        confirmar({ titulo: `Ainda não dá para remover ${r.nome.split(' ')[0]}`, mensagem: bloqueio.erro, rotulo: legal ? 'Cadastrar outro responsável' : 'Mudar quem paga', aoConfirmar: legal ? novoResp : editarPagamento });
+        return;
+      }
       confirmar({ titulo: 'Remover responsável', mensagem: `${r.nome} deixa de constar como responsável por ${a.nome.split(' ')[0]}.`, rotulo: 'Remover', tom: 'perigo', aoConfirmar: () => {
         const res = Aulor.removerResponsavel(a.id, r.id);
         if (res.erro) { toast(res.erro, 'erro'); return; }
@@ -189,6 +257,8 @@
     }));
     const p = tela.querySelector('[data-parcelas]');
     if (p) ligarAcoesParcelas(p, render);
+    ligarAcoesParcelas(tela.querySelector('[data-resumo]'), render);
+    tela.querySelector('[data-copiar-lembrete]')?.addEventListener('click', () => copiarTexto(lembreteCobranca(Aulor.inadimplentes().find((i) => i.aluno.id === a.id)).texto, 'Lembrete copiado'));
   }
 
   render();

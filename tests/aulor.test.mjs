@@ -224,7 +224,8 @@ test('aluno: responsáveis com papéis, endereço e quem paga', () => {
   Aulor.salvarResponsavel(a.id, { nome: 'Caio Lima', telefone: '43977770000', papel_financeiro: '1' });
   assert.equal(Aulor.responsavelFinanceiro(a).nome, 'Caio Lima');
   assert.deepEqual(Array.from(a.responsaveis[0].papeis), ['legal']);
-  // Único responsável legal de um menor não sai.
+  // Único responsável legal de um menor não sai (a tela consulta o bloqueio antes de confirmar).
+  assert.equal(Aulor.bloqueioRemoverResponsavel(a, a.responsaveis[0]).papel, 'legal');
   assert.ok(Aulor.removerResponsavel(a.id, 'r1').erro);
   // Quem paga as matrículas também não sai enquanto for ele quem paga.
   assert.ok(Aulor.removerResponsavel(a.id, 'r2').erro);
