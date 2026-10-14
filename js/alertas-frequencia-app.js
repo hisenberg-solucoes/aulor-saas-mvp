@@ -10,9 +10,9 @@
   const tela = document.getElementById('tela');
   const min = Aulor.config().academico.frequenciaMinima;
   const NIVEIS = {
-    sem_chance: { rotulo: 'Não alcança mais', ajuda: 'mesmo indo a todas as aulas restantes', cor: 'bg-red-500', tom: 'perigo' },
-    abaixo: { rotulo: 'Abaixo do mínimo', ajuda: `menos de ${min}% hoje, ainda recupera`, cor: 'bg-amber-500', tom: 'atencao' },
-    perto: { rotulo: 'Perto do limite', ajuda: `até 10 pontos acima de ${min}%`, cor: 'bg-slate-400', tom: 'neutro' },
+    sem_chance: { rotulo: 'Não alcança mais', ajuda: 'mesmo indo a todas as aulas restantes', cor: 'bg-ruim', tom: 'perigo' },
+    abaixo: { rotulo: 'Abaixo do mínimo', ajuda: `menos de ${min}% hoje, ainda recupera`, cor: 'bg-cobre', tom: 'atencao' },
+    perto: { rotulo: 'Perto do limite', ajuda: `até 10 pontos acima de ${min}%`, cor: 'bg-tinta-3/60', tom: 'neutro' },
   };
   const filtro = { nivel: NIVEIS[parametroUrl('nivel')] ? parametroUrl('nivel') : '', turmaId: '', q: '' };
   const nivelDe = (f) => (f.semChance ? 'sem_chance' : f.abaixo ? 'abaixo' : f.percentual < min + 10 ? 'perto' : null);
@@ -63,10 +63,10 @@
                 const t = Aulor.turma(x.m.turmaId);
                 const c = contato(x);
                 return `<tr>
-                  <td>${Shell.pode('alunos') ? `<a class="font-medium text-slate-900 dark:text-neutral-100 hover:underline" href="aluno.html?id=${a.id}">${esc(a.nome)}</a>` : `<span class="font-medium">${esc(a.nome)}</span>`}<p class="text-xs text-slate-500 dark:text-neutral-400 tabular-nums">${c.menor ? `Resp.: ${esc(c.quem.nome)} · ` : ''}${telefoneFmt(c.quem.telefone)}</p></td>
-                  <td><a class="link whitespace-nowrap" href="turma.html?id=${t.id}">${esc(t.codigo)}</a><p class="text-xs text-slate-500 dark:text-neutral-400 truncate max-w-[12rem]">${esc(Aulor.curso(t.cursoId).nome)}</p></td>
+                  <td>${Shell.pode('alunos') ? `<a class="font-medium text-tinta hover:underline" href="aluno.html?id=${a.id}">${esc(a.nome)}</a>` : `<span class="font-medium">${esc(a.nome)}</span>`}<p class="text-xs text-tinta-2 tabular-nums">${c.menor ? `Resp.: ${esc(c.quem.nome)} · ` : ''}${telefoneFmt(c.quem.telefone)}</p></td>
+                  <td><a class="link whitespace-nowrap" href="turma.html?id=${t.id}">${esc(t.codigo)}</a><p class="text-xs text-tinta-2 truncate max-w-[12rem]">${esc(Aulor.curso(t.cursoId).nome)}</p></td>
                   <td>${barraFrequencia(x.f)}</td>
-                  <td class="num">${x.f.faltas}${x.f.justificadas ? `<p class="text-xs text-slate-400">+ ${x.f.justificadas} just.</p>` : ''}</td>
+                  <td class="num">${x.f.faltas}${x.f.justificadas ? `<p class="text-xs text-tinta-3">+ ${x.f.justificadas} just.</p>` : ''}</td>
                   <td class="num">${x.f.restantes}</td>
                   <td>${status(NIVEIS[x.nivel].tom, NIVEIS[x.nivel].rotulo)}</td>
                   <td class="text-right"><a class="btn-sec btn-pequeno" target="_blank" rel="noopener" href="https://wa.me/55${c.quem.telefone}?text=${encodeURIComponent(c.texto)}" title="Abre o WhatsApp com a mensagem pronta">Contatar</a></td>
@@ -74,7 +74,7 @@
               }).join('')}</tbody>
             </table>
           </div>` : vazio(alertas.length ? 'Nenhum aluno neste filtro' : 'Ninguém com frequência baixa', 'Todos os alunos cursando estão com frequência confortável.')}
-          <p class="px-4 py-2.5 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-100 dark:border-neutral-900 tabular-nums">${lista.length} ${lista.length === 1 ? 'aluno' : 'alunos'}${filtrando ? ` de ${alertas.length}` : ''}</p>
+          <p class="px-4 py-2.5 text-xs text-tinta-2 border-t border-linha tabular-nums">${lista.length} ${lista.length === 1 ? 'aluno' : 'alunos'}${filtrando ? ` de ${alertas.length}` : ''}</p>
         </div>
       </div>`;
     const busca = tela.querySelector('#busca');

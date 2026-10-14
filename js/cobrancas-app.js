@@ -19,7 +19,7 @@
       <div class="max-w-6xl mx-auto">
         ${cabecalhoPagina({ titulo: 'Cobranças', subtitulo: 'Alunos com parcela vencida e não paga, do maior atraso para o menor, com a mensagem de cobrança pronta.' })}
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-          ${cartaoNumero({ rotulo: 'Em atraso', valor: moeda(total), ajuda: 'parcelas vencidas em aberto', cor: total ? 'bg-red-500' : '' })}
+          ${cartaoNumero({ rotulo: 'Em atraso', valor: moeda(total), ajuda: 'parcelas vencidas em aberto', cor: total ? 'bg-ruim' : '' })}
           ${cartaoNumero({ rotulo: 'Alunos', valor: lista.length, ajuda: 'com ao menos uma parcela vencida' })}
           ${cartaoNumero({ rotulo: 'Inadimplência', valor: `${taxa}%`, ajuda: 'vencido em aberto ÷ tudo o que já venceu' })}
         </div>
@@ -29,11 +29,11 @@
             <tbody>${lista.map((i, k) => {
               const l = lembreteCobranca(i);
               return `<tr>
-                <td><a class="font-medium text-slate-900 dark:text-neutral-100 hover:underline" href="aluno.html?id=${i.aluno.id}">${esc(i.aluno.nome)}</a>${Aulor.contatoCobranca(i.aluno) !== i.aluno ? `<p class="text-xs text-slate-500 dark:text-neutral-400">Quem paga: ${esc(Aulor.contatoCobranca(i.aluno).nome)}</p>` : ''}</td>
+                <td><a class="font-medium text-tinta hover:underline" href="aluno.html?id=${i.aluno.id}">${esc(i.aluno.nome)}</a>${Aulor.contatoCobranca(i.aluno) !== i.aluno ? `<p class="text-xs text-tinta-2">Quem paga: ${esc(Aulor.contatoCobranca(i.aluno).nome)}</p>` : ''}</td>
                 <td class="whitespace-nowrap tabular-nums">${telefoneFmt(l.telefone)}</td>
                 <td class="num">${i.parcelas.length}</td>
                 <td class="num">${i.maiorAtraso} dias</td>
-                <td class="num font-medium text-red-700 dark:text-red-400">${moeda(i.total)}</td>
+                <td class="num font-medium text-ruim">${moeda(i.total)}</td>
                 <td class="text-right whitespace-nowrap space-x-1">
                   <button type="button" data-copiar="${k}" class="btn-sec btn-pequeno">${ICONE.copiar}Copiar lembrete</button>
                   <a class="btn-sec btn-pequeno" target="_blank" rel="noopener" href="https://wa.me/55${l.telefone}?text=${encodeURIComponent(l.texto)}">WhatsApp</a>
@@ -42,7 +42,7 @@
             }).join('')}</tbody>
           </table></div>` : vazio('Ninguém em atraso', 'Todas as parcelas vencidas foram recebidas.')}
         </div>
-        <p class="text-xs text-slate-500 dark:text-neutral-400 mt-3">O lembrete é um texto pronto para enviar pelo WhatsApp ou e-mail da escola. Para registrar o pagamento, abra o aluno ou <a class="link" href="financeiro.html?situacao=vencido">as parcelas vencidas</a>. Envio automático e régua de cobrança ficam para a integração com o provedor de pagamento.</p>
+        <p class="text-xs text-tinta-2 mt-3">O lembrete é um texto pronto para enviar pelo WhatsApp ou e-mail da escola. Para registrar o pagamento, abra o aluno ou <a class="link" href="financeiro.html?situacao=vencido">as parcelas vencidas</a>. Envio automático e régua de cobrança ficam para a integração com o provedor de pagamento.</p>
       </div>`;
     tela.querySelectorAll('[data-copiar]').forEach((b) => b.addEventListener('click', () => copiarTexto(lembreteCobranca(lista[Number(b.dataset.copiar)]).texto, 'Lembrete copiado')));
   }

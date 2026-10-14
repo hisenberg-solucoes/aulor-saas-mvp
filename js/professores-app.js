@@ -27,17 +27,17 @@
                 const turmas = Aulor.turmasDoProfessor(p.id).filter((t) => !['concluida', 'cancelada'].includes(Aulor.situacaoTurma(t)));
                 const u = usuarioDe(p);
                 const acesso = !u ? status('neutro', 'Sem acesso') : u.status === 'ativo' ? status('ok', 'Ativo') : u.status === 'convidado' ? status('atencao', 'Convite enviado') : status('neutro', 'Inativo');
-                return `<tr ${gerencia ? `data-editar="${p.id}" class="cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-900/60"` : ''}>
-                  <td><div class="flex items-center gap-3">${avatar(p.nome)}<span class="font-medium text-slate-900 dark:text-neutral-100">${esc(p.nome)}</span></div></td>
+                return `<tr ${gerencia ? `data-editar="${p.id}" class="cursor-pointer hover:bg-realce"` : ''}>
+                  <td><div class="flex items-center gap-3">${avatar(p.nome)}<span class="font-medium text-tinta">${esc(p.nome)}</span></div></td>
                   <td>${esc(p.especialidade || '—')}</td>
-                  <td class="text-sm">${esc(p.email)}<p class="text-xs text-slate-500 dark:text-neutral-400">${telefoneFmt(p.telefone)}</p></td>
-                  <td class="text-sm">${turmas.length ? turmas.map((t) => `<a class="link" href="turma.html?id=${t.id}">${esc(t.codigo)}</a>`).join(', ') : '<span class="text-slate-400">—</span>'}</td>
+                  <td class="text-sm">${esc(p.email)}<p class="text-xs text-tinta-2">${telefoneFmt(p.telefone)}</p></td>
+                  <td class="text-sm">${turmas.length ? turmas.map((t) => `<a class="link" href="turma.html?id=${t.id}">${esc(t.codigo)}</a>`).join(', ') : '<span class="text-tinta-3">—</span>'}</td>
                   <td>${acesso}</td>
                 </tr>`;
               }).join('')}</tbody>
             </table>
           </div>` : vazio('Nenhum professor encontrado')}
-          <p class="px-4 py-2.5 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-100 dark:border-neutral-900 tabular-nums">${lista.length} ${lista.length === 1 ? 'professor' : 'professores'}${filtro.q ? ` de ${todos.length}` : ''}</p>
+          <p class="px-4 py-2.5 text-xs text-tinta-2 border-t border-linha tabular-nums">${lista.length} ${lista.length === 1 ? 'professor' : 'professores'}${filtro.q ? ` de ${todos.length}` : ''}</p>
         </div>
       </div>`;
     const busca = tela.querySelector('#busca');

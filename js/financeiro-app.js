@@ -45,10 +45,10 @@
   function seletorMes() {
     const anterior = Aulor.somarMeses(`${estado.mes}-01`, -1, 1).slice(0, 7);
     const proximo = Aulor.somarMeses(`${estado.mes}-01`, 1, 1).slice(0, 7);
-    const btn = (mes, rotulo, icone) => `<button type="button" data-mes="${mes}" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white dark:hover:bg-neutral-900 dark:hover:text-neutral-100" aria-label="${rotulo}">${icone}</button>`;
+    const btn = (mes, rotulo, icone) => `<button type="button" data-mes="${mes}" class="p-2 rounded-lg text-tinta-2 hover:text-tinta hover:bg-elevado" aria-label="${rotulo}">${icone}</button>`;
     return `<div class="inline-flex items-center gap-1 ${estado.situacao === 'vencido' ? 'opacity-40 pointer-events-none' : ''}">
       ${btn(anterior, 'Mês anterior', ICONE.voltar)}
-      <span class="min-w-[9.5rem] text-center text-sm font-semibold text-slate-800 dark:text-neutral-100">${mesAno(`${estado.mes}-01`)}</span>
+      <span class="min-w-[9.5rem] text-center text-sm font-semibold text-tinta">${mesAno(`${estado.mes}-01`)}</span>
       ${btn(proximo, 'Próximo mês', ICONE.seta)}
       ${estado.mes !== hoje.slice(0, 7) ? `<button type="button" data-mes="${hoje.slice(0, 7)}" class="ml-1 text-xs font-medium link">Hoje</button>` : ''}
     </div>`;
@@ -56,23 +56,24 @@
 
   function resumo() {
     const r = Aulor.resumoMes(estado.mes);
-    const bloco = (rotulo, valor, detalhe = '', cor = '') => `<div class="px-4 py-3 bg-white dark:bg-neutral-950"><p class="text-xs text-slate-500 dark:text-neutral-400">${rotulo}</p><p class="font-display text-lg font-semibold tabular-nums ${cor}">${moeda(valor)}</p>${detalhe ? `<p class="text-xs text-slate-400">${detalhe}</p>` : ''}</div>`;
+    // DESIGN.md, Painéis: entrada e saída sem cor; vermelho só no resultado negativo; pendência é ponto cobre.
+    const bloco = (rotulo, valor, detalhe = '', cor = '', pendente = false) => `<div class="px-4 py-3 bg-elevado"><p class="flex items-center gap-1.5 text-xs font-medium text-tinta-3">${pendente ? '<span class="h-[7px] w-[7px] rounded-full bg-cobre"></span>' : ''}${rotulo}</p><p class="text-lg font-semibold tabular-nums ${cor || 'text-tinta'}">${moeda(valor)}</p>${detalhe ? `<p class="text-xs text-tinta-3">${detalhe}</p>` : ''}</div>`;
     const blocos = [];
     if (aba === 'receber' || (aba === 'pagar' && !Shell.pode('receber'))) {
       if (Shell.pode('receber')) {
         blocos.push(bloco('Previsto no mês', r.receberPrevisto, 'parcelas com vencimento no mês'));
-        blocos.push(bloco('Recebido no mês', r.recebido, 'pagamentos registrados no mês', 'text-emerald-700 dark:text-emerald-400'));
+        blocos.push(bloco('Recebido no mês', r.recebido, 'pagamentos registrados no mês'));
         blocos.push(bloco('Em aberto no mês', r.receberAberto));
-        blocos.push(bloco('Vencido (total)', r.vencido, 'todos os meses', r.vencido ? 'text-red-700 dark:text-red-400' : ''));
+        blocos.push(bloco('Vencido (total)', r.vencido, 'todos os meses', '', r.vencido > 0));
       }
     }
     if (aba === 'pagar') {
       blocos.push(bloco('A pagar no mês', r.pagarPrevisto));
       blocos.push(bloco('Pago no mês', r.pago));
       blocos.push(bloco('Em aberto', r.pagarAberto, 'do mês + vencidas'));
-      if (Shell.pode('receber')) blocos.push(bloco('Resultado do mês', r.recebido - r.pago, 'recebido − pago', r.recebido - r.pago < 0 ? 'text-red-700 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'));
+      if (Shell.pode('receber')) blocos.push(bloco('Resultado do mês', r.recebido - r.pago, 'recebido − pago', r.recebido - r.pago < 0 ? 'text-ruim' : ''));
     }
-    return blocos.length ? `<div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-slate-200 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-800 rounded-xl overflow-hidden mb-4">${blocos.join('')}</div>` : '';
+    return blocos.length ? `<div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-linha border border-linha rounded-xl overflow-hidden mb-4">${blocos.join('')}</div>` : '';
   }
 
   function abaLancamentos(tipo) {
@@ -82,11 +83,11 @@
       <tr>
         <td class="tabular-nums whitespace-nowrap">${dataBr(l.vencimento)}</td>
         <td>${tipo === 'receber'
-          ? `${l.alunoId ? `<a class="font-medium text-slate-900 dark:text-neutral-100 hover:underline" href="${l.matriculaId ? `matricula.html?id=${l.matriculaId}` : `aluno.html?id=${l.alunoId}`}">${esc(Aulor.aluno(l.alunoId).nome)}</a>` : ''}<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(l.descricao)}</p>`
-          : `<span class="font-medium text-slate-900 dark:text-neutral-100">${esc(l.descricao)}</span><p class="text-xs text-slate-500 dark:text-neutral-400">${esc(l.fornecedor || '—')} · ${esc(l.categoria)}</p>`}</td>
+          ? `${l.alunoId ? `<a class="font-medium text-tinta hover:underline" href="${l.matriculaId ? `matricula.html?id=${l.matriculaId}` : `aluno.html?id=${l.alunoId}`}">${esc(Aulor.aluno(l.alunoId).nome)}</a>` : ''}<p class="text-xs text-tinta-2">${esc(l.descricao)}</p>`
+          : `<span class="font-medium text-tinta">${esc(l.descricao)}</span><p class="text-xs text-tinta-2">${esc(l.fornecedor || '—')} · ${esc(l.categoria)}</p>`}</td>
         <td class="num">${moeda(l.valor)}</td>
         <td>${situacaoLancHtml(l)}</td>
-        <td class="text-xs text-slate-500 dark:text-neutral-400 whitespace-nowrap">${l.status === 'pago' ? `${dataBr(l.pagoEm)} · ${esc(nomeForma(l.forma))}${l.valorPago !== l.valor ? `<br>${moeda(l.valorPago)}` : ''}` : '—'}</td>
+        <td class="text-xs text-tinta-2 whitespace-nowrap">${l.status === 'pago' ? `${dataBr(l.pagoEm)} · ${esc(nomeForma(l.forma))}${l.valorPago !== l.valor ? `<br>${moeda(l.valorPago)}` : ''}` : '—'}</td>
         <td class="text-right whitespace-nowrap">${acaoParcela(l)}</td>
       </tr>`).join('');
     return `
@@ -102,7 +103,7 @@
           <thead><tr><th>Vencimento</th><th>${tipo === 'receber' ? 'Aluno' : 'Conta'}</th><th class="num">Valor</th><th>Situação</th><th>Pagamento</th><th></th></tr></thead>
           <tbody>${linhas}</tbody>
         </table></div>
-        <p class="px-4 py-2.5 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-100 dark:border-neutral-900">${lista.length} lançamentos · ${moeda(total)}</p>` : vazio('Nada neste filtro', estado.situacao === 'vencido' ? 'Nenhuma conta vencida.' : `Nenhum lançamento com vencimento em ${mesAno(`${estado.mes}-01`).toLowerCase()}.`)}
+        <p class="px-4 py-2.5 text-xs text-tinta-2 border-t border-linha">${lista.length} lançamentos · ${moeda(total)}</p>` : vazio('Nada neste filtro', estado.situacao === 'vencido' ? 'Nenhuma conta vencida.' : `Nenhum lançamento com vencimento em ${mesAno(`${estado.mes}-01`).toLowerCase()}.`)}
       </div>`;
   }
 
@@ -148,7 +149,7 @@
           ${campo('descricao', 'Descrição', '', { obrigatorio: true, classe: 'sm:col-span-2', extra: 'placeholder="Ex.: Conta de água de outubro"' })}
           ${campo('fornecedor', 'Fornecedor', '')}
           <div>
-            <label class="rotulo" for="f-categoria">Categoria <span class="text-red-600">*</span></label>
+            <label class="rotulo" for="f-categoria">Categoria <span class="text-ruim">*</span></label>
             ${campoCombo('categoria', categorias, '', { vazio: 'Escolha' })}
             ${ERRO('categoria')}
           </div>

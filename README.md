@@ -5,6 +5,7 @@ Protótipo navegável de um ERP para escolas de cursos livres. Usa uma escola fi
 - [MVP_SCOPE.md](MVP_SCOPE.md): o que foi reaproveitado, simplificado e adiado, o escopo do MVP e as decisões.
 - [ROTEIRO_DEMO.md](ROTEIRO_DEMO.md): demonstração comercial de 10 minutos.
 - [BACKLOG.md](BACKLOG.md): backlog até o SaaS real, riscos e decisões pendentes.
+- [DESIGN.md](DESIGN.md): design system (direção "Ficha"): paleta, papéis claro/escuro, tipografia, componentes e regras. Mesmo documento do original.
 
 **Demonstração online:** https://hisenberg-solucoes.github.io/aulor-saas-mvp/ (os dados ficam no navegador de quem abre; use *Demonstração › Restaurar dados iniciais* para recomeçar).
 
@@ -35,6 +36,7 @@ Os testes cobrem as regras do motor (parcelas, matrícula → financeiro → tur
 | `js/planos.js` | Catálogo comercial: módulos por plano, alunos incluídos, faixas (hipótese) |
 | `js/permissoes-data.js` | Catálogo de permissões `tela.ação` e perfis padrão |
 | `js/permissoes-motor.js`, `js/permissoes-app.js` | Motor e telas de perfis, reaproveitados do original |
+| `styles.css`, `js/estilo.js` | Tokens da Ficha (`--f-*`, claro e escuro), shell, fontes e classes de componente (`btn-pri`, `campo`, `tabela`…); ver DESIGN.md |
 | `js/shell.js` | Menu por módulos (os mesmos grupos do original), cabeçalho, sessão de demonstração e controle de acesso (permissão + plano) |
 | `js/base.js`, `js/ui-form.js`, `js/formularios.js` | Componentes de tela e formulários compartilhados |
 | `js/certificado.js` | Render e impressão do certificado a partir de um modelo (CSS do original) |

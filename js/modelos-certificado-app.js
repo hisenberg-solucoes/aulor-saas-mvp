@@ -14,7 +14,7 @@
   const ORDEM = { ativo: 0, rascunho: 1, inativo: 2 };
   const ordenados = () => [...Aulor.modelosCertificado()].sort((a, b) => (b.padrao - a.padrao) || (ORDEM[a.status] - ORDEM[b.status]) || a.nome.localeCompare(b.nome, 'pt-BR'));
 
-  const meta = (rotulo, valor) => `<div class="min-w-0"><dt class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">${rotulo}</dt><dd class="mt-1 text-sm text-slate-700 dark:text-neutral-200">${valor}</dd></div>`;
+  const meta = (rotulo, valor) => `<div class="min-w-0"><dt class="text-xs font-medium text-tinta-2">${rotulo}</dt><dd class="mt-1 text-sm text-tinta">${valor}</dd></div>`;
 
   function linha(m) {
     const emitidos = Aulor.emitidosComModelo(m.id).length;
@@ -23,27 +23,27 @@
         <a href="${urlModelo(m.id)}" class="btn-sec btn-pequeno">${ICONE.editar}Editar</a>
         <div class="flex items-center gap-1">
           ${m.status === 'ativo' && !m.padrao ? `<button type="button" data-padrao="${m.id}" class="btn-fantasma btn-pequeno">Tornar padrão</button>` : ''}
-          <button type="button" data-duplicar="${m.id}" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-neutral-800 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30" title="Duplicar" aria-label="Duplicar ${esc(m.nome)}">${ICONE.copiar}</button>
+          <button type="button" data-duplicar="${m.id}" class="p-2 rounded-lg text-tinta-2 hover:text-tinta hover:bg-realce transition" title="Duplicar" aria-label="Duplicar ${esc(m.nome)}">${ICONE.copiar}</button>
           ${m.padrao
-            ? `<span class="p-2 text-slate-300 dark:text-neutral-700 cursor-not-allowed" title="O padrão da escola não pode ser excluído">${ICONE_MODELO.lixeira}</span>`
-            : `<button type="button" data-excluir="${m.id}" class="p-2 rounded-lg text-slate-500 hover:text-red-700 hover:bg-red-50 dark:text-neutral-400 dark:hover:text-red-400 dark:hover:bg-red-950/40 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600/30" title="Excluir" aria-label="Excluir ${esc(m.nome)}">${ICONE_MODELO.lixeira}</button>`}
+            ? `<span class="p-2 text-tinta-3 cursor-not-allowed" title="O padrão da escola não pode ser excluído">${ICONE_MODELO.lixeira}</span>`
+            : `<button type="button" data-excluir="${m.id}" class="p-2 rounded-lg text-tinta-2 hover:text-ruim hover:bg-ruim/10 transition" title="Excluir" aria-label="Excluir ${esc(m.nome)}">${ICONE_MODELO.lixeira}</button>`}
         </div>
       </div>` : '';
     return `
-      <li class="grid grid-cols-[7.5rem_minmax(0,1fr)] sm:grid-cols-[12rem_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 px-4 sm:px-5 py-5 ${m.status === 'inativo' ? 'bg-slate-50/60 dark:bg-neutral-900/30' : ''}">
-        <a href="${urlModelo(m.id)}" class="block sm:row-span-2 rounded-lg transition hover:ring-2 hover:ring-petrol-800/25 dark:hover:ring-sky-400/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 ${m.status === 'inativo' ? 'opacity-60' : ''}" tabindex="-1" aria-hidden="true">${miniaturaModelo(m)}</a>
+      <li class="grid grid-cols-[7.5rem_minmax(0,1fr)] sm:grid-cols-[12rem_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 px-4 sm:px-5 py-5 ${m.status === 'inativo' ? 'bg-faixa' : ''}">
+        <a href="${urlModelo(m.id)}" class="block sm:row-span-2 rounded-lg transition hover:ring-2 hover:ring-marca-tinta/25 ${m.status === 'inativo' ? 'opacity-60' : ''}" tabindex="-1" aria-hidden="true">${miniaturaModelo(m)}</a>
         <div class="min-w-0 self-center sm:self-end">
           <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-            <a href="${urlModelo(m.id)}" class="font-display font-semibold text-slate-900 dark:text-neutral-100 hover:underline underline-offset-2">${esc(m.nome)}</a>
+            <a href="${urlModelo(m.id)}" class="font-display font-semibold text-tinta hover:underline underline-offset-2">${esc(m.nome)}</a>
             ${m.padrao ? seloPadrao() : ''}
           </div>
-          ${m.descricao ? `<p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5 line-clamp-2">${esc(m.descricao)}</p>` : ''}
+          ${m.descricao ? `<p class="text-sm text-tinta-2 mt-0.5 line-clamp-2">${esc(m.descricao)}</p>` : ''}
         </div>
         <dl class="col-span-2 sm:col-span-1 sm:col-start-2 self-start grid grid-cols-2 lg:grid-cols-[auto_auto_auto_auto] gap-x-6 lg:gap-x-8 gap-y-3 lg:justify-start">
             ${meta('Situação', statusModelo(m))}
             ${meta('Aparência', aparenciaResumo(m))}
             ${meta('Usado em', usoDoModelo(m))}
-            ${meta('Emitidos', `<span class="tabular-nums">${emitidos || '<span class="text-slate-500 dark:text-neutral-400">nenhum</span>'}</span> <span class="text-xs text-slate-500 dark:text-neutral-400">· atualizado em ${dataBr(m.atualizadoEm)}</span>`)}
+            ${meta('Emitidos', `<span class="tabular-nums">${emitidos || '<span class="text-tinta-2">nenhum</span>'}</span> <span class="text-xs text-tinta-2">· atualizado em ${dataBr(m.atualizadoEm)}</span>`)}
         </dl>
         ${acoes}
       </li>`;
@@ -60,8 +60,8 @@
           acoes: podeEditar ? `<button type="button" data-novo class="btn-pri">${ICONE.mais}Novo modelo</button>` : '',
         })}
         <section class="painel overflow-hidden">
-          <ul class="divide-y divide-slate-200 dark:divide-neutral-800">${lista.map(linha).join('')}</ul>
-          <p class="px-5 py-2.5 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-200 dark:border-neutral-800 tabular-nums">${plural(lista.length, 'modelo', 'modelos')} · ${plural(ativos, 'ativo', 'ativos')}${podeEditar ? '' : ' · somente leitura: seu perfil não edita as configurações'}</p>
+          <ul class="divide-y divide-linha">${lista.map(linha).join('')}</ul>
+          <p class="px-5 py-2.5 text-xs text-tinta-2 border-t border-linha tabular-nums">${plural(lista.length, 'modelo', 'modelos')} · ${plural(ativos, 'ativo', 'ativos')}${podeEditar ? '' : ' · somente leitura: seu perfil não edita as configurações'}</p>
         </section>
       </div>`;
     tela.querySelector('[data-novo]')?.addEventListener('click', abrirNovoModelo);

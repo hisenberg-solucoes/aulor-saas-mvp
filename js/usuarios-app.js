@@ -35,19 +35,19 @@
             const [tom, nome] = STATUS[u.status] ?? STATUS.inativo;
             const eu = u.id === Shell.usuario().id;
             return `<tr class="${u.status === 'inativo' ? 'opacity-60' : ''}">
-              <td><div class="flex items-center gap-3 max-w-[18rem]">${avatar(u.nome)}<div class="min-w-0"><p class="font-medium text-slate-900 dark:text-neutral-100">${esc(u.nome)}${eu ? ' <span class="text-xs font-normal text-slate-400">· você</span>' : ''}</p><p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(u.cargo)} · ${esc(u.email)}</p></div></div></td>
+              <td><div class="flex items-center gap-3 max-w-[18rem]">${avatar(u.nome)}<div class="min-w-0"><p class="font-medium text-tinta">${esc(u.nome)}${eu ? ' <span class="text-xs font-normal text-tinta-3">· você</span>' : ''}</p><p class="text-xs text-tinta-2 truncate">${esc(u.cargo)} · ${esc(u.email)}</p></div></div></td>
               <td>${tipoDe(u) === 'instrutor' ? pilula('info', 'Professor') : pilula('neutro', 'Equipe')}</td>
-              <td class="text-sm">${u.perfis.map((id) => { const p = PERFIS.find((x) => x.id === id); return p ? (Shell.pode('perfis-acesso') ? `<a class="link" href="perfil.html?id=${p.id}">${esc(p.nome)}</a>` : esc(p.nome)) : ''; }).join(', ') || '<span class="text-slate-400">nenhum</span>'}</td>
-              <td class="num">${extras(u) || '<span class="text-slate-400">—</span>'}</td>
+              <td class="text-sm">${u.perfis.map((id) => { const p = PERFIS.find((x) => x.id === id); return p ? (Shell.pode('perfis-acesso') ? `<a class="link" href="perfil.html?id=${p.id}">${esc(p.nome)}</a>` : esc(p.nome)) : ''; }).join(', ') || '<span class="text-tinta-3">nenhum</span>'}</td>
+              <td class="num">${extras(u) || '<span class="text-tinta-3">—</span>'}</td>
               <td>${status(tom, nome)}${u.status === 'convidado' && Shell.pode('usuarios', 'convidar') ? `<br><button type="button" data-aceite="${u.id}" class="text-xs font-semibold link" title="Na demonstração, simula a pessoa aceitando o convite por e-mail">Simular aceite</button>` : ''}</td>
               <td class="text-right whitespace-nowrap space-x-2">
                 ${Shell.pode('usuarios', 'editar') && u.status !== 'inativo' ? `<button type="button" data-editar="${u.id}" class="text-xs font-semibold link">Editar</button>` : ''}
-                ${Shell.pode('usuarios', 'inativar') && !eu ? `<button type="button" data-inativar="${u.id}" class="text-xs font-semibold ${u.status === 'inativo' ? 'link' : 'text-slate-500 hover:text-red-700 dark:text-neutral-400 dark:hover:text-red-400'}">${u.status === 'inativo' ? 'Reativar' : 'Inativar'}</button>` : ''}
+                ${Shell.pode('usuarios', 'inativar') && !eu ? `<button type="button" data-inativar="${u.id}" class="text-xs font-semibold ${u.status === 'inativo' ? 'link' : 'text-tinta-2 hover:text-ruim'}">${u.status === 'inativo' ? 'Reativar' : 'Inativar'}</button>` : ''}
               </td>
             </tr>`;
           }).join('')}</tbody>
         </table></div></div>
-        <p class="text-xs text-slate-500 dark:text-neutral-400 mt-3">Demonstração: o convite não envia e-mail. Em produção, a pessoa recebe o convite, cria a senha e entra com os perfis definidos aqui.</p>
+        <p class="text-xs text-tinta-2 mt-3">Demonstração: o convite não envia e-mail. Em produção, a pessoa recebe o convite, cria a senha e entra com os perfis definidos aqui.</p>
       </div>`;
     ligar();
   }
@@ -81,10 +81,10 @@
 
   function opcoesPerfis(tipo, marcados) {
     return PERFIS.filter((p) => p.tipos.includes(tipo)).map((p) => `
-      <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-neutral-800 px-3 py-2.5 cursor-pointer has-[:checked]:border-petrol-800 dark:has-[:checked]:border-sky-400">
+      <label class="flex items-start gap-3 rounded-lg border border-linha px-3 py-2.5 cursor-pointer has-[:checked]:border-marca">
         <input type="checkbox" name="perfil" value="${p.id}" class="check mt-0.5" ${marcados.includes(p.id) ? 'checked' : ''} ${p.ativo ? '' : 'disabled'}>
-        <span class="text-sm"><span class="font-medium">${esc(p.nome)}</span>${p.protegido ? ' <span class="text-xs text-slate-400">· acesso total</span>' : ''}${p.ativo ? '' : ' <span class="text-xs text-amber-700">· inativo</span>'}
-          <span class="block text-xs text-slate-500 dark:text-neutral-400">${esc(Shell.itensVisiveis({ ...Shell.usuario(), perfis: [p.id], extras: {} }).map((i) => i.nome).join(', ') || 'Sem telas')}</span></span>
+        <span class="text-sm"><span class="font-medium">${esc(p.nome)}</span>${p.protegido ? ' <span class="text-xs text-tinta-3">· acesso total</span>' : ''}${p.ativo ? '' : ' <span class="text-xs text-aviso">· inativo</span>'}
+          <span class="block text-xs text-tinta-2">${esc(Shell.itensVisiveis({ ...Shell.usuario(), perfis: [p.id], extras: {} }).map((i) => i.nome).join(', ') || 'Sem telas')}</span></span>
       </label>`).join('');
   }
 
@@ -102,8 +102,8 @@
         <fieldset>
           <legend class="rotulo">Quem é</legend>
           <div class="grid grid-cols-2 gap-2">
-            <label class="rounded-lg border px-3 py-2.5 text-sm cursor-pointer border-slate-300 dark:border-neutral-700 has-[:checked]:border-petrol-800 dark:has-[:checked]:border-sky-400 has-[:checked]:bg-petrol-800/5"><input type="radio" name="tipo" value="colaborador" class="sr-only" checked><b>Equipe da escola</b><span class="block text-xs text-slate-500">Direção, secretaria, financeiro…</span></label>
-            <label class="rounded-lg border px-3 py-2.5 text-sm cursor-pointer border-slate-300 dark:border-neutral-700 has-[:checked]:border-petrol-800 dark:has-[:checked]:border-sky-400 has-[:checked]:bg-petrol-800/5 ${semUsuario.length ? '' : 'opacity-50 pointer-events-none'}"><input type="radio" name="tipo" value="instrutor" class="sr-only"><b>Professor</b><span class="block text-xs text-slate-500">${semUsuario.length ? 'Do cadastro de professores' : 'Todos já têm acesso'}</span></label>
+            <label class="rounded-lg border px-3 py-2.5 text-sm cursor-pointer border-linha-forte has-[:checked]:border-marca has-[:checked]:bg-selecao"><input type="radio" name="tipo" value="colaborador" class="sr-only" checked><b>Equipe da escola</b><span class="block text-xs text-tinta-2">Direção, secretaria, financeiro…</span></label>
+            <label class="rounded-lg border px-3 py-2.5 text-sm cursor-pointer border-linha-forte has-[:checked]:border-marca has-[:checked]:bg-selecao ${semUsuario.length ? '' : 'opacity-50 pointer-events-none'}"><input type="radio" name="tipo" value="instrutor" class="sr-only"><b>Professor</b><span class="block text-xs text-tinta-2">${semUsuario.length ? 'Do cadastro de professores' : 'Todos já têm acesso'}</span></label>
           </div>
         </fieldset>
         <div data-campos-equipe class="grid sm:grid-cols-2 gap-4">
@@ -121,7 +121,7 @@
           <p class="rotulo">Perfis de acesso</p>
           <div data-perfis class="grid gap-2">${opcoesPerfis(tipo, u ? u.perfis : [])}</div>
           ${ERRO('perfil')}
-          ${u && Shell.pode('perfis-acesso') ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-2"><a class="link" href="perfis.html?aba=validacao&usuario=${u.id}">Ver o acesso efetivo de ${esc(u.nome.split(' ')[0])}</a> · permissões adicionais em <a class="link" href="perfis.html?aba=matriz-usuarios">Usuários × perfis</a>.</p>` : ''}
+          ${u && Shell.pode('perfis-acesso') ? `<p class="text-xs text-tinta-2 mt-2"><a class="link" href="perfis.html?aba=validacao&usuario=${u.id}">Ver o acesso efetivo de ${esc(u.nome.split(' ')[0])}</a> · permissões adicionais em <a class="link" href="perfis.html?aba=matriz-usuarios">Usuários × perfis</a>.</p>` : ''}
         </div>`,
       aoSalvar: (fd) => {
         const perfis = fd.getAll('perfil');

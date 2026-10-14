@@ -11,9 +11,9 @@
   const SITUACOES = ['planejada', 'em_andamento', 'a_concluir', 'concluida', 'cancelada'];
   const filtro = { q: '', cursoId: '', professorId: '', situacao: SITUACOES.includes(parametroUrl('situacao')) ? parametroUrl('situacao') : '' };
   const CARTOES = [
-    { id: 'em_andamento', rotulo: 'Em andamento', ajuda: 'entre a primeira e a última aula', cor: 'bg-emerald-500' },
-    { id: 'planejada', rotulo: 'A iniciar', ajuda: 'abertas para matrícula', cor: 'bg-sky-500' },
-    { id: 'a_concluir', rotulo: 'Aguardando conclusão', ajuda: 'aulas terminaram; falta fechar', cor: 'bg-amber-500' },
+    { id: 'em_andamento', rotulo: 'Em andamento', ajuda: 'entre a primeira e a última aula', cor: 'bg-bom' },
+    { id: 'planejada', rotulo: 'A iniciar', ajuda: 'abertas para matrícula', cor: 'bg-marca-tinta' },
+    { id: 'a_concluir', rotulo: 'Aguardando conclusão', ajuda: 'aulas terminaram; falta fechar', cor: 'bg-cobre' },
     { id: 'concluida', rotulo: 'Concluídas', ajuda: 'histórico' },
   ];
 
@@ -49,8 +49,8 @@
         </div>
 
         ${risco.length && !filtrando && Shell.pode('turmas') ? `
-        <div class="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 painel px-3 py-2 text-sm text-slate-700 dark:text-neutral-200">
-          <span class="h-2 w-2 rounded-full ${risco.some((r) => r.nivel === 'critico') ? 'bg-red-500' : 'bg-amber-500'}"></span>
+        <div class="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 painel px-3 py-2 text-sm text-tinta">
+          <span class="h-2 w-2 rounded-full ${risco.some((r) => r.nivel === 'critico') ? 'bg-ruim' : 'bg-cobre'}"></span>
           <span><strong class="tabular-nums">${risco.length}</strong> ${risco.length === 1 ? 'turma ainda não atingiu' : 'turmas ainda não atingiram'} o mínimo de alunos para abrir</span>
           <a href="turmas-risco.html" class="ml-auto text-sm font-semibold link">Ver turmas em risco</a>
         </div>` : ''}
@@ -64,17 +64,17 @@
                 const pr = Aulor.progressoTurma(t);
                 const pend = pendentes.filter((a) => a.turmaId === t.id).length;
                 return `<tr data-href="turma.html?id=${t.id}">
-                  <td><a href="turma.html?id=${t.id}" class="font-medium text-slate-900 dark:text-neutral-100 hover:underline whitespace-nowrap">${esc(t.codigo)}</a><p class="text-xs text-slate-500 dark:text-neutral-400 truncate max-w-[10rem]" title="${esc(Aulor.curso(t.cursoId).nome)}">${esc(Aulor.curso(t.cursoId).nome)}</p></td>
-                  <td><span class="whitespace-nowrap">${esc(Agenda.descrever(t.agenda))}</span><p class="text-xs text-slate-500 dark:text-neutral-400 truncate max-w-[11rem]" title="${esc(t.local)}">${nomeModalidade(t.agenda.formato)}${t.local ? ` · ${esc(t.local)}` : ''}</p></td>
+                  <td><a href="turma.html?id=${t.id}" class="font-medium text-tinta hover:underline whitespace-nowrap">${esc(t.codigo)}</a><p class="text-xs text-tinta-2 truncate max-w-[10rem]" title="${esc(Aulor.curso(t.cursoId).nome)}">${esc(Aulor.curso(t.cursoId).nome)}</p></td>
+                  <td><span class="whitespace-nowrap">${esc(Agenda.descrever(t.agenda))}</span><p class="text-xs text-tinta-2 truncate max-w-[11rem]" title="${esc(t.local)}">${nomeModalidade(t.agenda.formato)}${t.local ? ` · ${esc(t.local)}` : ''}</p></td>
                   <td>${esc(Aulor.professor(t.professorId).nome)}</td>
-                  <td class="whitespace-nowrap tabular-nums text-sm">${dataCurta(t.inicio)} → ${dataCurta(t.fim)}<p class="text-xs text-slate-500 dark:text-neutral-400">${pr.realizadas} de ${pr.total} aulas${pend ? `<span class="ml-1 inline-flex align-text-bottom text-amber-600 dark:text-amber-400" title="${pend} ${pend === 1 ? 'chamada pendente' : 'chamadas pendentes'}">${ICONE.alerta}</span>` : ''}</p></td>
+                  <td class="whitespace-nowrap tabular-nums text-sm">${dataCurta(t.inicio)} → ${dataCurta(t.fim)}<p class="text-xs text-tinta-2">${pr.realizadas} de ${pr.total} aulas${pend ? `<span class="ml-1 inline-flex align-text-bottom text-aviso" title="${pend} ${pend === 1 ? 'chamada pendente' : 'chamadas pendentes'}">${ICONE.alerta}</span>` : ''}</p></td>
                   <td>${ocupacaoHtml(t)}</td>
                   <td>${status(Aulor.SITUACAO_TURMA[s].tom, Aulor.SITUACAO_TURMA[s].nome, '', true)}</td>
                 </tr>`;
               }).join('')}</tbody>
             </table>
           </div>` : vazio(todas.length ? 'Nenhuma turma corresponde aos filtros' : 'Nenhuma turma cadastrada ainda')}
-          <p class="px-4 py-2.5 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-100 dark:border-neutral-900 tabular-nums">${lista.length} ${lista.length === 1 ? 'turma' : 'turmas'}${filtrando ? ` de ${todas.length}` : ''}</p>
+          <p class="px-4 py-2.5 text-xs text-tinta-2 border-t border-linha tabular-nums">${lista.length} ${lista.length === 1 ? 'turma' : 'turmas'}${filtrando ? ` de ${todas.length}` : ''}</p>
         </div>
       </div>`;
     ligar();

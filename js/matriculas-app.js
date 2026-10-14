@@ -48,15 +48,15 @@
               const vencidas = ps.filter((l) => Aulor.situacaoLancamento(l) === 'vencido').length;
               const st = Aulor.STATUS_MATRICULA[m.status];
               return `<tr data-href="matricula.html?id=${m.id}">
-                <td class="whitespace-nowrap"><a href="matricula.html?id=${m.id}" class="font-medium text-slate-900 dark:text-neutral-100 hover:underline tabular-nums">${m.codigo}</a><p class="text-xs text-slate-500 dark:text-neutral-400">${dataBr(m.data)}</p></td>
+                <td class="whitespace-nowrap"><a href="matricula.html?id=${m.id}" class="font-medium text-tinta hover:underline tabular-nums">${m.codigo}</a><p class="text-xs text-tinta-2">${dataBr(m.data)}</p></td>
                 <td><div class="flex items-center gap-3 min-w-[12rem]">${avatar(a.nome)}<span>${esc(a.nome)}</span></div></td>
-                <td>${esc(Aulor.curso(t.cursoId).nome)}<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(t.codigo)}</p></td>
-                <td class="num">${moeda(m.valorFinal)}<p class="text-xs text-slate-400">${m.parcelas}× ${m.desconto ? `· desc. ${moeda(m.desconto)}` : ''}</p></td>
-                ${verFin ? `<td class="whitespace-nowrap text-sm">${ps.length ? `<span class="tabular-nums">${pagas}/${ps.length} pagas</span>${vencidas ? `<p class="text-xs text-red-700 dark:text-red-400">${vencidas} vencida${vencidas > 1 ? 's' : ''}</p>` : ''}` : '<span class="text-slate-400">—</span>'}</td>` : ''}
+                <td>${esc(Aulor.curso(t.cursoId).nome)}<p class="text-xs text-tinta-2">${esc(t.codigo)}</p></td>
+                <td class="num">${moeda(m.valorFinal)}<p class="text-xs text-tinta-3">${m.parcelas}× ${m.desconto ? `· desc. ${moeda(m.desconto)}` : ''}</p></td>
+                ${verFin ? `<td class="whitespace-nowrap text-sm">${ps.length ? `<span class="tabular-nums">${pagas}/${ps.length} pagas</span>${vencidas ? `<p class="text-xs text-ruim">${vencidas} vencida${vencidas > 1 ? 's' : ''}</p>` : ''}` : '<span class="text-tinta-3">—</span>'}</td>` : ''}
                 <td>${status(m.status === 'concluida' && m.resultado !== 'aprovado' ? 'perigo' : st.tom, m.status === 'concluida' ? (m.resultado === 'aprovado' ? 'Concluída · aprovado' : 'Concluída · reprovado') : st.nome)}</td>
               </tr>`;
             }).join('')}</tbody></table></div>
-            <p class="px-4 py-2.5 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-100 dark:border-neutral-900">${itens.length} matrículas</p>` : vazio('Nenhuma matrícula encontrada', 'Ajuste a busca ou os filtros.')}
+            <p class="px-4 py-2.5 text-xs text-tinta-2 border-t border-linha">${itens.length} matrículas</p>` : vazio('Nenhuma matrícula encontrada', 'Ajuste a busca ou os filtros.')}
         </div>
       </div>`;
     ligarLinhasLink(tela);

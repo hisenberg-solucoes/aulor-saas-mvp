@@ -48,8 +48,8 @@
 
   // ---------- Campos (editam o rascunho pelo caminho no name) ----------
 
-  const OPCIONAL = '<span class="normal-case font-normal tracking-normal text-slate-500 dark:text-neutral-400">— opcional</span>';
-  const OPCAO = 'relative cursor-pointer rounded-lg border p-3 transition border-slate-300 dark:border-neutral-700 hover:border-slate-400 dark:hover:border-neutral-500 has-[:checked]:border-petrol-800 dark:has-[:checked]:border-sky-400 has-[:checked]:bg-petrol-800/5 dark:has-[:checked]:bg-sky-950/40 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-petrol-800/30 dark:has-[:focus-visible]:ring-sky-400/40 has-[:disabled]:opacity-60 has-[:disabled]:cursor-not-allowed has-[:disabled]:hover:border-slate-300';
+  const OPCIONAL = '<span class="normal-case font-normal tracking-normal text-tinta-2">— opcional</span>';
+  const OPCAO = 'relative cursor-pointer rounded-lg border p-3 transition border-linha-forte hover:border-tinta-3 has-[:checked]:border-marca has-[:checked]:bg-selecao has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-marca-tinta/30 has-[:disabled]:opacity-60 has-[:disabled]:cursor-not-allowed has-[:disabled]:hover:border-tinta-3/60';
 
   function campoTexto(caminho, rotulo, { opcional = false, linhas = 0, max = 200, dica = '', placeholder = '' } = {}) {
     const attrs = `id="c-${caminho}" name="${caminho}" maxlength="${max}" data-texto placeholder="${esc(placeholder)}"`;
@@ -57,7 +57,7 @@
       <div>
         <label class="rotulo" for="c-${caminho}">${rotulo}${opcional ? ` ${OPCIONAL}` : ''}</label>
         ${linhas ? `<textarea ${attrs} rows="${linhas}" class="campo resize-y leading-relaxed">${esc(ler(caminho) ?? '')}</textarea>` : `<input ${attrs} value="${esc(ler(caminho) ?? '')}" class="campo">`}
-        ${dica ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">${dica}</p>` : ''}
+        ${dica ? `<p class="text-xs text-tinta-2 mt-1">${dica}</p>` : ''}
         ${ERRO(caminho)}
       </div>`;
   }
@@ -66,7 +66,7 @@
     return `
       <label class="flex items-start gap-3 cursor-pointer">
         <input type="checkbox" name="${caminho}" class="check mt-0.5" ${ler(caminho) ? 'checked' : ''}>
-        <span class="text-sm text-slate-800 dark:text-neutral-100">${rotulo}${dica ? `<span class="block text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${dica}</span>` : ''}</span>
+        <span class="text-sm text-tinta">${rotulo}${dica ? `<span class="block text-xs text-tinta-2 mt-0.5">${dica}</span>` : ''}</span>
       </label>`;
   }
 
@@ -76,7 +76,7 @@
       <div>
         <label class="rotulo" for="c-${caminho}">${rotulo}</label>
         <div class="flex items-center gap-2">
-          <input type="color" value="${esc(v)}" data-cor-de="${caminho}" aria-label="${rotulo}: abrir o seletor de cor" class="h-[38px] w-11 shrink-0 cursor-pointer rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-1">
+          <input type="color" value="${esc(v)}" data-cor-de="${caminho}" aria-label="${rotulo}: abrir o seletor de cor" class="h-[38px] w-11 shrink-0 cursor-pointer rounded-lg border border-linha-forte bg-elevado p-1">
           <input id="c-${caminho}" name="${caminho}" value="${esc(v)}" maxlength="7" spellcheck="false" autocomplete="off" class="campo font-mono uppercase tabular-nums" placeholder="#RRGGBB">
         </div>
         ${ERRO(caminho)}
@@ -92,7 +92,7 @@
           <label class="${OPCAO} flex flex-col gap-2.5">
             <input type="radio" name="aparencia.${campo}" value="${o.id}" class="sr-only" ${valor === o.id ? 'checked' : ''}>
             ${desenho(o)}
-            <span><span class="block text-sm font-semibold text-slate-800 dark:text-neutral-100">${esc(o.nome)}</span><span class="block text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(o.descricao)}</span></span>
+            <span><span class="block text-sm font-semibold text-tinta">${esc(o.nome)}</span><span class="block text-xs text-tinta-2 mt-0.5">${esc(o.descricao)}</span></span>
           </label>`).join('')}
         </div>
         ${ERRO(`aparencia.${campo}`)}
@@ -101,9 +101,9 @@
 
   const secao = (titulo, descricao, corpo) => `
     <section class="painel">
-      <div class="px-4 py-3 border-b border-slate-200 dark:border-neutral-800">
-        <h3 class="font-display font-semibold text-sm text-slate-900 dark:text-neutral-100">${titulo}</h3>
-        ${descricao ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${descricao}</p>` : ''}
+      <div class="px-4 py-3 border-b border-linha">
+        <h3 class="font-display font-semibold text-sm text-tinta">${titulo}</h3>
+        ${descricao ? `<p class="text-xs text-tinta-2 mt-0.5">${descricao}</p>` : ''}
       </div>
       <div class="p-4 space-y-4">${corpo}</div>
     </section>`;
@@ -111,8 +111,8 @@
   function painelVariaveis() {
     return secao('Variáveis', 'Clique para inserir no campo em que você estava escrevendo. Na emissão, cada uma vira o dado do aluno.', `
       <ul class="grid sm:grid-cols-2 gap-x-3 -mx-2 -my-1">${Certificado.VARIAVEIS.map(([v, nome]) => `
-        <li><button type="button" data-variavel="${v}" class="w-full flex items-baseline gap-2 rounded-md px-2 py-1 text-left hover:bg-slate-50 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:pointer-events-none">
-          <code class="shrink-0 font-mono text-xs text-petrol-800 dark:text-sky-300">{{${v}}}</code><span class="truncate text-xs text-slate-500 dark:text-neutral-400">${esc(nome)}</span>
+        <li><button type="button" data-variavel="${v}" class="w-full flex items-baseline gap-2 rounded-md px-2 py-1 text-left hover:bg-realce transition disabled:pointer-events-none">
+          <code class="shrink-0 font-mono text-xs text-marca-tinta">{{${v}}}</code><span class="truncate text-xs text-tinta-2">${esc(nome)}</span>
         </button></li>`).join('')}
       </ul>`);
   }
@@ -121,10 +121,10 @@
 
   function formAparencia() {
     const a = estado.rascunho.aparencia;
-    const folhinha = (o) => `<span class="flex h-9 items-end text-slate-400 dark:text-neutral-500"><span class="block rounded-[3px] border-2 border-current bg-white dark:bg-neutral-950" style="${o.id === 'retrato' ? 'width:24px;height:34px' : 'width:34px;height:24px'}"></span></span>`;
-    const letras = (o) => `<span class="block h-9 text-[1.75rem] leading-9 text-slate-800 dark:text-neutral-100" style="font-family:${esc(Certificado.FONTES[o.id])}">Aa</span>`;
+    const folhinha = (o) => `<span class="flex h-9 items-end text-tinta-3"><span class="block rounded-[3px] border-2 border-current bg-elevado" style="${o.id === 'retrato' ? 'width:24px;height:34px' : 'width:34px;height:24px'}"></span></span>`;
+    const letras = (o) => `<span class="block h-9 text-[1.75rem] leading-9 text-tinta" style="font-family:${esc(Certificado.FONTES[o.id])}">Aa</span>`;
     // Moldura desenhada com o mesmo CSS da folha, nas cores do modelo (variáveis no fieldset).
-    const moldura = (o) => `<span class="relative block aspect-[297/210] w-full overflow-hidden rounded-[3px] bg-white ring-1 ring-slate-900/10 text-[5px]">${o.id === 'nenhuma' ? '' : `<span class="cert-moldura-${o.id}"></span>`}<span class="absolute left-[30%] right-[30%] top-[40%] h-[3px] rounded-full bg-slate-300"></span><span class="absolute left-[38%] right-[38%] top-[56%] h-[2px] rounded-full bg-slate-200"></span></span>`;
+    const moldura = (o) => `<span class="relative block aspect-[297/210] w-full overflow-hidden rounded-[3px] bg-elevado ring-1 ring-linha text-[5px]">${o.id === 'nenhuma' ? '' : `<span class="cert-moldura-${o.id}"></span>`}<span class="absolute left-[30%] right-[30%] top-[40%] h-[3px] rounded-full bg-linha-forte"></span><span class="absolute left-[38%] right-[38%] top-[56%] h-[2px] rounded-full bg-etiqueta"></span></span>`;
     return `
       ${secao('Página', 'Vale para a frente e para o verso.', `
         ${grupoOpcoes('orientacao', 'Orientação', folhinha)}
@@ -138,8 +138,8 @@
         <div>
           <p class="rotulo">Combinações prontas</p>
           <div class="flex flex-wrap gap-1.5">${PALETAS.map((p, i) => `
-            <button type="button" data-paleta="${i}" class="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-neutral-800 py-1 pl-1.5 pr-2.5 text-xs text-slate-600 dark:text-neutral-300 hover:border-slate-400 dark:hover:border-neutral-600 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">
-              <span class="inline-flex -space-x-1"><span class="h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-neutral-950" style="background:${p.primaria}"></span><span class="h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-neutral-950" style="background:${p.destaque}"></span></span>${p.nome}
+            <button type="button" data-paleta="${i}" class="inline-flex items-center gap-2 rounded-full border border-linha py-1 pl-1.5 pr-2.5 text-xs text-tinta-2 hover:border-tinta-3 transition">
+              <span class="inline-flex -space-x-1"><span class="h-3.5 w-3.5 rounded-full ring-2 ring-papel" style="background:${p.primaria}"></span><span class="h-3.5 w-3.5 rounded-full ring-2 ring-papel" style="background:${p.destaque}"></span></span>${p.nome}
             </button>`).join('')}
           </div>
         </div>`)}`;
@@ -161,12 +161,12 @@
           <p class="rotulo">Assinaturas ${OPCIONAL.replace('opcional', 'de 1 a 3')}</p>
           <ol class="space-y-3">${ass.map((s, i) => `
             <li class="grid grid-cols-[1.5rem_minmax(0,1fr)_2.25rem] gap-x-2 items-start">
-              <span class="mt-[1.65rem] h-6 w-6 grid place-items-center rounded-full bg-slate-100 dark:bg-neutral-900 text-xs font-semibold tabular-nums text-slate-500 dark:text-neutral-400">${i + 1}</span>
+              <span class="mt-[1.65rem] h-6 w-6 grid place-items-center rounded-full bg-etiqueta text-xs font-semibold tabular-nums text-tinta-2">${i + 1}</span>
               <div class="grid sm:grid-cols-2 gap-x-3 gap-y-2">
                 ${campoTexto(`frente.assinaturas.${i}.nome`, 'Nome', { max: 80, placeholder: i ? '{{professor}}' : 'Nome de quem assina' })}
                 ${campoTexto(`frente.assinaturas.${i}.cargo`, 'Cargo', { opcional: true, max: 80, placeholder: i ? 'Professor(a) do curso' : 'Diretora' })}
               </div>
-              ${ass.length > 1 ? `<button type="button" data-remover-assinatura="${i}" class="mt-[1.4rem] p-2 rounded-lg text-slate-400 hover:text-red-700 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/40 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600/30" aria-label="Remover assinatura ${i + 1}">${ICONE_MODELO.lixeira}</button>` : ''}
+              ${ass.length > 1 ? `<button type="button" data-remover-assinatura="${i}" class="mt-[1.4rem] p-2 rounded-lg text-tinta-3 hover:text-ruim hover:bg-ruim/10 transition" aria-label="Remover assinatura ${i + 1}">${ICONE_MODELO.lixeira}</button>` : ''}
             </li>`).join('')}
           </ol>
           ${ass.length < 3 ? `<button type="button" data-add-assinatura class="mt-3 ml-8 text-sm font-medium link">+ Adicionar assinatura</button>` : ''}
@@ -198,14 +198,14 @@
     const lados = estado.aba === 'frente' ? ['frente'] : estado.aba === 'verso' ? ['verso'] : ['frente', 'verso'];
     const folhas = lados.map((lado) => {
       const html = Certificado.folhas(dados, { modelo: m, lados: [lado] });
-      return `<figure class="min-w-0">${lados.length > 1 ? `<figcaption class="mb-1.5 text-xs text-slate-500 dark:text-neutral-400">${lado === 'frente' ? 'Frente' : 'Verso'}</figcaption>` : ''}${html || `
-        <div class="grid ${retrato ? 'aspect-[210/297]' : 'aspect-[297/210]'} place-items-center rounded-xl border border-dashed border-slate-300 dark:border-neutral-700 p-6 text-center text-sm text-slate-500 dark:text-neutral-400">Sem verso: o certificado sai só com a frente.</div>`}</figure>`;
+      return `<figure class="min-w-0">${lados.length > 1 ? `<figcaption class="mb-1.5 text-xs text-tinta-2">${lado === 'frente' ? 'Frente' : 'Verso'}</figcaption>` : ''}${html || `
+        <div class="grid ${retrato ? 'aspect-[210/297]' : 'aspect-[297/210]'} place-items-center rounded-xl border border-dashed border-linha-forte p-6 text-center text-sm text-tinta-2">Sem verso: o certificado sai só com a frente.</div>`}</figure>`;
     });
     const orientacao = Aulor.OPCOES_MODELO.orientacao.find((o) => o.id === m.aparencia.orientacao)?.nome;
     return `
       <div class="mb-2 flex items-baseline justify-between gap-3">
-        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Prévia com dados de exemplo</p>
-        <p class="text-xs text-slate-500 dark:text-neutral-400">${orientacao} · A4</p>
+        <p class="text-xs font-medium text-tinta-2">Prévia com dados de exemplo</p>
+        <p class="text-xs text-tinta-2">${orientacao} · A4</p>
       </div>
       <div class="${retrato && lados.length > 1 ? 'grid grid-cols-2 gap-4' : retrato ? 'max-w-md mx-auto' : 'space-y-4'}">${folhas.join('')}</div>`;
   }
@@ -215,8 +215,8 @@
   function abaUsos(m) {
     const escolheram = Aulor.cursosDoModelo(m.id);
     const emitidos = Aulor.emitidosComModelo(m.id).sort((a, b) => b.emitidoEm.localeCompare(a.emitidoEm));
-    const itemCurso = (c, nota = '') => `<li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2.5"><a href="curso.html?id=${c.id}" class="text-sm font-medium link">${esc(c.nome)}</a><span class="text-xs text-slate-500 dark:text-neutral-400">${nota || `${esc(c.codigo)} · ${c.cargaHoraria} h`}</span></li>`;
-    const lista = (itens, vazioTxt) => itens.length ? `<ul class="-my-2.5 divide-y divide-slate-100 dark:divide-neutral-900">${itens.join('')}</ul>` : `<p class="text-sm text-slate-500 dark:text-neutral-400">${vazioTxt}</p>`;
+    const itemCurso = (c, nota = '') => `<li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2.5"><a href="curso.html?id=${c.id}" class="text-sm font-medium link">${esc(c.nome)}</a><span class="text-xs text-tinta-2">${nota || `${esc(c.codigo)} · ${c.cargaHoraria} h`}</span></li>`;
+    const lista = (itens, vazioTxt) => itens.length ? `<ul class="-my-2.5 divide-y divide-linha">${itens.join('')}</ul>` : `<p class="text-sm text-tinta-2">${vazioTxt}</p>`;
     const descEscolha = m.status === 'ativo' ? 'A escolha fica no cadastro do curso, em Editar.' : `Enquanto o modelo estiver ${m.status === 'rascunho' ? 'em rascunho' : 'inativo'}, estes cursos emitem com o padrão da escola.`;
     return `
       <div class="grid lg:grid-cols-2 gap-5 items-start">
@@ -225,8 +225,8 @@
           ${m.padrao ? secao('Cursos sem modelo próprio', 'Emitem com o padrão da escola, que é este.', lista(cursosNoPadrao().map((c) => itemCurso(c, c.modeloCertificadoId ? 'escolheu um modelo fora de uso' : '')), 'Todos os cursos escolheram um modelo próprio.')) : ''}
         </div>
         ${secao('Certificados emitidos com este modelo', 'Cada um guarda a cópia do modelo do dia da emissão: editar aqui não muda nenhum deles.', `
-          ${lista(emitidos.slice(0, 8).map((c) => `<li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2.5"><a href="certificado.html?id=${c.id}" class="text-sm font-medium link">${esc(c.dados.aluno)}</a><span class="text-xs text-slate-500 dark:text-neutral-400">${esc(c.dados.curso)} · ${dataBr(c.emitidoEm)}${c.status === 'valido' ? '' : ' · cancelado'}</span></li>`), 'Nenhum certificado emitido com este modelo ainda.')}
-          ${emitidos.length > 8 ? `<p class="text-xs text-slate-500 dark:text-neutral-400">E mais ${emitidos.length - 8}. <a class="link" href="certificados.html?aba=emitidos">Ver todos os emitidos</a></p>` : ''}`)}
+          ${lista(emitidos.slice(0, 8).map((c) => `<li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2.5"><a href="certificado.html?id=${c.id}" class="text-sm font-medium link">${esc(c.dados.aluno)}</a><span class="text-xs text-tinta-2">${esc(c.dados.curso)} · ${dataBr(c.emitidoEm)}${c.status === 'valido' ? '' : ' · cancelado'}</span></li>`), 'Nenhum certificado emitido com este modelo ainda.')}
+          ${emitidos.length > 8 ? `<p class="text-xs text-tinta-2">E mais ${emitidos.length - 8}. <a class="link" href="certificados.html?aba=emitidos">Ver todos os emitidos</a></p>` : ''}`)}
       </div>`;
   }
 
@@ -239,7 +239,7 @@
       m.status === 'ativo' && !m.padrao ? `<button type="button" data-padrao class="btn-sec">${ICONE_MODELO.estrela}Tornar padrão</button>` : '',
       `<button type="button" data-dados class="btn-sec">${ICONE.editar}Nome e situação</button>`,
       `<button type="button" data-duplicar class="btn-sec">${ICONE.copiar}Duplicar</button>`,
-      m.padrao ? '' : `<button type="button" data-excluir class="btn-sec px-2.5 text-red-700 dark:text-red-400" title="Excluir modelo" aria-label="Excluir modelo">${ICONE_MODELO.lixeira}</button>`,
+      m.padrao ? '' : `<button type="button" data-excluir class="btn-sec px-2.5 text-ruim" title="Excluir modelo" aria-label="Excluir modelo">${ICONE_MODELO.lixeira}</button>`,
     ].join('') : imprimir;
     return cabecalhoPagina({
       titulo: `${esc(m.nome)}${m.padrao ? ` <span class="align-middle ml-1.5">${seloPadrao()}</span>` : ''}`,
@@ -250,11 +250,11 @@
   }
 
   function aviso(m) {
-    if (!podeEditar) return '<p class="mb-5 rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 px-4 py-3 text-sm text-slate-700 dark:text-neutral-300">Somente leitura: seu perfil não edita as configurações. A prévia e a impressão continuam disponíveis.</p>';
+    if (!podeEditar) return '<p class="mb-5 rounded-xl border border-linha bg-faixa px-4 py-3 text-sm text-tinta">Somente leitura: seu perfil não edita as configurações. A prévia e a impressão continuam disponíveis.</p>';
     if (m.status === 'ativo') return '';
     const rascunho = m.status === 'rascunho';
     return `
-      <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm ${rascunho ? 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200' : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300'}">
+      <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm ${rascunho ? 'border-cobre/40 bg-cobre/15 text-tinta' : 'border-linha bg-faixa text-tinta'}">
         <p>${rascunho ? '<b class="font-semibold">Rascunho.</b> Os cursos ainda não podem escolher este modelo. Ative quando a prévia estiver como você quer.' : '<b class="font-semibold">Inativo.</b> Cursos que o escolheram emitem com o padrão da escola.'}</p>
         ${podeEditar ? `<button type="button" data-ativar class="btn-sec btn-pequeno">${rascunho ? 'Ativar modelo' : 'Reativar'}</button>` : ''}
       </div>`;
@@ -263,19 +263,19 @@
   function abas(m) {
     const emUso = Aulor.cursosDoModelo(m.id).length + (m.padrao ? cursosNoPadrao().length : 0);
     return `
-      <div class="mb-5 border-b border-slate-200 dark:border-neutral-800">
+      <div class="mb-5 border-b border-linha">
         <nav class="flex gap-5 overflow-x-auto overflow-y-hidden [scrollbar-width:none]" aria-label="Partes do modelo">
-          ${ABAS.map((a) => `<button type="button" data-aba="${a.id}" ${a.id === estado.aba ? 'aria-current="page"' : ''} class="aba ${a.id === estado.aba ? 'aba-ativa' : ''} rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-petrol-800/30 dark:focus-visible:ring-sky-400/40">${a.nome}${a.id === 'usos' ? ` <span class="ml-1 text-xs tabular-nums text-slate-500 dark:text-neutral-400">${emUso}</span>` : ''}</button>`).join('')}
+          ${ABAS.map((a) => `<button type="button" data-aba="${a.id}" ${a.id === estado.aba ? 'aria-current="page"' : ''} class="aba ${a.id === estado.aba ? 'aba-ativa' : ''} rounded-sm">${a.nome}${a.id === 'usos' ? ` <span class="ml-1 text-xs tabular-nums text-tinta-2">${emUso}</span>` : ''}</button>`).join('')}
         </nav>
       </div>`;
   }
 
   const barraSalvar = () => (podeEditar ? `
     <div data-barra-salvar class="${estado.sujo ? '' : 'hidden'} pointer-events-none sticky bottom-0 z-20 mt-6 pb-1">
-      <div class="toast-anim pointer-events-auto mx-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-xl bg-petrol-950 dark:bg-neutral-900 dark:ring-1 dark:ring-white/10 px-4 py-2.5 text-sm text-white shadow-[0_10px_30px_-8px_rgba(7,30,44,.55)]">
-        <span role="status" class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-laranja"></span>Alterações não salvas</span>
+      <div class="toast-anim pointer-events-auto mx-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-xl ficha-inverso bg-papel px-4 py-2.5 text-tinta shadow-[0_8px_24px_-8px_rgba(0,0,0,.35)]">
+        <span role="status" class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-cobre"></span>Alterações não salvas</span>
         <span class="flex items-center gap-1.5">
-          <button type="button" data-descartar class="rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40">Descartar</button>
+          <button type="button" data-descartar class="rounded-lg px-3 py-1.5 text-tinta-2 hover:text-tinta hover:bg-realce transition">Descartar</button>
           <button type="button" data-salvar class="btn-pri py-1.5" title="Salvar (Ctrl+S ou ⌘S)">Salvar</button>
         </span>
       </div>

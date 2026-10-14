@@ -38,18 +38,18 @@
   function cursosDoAluno(ms) {
     const ativas = ms.filter((m) => m.status === 'ativa');
     const lista = (ativas.length ? ativas : ms.filter((m) => m.status === 'concluida')).map((m) => Aulor.curso(Aulor.turma(m.turmaId).cursoId).nome);
-    return lista.length ? esc(lista.join(', ')) : '<span class="text-slate-400">—</span>';
+    return lista.length ? esc(lista.join(', ')) : '<span class="text-tinta-3">—</span>';
   }
 
   // Cabeçalho que ordena a lista: Aluno (A–Z) ou Financeiro (maior valor vencido primeiro).
   function thOrdem(rotulo, ordem) {
     const ativo = filtro.ordem === ordem;
-    return `<th ${ativo ? `aria-sort="${ordem ? 'descending' : 'ascending'}"` : ''}><button type="button" data-ordem="${ordem}" class="inline-flex items-center gap-1 uppercase tracking-wider hover:text-slate-900 dark:hover:text-neutral-100 [&_svg]:h-3 [&_svg]:w-3 ${ativo ? 'text-slate-900 dark:text-neutral-100' : ''}" title="${ordem ? 'Maior valor vencido primeiro' : 'Ordem alfabética'}">${rotulo}${ativo ? (ordem ? ICONE.baixo : ICONE.cima) : ''}</button></th>`;
+    return `<th ${ativo ? `aria-sort="${ordem ? 'descending' : 'ascending'}"` : ''}><button type="button" data-ordem="${ordem}" class="inline-flex items-center gap-1 hover:text-tinta [&_svg]:h-3 [&_svg]:w-3 ${ativo ? 'text-tinta' : ''}" title="${ordem ? 'Maior valor vencido primeiro' : 'Ordem alfabética'}">${rotulo}${ativo ? (ordem ? ICONE.baixo : ICONE.cima) : ''}</button></th>`;
   }
 
   function financeiro(deve, ms) {
     if (deve) return status('perigo', `${moeda(deve.total)} · há ${deve.maiorAtraso} ${deve.maiorAtraso === 1 ? 'dia' : 'dias'}`, `${deve.parcelas.length} ${deve.parcelas.length === 1 ? 'parcela vencida' : 'parcelas vencidas'}; a mais antiga há ${deve.maiorAtraso} dias`);
-    return ms.length ? status('ok', 'Em dia') : '<span class="text-slate-400">—</span>';
+    return ms.length ? status('ok', 'Em dia') : '<span class="text-tinta-3">—</span>';
   }
 
   function render() {
@@ -77,8 +77,8 @@
             <table class="tabela max-sm:block">
               <thead class="max-sm:hidden"><tr>${thOrdem('Aluno', '')}<th>Celular</th><th>Curso</th><th>Situação</th>${verFin ? thOrdem('Financeiro', 'vencido') : ''}</tr></thead>
               <tbody class="max-sm:block">${visiveis.map(({ a, s, ms, deve }) => `
-                <tr data-href="aluno.html?id=${a.id}" class="max-sm:flex max-sm:flex-wrap max-sm:items-center max-sm:gap-x-4 max-sm:gap-y-1 max-sm:pl-15 max-sm:pr-4 max-sm:py-3 max-sm:border-b max-sm:border-slate-100 dark:max-sm:border-neutral-900 max-sm:last:border-b-0 max-sm:[&>td]:p-0 max-sm:[&>td]:border-0">
-                  <td class="max-sm:w-full max-sm:-ml-11"><div class="flex items-center gap-3 sm:min-w-[14rem] sm:max-w-[18rem]">${avatar(a.nome)}<div class="min-w-0"><a href="aluno.html?id=${a.id}" class="font-medium text-slate-900 dark:text-neutral-100 hover:underline">${esc(a.nome)}</a><p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(a.email || 'sem e-mail')}${Aulor.ehMenor(a) ? ' · menor de idade' : ''}</p></div></div></td>
+                <tr data-href="aluno.html?id=${a.id}" class="max-sm:flex max-sm:flex-wrap max-sm:items-center max-sm:gap-x-4 max-sm:gap-y-1 max-sm:pl-15 max-sm:pr-4 max-sm:py-3 max-sm:border-b max-sm:border-linha max-sm:last:border-b-0 max-sm:[&>td]:p-0 max-sm:[&>td]:border-0">
+                  <td class="max-sm:w-full max-sm:-ml-11"><div class="flex items-center gap-3 sm:min-w-[14rem] sm:max-w-[18rem]">${avatar(a.nome)}<div class="min-w-0"><a href="aluno.html?id=${a.id}" class="font-medium text-tinta hover:underline">${esc(a.nome)}</a><p class="text-xs text-tinta-2 truncate">${esc(a.email || 'sem e-mail')}${Aulor.ehMenor(a) ? ' · menor de idade' : ''}</p></div></div></td>
                   <td class="whitespace-nowrap tabular-nums">${telefoneFmt(a.telefone)}</td>
                   <td class="max-w-[11rem] truncate max-sm:max-w-full" title="${esc(ms.filter((m) => m.status !== 'cancelada').map((m) => Aulor.curso(Aulor.turma(m.turmaId).cursoId).nome).join(', '))}">${cursosDoAluno(ms)}</td>
                   <td>${status(s.tom, s.nome)}</td>
@@ -87,7 +87,7 @@
               </tbody>
             </table>
           </div>
-          <div class="px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-100 dark:border-neutral-900">
+          <div class="px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs text-tinta-2 border-t border-linha">
             <p>${restantes ? `Mostrando ${visiveis.length} de ${lista.length} alunos` : `${lista.length} de ${total} alunos`}</p>
             ${restantes ? `<button type="button" data-mais class="btn-sec btn-pequeno">Mostrar mais ${Math.min(POR_PAGINA, restantes)}</button>` : ''}
           </div>` : vazio('Nenhum aluno encontrado', 'Ajuste a busca ou os filtros.')}

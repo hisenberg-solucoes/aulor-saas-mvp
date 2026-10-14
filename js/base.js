@@ -67,7 +67,7 @@ function iniciais(nome) {
 const BOTAO_PRI = 'btn-pri';
 const BOTAO_CANCELAR = 'btn-sec';
 const CAMPO_BUSCA = 'campo pl-8';
-const SELECT_FILTRO = 'max-w-full rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 py-2 text-sm text-slate-700 dark:text-neutral-200 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400';
+const SELECT_FILTRO = 'max-w-full rounded-lg border border-linha-forte bg-elevado px-3 py-2 text-sm text-tinta focus:border-marca-tinta';
 
 // ---------- Ícones (heroicons outline) ----------
 
@@ -91,11 +91,13 @@ const ICONE = {
 function toast(mensagem, tipo = 'ok') {
   const root = document.getElementById('toast-root');
   if (!root) return;
-  const cores = { ok: 'bg-petrol-900', erro: 'bg-red-700', alerta: 'bg-slate-700' };
+  // Toast da Ficha: contraste máximo do modo (tokens do modo oposto) e ponto de estado.
+  const ponto = { ok: 'bg-bom', erro: 'bg-ruim', alerta: 'bg-aviso' };
   const el = document.createElement('div');
   el.setAttribute('role', 'status');
-  el.className = `toast-anim ${cores[tipo] ?? cores.ok} text-white text-sm px-4 py-2.5 rounded-lg shadow-lg max-w-sm`;
-  el.textContent = mensagem;
+  el.className = 'toast-anim ficha-inverso flex items-center gap-2.5 max-w-sm rounded-lg bg-papel text-tinta text-[13px] leading-5 px-3.5 py-2.5 shadow-[0_8px_24px_-8px_rgba(0,0,0,.35)]';
+  el.innerHTML = `<span class="h-2 w-2 shrink-0 rounded-full ${ponto[tipo] ?? ponto.ok}"></span><span></span>`;
+  el.lastChild.textContent = mensagem;
   root.appendChild(el);
   setTimeout(() => el.remove(), 3200);
 }
@@ -109,8 +111,8 @@ function abrirModal(conteudoHtml, largura = 'max-w-lg') {
   const root = document.getElementById('modal-root');
   root.innerHTML = `
     <div class="fixed inset-0 z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div data-fundo-modal class="absolute inset-0 bg-slate-900/50 dark:bg-black/70"></div>
-      <div role="dialog" aria-modal="true" class="modal-anim relative w-full ${largura} max-h-[92vh] flex flex-col bg-white dark:bg-neutral-950 rounded-t-xl sm:rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xl">
+      <div data-fundo-modal class="absolute inset-0 bg-veu"></div>
+      <div role="dialog" aria-modal="true" class="modal-anim relative w-full ${largura} max-h-[92vh] flex flex-col bg-elevado rounded-t-xl sm:rounded-xl border border-linha shadow-[0_24px_60px_-20px_rgba(0,0,0,.4)]">
         ${conteudoHtml}
       </div>
     </div>`;
@@ -127,7 +129,7 @@ function abrirModal(conteudoHtml, largura = 'max-w-lg') {
     if (inicial === null || estado() === inicial) return fecharModal();
     if (dialogo.querySelector('[data-descartar]')) return dialogo.querySelector('[data-continuar]').focus();
     dialogo.insertAdjacentHTML('afterbegin', `
-      <div data-descartar role="alertdialog" aria-label="Alterações não salvas" class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 border-b border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 rounded-t-xl text-sm text-amber-900 dark:text-amber-200">
+      <div data-descartar role="alertdialog" aria-label="Alterações não salvas" class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 border-b border-cobre/40 bg-cobre/15 rounded-t-xl text-sm text-tinta">
         <span>Sair sem salvar? O que você preencheu será perdido.</span>
         <span class="flex gap-2"><button type="button" data-continuar class="btn-sec btn-pequeno">Continuar editando</button><button type="button" data-sair class="btn-perigo btn-pequeno">Sair sem salvar</button></span>
       </div>`);
@@ -156,11 +158,11 @@ function fecharModal() {
 function confirmar({ titulo, mensagem, detalhe = '', rotulo = 'Confirmar', tom = 'pri', aoConfirmar }) {
   const root = abrirModal(`
     <div class="p-5">
-      <h3 class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100">${esc(titulo)}</h3>
-      <p class="text-sm text-slate-600 dark:text-neutral-400 mt-2">${esc(mensagem)}</p>
+      <h3 class="font-display font-semibold text-lg text-tinta">${esc(titulo)}</h3>
+      <p class="text-sm text-tinta-2 mt-2">${esc(mensagem)}</p>
       ${detalhe}
     </div>
-    <div class="px-5 py-3 border-t border-slate-200 dark:border-neutral-800 flex justify-end gap-2">
+    <div class="px-5 py-3 border-t border-linha flex justify-end gap-2">
       <button type="button" data-fechar-modal class="btn-sec">Cancelar</button>
       <button type="button" data-confirmar class="${tom === 'perigo' ? 'btn-perigo' : 'btn-pri'}">${esc(rotulo)}</button>
     </div>`, 'max-w-md');
@@ -172,13 +174,14 @@ function confirmar({ titulo, mensagem, detalhe = '', rotulo = 'Confirmar', tom =
 
 // ---------- Peças de tela ----------
 
-function cabecalhoPagina({ titulo, subtitulo = '', acoes = '', voltar = null }) {
+// registro: o título é o nome do registro aberto (aluno, curso), em Source Serif 4 (DESIGN.md, Registro).
+function cabecalhoPagina({ titulo, subtitulo = '', acoes = '', voltar = null, registro = false }) {
   return `
     <div class="flex flex-wrap items-end justify-between gap-3 mb-5">
       <div class="min-w-0">
-        ${voltar ? `<a href="${voltar.href}" class="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-petrol-800 dark:text-neutral-400 dark:hover:text-sky-300 mb-1">${ICONE.voltar}${esc(voltar.rotulo)}</a>` : ''}
-        <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100">${titulo}</h2>
-        ${subtitulo ? `<p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">${subtitulo}</p>` : ''}
+        ${voltar ? `<a href="${voltar.href}" class="inline-flex items-center gap-1 text-xs font-medium text-tinta-2 hover:text-marca-tinta mb-1">${ICONE.voltar}${esc(voltar.rotulo)}</a>` : ''}
+        <h2 class="${registro ? 'font-registro text-[26px] leading-[1.15]' : 'text-xl'} font-semibold tracking-[-0.01em] text-tinta">${titulo}</h2>
+        ${subtitulo ? `<p class="text-sm text-tinta-2 mt-0.5">${subtitulo}</p>` : ''}
       </div>
       ${acoes ? `<div class="flex flex-wrap items-center gap-2">${acoes}</div>` : ''}
     </div>`;
@@ -187,32 +190,32 @@ function cabecalhoPagina({ titulo, subtitulo = '', acoes = '', voltar = null }) 
 // abas: [{ id, nome, n? }]; gera links ?aba=id preservando os demais parâmetros.
 function abasHtml(abas, ativa) {
   return `
-    <nav class="flex gap-5 border-b border-slate-200 dark:border-neutral-800 mb-5 overflow-x-auto overflow-y-hidden [scrollbar-width:none]" aria-label="Seções">
+    <nav class="flex gap-5 border-b border-linha mb-5 overflow-x-auto overflow-y-hidden [scrollbar-width:none]" aria-label="Seções">
       ${abas.map((a) => {
         const url = new URL(location.href);
         url.searchParams.set('aba', a.id);
-        return `<a href="${url.pathname.split('/').pop()}${url.search}" class="aba ${a.id === ativa ? 'aba-ativa' : ''}" ${a.id === ativa ? 'aria-current="page"' : ''}>${esc(a.nome)}${a.n != null ? ` <span class="ml-1 text-xs tabular-nums text-slate-400">${a.n}</span>` : ''}</a>`;
+        return `<a href="${url.pathname.split('/').pop()}${url.search}" class="aba ${a.id === ativa ? 'aba-ativa' : ''}" ${a.id === ativa ? 'aria-current="page"' : ''}>${esc(a.nome)}${a.n != null ? ` <span class="ml-1 text-xs tabular-nums text-tinta-3">${a.n}</span>` : ''}</a>`;
       }).join('')}
     </nav>`;
 }
 
 // Tons de status: ponto colorido + texto (sem chip), como no padrão do Aulor.
 const TOM = {
-  ok: { ponto: 'bg-emerald-500', texto: 'text-emerald-700 dark:text-emerald-400', fundo: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300' },
-  info: { ponto: 'bg-sky-500', texto: 'text-sky-700 dark:text-sky-300', fundo: 'bg-sky-50 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300' },
-  atencao: { ponto: 'bg-amber-500', texto: 'text-amber-700 dark:text-amber-400', fundo: 'bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300' },
-  perigo: { ponto: 'bg-red-500', texto: 'text-red-700 dark:text-red-400', fundo: 'bg-red-50 text-red-800 dark:bg-red-950/50 dark:text-red-300' },
-  neutro: { ponto: 'bg-slate-400 dark:bg-neutral-500', texto: 'text-slate-500 dark:text-neutral-400', fundo: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-300' },
+  ok: { ponto: 'bg-bom', texto: 'text-bom', fundo: 'bg-bom/10 text-bom' },
+  info: { ponto: 'bg-marca-tinta', texto: 'text-marca-tinta', fundo: 'bg-selecao text-marca-tinta' },
+  atencao: { ponto: 'bg-cobre', texto: 'text-cobre-tinta', fundo: 'bg-cobre/15 text-cobre-tinta' },
+  perigo: { ponto: 'bg-ruim', texto: 'text-ruim', fundo: 'bg-ruim/10 text-ruim' },
+  neutro: { ponto: 'bg-tinta-3/60', texto: 'text-tinta-3', fundo: 'bg-etiqueta text-etiqueta-tinta' },
 };
 
 function status(tom, texto, titulo = '', quebra = false) {
   const t = TOM[tom] ?? TOM.neutro;
-  return `<span ${titulo ? `title="${esc(titulo)}"` : ''} class="inline-flex items-center gap-1.5 text-sm ${quebra ? '' : 'whitespace-nowrap'} text-slate-700 dark:text-neutral-200"><span class="h-2 w-2 rounded-full shrink-0 ${t.ponto}"></span>${esc(texto)}</span>`;
+  return `<span ${titulo ? `title="${esc(titulo)}"` : ''} class="inline-flex items-center gap-1.5 text-sm ${quebra ? '' : 'whitespace-nowrap'} text-tinta"><span class="h-[7px] w-[7px] rounded-full shrink-0 ${t.ponto}"></span>${esc(texto)}</span>`;
 }
 
 function pilula(tom, texto) {
   const t = TOM[tom] ?? TOM.neutro;
-  return `<span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${t.fundo}">${esc(texto)}</span>`;
+  return `<span class="inline-flex items-center rounded px-2 py-0.5 font-sans text-xs font-medium tracking-normal whitespace-nowrap ${t.fundo}">${esc(texto)}</span>`;
 }
 
 // Cartão de contagem no padrão do protótipo original. Com `filtro`, vira botão
@@ -221,30 +224,30 @@ function cartaoNumero({ rotulo, valor, ajuda = '', cor = '', filtro = '', ativo 
   const tag = filtro ? 'button' : 'div';
   return `
     <${tag} ${filtro ? `type="button" data-cartao="${esc(filtro)}" aria-pressed="${ativo}" title="${esc(ativo ? 'Mostrar a lista completa' : `Mostrar só: ${rotulo.toLowerCase()}`)}"` : ''}
-      class="painel p-4 text-left ${filtro ? 'transition hover:border-petrol-800 dark:hover:border-sky-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30' : ''} ${ativo ? 'ring-2 ring-petrol-800/40 dark:ring-sky-400/50 border-petrol-800 dark:border-sky-400' : ''}">
-      <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 flex items-center gap-1.5">${cor ? `<span class="h-2 w-2 rounded-full ${cor}"></span>` : ''}${esc(rotulo)}</p>
-      <p class="font-display text-2xl font-semibold tabular-nums leading-none mt-1.5 text-slate-900 dark:text-neutral-100">${valor}</p>
-      ${ajuda ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-1.5">${ajuda}</p>` : ''}
+      class="painel p-4 text-left ${filtro ? 'transition hover:border-marca-tinta' : ''} ${ativo ? 'ring-2 ring-marca-tinta/40 border-marca-tinta' : ''}">
+      <p class="text-xs font-medium text-tinta-2 flex items-center gap-1.5">${cor ? `<span class="h-2 w-2 rounded-full ${cor}"></span>` : ''}${esc(rotulo)}</p>
+      <p class="font-display text-2xl font-semibold tabular-nums leading-none mt-1.5 text-tinta">${valor}</p>
+      ${ajuda ? `<p class="text-xs text-tinta-2 mt-1.5">${ajuda}</p>` : ''}
     </${tag}>`;
 }
 
 function vazio(titulo, texto = '', acao = '') {
   return `
     <div class="px-6 py-12 text-center">
-      <p class="font-medium text-slate-700 dark:text-neutral-200">${esc(titulo)}</p>
-      ${texto ? `<p class="text-sm text-slate-500 dark:text-neutral-400 mt-1 max-w-md mx-auto">${texto}</p>` : ''}
+      <p class="font-medium text-tinta">${esc(titulo)}</p>
+      ${texto ? `<p class="text-sm text-tinta-2 mt-1 max-w-md mx-auto">${texto}</p>` : ''}
       ${acao ? `<div class="mt-4">${acao}</div>` : ''}
     </div>`;
 }
 
 function avatar(nome, tamanho = 'h-8 w-8 text-xs') {
-  return `<span class="${tamanho} shrink-0 rounded-full bg-petrol-800/10 text-petrol-800 dark:bg-sky-400/15 dark:text-sky-300 grid place-items-center font-semibold">${esc(iniciais(nome))}</span>`;
+  return `<span class="${tamanho} shrink-0 rounded-full bg-selecao text-marca-tinta grid place-items-center font-semibold">${esc(iniciais(nome))}</span>`;
 }
 
 function campoBusca(id, valor, placeholder) {
   return `
     <div class="relative flex-1 min-w-[14rem]">
-      <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">${ICONE.lupa}</span>
+      <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-tinta-3 pointer-events-none">${ICONE.lupa}</span>
       <input id="${id}" type="search" value="${esc(valor)}" placeholder="${esc(placeholder)}" autocomplete="off" class="campo pl-8">
     </div>`;
 }
@@ -253,7 +256,7 @@ function selectFiltro(id, opcoes, valor, rotulo = '') {
   return `<select id="${id}" ${rotulo ? `aria-label="${esc(rotulo)}"` : ''} class="${SELECT_FILTRO}">${opcoes.map((o) => `<option value="${esc(o.id)}" ${o.id === valor ? 'selected' : ''}>${esc(o.nome)}</option>`).join('')}</select>`;
 }
 
-const ERRO = (campo) => `<p data-erro="${campo}" class="text-xs text-red-600 dark:text-red-400 mt-1 hidden"></p>`;
+const ERRO = (campo) => `<p data-erro="${campo}" class="text-xs text-ruim mt-1 hidden"></p>`;
 
 // Linhas clicáveis: <tr class="linha-link" data-href="...">.
 function ligarLinhasLink(raiz = document) {

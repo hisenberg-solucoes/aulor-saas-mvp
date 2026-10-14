@@ -1,0 +1,927 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-14T20:15:44+00:00",
+  "title": "Design System: Aulor (MVP comercial)",
+  "extensions": {
+    "colorMeta": {
+      "azul-profundo": {
+        "role": "neutral",
+        "displayName": "Azul profundo",
+        "canonical": "oklch(22.5% 0.040 238.6)",
+        "tonalRamp": [
+          "#000D18",
+          "#112836",
+          "#2E4555",
+          "#4C6576",
+          "#6D8698",
+          "#8FA9BC",
+          "#B2CDE1",
+          "#DFF1FE"
+        ]
+      },
+      "petroleo": {
+        "role": "primary",
+        "displayName": "Azul-petróleo",
+        "canonical": "oklch(33.8% 0.056 227.1)",
+        "tonalRamp": [
+          "#000D14",
+          "#012A38",
+          "#1C4859",
+          "#3C687A",
+          "#5D8A9D",
+          "#80ADC1",
+          "#A3D1E6",
+          "#DAF3FF"
+        ]
+      },
+      "cobre": {
+        "role": "secondary",
+        "displayName": "Cobre",
+        "canonical": "oklch(64.7% 0.121 58.8)",
+        "tonalRamp": [
+          "#160700",
+          "#3A1C01",
+          "#643401",
+          "#904E04",
+          "#B76E2D",
+          "#DD9152",
+          "#FFB880",
+          "#FEEADC"
+        ]
+      },
+      "areia": {
+        "role": "neutral",
+        "displayName": "Areia",
+        "canonical": "oklch(95.7% 0.012 79.8)",
+        "tonalRamp": [
+          "#0E0B06",
+          "#28241F",
+          "#45413B",
+          "#65615A",
+          "#86827A",
+          "#A9A49D",
+          "#CDC8C1",
+          "#F3EEE6"
+        ]
+      },
+      "cinza": {
+        "role": "neutral",
+        "displayName": "Cinza",
+        "canonical": "oklch(54.3% 0.021 232.8)",
+        "tonalRamp": [
+          "#030D13",
+          "#1B272E",
+          "#37444B",
+          "#56646B",
+          "#76858D",
+          "#99A8B0",
+          "#BCCCD5",
+          "#E1F1FB"
+        ]
+      },
+      "elevado": {
+        "role": "neutral",
+        "displayName": "Branco elevado",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#A5A5A5",
+          "#C9C9C9",
+          "#EEEEEE"
+        ]
+      },
+      "faixa": {
+        "role": "neutral",
+        "displayName": "Faixa",
+        "canonical": "oklch(93.9% 0.016 82.8)",
+        "tonalRamp": [
+          "#0E0B04",
+          "#29241C",
+          "#464138",
+          "#666157",
+          "#878278",
+          "#AAA49A",
+          "#CEC8BE",
+          "#F4EEE3"
+        ]
+      },
+      "realce": {
+        "role": "neutral",
+        "displayName": "Realce",
+        "canonical": "oklch(92.7% 0.018 81.3)",
+        "tonalRamp": [
+          "#0F0A04",
+          "#29241B",
+          "#474137",
+          "#666056",
+          "#888177",
+          "#ABA499",
+          "#CFC8BD",
+          "#F5EEE1"
+        ]
+      },
+      "etiqueta": {
+        "role": "neutral",
+        "displayName": "Etiqueta",
+        "canonical": "oklch(91.8% 0.018 81.3)",
+        "tonalRamp": [
+          "#0F0A04",
+          "#29241B",
+          "#474137",
+          "#666056",
+          "#888177",
+          "#ABA499",
+          "#CFC8BC",
+          "#F5EEE1"
+        ]
+      },
+      "linha": {
+        "role": "neutral",
+        "displayName": "Linha",
+        "canonical": "oklch(89.7% 0.020 80.1)",
+        "tonalRamp": [
+          "#0F0A03",
+          "#2A241A",
+          "#484136",
+          "#676055",
+          "#898175",
+          "#ACA498",
+          "#D0C8BB",
+          "#F5EDE0"
+        ]
+      },
+      "linha-forte": {
+        "role": "neutral",
+        "displayName": "Linha forte",
+        "canonical": "oklch(84.9% 0.024 79.7)",
+        "tonalRamp": [
+          "#110A02",
+          "#2B2417",
+          "#494133",
+          "#696052",
+          "#8A8172",
+          "#ADA494",
+          "#D2C8B8",
+          "#F7EDDD"
+        ]
+      },
+      "tinta-2": {
+        "role": "neutral",
+        "displayName": "Tinta 2",
+        "canonical": "oklch(46.2% 0.019 227.3)",
+        "tonalRamp": [
+          "#040D11",
+          "#1B272C",
+          "#38444A",
+          "#56646A",
+          "#77858B",
+          "#99A8AE",
+          "#BDCCD3",
+          "#E2F1F9"
+        ]
+      },
+      "tinta-3": {
+        "role": "neutral",
+        "displayName": "Tinta 3",
+        "canonical": "oklch(52.2% 0.021 232.9)",
+        "tonalRamp": [
+          "#030D13",
+          "#1B272E",
+          "#37444C",
+          "#56646B",
+          "#76858D",
+          "#99A8B0",
+          "#BCCCD5",
+          "#E1F1FB"
+        ]
+      },
+      "etiqueta-tinta": {
+        "role": "neutral",
+        "displayName": "Tinta de etiqueta",
+        "canonical": "oklch(40.4% 0.018 224.9)",
+        "tonalRamp": [
+          "#040D11",
+          "#1C272C",
+          "#384449",
+          "#576469",
+          "#78858A",
+          "#9AA8AD",
+          "#BECCD2",
+          "#E3F1F7"
+        ]
+      },
+      "selecao": {
+        "role": "neutral",
+        "displayName": "Seleção",
+        "canonical": "oklch(92.5% 0.010 219.6)",
+        "tonalRamp": [
+          "#070C0E",
+          "#202629",
+          "#3C4346",
+          "#5B6365",
+          "#7C8487",
+          "#9EA7AA",
+          "#C2CBCE",
+          "#E7F0F3"
+        ]
+      },
+      "cobre-tinta": {
+        "role": "secondary",
+        "displayName": "Cobre-tinta",
+        "canonical": "oklch(52.5% 0.107 56.2)",
+        "tonalRamp": [
+          "#160700",
+          "#3C1B00",
+          "#653302",
+          "#8E4F19",
+          "#B2703E",
+          "#D89361",
+          "#FFB784",
+          "#FEEADC"
+        ]
+      },
+      "bom": {
+        "role": "status",
+        "displayName": "Bom",
+        "canonical": "oklch(52.2% 0.095 158.9)",
+        "tonalRamp": [
+          "#000F06",
+          "#002E1A",
+          "#005030",
+          "#25714D",
+          "#4A946D",
+          "#6EB78F",
+          "#92DDB3",
+          "#C4FFDC"
+        ]
+      },
+      "ruim": {
+        "role": "status",
+        "displayName": "Ruim",
+        "canonical": "oklch(53.8% 0.149 33.1)",
+        "tonalRamp": [
+          "#1E0100",
+          "#490800",
+          "#7B1500",
+          "#A53721",
+          "#CC5B44",
+          "#F47E66",
+          "#FFB4A3",
+          "#FFE9E4"
+        ]
+      },
+      "elevado-escuro": {
+        "role": "neutral",
+        "displayName": "Elevado (escuro)",
+        "canonical": "oklch(26.4% 0.045 237.1)",
+        "tonalRamp": [
+          "#000D17",
+          "#0C2838",
+          "#2A4657",
+          "#496578",
+          "#69879A",
+          "#8BAABE",
+          "#AFCEE3",
+          "#DEF2FF"
+        ]
+      },
+      "faixa-escuro": {
+        "role": "neutral",
+        "displayName": "Faixa (escuro)",
+        "canonical": "oklch(24.5% 0.042 238.2)",
+        "tonalRamp": [
+          "#000D18",
+          "#0F2837",
+          "#2C4556",
+          "#4B6577",
+          "#6B8699",
+          "#8DA9BD",
+          "#B1CEE2",
+          "#DFF2FE"
+        ]
+      },
+      "realce-escuro": {
+        "role": "neutral",
+        "displayName": "Realce (escuro)",
+        "canonical": "oklch(27.5% 0.045 236.0)",
+        "tonalRamp": [
+          "#000D16",
+          "#0B2838",
+          "#294657",
+          "#486678",
+          "#68879A",
+          "#8AAABE",
+          "#AECEE3",
+          "#DEF2FF"
+        ]
+      },
+      "etiqueta-escuro": {
+        "role": "neutral",
+        "displayName": "Etiqueta (escuro)",
+        "canonical": "oklch(29.3% 0.046 231.7)",
+        "tonalRamp": [
+          "#000D16",
+          "#082937",
+          "#274656",
+          "#466677",
+          "#668899",
+          "#89ABBD",
+          "#ACCFE2",
+          "#DDF2FE"
+        ]
+      },
+      "linha-escuro": {
+        "role": "neutral",
+        "displayName": "Linha (escuro)",
+        "canonical": "oklch(29.9% 0.042 233.1)",
+        "tonalRamp": [
+          "#000D16",
+          "#0D2836",
+          "#2B4655",
+          "#496675",
+          "#6A8798",
+          "#8CAABB",
+          "#AFCEE0",
+          "#DDF2FE"
+        ]
+      },
+      "linha-forte-escuro": {
+        "role": "neutral",
+        "displayName": "Linha forte (escuro)",
+        "canonical": "oklch(35.5% 0.045 233.3)",
+        "tonalRamp": [
+          "#000D16",
+          "#092938",
+          "#284656",
+          "#476677",
+          "#67879A",
+          "#8AAABD",
+          "#ADCFE2",
+          "#DDF2FE"
+        ]
+      },
+      "tinta-2-escuro": {
+        "role": "neutral",
+        "displayName": "Tinta 2 (escuro)",
+        "canonical": "oklch(76.8% 0.015 224.6)",
+        "tonalRamp": [
+          "#050D10",
+          "#1D272B",
+          "#3A4448",
+          "#586368",
+          "#798489",
+          "#9BA7AC",
+          "#BFCBD1",
+          "#E4F1F6"
+        ]
+      },
+      "tinta-3-escuro": {
+        "role": "neutral",
+        "displayName": "Tinta 3 (escuro)",
+        "canonical": "oklch(67.0% 0.018 225.3)",
+        "tonalRamp": [
+          "#040D11",
+          "#1B272C",
+          "#384449",
+          "#576469",
+          "#77858B",
+          "#99A8AE",
+          "#BDCCD2",
+          "#E2F1F8"
+        ]
+      },
+      "etiqueta-tinta-escuro": {
+        "role": "neutral",
+        "displayName": "Tinta de etiqueta (escuro)",
+        "canonical": "oklch(86.7% 0.012 223.5)",
+        "tonalRamp": [
+          "#060C0F",
+          "#1F2629",
+          "#3B4447",
+          "#5A6366",
+          "#7B8488",
+          "#9DA7AB",
+          "#C1CBCF",
+          "#E6F0F5"
+        ]
+      },
+      "selecao-escuro": {
+        "role": "neutral",
+        "displayName": "Seleção (escuro)",
+        "canonical": "oklch(32.9% 0.053 229.7)",
+        "tonalRamp": [
+          "#000D15",
+          "#012939",
+          "#204759",
+          "#40677A",
+          "#61899C",
+          "#83ACC0",
+          "#A6D0E5",
+          "#DCF3FF"
+        ]
+      },
+      "petroleo-luz": {
+        "role": "primary",
+        "displayName": "Petróleo luz",
+        "canonical": "oklch(79.4% 0.046 221.7)",
+        "tonalRamp": [
+          "#000E14",
+          "#032A35",
+          "#244853",
+          "#436774",
+          "#648996",
+          "#86ACBA",
+          "#A9D1DF",
+          "#D8F4FE"
+        ]
+      },
+      "cobre-tinta-escuro": {
+        "role": "secondary",
+        "displayName": "Cobre-tinta (escuro)",
+        "canonical": "oklch(76.8% 0.102 62.9)",
+        "tonalRamp": [
+          "#150700",
+          "#391D00",
+          "#613600",
+          "#895216",
+          "#AD743C",
+          "#D3975F",
+          "#F9BB82",
+          "#FFEAD9"
+        ]
+      },
+      "bom-escuro": {
+        "role": "status",
+        "displayName": "Bom (escuro)",
+        "canonical": "oklch(75.2% 0.109 159.4)",
+        "tonalRamp": [
+          "#000F06",
+          "#012D1A",
+          "#034F31",
+          "#0B734A",
+          "#3C966B",
+          "#62BA8D",
+          "#87DFB0",
+          "#C4FFDD"
+        ]
+      },
+      "ruim-escuro": {
+        "role": "status",
+        "displayName": "Ruim (escuro)",
+        "canonical": "oklch(73.8% 0.130 34.2)",
+        "tonalRamp": [
+          "#1D0100",
+          "#480B00",
+          "#781C05",
+          "#9D402A",
+          "#C3624B",
+          "#EA856D",
+          "#FFB4A2",
+          "#FEE9E4"
+        ]
+      },
+      "sobre-ruim-escuro": {
+        "role": "status",
+        "displayName": "Sobre ruim (escuro)",
+        "canonical": "oklch(17.6% 0.024 38.0)",
+        "tonalRamp": [
+          "#140805",
+          "#30211D",
+          "#4E3E39",
+          "#6E5D57",
+          "#907E78",
+          "#B3A09A",
+          "#D8C4BE",
+          "#FEE9E3"
+        ]
+      },
+      "veu": {
+        "role": "overlay",
+        "displayName": "Véu",
+        "canonical": "oklch(22.5% 0.040 238.6 / 0.32)",
+        "tonalRamp": [
+          "#000D1A",
+          "#102735",
+          "#2B4353",
+          "#496172",
+          "#688193",
+          "#88A2B5",
+          "#ADC8DB",
+          "#D7F3FF"
+        ]
+      },
+      "veu-escuro": {
+        "role": "overlay",
+        "displayName": "Véu (escuro)",
+        "canonical": "oklch(14.2% 0.022 231.7 / 0.6)",
+        "tonalRamp": [
+          "#030D13",
+          "#19262D",
+          "#34424A",
+          "#526068",
+          "#718088",
+          "#91A1AA",
+          "#B7C7D0",
+          "#E1F2FB"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "destaque": {
+        "displayName": "Destaque",
+        "purpose": "Número-chefe de um painel; um por painel."
+      },
+      "registro": {
+        "displayName": "Registro",
+        "purpose": "Nome do registro aberto; uma vez por tela."
+      },
+      "indicador": {
+        "displayName": "Indicador",
+        "purpose": "Valor na linha de indicadores de um painel."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Título da página."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Cabeçalho de faixa e de seção."
+      },
+      "action": {
+        "displayName": "Action",
+        "purpose": "Botões, abas e links de ação."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto, células e campos."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Segmentado e botões fantasma."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Cabeçalho de coluna e tags."
+      },
+      "tag": {
+        "displayName": "Tag",
+        "purpose": "Marcadores curtos de estado."
+      }
+    },
+    "shadows": [
+      {
+        "name": "pressionado",
+        "value": "0 1px 2px rgba(0,0,0,.1)",
+        "purpose": "Item ativo do controle segmentado."
+      },
+      {
+        "name": "popover",
+        "value": "0 12px 32px -12px rgba(0,0,0,.28)",
+        "purpose": "Menus e seletores."
+      },
+      {
+        "name": "toast",
+        "value": "0 8px 24px -8px rgba(0,0,0,.35)",
+        "purpose": "Aviso no canto."
+      },
+      {
+        "name": "modal",
+        "value": "0 24px 60px -20px rgba(0,0,0,.4)",
+        "purpose": "Diálogo, sobre o véu (veu)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "toast-in",
+        "value": "0.25s ease; translateY(8px) → 0, opacity 0 → 1",
+        "purpose": "Entrada do toast."
+      },
+      {
+        "name": "modal-in",
+        "value": "0.18s ease; scale(.96) → 1",
+        "purpose": "Entrada do modal."
+      },
+      {
+        "name": "drawer-in",
+        "value": "0.22s ease; translateX(24px) → 0",
+        "purpose": "Entrada de painel lateral."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation e transition desligadas",
+        "purpose": "Respeita prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [],
+    "modes": {
+      "source": "styles.css (:root claro, html.dark escuro); valores no frontmatter do DESIGN.md",
+      "papeis": {
+        "papel": [
+          "areia",
+          "azul-profundo"
+        ],
+        "elevado": [
+          "elevado",
+          "elevado-escuro"
+        ],
+        "faixa": [
+          "faixa",
+          "faixa-escuro"
+        ],
+        "realce": [
+          "realce",
+          "realce-escuro"
+        ],
+        "etiqueta": [
+          "etiqueta",
+          "etiqueta-escuro"
+        ],
+        "linha": [
+          "linha",
+          "linha-escuro"
+        ],
+        "linha-forte": [
+          "linha-forte",
+          "linha-forte-escuro"
+        ],
+        "tinta": [
+          "azul-profundo",
+          "areia"
+        ],
+        "tinta-2": [
+          "tinta-2",
+          "tinta-2-escuro"
+        ],
+        "tinta-3": [
+          "tinta-3",
+          "tinta-3-escuro"
+        ],
+        "marca": [
+          "petroleo",
+          "areia"
+        ],
+        "sobre-marca": [
+          "areia",
+          "petroleo"
+        ],
+        "marca-tinta": [
+          "petroleo",
+          "petroleo-luz"
+        ],
+        "foco": [
+          "petroleo",
+          "petroleo-luz"
+        ],
+        "selecao": [
+          "selecao",
+          "selecao-escuro"
+        ],
+        "cobre": [
+          "cobre",
+          "cobre"
+        ],
+        "cobre-tinta": [
+          "cobre-tinta",
+          "cobre-tinta-escuro"
+        ],
+        "aviso": [
+          "cobre-tinta",
+          "cobre-tinta-escuro"
+        ],
+        "bom": [
+          "bom",
+          "bom-escuro"
+        ],
+        "ruim": [
+          "ruim",
+          "ruim-escuro"
+        ],
+        "sobre-ruim": [
+          "elevado",
+          "sobre-ruim-escuro"
+        ],
+        "etiqueta-tinta": [
+          "etiqueta-tinta",
+          "etiqueta-tinta-escuro"
+        ],
+        "dado": [
+          "azul-profundo",
+          "areia"
+        ],
+        "dado-pendente": [
+          "cobre-tinta",
+          "cobre"
+        ],
+        "dado-referencia": [
+          "tinta-3",
+          "tinta-3-escuro"
+        ],
+        "veu": [
+          "veu",
+          "veu-escuro"
+        ]
+      },
+      "shell": "A classe .shell aplica sempre os papéis do escuro (sidebar e barra de contexto iguais nos dois modos)."
+    }
+  },
+  "components": [
+    {
+      "name": "Botão primário",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "A ação principal da área; um por área.",
+      "html": "<button class=\"ds-btn-pri\"><svg width=\"16\" height=\"16\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"2\" stroke=\"currentColor\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 4.5v15m7.5-7.5h-15\"/></svg>Novo perfil</button>",
+      "css": ".ds-btn-pri { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 8px; font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; font-size: 13px; font-weight: 500; line-height: 20px; cursor: pointer; transition: background-color .15s, border-color .15s; border: none; background: var(--f-marca, #0F3D4E); color: var(--f-sobre-marca, #F5F0E8); } .ds-btn-pri:hover { background: color-mix(in srgb, var(--f-marca, #0F3D4E) 90%, transparent); } .ds-btn-pri:focus-visible { outline: 2px solid var(--f-foco, #0F3D4E); outline-offset: 2px; }"
+    },
+    {
+      "name": "Botão secundário",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ações de apoio; branco porque fica acima do papel.",
+      "html": "<button class=\"ds-btn-sec\">Cancelar</button>",
+      "css": ".ds-btn-sec { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 8px; font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; font-size: 13px; font-weight: 500; line-height: 20px; cursor: pointer; transition: background-color .15s, border-color .15s; border: 1px solid var(--f-linha-forte, #D6CCBC); background: var(--f-elevado, #FFFFFF); color: var(--f-tinta, #071E2C); } .ds-btn-sec:hover { background: var(--f-realce, #EDE6DA); } .ds-btn-sec:disabled { opacity: .4; cursor: not-allowed; } .ds-btn-sec:focus-visible { outline: 2px solid var(--f-foco, #0F3D4E); outline-offset: 2px; }"
+    },
+    {
+      "name": "Botão fantasma",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Ações discretas dentro de barras e linhas.",
+      "html": "<button class=\"ds-btn-ghost\">Duplicar</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border: none; border-radius: 6px; background: transparent; font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--f-tinta-2, #4E5B61); cursor: pointer; transition: background-color .15s, color .15s; } .ds-btn-ghost:hover { background: var(--f-realce, #EDE6DA); color: var(--f-tinta, #071E2C); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--f-foco, #0F3D4E); outline-offset: 2px; }"
+    },
+    {
+      "name": "Campo de busca",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo branco elevado com ícone; contorno vira petróleo no foco.",
+      "html": "<label class=\"ds-busca\"><span class=\"ds-busca-ico\"><svg width=\"14\" height=\"14\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"2\" stroke=\"currentColor\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z\"/></svg></span><input class=\"ds-input\" type=\"search\" placeholder=\"Buscar perfil pelo nome…\"></label>",
+      "css": ".ds-busca { position: relative; display: inline-block; width: 288px; } .ds-busca-ico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; color: var(--f-tinta-3, #5E6C74); pointer-events: none; } .ds-input { width: 100%; height: 32px; padding: 0 10px 0 32px; border: 1px solid var(--f-linha-forte, #D6CCBC); border-radius: 8px; background: var(--f-elevado, #FFFFFF); font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; font-size: 13px; color: var(--f-tinta, #071E2C); transition: border-color .15s; } .ds-input::placeholder { color: var(--f-tinta-3, #5E6C74); } .ds-input:hover { border-color: color-mix(in srgb, var(--f-tinta-3, #5E6C74) 60%, transparent); } .ds-input:focus { outline: none; border-color: var(--f-marca-tinta, #0F3D4E); }"
+    },
+    {
+      "name": "Controle segmentado",
+      "kind": "nav",
+      "refersTo": "segmented-active",
+      "description": "Filtros e portais; o ativo fica branco sobre a etiqueta.",
+      "html": "<div class=\"ds-seg\" role=\"group\" aria-label=\"Status\"><button class=\"ds-seg-i\" aria-pressed=\"true\">Todos <span class=\"ds-seg-n\">7</span></button><button class=\"ds-seg-i\" aria-pressed=\"false\">Ativos <span class=\"ds-seg-n\">7</span></button><button class=\"ds-seg-i\" aria-pressed=\"false\">Inativos <span class=\"ds-seg-n\">0</span></button></div>",
+      "css": ".ds-seg { display: inline-flex; padding: 2px; border-radius: 8px; background: var(--f-etiqueta, #EAE3D7); } .ds-seg-i { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: none; border-radius: 6px; background: transparent; font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--f-tinta-2, #4E5B61); cursor: pointer; } .ds-seg-i:hover { color: var(--f-tinta, #071E2C); } .ds-seg-i[aria-pressed=true] { background: var(--f-elevado, #FFFFFF); color: var(--f-tinta, #071E2C); box-shadow: 0 1px 2px rgba(0,0,0,.1); } .ds-seg-n { font-variant-numeric: tabular-nums; color: var(--f-tinta-3, #5E6C74); }"
+    },
+    {
+      "name": "Abas da página",
+      "kind": "nav",
+      "refersTo": "tab-active",
+      "description": "Visões da tela, sublinhado de 2px na ativa.",
+      "html": "<nav class=\"ds-abas\" aria-label=\"Visões\"><button class=\"ds-aba\" aria-current=\"page\">Perfis</button><button class=\"ds-aba\">Permissões × perfis</button><button class=\"ds-aba\">Usuários × perfis</button></nav>",
+      "css": ".ds-abas { display: flex; gap: 20px; border-bottom: 1px solid var(--f-linha, #E4DCCF); } .ds-aba { margin-bottom: -1px; padding: 10px 0; border: none; border-bottom: 2px solid transparent; background: none; font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; font-size: 13px; font-weight: 500; color: var(--f-tinta-3, #5E6C74); cursor: pointer; transition: color .15s; } .ds-aba:hover { color: var(--f-tinta-2, #4E5B61); } .ds-aba[aria-current=page] { border-bottom-color: var(--f-tinta, #071E2C); color: var(--f-tinta, #071E2C); }"
+    },
+    {
+      "name": "Interruptor",
+      "kind": "custom",
+      "refersTo": "switch-on",
+      "description": "Trilho petróleo ligado; branco elevado desligado.",
+      "html": "<button class=\"ds-sw\" role=\"switch\" aria-checked=\"true\" aria-label=\"Visualizar\"><span></span></button> <button class=\"ds-sw\" role=\"switch\" aria-checked=\"false\" aria-label=\"Editar\"><span></span></button>",
+      "css": ".ds-sw { position: relative; display: inline-flex; width: 36px; height: 20px; padding: 0; border: none; border-radius: 9999px; background: var(--f-elevado, #FFFFFF); box-shadow: inset 0 0 0 1px var(--f-linha-forte, #D6CCBC); cursor: pointer; transition: background-color .15s; } .ds-sw span { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 9999px; background: var(--f-tinta-3, #5E6C74); transition: transform .15s; } .ds-sw[aria-checked=true] { background: var(--f-marca, #0F3D4E); box-shadow: none; } .ds-sw[aria-checked=true] span { transform: translateX(16px); background: var(--f-sobre-marca, #F5F0E8); } .ds-sw:focus-visible { outline: 2px solid var(--f-foco, #0F3D4E); outline-offset: 2px; }"
+    },
+    {
+      "name": "Tag de pendência",
+      "kind": "chip",
+      "refersTo": "tag-sem-perfil",
+      "description": "Cobre = é com você; texto sempre em cobre-tinta.",
+      "html": "<span class=\"ds-tag\">sem perfil</span> <span class=\"ds-tag-n\">Financeiro</span>",
+      "css": ".ds-tag { display: inline-block; padding: 0 6px; border-radius: 4px; background: color-mix(in srgb, var(--f-cobre, #C47A3A) 15%, transparent); font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; font-size: 11.5px; font-weight: 600; line-height: 20px; color: var(--f-cobre-tinta, #985824); } .ds-tag-n { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 4px; background: var(--f-etiqueta, #EAE3D7); font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; font-size: 12px; color: var(--f-etiqueta-tinta, #3F4B50); }"
+    },
+    {
+      "name": "Status",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Ponto de 7px + texto; nunca pílula colorida.",
+      "html": "<span class=\"ds-st\"><span class=\"ds-st-p\"></span>Ativo</span> <span class=\"ds-st ds-st-off\"><span class=\"ds-st-p\"></span>Inativo</span>",
+      "css": ".ds-st { display: inline-flex; align-items: center; gap: 6px; font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; font-size: 13px; color: var(--f-tinta, #071E2C); } .ds-st-p { width: 7px; height: 7px; border-radius: 9999px; background: var(--f-bom, #2F7A55); } .ds-st-off { color: var(--f-tinta-3, #5E6C74); } .ds-st-off .ds-st-p { background: color-mix(in srgb, var(--f-tinta-3, #5E6C74) 60%, transparent); }"
+    },
+    {
+      "name": "Toast",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "Aviso no canto no modo oposto (classe ficha-inverso): azul profundo com areia no claro, areia com azul profundo no escuro; ponto bom, aviso ou ruim.",
+      "html": "<div class=\"ds-toast\" role=\"status\"><span class=\"ds-toast-p\"></span>Perfil \"Financeiro\" reativado</div>",
+      "css": ".ds-toast { display: inline-flex; align-items: center; gap: 10px; max-width: 384px; padding: 10px 14px; border-radius: 8px; background: var(--f-tinta, #071E2C); font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; font-size: 13px; line-height: 20px; color: var(--f-papel, #F5F0E8); box-shadow: 0 8px 24px -8px rgba(0,0,0,.35); } .ds-toast-p { width: 8px; height: 8px; border-radius: 9999px; background: var(--f-bom, #2F7A55); }"
+    },
+    {
+      "name": "Menu lateral (shell)",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Sidebar escura nos dois modos: busca, rótulo de grupo recolhível, item e item ativo por fundo e peso.",
+      "html": "<nav class=\"ds-shell\" aria-label=\"Menu principal\"><label class=\"ds-shell-busca\"><svg aria-hidden=\"true\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"2\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z\"/></svg><input type=\"search\" placeholder=\"Buscar no menu\" aria-label=\"Buscar no menu\"></label><button type=\"button\" class=\"ds-shell-grupo\" aria-expanded=\"true\"><span>Comercial</span><svg aria-hidden=\"true\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"2\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M19.5 8.25l-7.5 7.5-7.5-7.5\"/></svg></button><a href=\"#\" class=\"ds-shell-item\"><svg aria-hidden=\"true\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z\"/></svg><span>Contratos</span></a><a href=\"#\" class=\"ds-shell-item\" aria-current=\"page\"><svg aria-hidden=\"true\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z\"/></svg><span>Alunos</span></a></nav>",
+      "css": ".ds-shell { width: 240px; padding: 12px; background: #071E2C; color: #AAB6BB; color-scheme: dark; font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; font-size: 13px; line-height: 20px; } .ds-shell :focus-visible { outline: 2px solid #9CC3D1; outline-offset: 2px; } .ds-shell-busca { position: relative; display: block; margin-bottom: 8px; } .ds-shell-busca svg { position: absolute; left: 10px; top: 50%; width: 14px; height: 14px; transform: translateY(-50%); color: #8A989E; } .ds-shell-busca input { width: 100%; height: 32px; padding: 0 10px 0 30px; border: 1px solid #224050; border-radius: 8px; background: #0C2838; color: #F5F0E8; font: inherit; } .ds-shell-busca input::placeholder { color: #8A989E; } .ds-shell-busca input:focus { border-color: #9CC3D1; outline-offset: 0; } .ds-shell-grupo { width: 100%; height: 28px; margin-top: 12px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; border: 0; border-radius: 6px; background: none; color: #8A989E; font: 500 12px/16px 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background-color .15s, color .15s; } .ds-shell-grupo svg { width: 12px; height: 12px; transition: transform .15s; } .ds-shell-grupo[aria-expanded=false] svg { transform: rotate(-90deg); } .ds-shell-grupo:hover { background: #0E2B3B; color: #F5F0E8; } .ds-shell-item { display: flex; align-items: center; gap: 10px; height: 32px; margin-top: 2px; padding: 0 8px; border-radius: 6px; color: #AAB6BB; text-decoration: none; transition: background-color .15s, color .15s; } .ds-shell-item svg { width: 16px; height: 16px; flex-shrink: 0; color: #8A989E; } .ds-shell-item:hover { background: #0E2B3B; color: #F5F0E8; } .ds-shell-item[aria-current=page] { background: #123A4B; color: #F5F0E8; font-weight: 600; } .ds-shell-item[aria-current=page] svg { color: #F5F0E8; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Ficha",
+    "overview": "**Creative North Star: \"A Ficha\"**\n\nO admin da Aulor é uma ficha de arquivo bem preenchida: papel, divisórias finas no lugar de caixas, tinta firme e nada além do que o registro precisa. A metáfora vem do próprio domínio: a secretaria escolar trabalha sobre fichas (de matrícula, do aluno, financeira), e cada tela do admin é a ficha de um registro (aluno, turma, contrato, perfil). Quem usa é a secretaria, a coordenação e o financeiro de uma escola, várias horas por dia, em telas de desktop. A interface precisa ser lida de relance e confiável como um livro de registro. A marca aparece nos detalhes exatos (o petróleo da ação principal, o cobre do que espera por você), não em decoração.\n\nDensidade é virtude: controles de 32px, linhas de 36px, texto de 13px. A hierarquia vem de peso, posição e divisórias, nunca de cards empilhados ou sombras paradas. A cor é rara e semântica: petróleo significa \"aja aqui\", cobre significa \"isto é com você\", verde e vermelho só aparecem como estado.\n\nClaro e escuro são de primeira classe, e o escuro não é o claro invertido: é a mesma ficha à noite. No claro, o papel é areia e a tinta é azul profundo; no escuro, os dois trocam de lugar. A troca acontece só nos tokens, nunca no componente.\n\nEste documento é normativo para o MVP comercial. Veio do protótipo original (`snorlax-jornada`, mesmo nome de arquivo) em 2026-10-14, e as duas cópias andam juntas: uma regra nova entra nas duas. No MVP a Ficha vale em todas as telas: tokens, tipografia, shell e componentes compartilhados. O layout de cada tela ainda é o do original (cartões, filtros e tabela), só que nos papéis da Ficha; os cartões em elevado sobre o papel são herança desse layout e saem quando a tela for repaginada. Perfis de acesso ainda não tem o desenho Ficha do original, que também tirou os tipos de usuário do motor.",
+    "keyCharacteristics": [
+      "Papel com divisórias: areia no claro, azul profundo no escuro.",
+      "Dois modos de primeira classe; componente usa o papel do token, nunca o hex.",
+      "O que fica acima da página sobe um degrau de luz (branco no claro).",
+      "Cinco cores oficiais; todo tom de interface deriva delas e passa no contraste AA nos dois modos.",
+      "Petróleo na ação, cobre na pendência, nunca o contrário.",
+      "Atkinson Hyperlegible Next na interface; Source Serif 4 só no nome do registro aberto.",
+      "Status sempre como ponto + texto.",
+      "Desktop primeiro; no celular, só o menu por cima do conteúdo e a chamada do professor."
+    ],
+    "rules": [
+      {
+        "name": "A Regra das Cinco Cores",
+        "body": "Toda cor da interface é uma das cinco oficiais ou deriva delas com motivo escrito (normalmente contraste). Valor \"quase igual\" ao oficial é proibido: ou é o oficial, ou é um derivado documentado.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra dos Dois Modos",
+        "body": "Componente usa o papel do token, nunca o hex nem uma variante `dark:`. Toda tela é conferida no claro e no escuro antes de ser dada como pronta.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Papel",
+        "body": "O papel é areia no claro e azul profundo no escuro. Nunca branco, preto ou grafite.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Cobre",
+        "body": "Cobre é \"é com você\", nunca \"clique aqui\". Não vai em fundo de botão (texto branco sobre cobre dá 3,39:1), não vira texto no valor oficial e não divide a atenção com um âmbar ou amarelo.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Contraste Medido",
+        "body": "Um tom novo de texto só entra se passar 4,5:1 sobre o papel e sobre o elevado dos dois modos, e as razões ficam anotadas ao lado do token.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Serifa Única",
+        "body": "Source Serif 4 só no nome do registro aberto. Título de página, botão e tabela são sempre Atkinson Hyperlegible Next.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Degrau de Luz",
+        "body": "O que fica acima da página sobe um degrau de luz: branco no claro, elevado-escuro no escuro. Se é elevado, é um controle ou flutua; se é papel, é o chão. Branco nunca é chão.",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra do Número-Chefe",
+        "body": "Um número por painel em `destaque` (Atkinson Hyperlegible Next 600, 48px/52px, −0,025em, algarismos proporcionais). Nunca em serifa: painel não tem registro aberto.",
+        "section": "paineis"
+      },
+      {
+        "name": "A Regra da Linha de Indicadores",
+        "body": "Indicadores ficam lado a lado sobre o papel, separados por divisórias de 1px em linha, sem fundo, canto ou sombra. Cada célula: rótulo (label, tinta 3), valor em `indicador` (Atkinson Hyperlegible Next 600, 24px/28px, −0,02em), contexto (12px, tinta 2) e o link para a lista que explica o número. A célula inteira é clicável e ganha realce no hover. Pendência é ponto cobre antes do rótulo; o valor continua em tinta.",
+        "section": "paineis"
+      },
+      {
+        "name": "A Regra da Tinta nos Dados",
+        "body": "A série principal de um gráfico é tinta (`dado`: 15,0:1 sobre o papel nos dois modos). Dado pendente usa `dado-pendente` (cobre-tinta no claro, 4,93:1; cobre no escuro, 5,03:1; o cobre oficial como marca no claro dá 2,99:1). Petróleo nunca é cor de série. No máximo duas cores por gráfico; a terceira distinção é forma (hachura a 45°, traço). Mais de duas séries viram gráficos pequenos lado a lado ou tabela.",
+        "section": "paineis"
+      },
+      {
+        "name": "A Regra do Traço de Referência",
+        "body": "Meta e período anterior são traço de 2px em `dado-referencia` (tinta 3: 4,78:1 no claro, 5,74:1 no escuro), nunca barra ou área. O que ainda não fechou (mês corrente, parcela a vencer) é hachura de tinta a 45°. Grade em linha de 1px; linha de base em linha forte.",
+        "section": "paineis"
+      },
+      {
+        "name": "A Regra do Azul e do Vermelho",
+        "body": "Cor em número só quando a tela sabe se ele é bom ou ruim, nunca só porque subiu ou desceu. Vermelho (`ruim`) é perda: resultado ou saldo negativo, sempre com o sinal −. Positivo fica em tinta, \"no azul\". Verde (`bom`) confirma o que fechou bem: meta batida no fechamento, parcela quitada, sempre com ✓ ou texto. Entrada e saída não levam cor: sinal e posição (saída abaixo do zero), porque pagar é a operação normal. Variação no meio do período é seta, valor e período nomeado, em tinta 2. Vermelho e cobre quase se confundem (ΔE 6,7 no claro, 10,6 no escuro): vermelho só como número com sinal; cobre só como ponto, traço ou barra, com o valor em tinta.",
+        "section": "paineis"
+      },
+      {
+        "name": "A Regra da Tabela por Trás",
+        "body": "Todo gráfico tem o controle segmentado \"Gráfico | Tabela\" e dica no hover com os valores do ponto. É o canal que não depende de cor.",
+        "section": "paineis"
+      },
+      {
+        "name": "A Regra do Shell Escuro",
+        "body": "O shell é azul profundo nos dois modos e não troca com o tema; o que troca é o conteúdo ao lado. Ele usa os papéis do escuro, nunca hex nem cor do Tailwind, e no escuro é a divisória linha que o separa do conteúdo.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "**Do** usar os valores exatos da paleta: azul profundo `#071E2C`, petróleo `#0F3D4E`, cobre `#C47A3A`, areia `#F5F0E8`, cinza `#64727A`.",
+      "**Do** usar areia como papel no claro e como tinta no escuro; azul profundo faz o caminho inverso.",
+      "**Do** usar cobre-tinta (ou cobre-tinta-escuro) sempre que o cobre virar texto.",
+      "**Do** medir o contraste de todo tom novo contra o papel e o elevado dos dois modos e anotar as razões no token.",
+      "**Do** conferir toda tela no claro e no escuro antes de dar como pronta.",
+      "**Do** criar todo token novo em par: valor no `:root` e no `html.dark`.",
+      "**Do** usar o gradiente oficial (petróleo até 52%, depois cobre, do canto superior esquerdo ao inferior direito) só no símbolo e em momentos de marca.",
+      "**Do** separar registros com divisórias e faixas, não com cards."
+    ],
+    "donts": [
+      "**Don't** colocar texto branco sobre cobre (3,39:1) nem usar cobre como fundo de botão.",
+      "**Don't** usar o cobre oficial como texto sobre areia (2,99:1).",
+      "**Don't** criar quase-duplicatas da paleta, como `#68737A` no lugar de `#64727A` ou `#13262F` no lugar de `#071E2C`.",
+      "**Don't** usar branco como fundo de página no claro, nem preto ou grafite como papel no escuro.",
+      "**Don't** usar o gradiente em botões, barras ou fundos de interface: o meio da transição vira marrom (`#695B44`).",
+      "**Don't** distinguir significado só por petróleo contra azul profundo (1,46:1); servem como camadas, não como sinal.",
+      "**Don't** criar um âmbar ou amarelo de aviso; atenção é cobre.",
+      "**Don't** escrever hex fixo, cor do Tailwind (slate, neutral, black) ou variante `dark:` dentro de componentes da Ficha; quem troca de modo é o token `--f-*`."
+    ]
+  }
+}

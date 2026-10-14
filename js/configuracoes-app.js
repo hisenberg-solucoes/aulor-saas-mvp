@@ -19,16 +19,16 @@
   const dis = podeEditar ? '' : 'disabled';
 
   const rodape = (texto = '') => podeEditar ? `
-    <div class="px-5 py-3 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-between gap-3">
-      <p class="text-xs text-slate-500 dark:text-neutral-400">${texto}</p>
+    <div class="px-5 py-3 border-t border-linha flex items-center justify-between gap-3">
+      <p class="text-xs text-tinta-2">${texto}</p>
       <button type="submit" class="btn-pri">Salvar</button>
-    </div>` : '<p class="px-5 py-3 border-t border-slate-200 dark:border-neutral-800 text-xs text-slate-500 dark:text-neutral-400">Somente leitura: seu perfil não edita as configurações.</p>';
+    </div>` : '<p class="px-5 py-3 border-t border-linha text-xs text-tinta-2">Somente leitura: seu perfil não edita as configurações.</p>';
 
   const cartao = (titulo, descricao, corpo, rodapeTxt = '') => `
     <form id="form-config" novalidate class="painel max-w-3xl">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800">
+      <div class="px-5 py-4 border-b border-linha">
         <h3 class="font-display font-semibold">${titulo}</h3>
-        <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">${descricao}</p>
+        <p class="text-sm text-tinta-2 mt-0.5">${descricao}</p>
       </div>
       <fieldset class="px-5 py-5 space-y-5" ${dis}>${corpo}</fieldset>
       ${rodape(rodapeTxt)}
@@ -37,7 +37,7 @@
   const caixa = (nome, rotulo, marcado, dica = '') => `
     <label class="flex items-start gap-3 text-sm cursor-pointer">
       <input type="checkbox" name="${nome}" value="1" class="check mt-0.5" ${marcado ? 'checked' : ''}>
-      <span>${rotulo}${dica ? `<span class="block text-xs text-slate-500 dark:text-neutral-400">${dica}</span>` : ''}</span>
+      <span>${rotulo}${dica ? `<span class="block text-xs text-tinta-2">${dica}</span>` : ''}</span>
     </label>`;
 
   function abaEscola() {
@@ -65,8 +65,8 @@
         ${campo('frequenciaMinima', 'Frequência mínima para aprovação (%)', a.frequenciaMinima, { tipo: 'number', obrigatorio: true, extra: 'min="0" max="100" step="1"', dica: 'Abaixo disso o aluno é reprovado por frequência ao concluir a turma e não recebe certificado.' })}
       </div>
       ${caixa('justificadaContaPresenca', 'Falta justificada conta como presença', a.justificadaContaPresenca, 'Ex.: atestado médico. Desmarcado, a justificada só fica registrada mas conta como falta.')}
-      <div class="rounded-lg bg-slate-50 dark:bg-neutral-900 px-4 py-3 text-sm text-slate-600 dark:text-neutral-300 space-y-1">
-        <p class="font-medium text-slate-800 dark:text-neutral-100">Como a regra é aplicada</p>
+      <div class="rounded-lg bg-faixa px-4 py-3 text-sm text-tinta-2 space-y-1">
+        <p class="font-medium text-tinta">Como a regra é aplicada</p>
         <p>Frequência = presenças ÷ aulas com chamada registrada desde a matrícula. Aula sem chamada não conta e aparece como pendência.</p>
         <p>Ao concluir a turma, cada aluno vira "aprovado" ou "reprovado por frequência"; só os aprovados ficam prontos para o certificado.</p>
       </div>`, 'Mudanças valem para os próximos cálculos; turmas já concluídas mantêm o resultado.');
@@ -88,11 +88,11 @@
         <div class="flex items-start justify-between gap-3">
           <div>
             <h3 class="font-display font-semibold">Cobrança automática</h3>
-            <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">Boleto e Pix emitidos e baixados automaticamente por um provedor de pagamentos (ex.: Asaas ou Stripe).</p>
+            <p class="text-sm text-tinta-2 mt-0.5">Boleto e Pix emitidos e baixados automaticamente por um provedor de pagamentos (ex.: Asaas ou Stripe).</p>
           </div>
           ${status('neutro', 'Não conectada')}
         </div>
-        <p class="text-xs text-slate-500 dark:text-neutral-400 mt-3">Fora desta versão. Hoje a escola envia a cobrança pelo meio que já usa e registra o recebimento no Aulor. Cada parcela já tem o espaço reservado para o identificador da cobrança no provedor.</p>
+        <p class="text-xs text-tinta-2 mt-3">Fora desta versão. Hoje a escola envia a cobrança pelo meio que já usa e registra o recebimento no Aulor. Cada parcela já tem o espaço reservado para o identificador da cobrança no provedor.</p>
       </section>`;
   }
 
@@ -103,47 +103,47 @@
     const est = Planos.estimar(ass, ativos);
     const noPlano = Planos.MODULOS.filter((m) => p.modulos.includes(m.id));
     const fora = Planos.MODULOS.filter((m) => !p.modulos.includes(m.id));
-    const preco = (pl) => pl.preco == null ? '<span class="text-slate-500">A definir</span>' : `${moeda(pl.preco)}<span class="text-xs font-normal text-slate-500">/mês</span>`;
+    const preco = (pl) => pl.preco == null ? '<span class="text-tinta-2">A definir</span>' : `${moeda(pl.preco)}<span class="text-xs font-normal text-tinta-2">/mês</span>`;
     const item = (m, tom, rotulo) => `<li class="flex items-center justify-between gap-3 py-2 text-sm"><span>${esc(m.nome)}</span>${pilula(tom, rotulo)}</li>`;
     return `
       <div class="grid lg:grid-cols-3 gap-5 items-start">
         <section class="painel lg:col-span-2">
-          <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex flex-wrap items-start justify-between gap-3">
+          <div class="px-5 py-4 border-b border-linha flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p class="text-xs text-slate-500 dark:text-neutral-400">Plano contratado</p>
+              <p class="text-xs text-tinta-2">Plano contratado</p>
               <h3 class="font-display text-xl font-semibold">${esc(p.nome)}</h3>
-              <p class="text-sm text-slate-500 dark:text-neutral-400">${esc(p.publico)}</p>
+              <p class="text-sm text-tinta-2">${esc(p.publico)}</p>
             </div>
             <div class="text-right">
               <p class="font-display text-lg font-semibold">${est ? moeda(est.mensal) : preco(p)}</p>
-              <p class="text-xs text-slate-500 dark:text-neutral-400">${ativos} alunos ativos${p.alunosIncluidos ? ` · ${p.alunosIncluidos} incluídos` : ''}</p>
+              <p class="text-xs text-tinta-2">${ativos} alunos ativos${p.alunosIncluidos ? ` · ${p.alunosIncluidos} incluídos` : ''}</p>
             </div>
           </div>
           <div class="px-5 py-4 grid sm:grid-cols-2 gap-x-8">
             <div>
-              <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-1">Incluído</h4>
-              <ul class="divide-y divide-slate-100 dark:divide-neutral-900">${noPlano.map((m) => item(m, m.fase === 'futuro' ? 'info' : 'ok', m.fase === 'futuro' ? 'Em breve' : 'Ativo')).join('')}</ul>
+              <h4 class="text-xs font-medium text-tinta-2 mb-1">Incluído</h4>
+              <ul class="divide-y divide-linha">${noPlano.map((m) => item(m, m.fase === 'futuro' ? 'info' : 'ok', m.fase === 'futuro' ? 'Em breve' : 'Ativo')).join('')}</ul>
             </div>
             <div>
-              <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-1">Em outros planos</h4>
-              <ul class="divide-y divide-slate-100 dark:divide-neutral-900">${fora.map((m) => item(m, 'neutro', Planos.PLANOS.find((x) => x.modulos.includes(m.id))?.nome ?? '—')).join('')}</ul>
+              <h4 class="text-xs font-medium text-tinta-2 mb-1">Em outros planos</h4>
+              <ul class="divide-y divide-linha">${fora.map((m) => item(m, 'neutro', Planos.PLANOS.find((x) => x.modulos.includes(m.id))?.nome ?? '—')).join('')}</ul>
             </div>
           </div>
         </section>
         <section class="painel">
-          <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800">
+          <div class="px-5 py-4 border-b border-linha">
             <h3 class="font-display font-semibold">Planos</h3>
-            <p class="text-xs text-amber-700 dark:text-amber-400 mt-0.5">Hipótese comercial em validação — não é tabela de preços.</p>
+            <p class="text-xs text-aviso mt-0.5">Hipótese comercial em validação — não é tabela de preços.</p>
           </div>
-          <ul class="divide-y divide-slate-100 dark:divide-neutral-900">${Planos.PLANOS.map((pl) => `
-            <li class="px-5 py-3 ${pl.id === ass.planoId ? 'bg-petrol-800/5 dark:bg-sky-400/5' : ''}">
-              <div class="flex justify-between gap-2"><span class="font-medium">${esc(pl.nome)}${pl.id === ass.planoId ? ' <span class="text-xs text-slate-500">· atual</span>' : ''}</span><span class="text-sm font-semibold">${preco(pl)}</span></div>
-              <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${pl.alunosIncluidos ? `${pl.alunosIncluidos} alunos ativos incluídos. ${pl.faixas.map((f) => `${f.de}–${f.ate}: ${moeda(f.porAluno)}/aluno`).join('; ')}; acima, ${pl.acimaDaUltimaFaixa}. Anual com ${pl.descontoAnualPercentual}% de desconto.` : 'Preço e limite de alunos ainda não definidos.'}</p>
+          <ul class="divide-y divide-linha">${Planos.PLANOS.map((pl) => `
+            <li class="px-5 py-3 ${pl.id === ass.planoId ? 'bg-selecao' : ''}">
+              <div class="flex justify-between gap-2"><span class="font-medium">${esc(pl.nome)}${pl.id === ass.planoId ? ' <span class="text-xs text-tinta-2">· atual</span>' : ''}</span><span class="text-sm font-semibold">${preco(pl)}</span></div>
+              <p class="text-xs text-tinta-2 mt-0.5">${pl.alunosIncluidos ? `${pl.alunosIncluidos} alunos ativos incluídos. ${pl.faixas.map((f) => `${f.de}–${f.ate}: ${moeda(f.porAluno)}/aluno`).join('; ')}; acima, ${pl.acimaDaUltimaFaixa}. Anual com ${pl.descontoAnualPercentual}% de desconto.` : 'Preço e limite de alunos ainda não definidos.'}</p>
             </li>`).join('')}
           </ul>
-          <div class="px-5 py-4 border-t border-slate-200 dark:border-neutral-800">
+          <div class="px-5 py-4 border-t border-linha">
             <label for="sim-alunos" class="rotulo">Simular Institucional</label>
-            <div class="flex items-center gap-2"><input id="sim-alunos" type="number" min="0" value="${Math.max(ativos, 350)}" class="campo w-28"><span class="text-sm text-slate-500">alunos ativos</span></div>
+            <div class="flex items-center gap-2"><input id="sim-alunos" type="number" min="0" value="${Math.max(ativos, 350)}" class="campo w-28"><span class="text-sm text-tinta-2">alunos ativos</span></div>
             <p data-sim class="text-sm mt-2"></p>
           </div>
         </section>
@@ -176,7 +176,7 @@
       const calc = () => {
         const n = Math.max(0, Number(input.value) || 0);
         const e = Planos.estimar({ planoId: 'institucional' }, n);
-        saida.innerHTML = e.foraDasFaixas ? 'Acima da última faixa: condição sob consulta.' : `${moeda(e.base)} + ${moeda(e.adicional)} = <b>${moeda(e.mensal)}/mês</b><span class="block text-xs text-slate-500 dark:text-neutral-400">No anual com desconto: ${moeda(e.anualComDesconto)} por ano.</span>`;
+        saida.innerHTML = e.foraDasFaixas ? 'Acima da última faixa: condição sob consulta.' : `${moeda(e.base)} + ${moeda(e.adicional)} = <b>${moeda(e.mensal)}/mês</b><span class="block text-xs text-tinta-2">No anual com desconto: ${moeda(e.anualComDesconto)} por ano.</span>`;
       };
       input.addEventListener('input', calc);
       calc();

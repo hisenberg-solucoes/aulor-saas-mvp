@@ -147,7 +147,7 @@ const Shell = (() => {
     const link = (i) => {
       const ativo = i.href === atual;
       const rotulo = i.nomeProfessor && ehSoProfessor(u) ? i.nomeProfessor : i.nome;
-      return `<a href="${i.href}" class="nav-item ${ativo ? 'nav-item-ativo' : ''}" ${ativo ? 'aria-current="page"' : ''}>${svg(ICONES[i.icone])}<span class="truncate">${esc(rotulo)}</span></a>`;
+      return `<a href="${i.href}" class="nav-item ${ativo ? 'nav-item-ativo' : ''}" ${ativo ? 'aria-current="page"' : ''}>${svg(ICONES[i.icone])}<span>${esc(rotulo)}</span></a>`;
     };
     const visiveis = MENU.filter((i) => podeAlguma(i.features, u));
     return visiveis.filter((i) => !i.grupo).map(link).join('') + GRUPOS.map((g) => {
@@ -155,12 +155,11 @@ const Shell = (() => {
       if (!itens.length) return '';
       const aberto = itens.some((i) => i.href === atual) || !fechados[g.id];
       return `
-        <div data-grupo="${g.id}">
-          <button type="button" data-toggle-grupo aria-expanded="${aberto}" aria-controls="grupo-${g.id}"
-            class="w-full flex items-center justify-between px-3 mt-3 py-1.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-white/5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30">
-            <span>${esc(g.nome)}</span>${svg(ICONES.seta, `h-3.5 w-3.5 transition-transform ${aberto ? '' : '-rotate-90'}`)}
+        <div data-grupo="${g.id}" class="menu-grupo">
+          <button type="button" data-toggle-grupo aria-expanded="${aberto}" aria-controls="grupo-${g.id}" class="menu-grupo-botao">
+            <span>${esc(g.nome)}</span>${svg(ICONES.seta, '').replace('<svg', '<svg data-seta')}
           </button>
-          <div id="grupo-${g.id}" class="space-y-1 mt-0.5 ${aberto ? '' : 'hidden'}">${itens.map(link).join('')}</div>
+          <div id="grupo-${g.id}" class="${aberto ? '' : 'hidden'}">${itens.map(link).join('')}</div>
         </div>`;
     }).join('');
   }
@@ -172,7 +171,6 @@ const Shell = (() => {
         const aberto = btn.getAttribute('aria-expanded') !== 'true';
         btn.setAttribute('aria-expanded', String(aberto));
         grupo.querySelector('[id^="grupo-"]').classList.toggle('hidden', !aberto);
-        btn.querySelector('svg').classList.toggle('-rotate-90', !aberto);
         const estado = gruposFechados();
         estado[grupo.dataset.grupo] = !aberto;
         localStorage.setItem(CHAVE_MENUS, JSON.stringify(estado));
@@ -185,49 +183,44 @@ const Shell = (() => {
     const titulo = document.body.dataset.titulo || document.title.replace(/^Aulor · /, '');
     const plano = Planos.efetivo(Aulor.assinatura());
     const iniciais = (u?.nome ?? '').split(/\s+/).filter(Boolean).map((p, i, a) => (i === 0 || i === a.length - 1 ? p[0] : '')).join('').toUpperCase();
-    document.body.classList.add('h-full', 'bg-areia', 'dark:bg-black', 'font-sans', 'text-slate-800', 'dark:text-neutral-100', 'antialiased');
+    document.body.classList.add('h-full', 'ficha', 'bg-papel', 'font-sans', 'text-[13px]', 'leading-5', 'text-tinta', 'antialiased');
     document.body.insertAdjacentHTML('afterbegin', `
-      <a href="#tela" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-white focus:text-petrol-800 focus:px-3 focus:py-2 focus:rounded-lg">Pular para o conteúdo</a>
+      <a href="#tela" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-elevado focus:text-tinta focus:px-3 focus:py-2 focus:rounded-lg">Pular para o conteúdo</a>
       <div class="flex h-screen overflow-hidden">
-        <div data-fundo-menu class="hidden fixed inset-0 z-30 bg-slate-900/50 md:hidden"></div>
-        <aside data-sidebar class="hidden md:flex w-60 shrink-0 bg-petrol-950 dark:bg-petrol-900 text-slate-300 flex-col dark:border-r dark:border-white/10">
-          <div class="h-14 flex items-center gap-3 px-5 border-b border-white/10">
-            <img src="img/aulor-simbolo.svg" alt="" class="h-9 w-9 shrink-0">
-            <div class="leading-tight min-w-0">
-              <img src="img/aulor-wordmark-claro.svg" alt="Aulor" class="h-4 w-auto">
-              <p class="text-[11px] text-slate-400 mt-1 truncate" title="${esc(Aulor.escola().nome)}">${esc(Aulor.escola().nome)}</p>
+        <div data-fundo-menu class="hidden fixed inset-0 z-30 bg-veu md:hidden"></div>
+        <aside data-sidebar class="shell shell-lateral hidden md:flex">
+          <div class="shell-marca">
+            <img src="img/aulor-simbolo.svg" alt="" class="shell-simbolo">
+            <div class="min-w-0">
+              <img src="img/aulor-wordmark-claro.svg" alt="Aulor" class="shell-wordmark">
+              <p class="shell-sub truncate" title="${esc(Aulor.escola().nome)}">${esc(Aulor.escola().nome)}</p>
             </div>
           </div>
-          <nav class="flex-1 py-4 px-3 space-y-1 text-sm overflow-y-auto" aria-label="Menu principal">${navHtml(u)}</nav>
-          <div class="px-3 py-3 border-t border-white/10">
-            <button type="button" data-abrir-demo class="w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-left hover:bg-white/5 transition">
-              <span class="min-w-0">
-                <span class="block text-[11px] font-semibold uppercase tracking-wider text-laranja">Demonstração</span>
-                <span class="block text-xs text-slate-400 truncate">Plano ${esc(plano.nome)} · dados fictícios</span>
-              </span>
-              ${svg('M8.25 4.5l7.5 7.5-7.5 7.5', 'h-4 w-4 text-slate-500')}
-            </button>
-          </div>
+          <nav class="shell-nav" aria-label="Menu principal">${navHtml(u)}</nav>
+          <button type="button" data-abrir-demo class="shell-rodape w-full flex items-center justify-between gap-2 text-left transition hover:bg-realce">
+            <span class="min-w-0">
+              <span class="flex items-center gap-1.5 font-medium text-tinta-2"><span class="h-[7px] w-[7px] rounded-full bg-cobre"></span>Demonstração</span>
+              <span class="block truncate">Plano ${esc(plano.nome)} · dados fictícios</span>
+            </span>
+            ${svg('M8.25 4.5l7.5 7.5-7.5 7.5', 'h-4 w-4')}
+          </button>
         </aside>
 
         <div class="flex-1 flex flex-col overflow-hidden min-w-0">
-          <header class="h-14 shrink-0 bg-petrol-950 dark:bg-petrol-900 border-b border-white/10 px-3 md:px-6 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-2 min-w-0">
-              <button type="button" data-menu title="Menu" aria-label="Mostrar ou ocultar o menu"
-                class="-ml-1 p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40">${svg(ICONES.menu)}</button>
-              <h1 class="font-display font-semibold text-white truncate">${esc(titulo)}</h1>
+          <header class="shell shell-topo">
+            <div class="shell-contexto">
+              <button type="button" data-menu title="Ocultar menu (⌘B)" aria-label="Mostrar ou ocultar o menu" class="shell-icone">${svg(ICONES.menu)}</button>
+              <h1 class="shell-titulo">${esc(titulo)}</h1>
             </div>
-            <div class="flex items-center gap-1.5 sm:gap-3">
-              <button type="button" data-toggle-tema title="Tema escuro"
-                class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
-                <span class="dark:hidden">${svg(ICONES.lua)}</span><span class="hidden dark:block">${svg(ICONES.sol)}</span>
+            <div class="shell-acoes">
+              <button type="button" data-toggle-tema title="Tema escuro" class="shell-icone">
+                <span class="shell-tema-lua">${svg(ICONES.lua)}</span><span class="shell-tema-sol">${svg(ICONES.sol)}</span>
               </button>
-              <button type="button" data-abrir-demo title="Trocar de usuário ou restaurar a demonstração"
-                class="flex items-center gap-2.5 pl-2 sm:pl-3 sm:border-l border-white/15 rounded-lg text-left hover:bg-white/5 transition py-1 pr-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
-                <span class="h-8 w-8 rounded-full bg-petrol-700 text-white grid place-items-center text-xs font-semibold">${esc(iniciais)}</span>
-                <span class="leading-tight hidden sm:block">
-                  <span class="block text-sm font-medium text-white">${esc(u?.nome ?? '')}</span>
-                  <span class="block text-[11px] text-slate-400">${esc(perfisTexto(u))}</span>
+              <button type="button" data-abrir-demo title="Trocar de usuário ou restaurar a demonstração" class="shell-usuario text-left">
+                <span class="shell-avatar" aria-hidden="true">${esc(iniciais)}</span>
+                <span class="hidden sm:block">
+                  <span class="shell-usuario-nome">${esc(u?.nome ?? '')}</span>
+                  <span class="shell-usuario-papel">${esc(perfisTexto(u))}</span>
                 </span>
               </button>
             </div>
@@ -273,50 +266,50 @@ const Shell = (() => {
     const ativos = USUARIOS.filter((x) => x.status === 'ativo');
     root.innerHTML = `
       <div class="fixed inset-0 z-50 flex justify-end">
-        <div data-fechar-demo class="absolute inset-0 bg-slate-900/50 dark:bg-black/70"></div>
-        <aside role="dialog" aria-modal="true" aria-label="Demonstração" class="drawer-anim relative w-full max-w-md h-full overflow-y-auto bg-white dark:bg-neutral-950 border-l border-slate-200 dark:border-neutral-800 shadow-xl">
-          <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-start justify-between gap-3">
+        <div data-fechar-demo class="absolute inset-0 bg-veu"></div>
+        <aside role="dialog" aria-modal="true" aria-label="Demonstração" class="drawer-anim relative w-full max-w-md h-full overflow-y-auto bg-elevado border-l border-linha shadow-[0_24px_60px_-20px_rgba(0,0,0,.4)]">
+          <div class="px-5 py-4 border-b border-linha flex items-start justify-between gap-3">
             <div>
-              <p class="text-[11px] font-semibold uppercase tracking-wider text-laranja-escuro dark:text-laranja">Ambiente de demonstração</p>
-              <h2 class="font-display font-semibold text-slate-900 dark:text-neutral-100">${esc(Aulor.escola().nome)}</h2>
-              <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">Escola e pessoas fictícias. As alterações ficam salvas só neste navegador — não há servidor, autenticação real nem isolamento entre escolas nesta versão.</p>
+              <p class="text-xs font-medium text-cobre-tinta">Ambiente de demonstração</p>
+              <h2 class="font-display font-semibold text-tinta">${esc(Aulor.escola().nome)}</h2>
+              <p class="text-xs text-tinta-2 mt-1">Escola e pessoas fictícias. As alterações ficam salvas só neste navegador — não há servidor, autenticação real nem isolamento entre escolas nesta versão.</p>
             </div>
-            <button type="button" data-fechar-demo class="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-neutral-200" aria-label="Fechar">${svg(ICONES.fechar)}</button>
+            <button type="button" data-fechar-demo class="p-1 rounded text-tinta-3 hover:text-tinta" aria-label="Fechar">${svg(ICONES.fechar)}</button>
           </div>
 
-          <section class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-2">Entrar como</h3>
+          <section class="px-5 py-4 border-b border-linha">
+            <h3 class="text-xs font-medium text-tinta-2 mb-2">Entrar como</h3>
             <div class="space-y-1">
               ${ativos.map((x) => `
-                <button type="button" data-entrar="${x.id}" class="w-full flex items-center gap-3 rounded-lg px-2.5 py-2 text-left transition ${x.id === u?.id ? 'bg-petrol-800/5 dark:bg-sky-400/10 ring-1 ring-petrol-800/20 dark:ring-sky-400/30' : 'hover:bg-slate-50 dark:hover:bg-neutral-900'}">
+                <button type="button" data-entrar="${x.id}" class="w-full flex items-center gap-3 rounded-lg px-2.5 py-2 text-left transition ${x.id === u?.id ? 'bg-selecao ring-1 ring-marca-tinta/20' : 'hover:bg-realce'}">
                   <span class="min-w-0 flex-1">
-                    <span class="block text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(x.nome)} ${x.id === u?.id ? '<span class="text-xs font-normal text-slate-400">· você</span>' : ''}</span>
-                    <span class="block text-xs text-slate-500 dark:text-neutral-400">${esc(x.cargo)} · perfil ${esc(perfisTexto(x))}</span>
+                    <span class="block text-sm font-medium text-tinta">${esc(x.nome)} ${x.id === u?.id ? '<span class="text-xs font-normal text-tinta-3">· você</span>' : ''}</span>
+                    <span class="block text-xs text-tinta-2">${esc(x.cargo)} · perfil ${esc(perfisTexto(x))}</span>
                   </span>
                 </button>`).join('')}
             </div>
           </section>
 
-          <section class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-2">Roteiro de 10 minutos</h3>
-            <ol class="space-y-1 text-sm list-decimal list-inside marker:text-slate-400">
-              ${ROTEIRO.map(([t, href]) => `<li><a class="text-petrol-800 dark:text-sky-300 hover:underline" href="${href}">${esc(t)}</a></li>`).join('')}
+          <section class="px-5 py-4 border-b border-linha">
+            <h3 class="text-xs font-medium text-tinta-2 mb-2">Roteiro de 10 minutos</h3>
+            <ol class="space-y-1 text-sm list-decimal list-inside marker:text-tinta-3">
+              ${ROTEIRO.map(([t, href]) => `<li><a class="text-marca-tinta hover:underline" href="${href}">${esc(t)}</a></li>`).join('')}
             </ol>
           </section>
 
-          <section class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-1">Plano da escola</h3>
-            <p class="text-xs text-slate-500 dark:text-neutral-400 mb-2">Troca o plano para mostrar o que cada um libera (hipótese comercial em validação).</p>
+          <section class="px-5 py-4 border-b border-linha">
+            <h3 class="text-xs font-medium text-tinta-2 mb-1">Plano da escola</h3>
+            <p class="text-xs text-tinta-2 mb-2">Troca o plano para mostrar o que cada um libera (hipótese comercial em validação).</p>
             <div class="grid grid-cols-3 gap-2">
-              ${Planos.PLANOS.map((p) => `<button type="button" data-plano="${p.id}" class="rounded-lg border px-2 py-2 text-sm font-medium transition ${p.id === plano ? 'border-petrol-800 bg-petrol-800 text-white dark:border-sky-400 dark:bg-sky-400 dark:text-black' : 'border-slate-300 dark:border-neutral-700 text-slate-700 dark:text-neutral-200 hover:border-slate-400'}">${esc(p.nome)}</button>`).join('')}
+              ${Planos.PLANOS.map((p) => `<button type="button" data-plano="${p.id}" class="rounded-lg border px-2 py-2 text-sm font-medium transition ${p.id === plano ? 'border-marca bg-marca text-sobre-marca' : 'border-linha-forte text-tinta hover:border-tinta-3'}">${esc(p.nome)}</button>`).join('')}
             </div>
           </section>
 
           <section class="px-5 py-4">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-1">Restaurar demonstração</h3>
-            <p class="text-xs text-slate-500 dark:text-neutral-400 mb-2">Apaga as alterações e gera a escola de novo com datas a partir de hoje.</p>
-            <button type="button" data-restaurar class="rounded-lg border border-red-300 dark:border-red-800 text-red-700 dark:text-red-400 px-3 py-2 text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-950/40 transition">Restaurar dados iniciais</button>
-            <a href="validar.html" class="block mt-4 text-sm text-petrol-800 dark:text-sky-300 hover:underline">Abrir a página pública de validação de certificados</a>
+            <h3 class="text-xs font-medium text-tinta-2 mb-1">Restaurar demonstração</h3>
+            <p class="text-xs text-tinta-2 mb-2">Apaga as alterações e gera a escola de novo com datas a partir de hoje.</p>
+            <button type="button" data-restaurar class="rounded-lg border border-ruim/40 text-ruim px-3 py-2 text-sm font-semibold hover:bg-ruim/10 transition">Restaurar dados iniciais</button>
+            <a href="validar.html" class="block mt-4 text-sm text-marca-tinta hover:underline">Abrir a página pública de validação de certificados</a>
           </section>
         </aside>
       </div>`;
@@ -344,10 +337,10 @@ const Shell = (() => {
   function semAcesso() {
     document.getElementById('tela').innerHTML = `
       <div class="max-w-md mx-auto mt-16 text-center">
-        <p class="text-sm font-semibold text-laranja-escuro dark:text-laranja">Sem acesso</p>
-        <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100 mt-1">Seu perfil não libera esta tela</h2>
-        <p class="text-sm text-slate-500 dark:text-neutral-400 mt-2">${esc(nome())} entra com o perfil ${esc(perfisTexto(usuario()))}. Peça ao administrador da escola para ajustar em Pessoas › Usuários.</p>
-        <a href="${primeiraPagina()}" class="inline-block mt-5 rounded-lg bg-laranja-escuro hover:bg-laranja-profundo text-white px-4 py-2 text-sm font-semibold">Ir para o início</a>
+        <p class="text-sm font-semibold text-cobre-tinta">Sem acesso</p>
+        <h2 class="font-display text-xl font-semibold text-tinta mt-1">Seu perfil não libera esta tela</h2>
+        <p class="text-sm text-tinta-2 mt-2">${esc(nome())} entra com o perfil ${esc(perfisTexto(usuario()))}. Peça ao administrador da escola para ajustar em Pessoas › Usuários.</p>
+        <a href="${primeiraPagina()}" class="btn-pri mt-5">Ir para o início</a>
       </div>`;
   }
 

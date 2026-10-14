@@ -24,7 +24,7 @@
     balao.className = 'tooltip-global';
     balao.style.cssText = [
       'position:fixed', 'z-index:9999', 'max-width:320px', 'padding:6px 10px', 'border-radius:8px',
-      'font:500 13px/1.4 "Inter", system-ui, sans-serif', 'pointer-events:none', 'white-space:pre-line',
+      'font:500 13px/1.4 "Atkinson Hyperlegible Next", system-ui, sans-serif', 'pointer-events:none', 'white-space:pre-line',
       'opacity:0', 'transform:translateY(2px)', 'transition:opacity .12s ease, transform .12s ease',
       'box-shadow:0 6px 20px rgba(15,23,42,.18)',
     ].join(';');
@@ -35,8 +35,8 @@
   function aplicarTema() {
     if (!balao) return;
     const dark = document.documentElement.classList.contains('dark');
-    balao.style.background = dark ? '#e5e5e5' : '#0f172a';
-    balao.style.color = dark ? '#171717' : '#f8fafc';
+    balao.style.background = dark ? '#F5F0E8' : '#071E2C';
+    balao.style.color = dark ? '#071E2C' : '#F5F0E8';
   }
 
   function textoDe(el) {
