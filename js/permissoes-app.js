@@ -82,21 +82,13 @@ function esc(texto) {
   }[c]));
 }
 
-const CORES_AVATAR = ['bg-sky-600', 'bg-emerald-600', 'bg-violet-600', 'bg-rose-500', 'bg-amber-500', 'bg-teal-600'];
-
-function corAvatar(id) {
-  let hash = 0;
-  for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return CORES_AVATAR[hash % CORES_AVATAR.length];
-}
-
 function iniciais(nome) {
   const partes = nome.trim().split(/\s+/);
   return ((partes[0]?.[0] || '') + (partes[1]?.[0] || '')).toUpperCase();
 }
 
 function avatarHtml(usuario, tamanho = 'h-7 w-7 text-[10px]') {
-  return `<span class="${tamanho} ${corAvatar(usuario.id)} rounded-full grid place-items-center text-white font-semibold ring-2 ring-white dark:ring-neutral-950" title="${esc(usuario.nome)}">${iniciais(usuario.nome)}</span>`;
+  return `<span class="${tamanho} bg-selecao text-tinta rounded-full grid place-items-center font-semibold ring-2 ring-elevado" title="${esc(usuario.nome)}">${iniciais(usuario.nome)}</span>`;
 }
 
 function membrosDoPerfil(perfilId) {
@@ -106,20 +98,20 @@ function membrosDoPerfil(perfilId) {
 // ---------- Tipos de usuário (colaborador / professor / aluno) ----------
 
 const COR_TIPO = {
-  colaborador: 'bg-petrol-800/10 text-petrol-800 border-petrol-800/20 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
-  instrutor: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800',
-  aluno: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+  colaborador: 'bg-selecao text-marca-tinta border-marca-tinta/30',
+  instrutor: 'bg-selecao text-marca-tinta border-marca-tinta/30',
+  aluno: 'bg-bom/10 text-bom border-bom/30',
 };
 
 function chipTipoHtml(tipo, extra = '') {
-  return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${COR_TIPO[tipo.id] || 'bg-slate-100 text-slate-600 border-slate-200'} ${extra}">${esc(tipo.nome)}</span>`;
+  return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${COR_TIPO[tipo.id] || 'bg-etiqueta text-tinta-2 border-linha'} ${extra}">${esc(tipo.nome)}</span>`;
 }
 
 // Chips dos tipos do usuário; cada um abre o cadastro de origem.
 function tiposUsuarioHtml(usuario, { link = true } = {}) {
   const vinculos = usuario.vinculos || [];
   if (!vinculos.length) {
-    return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800" title="Usuário sem cadastro de origem">Sem vínculo</span>';
+    return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border bg-cobre/15 text-aviso border-cobre/40" title="Usuário sem cadastro de origem">Sem vínculo</span>';
   }
   return vinculos.map((v) => {
     const tipo = Permissoes.getTipo(v.tipo);
@@ -142,13 +134,13 @@ function htmlCartoesTipos(selecionados = []) {
     <div class="grid gap-2 mt-1.5" data-cartoes-tipos>
       ${TIPOS_USUARIO.map((t) => `
         <label class="flex items-start gap-3 px-3.5 py-3 rounded-xl border cursor-pointer transition
-          has-[:checked]:border-petrol-800 has-[:checked]:bg-petrol-800/5 dark:has-[:checked]:border-sky-400 dark:has-[:checked]:bg-sky-950/40
-          border-slate-200 dark:border-neutral-800 hover:border-slate-300 dark:hover:border-neutral-700">
+          has-[:checked]:border-marca has-[:checked]:bg-selecao
+          border-linha hover:border-tinta-3/60">
           <input type="checkbox" name="tipo" value="${t.id}" ${selecionados.includes(t.id) ? 'checked' : ''}
-            class="mt-0.5 h-4 w-4 rounded border-slate-300 text-petrol-800 focus:ring-petrol-800/30 dark:border-neutral-600 dark:bg-neutral-900">
+            class="mt-0.5 h-4 w-4 rounded border-linha-forte text-marca-tinta">
           <span class="min-w-0">
-            <span class="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(t.plural)} ${chipTipoHtml(t)}</span>
-            <span class="block text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(t.descricao)}</span>
+            <span class="flex items-center gap-2 text-sm font-medium text-tinta">${esc(t.plural)} ${chipTipoHtml(t)}</span>
+            <span class="block text-xs text-tinta-2 mt-0.5">${esc(t.descricao)}</span>
           </span>
         </label>`).join('')}
     </div>`;
@@ -161,7 +153,7 @@ function tiposMarcados(root) {
 // <select> de tipo usado como filtro nas listas de usuários.
 function selectTipoHtml(id, valor, tiposDisponiveis = TIPOS_USUARIO) {
   return `
-    <select id="${id}" class="border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-neutral-950 dark:text-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400">
+    <select id="${id}" class="border border-linha-forte rounded-lg px-3 py-2 text-sm bg-elevado focus:border-marca-tinta">
       <option value="todos" ${valor === 'todos' ? 'selected' : ''}>Todos os tipos</option>
       ${tiposDisponiveis.map((t) => `<option value="${t.id}" ${valor === t.id ? 'selected' : ''}>${esc(t.plural)}</option>`).join('')}
     </select>`;
@@ -182,10 +174,11 @@ function usuarioTemTipo(usuario, tipoId) {
 // ---------- Toasts ----------
 
 function toast(mensagem, tipo = 'ok') {
-  const cores = { ok: 'bg-emerald-600', alerta: 'bg-slate-700 dark:bg-neutral-700', erro: 'bg-rose-600' };
+  const ponto = { ok: 'bg-bom', alerta: 'bg-aviso', erro: 'bg-ruim' };
   const item = document.createElement('div');
-  item.className = `toast-anim ${cores[tipo]} text-white text-sm px-4 py-2.5 rounded-lg shadow-lg max-w-xs`;
-  item.textContent = mensagem;
+  item.className = 'toast-anim flex items-center gap-2.5 max-w-sm rounded-lg ficha-inverso bg-papel text-tinta text-[13px] leading-5 px-3.5 py-2.5 shadow-[0_8px_24px_-8px_rgba(0,0,0,.35)]';
+  item.innerHTML = `<span class="h-2 w-2 shrink-0 rounded-full ${ponto[tipo]}"></span><span></span>`;
+  item.lastChild.textContent = mensagem;
   document.getElementById('toast-root').appendChild(item);
   setTimeout(() => item.remove(), 3500);
 }
@@ -196,8 +189,8 @@ function abrirModal(conteudoHtml, { largura = 'max-w-md', semPadding = false } =
   const root = document.getElementById('modal-root');
   root.innerHTML = `
     <div class="fixed inset-0 z-40 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-petrol-950/60" data-fechar-modal></div>
-      <div class="modal-anim relative bg-white dark:bg-neutral-950 rounded-xl shadow-xl w-full ${largura} ${semPadding ? 'flex flex-col max-h-[90vh] overflow-hidden' : 'p-6'}">${conteudoHtml}</div>
+      <div class="absolute inset-0 bg-veu" data-fechar-modal></div>
+      <div class="modal-anim relative bg-elevado rounded-xl shadow-[0_24px_60px_-20px_rgba(0,0,0,.4)] w-full ${largura} ${semPadding ? 'flex flex-col max-h-[90vh] overflow-hidden' : 'p-6'}">${conteudoHtml}</div>
     </div>`;
   root.querySelector('[data-fechar-modal]').addEventListener('click', fecharModal);
   root.querySelector('input, button')?.focus();
@@ -232,13 +225,12 @@ document.addEventListener('click', (e) => {
 });
 
 function confirmar({ titulo, mensagem, rotulo, aoConfirmar, tom = 'perigo' }) {
-  const corBotao = tom === 'perigo' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-petrol-800 hover:bg-petrol-900';
   abrirModal(`
-    <h3 class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100">${esc(titulo)}</h3>
-    <p class="text-sm text-slate-600 dark:text-neutral-400 mt-2">${esc(mensagem)}</p>
+    <h3 class="font-display font-semibold text-lg text-tinta">${esc(titulo)}</h3>
+    <p class="text-sm text-tinta-2 mt-2">${esc(mensagem)}</p>
     <div class="mt-6 flex justify-end gap-2">
-      <button data-cancelar class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-neutral-400 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-900 transition">Cancelar</button>
-      <button data-confirmar class="px-4 py-2 text-sm font-semibold text-white ${corBotao} rounded-lg transition">${esc(rotulo)}</button>
+      <button data-cancelar class="btn-sec">Cancelar</button>
+      <button data-confirmar class="${tom === 'perigo' ? 'btn-perigo' : 'btn-pri'}">${esc(rotulo)}</button>
     </div>`);
   const root = document.getElementById('modal-root');
   root.querySelector('[data-cancelar]').addEventListener('click', fecharModal);
@@ -251,22 +243,22 @@ function confirmar({ titulo, mensagem, rotulo, aoConfirmar, tom = 'perigo' }) {
 function abrirModalNovoPerfil() {
   if (bloqueado()) return;
   abrirModal(`
-    <h3 class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100">Novo perfil de acesso</h3>
-    <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">O perfil é criado sem nenhuma permissão — ative as ações em seguida.</p>
-    <label class="block mt-4 text-sm font-medium text-slate-700 dark:text-neutral-200">
+    <h3 class="font-display font-semibold text-lg text-tinta">Novo perfil de acesso</h3>
+    <p class="text-sm text-tinta-2 mt-1">O perfil é criado sem nenhuma permissão — ative as ações em seguida.</p>
+    <label class="block mt-4 text-sm font-medium text-tinta">
       Nome do perfil
       <input id="input-novo-perfil" type="text" placeholder="Ex.: Secretaria acadêmica" autocomplete="off"
-        class="mt-1.5 w-full border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
+        class="mt-1.5 w-full border border-linha-forte rounded-lg px-3 py-2.5 text-sm focus:border-marca-tinta bg-elevado text-tinta placeholder:text-tinta-3">
     </label>
     <div class="mt-4">
-      <p class="text-sm font-medium text-slate-700 dark:text-neutral-200">Para quem é este perfil</p>
-      <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Só usuários desses tipos poderão receber o perfil.</p>
+      <p class="text-sm font-medium text-tinta">Para quem é este perfil</p>
+      <p class="text-xs text-tinta-2 mt-0.5">Só usuários desses tipos poderão receber o perfil.</p>
       ${htmlCartoesTipos()}
     </div>
-    <p id="erro-novo-perfil" class="hidden mt-2 text-sm text-rose-600 dark:text-rose-400"></p>
+    <p id="erro-novo-perfil" class="hidden mt-2 text-sm text-ruim"></p>
     <div class="mt-6 flex justify-end gap-2">
-      <button data-cancelar class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-neutral-400 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-900 transition">Cancelar</button>
-      <button data-criar class="px-4 py-2 text-sm font-semibold text-white bg-petrol-800 hover:bg-petrol-900 rounded-lg transition">Criar perfil</button>
+      <button data-cancelar class="btn-sec">Cancelar</button>
+      <button data-criar class="btn-pri">Criar perfil</button>
     </div>`);
 
   const root = document.getElementById('modal-root');
@@ -297,17 +289,17 @@ function abrirModalNovoPerfil() {
 function abrirModalDuplicarPerfil(perfilOrigem) {
   if (bloqueado()) return;
   abrirModal(`
-    <h3 class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100">Duplicar perfil "${esc(perfilOrigem.nome)}"</h3>
-    <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">Todas as permissões e o público (${esc(tiposPerfilTexto(perfilOrigem).toLowerCase())}) serão copiados. Os usuários vinculados <strong>não</strong> são copiados.</p>
-    <label class="block mt-4 text-sm font-medium text-slate-700 dark:text-neutral-200">
+    <h3 class="font-display font-semibold text-lg text-tinta">Duplicar perfil "${esc(perfilOrigem.nome)}"</h3>
+    <p class="text-sm text-tinta-2 mt-1">Todas as permissões e o público (${esc(tiposPerfilTexto(perfilOrigem).toLowerCase())}) serão copiados. Os usuários vinculados <strong>não</strong> são copiados.</p>
+    <label class="block mt-4 text-sm font-medium text-tinta">
       Nome do novo perfil
       <input id="input-duplicar-perfil" type="text" value="Cópia de ${esc(perfilOrigem.nome)}" autocomplete="off"
-        class="mt-1.5 w-full border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
+        class="mt-1.5 w-full border border-linha-forte rounded-lg px-3 py-2.5 text-sm focus:border-marca-tinta bg-elevado text-tinta placeholder:text-tinta-3">
     </label>
-    <p id="erro-duplicar-perfil" class="hidden mt-2 text-sm text-rose-600 dark:text-rose-400"></p>
+    <p id="erro-duplicar-perfil" class="hidden mt-2 text-sm text-ruim"></p>
     <div class="mt-6 flex justify-end gap-2">
-      <button data-cancelar class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-neutral-400 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-900 transition">Cancelar</button>
-      <button data-duplicar class="px-4 py-2 text-sm font-semibold text-white bg-petrol-800 hover:bg-petrol-900 rounded-lg transition">Duplicar perfil</button>
+      <button data-cancelar class="btn-sec">Cancelar</button>
+      <button data-duplicar class="btn-pri">Duplicar perfil</button>
     </div>`);
 
   const root = document.getElementById('modal-root');
@@ -339,14 +331,14 @@ function abrirModalDuplicarPerfil(perfilOrigem) {
 function abrirModalTiposPerfil(perfil) {
   if (bloqueado(perfil.id)) return;
   abrirModal(`
-    <h3 class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100">Para quem é o perfil "${esc(perfil.nome)}"</h3>
-    <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">Usuários de um tipo que for desmarcado saem do perfil.</p>
+    <h3 class="font-display font-semibold text-lg text-tinta">Para quem é o perfil "${esc(perfil.nome)}"</h3>
+    <p class="text-sm text-tinta-2 mt-1">Usuários de um tipo que for desmarcado saem do perfil.</p>
     ${htmlCartoesTipos(perfil.tipos || [])}
-    <p id="aviso-tipos-perfil" class="hidden mt-3 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm px-3.5 py-2.5"></p>
-    <p id="erro-tipos-perfil" class="hidden mt-2 text-sm text-rose-600 dark:text-rose-400"></p>
+    <p id="aviso-tipos-perfil" class="hidden mt-3 rounded-lg bg-cobre/15 border border-cobre/40 text-tinta text-sm px-3.5 py-2.5"></p>
+    <p id="erro-tipos-perfil" class="hidden mt-2 text-sm text-ruim"></p>
     <div class="mt-6 flex justify-end gap-2">
-      <button data-cancelar class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-neutral-400 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-900 transition">Cancelar</button>
-      <button data-salvar class="px-4 py-2 text-sm font-semibold text-white bg-petrol-800 hover:bg-petrol-900 rounded-lg transition">Salvar</button>
+      <button data-cancelar class="btn-sec">Cancelar</button>
+      <button data-salvar class="btn-pri">Salvar</button>
     </div>`);
 
   const root = document.getElementById('modal-root');
@@ -382,15 +374,15 @@ function abrirModalTiposPerfil(perfil) {
 function switchHtml(ligado, atributos, titulo) {
   return `
     <button type="button" role="switch" aria-checked="${ligado}" ${atributos} title="${esc(titulo)}"
-      class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 ${ligado ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}">
-      <span class="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white dark:bg-neutral-950 shadow transition-transform ${ligado ? 'translate-x-5' : ''}"></span>
+      class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${ligado ? 'bg-bom' : 'bg-linha-forte'}">
+      <span class="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-elevado shadow transition-transform ${ligado ? 'translate-x-5' : ''}"></span>
     </button>`;
 }
 
 function badgeStatusHtml(ativo) {
   return ativo
-    ? '<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">Ativo</span>'
-    : '<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700">Inativo</span>';
+    ? '<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-bom/10 text-bom border border-bom/30">Ativo</span>'
+    : '<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-etiqueta text-tinta-2 border border-linha">Inativo</span>';
 }
 
 // ---------- Seletor do perfil atual (dropdown no cabeçalho do card) ----------
@@ -399,21 +391,21 @@ function htmlListaPerfilPopover() {
   const termo = estado.buscaPerfilLista.trim().toLowerCase();
   const perfis = PERFIS.filter((p) => !termo || p.nome.toLowerCase().includes(termo));
   if (!perfis.length) {
-    return '<p class="text-xs text-slate-400 px-2 py-3 text-center">Nenhum perfil encontrado.</p>';
+    return '<p class="text-xs text-tinta-3 px-2 py-3 text-center">Nenhum perfil encontrado.</p>';
   }
   return perfis.map((perfil) => {
     const membros = membrosDoPerfil(perfil.id).length;
     const selecionado = perfil.id === estado.perfilSelecionadoId;
     return `
       <button type="button" data-escolher-perfil="${perfil.id}"
-        class="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left transition hover:bg-slate-50 dark:hover:bg-neutral-900 ${selecionado ? 'bg-slate-50 dark:bg-neutral-900' : ''}">
-        <span class="h-2 w-2 rounded-full shrink-0 ${perfil.ativo ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}"></span>
+        class="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left transition hover:bg-realce ${selecionado ? 'bg-faixa' : ''}">
+        <span class="h-2 w-2 rounded-full shrink-0 ${perfil.ativo ? 'bg-bom' : 'bg-linha-forte'}"></span>
         <span class="flex-1 min-w-0">
-          <span class="block text-sm truncate ${perfil.ativo ? 'text-slate-800 dark:text-neutral-100' : 'text-slate-400'}">${esc(perfil.nome)}${perfil.ativo ? '' : ' (inativo)'}</span>
-          <span class="block text-[11px] text-slate-400 truncate">${esc(tiposPerfilTexto(perfil))}</span>
+          <span class="block text-sm truncate ${perfil.ativo ? 'text-tinta' : 'text-tinta-3'}">${esc(perfil.nome)}${perfil.ativo ? '' : ' (inativo)'}</span>
+          <span class="block text-[11px] text-tinta-3 truncate">${esc(tiposPerfilTexto(perfil))}</span>
         </span>
-        <span class="text-[11px] text-slate-400 shrink-0">${membros} usuário(s)</span>
-        ${selecionado ? '<svg class="h-4 w-4 text-petrol-800 dark:text-sky-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>' : ''}
+        <span class="text-[11px] text-tinta-3 shrink-0">${membros} usuário(s)</span>
+        ${selecionado ? '<svg class="h-4 w-4 text-marca-tinta shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>' : ''}
       </button>`;
   }).join('');
 }
@@ -443,15 +435,15 @@ function renderListaPerfis() {
   // Nenhum perfil cadastrado: convite direto para criar o primeiro.
   if (!PERFIS.length) {
     container.innerHTML = `
-      <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm p-8 md:p-12">
+      <div class="bg-elevado rounded-xl border border-linha p-8 md:p-12">
         <div class="max-w-md mx-auto text-center">
-          <div class="h-12 w-12 mx-auto rounded-full bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300 grid place-items-center">
+          <div class="h-12 w-12 mx-auto rounded-full bg-selecao text-marca-tinta grid place-items-center">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
           </div>
-          <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-neutral-100 mt-4">Nenhum perfil de acesso ainda</h3>
-          <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">Os perfis definem o que cada grupo de usuários pode ver e fazer no sistema. Comece criando o primeiro.</p>
+          <h3 class="font-display text-lg font-semibold text-tinta mt-4">Nenhum perfil de acesso ainda</h3>
+          <p class="text-sm text-tinta-2 mt-1">Os perfis definem o que cada grupo de usuários pode ver e fazer no sistema. Comece criando o primeiro.</p>
           <button type="button" data-criar-primeiro
-            class="mt-5 inline-flex items-center gap-2 bg-laranja hover:bg-laranja-escuro text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-laranja/50">
+            class="btn-pri mt-5">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
             Criar primeiro perfil
           </button>
@@ -464,17 +456,17 @@ function renderListaPerfis() {
   const opcoesTipo = [{ id: 'todos', nome: 'Todos os tipos' }, ...TIPOS_USUARIO.map((t) => ({ id: t.id, nome: t.plural }))];
   const opcoesStatus = [{ id: 'todos', nome: 'Ativos e inativos' }, { id: 'ativos', nome: 'Somente ativos' }, { id: 'inativos', nome: 'Somente inativos' }];
   const select = (id, valor, opcoes) => `
-    <select id="${id}" class="border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-neutral-950 dark:text-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400">
+    <select id="${id}" class="border border-linha-forte rounded-lg px-3 py-2 text-sm bg-elevado focus:border-marca-tinta">
       ${opcoes.map((o) => `<option value="${o.id}" ${o.id === valor ? 'selected' : ''}>${esc(o.nome)}</option>`).join('')}
     </select>`;
 
   container.innerHTML = `
-    <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm">
-      <div class="p-4 border-b border-slate-100 dark:border-neutral-900 flex flex-col sm:flex-row sm:items-center gap-2">
+    <div class="bg-elevado rounded-xl border border-linha">
+      <div class="p-4 border-b border-linha flex flex-col sm:flex-row sm:items-center gap-2">
         <div class="relative flex-1 max-w-md">
-          <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+          <svg class="h-4 w-4 text-tinta-3 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
           <input id="busca-lista" type="text" value="${esc(estado.buscaLista)}" placeholder="Buscar perfil pelo nome…" autocomplete="off"
-            class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
+            class="w-full border border-linha-forte rounded-lg pl-9 pr-3 py-2 text-sm focus:border-marca-tinta bg-elevado text-tinta placeholder:text-tinta-3">
         </div>
         ${select('tipo-lista', estado.tipoLista, opcoesTipo)}
         ${select('status-lista', estado.statusLista, opcoesStatus)}
@@ -499,9 +491,9 @@ function renderListaPerfis() {
 function htmlTabelaPerfis() {
   const perfis = perfisFiltrados();
   if (!perfis.length) {
-    return `<p class="text-sm text-slate-400 py-10 text-center">Nenhum perfil encontrado com esse filtro.</p>`;
+    return `<p class="text-sm text-tinta-3 py-10 text-center">Nenhum perfil encontrado com esse filtro.</p>`;
   }
-  const th = (texto, extra = '') => `<th class="sticky top-0 z-10 bg-slate-50 dark:bg-neutral-900 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 px-4 py-2.5 border-b border-slate-200 dark:border-neutral-800 whitespace-nowrap ${extra}">${texto}</th>`;
+  const th = (texto, extra = '') => `<th class="sticky top-0 z-10 bg-faixa text-left text-xs font-medium text-tinta-2 px-4 py-2.5 border-b border-linha whitespace-nowrap ${extra}">${texto}</th>`;
   return `
     <table class="min-w-full text-sm">
       <thead>
@@ -519,17 +511,17 @@ function htmlTabelaPerfis() {
           const membros = membrosDoPerfil(p.id).length;
           const { telas, acoes } = contagemPermissoes(p);
           return `
-            <tr data-abrir="${p.id}" class="cursor-pointer odd:bg-white even:bg-slate-50/60 dark:odd:bg-neutral-950 dark:even:bg-neutral-900/40 hover:bg-petrol-800/5 dark:hover:bg-sky-400/10 transition">
-              <td class="sticky left-0 z-10 bg-inherit px-4 py-3 border-b border-slate-100 dark:border-neutral-900">
-                <a href="${urlDetalhe(p.id)}" class="font-medium ${p.ativo ? 'text-slate-800 dark:text-neutral-100' : 'text-slate-400'} hover:text-petrol-800 dark:hover:text-sky-300">${esc(p.nome)}</a>
+            <tr data-abrir="${p.id}" class="cursor-pointer odd:bg-elevado even:bg-faixa hover:bg-realce transition">
+              <td class="sticky left-0 z-10 bg-inherit px-4 py-3 border-b border-linha">
+                <a href="${urlDetalhe(p.id)}" class="font-medium ${p.ativo ? 'text-tinta' : 'text-tinta-3'} hover:text-marca-tinta">${esc(p.nome)}</a>
               </td>
-              <td class="px-4 py-3 border-b border-slate-100 dark:border-neutral-900 text-slate-600 dark:text-neutral-300 whitespace-nowrap">${esc(tiposPerfilTexto(p))}</td>
-              <td class="px-4 py-3 border-b border-slate-100 dark:border-neutral-900 text-right tabular-nums">${membros}</td>
-              <td class="px-4 py-3 border-b border-slate-100 dark:border-neutral-900 text-right tabular-nums">${telas} <span class="text-slate-400">/ ${FEATURES.length}</span></td>
-              <td class="px-4 py-3 border-b border-slate-100 dark:border-neutral-900 text-right tabular-nums">${acoes}</td>
-              <td class="px-4 py-3 border-b border-slate-100 dark:border-neutral-900 whitespace-nowrap">
-                <span class="inline-flex items-center gap-1.5 ${p.ativo ? 'text-slate-700 dark:text-neutral-200' : 'text-slate-400'}">
-                  <span class="h-2 w-2 rounded-full ${p.ativo ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}"></span>${p.ativo ? 'Ativo' : 'Inativo'}
+              <td class="px-4 py-3 border-b border-linha text-tinta-2 whitespace-nowrap">${esc(tiposPerfilTexto(p))}</td>
+              <td class="px-4 py-3 border-b border-linha text-right tabular-nums">${membros}</td>
+              <td class="px-4 py-3 border-b border-linha text-right tabular-nums">${telas} <span class="text-tinta-3">/ ${FEATURES.length}</span></td>
+              <td class="px-4 py-3 border-b border-linha text-right tabular-nums">${acoes}</td>
+              <td class="px-4 py-3 border-b border-linha whitespace-nowrap">
+                <span class="inline-flex items-center gap-1.5 ${p.ativo ? 'text-tinta' : 'text-tinta-3'}">
+                  <span class="h-2 w-2 rounded-full ${p.ativo ? 'bg-bom' : 'bg-linha-forte'}"></span>${p.ativo ? 'Ativo' : 'Inativo'}
                 </span>
               </td>
             </tr>`;
@@ -558,73 +550,73 @@ function renderDetalhe() {
   ];
 
   container.innerHTML = `
-    <nav aria-label="Breadcrumb" class="mb-3 flex items-center gap-1.5 text-sm text-slate-500 dark:text-neutral-400">
-      <a href="${URL_LISTA}" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Perfis de acesso</a>
-      <span class="text-slate-300 dark:text-neutral-700">/</span>
-      <span class="font-medium text-slate-800 dark:text-neutral-100 truncate max-w-xs" aria-current="page">${esc(perfil.nome)}</span>
+    <nav aria-label="Breadcrumb" class="mb-3 flex items-center gap-1.5 text-sm text-tinta-2">
+      <a href="${URL_LISTA}" class="hover:text-marca-tinta transition">Perfis de acesso</a>
+      <span class="text-tinta-3">/</span>
+      <span class="font-medium text-tinta truncate max-w-xs" aria-current="page">${esc(perfil.nome)}</span>
     </nav>
-    <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm">
-      <div class="p-5 flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 dark:border-neutral-900">
+    <div class="bg-elevado rounded-xl border border-linha">
+      <div class="p-5 flex flex-wrap items-start justify-between gap-4 border-b border-linha">
         <div>
           <div class="relative inline-flex items-center gap-3" id="seletor-perfil-atual">
-            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Perfil</p>
+            <p class="text-xs font-medium text-tinta-3">Perfil</p>
             <button type="button" id="btn-perfil-atual" title="Trocar de perfil"
-              class="group flex items-center gap-2.5 rounded-lg -mx-1.5 px-1.5 py-0.5 hover:bg-slate-50 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40">
-              <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-neutral-100">${esc(perfil.nome)}</h3>
+              class="group flex items-center gap-2.5 rounded-lg -mx-1.5 px-1.5 py-0.5 hover:bg-realce transition">
+              <h3 class="font-display text-lg font-semibold text-tinta">${esc(perfil.nome)}</h3>
               ${badgeStatusHtml(perfil.ativo)}
-              <svg class="h-4 w-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-neutral-200 transition" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+              <svg class="h-4 w-4 text-tinta-3 group-hover:text-tinta-2 transition" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
             </button>
-            <div id="popover-perfil" class="hidden absolute left-0 top-full mt-1.5 w-80 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-40 p-3">
+            <div id="popover-perfil" class="hidden absolute left-0 top-full mt-1.5 w-80 bg-elevado border border-linha rounded-xl shadow-[0_24px_60px_-20px_rgba(0,0,0,.4)] z-40 p-3">
               <input id="busca-perfil-lista" type="text" value="${esc(estado.buscaPerfilLista)}" placeholder="Buscar perfil…" autocomplete="off"
-                class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
+                class="w-full border border-linha-forte rounded-lg px-3 py-2 text-sm focus:border-marca-tinta bg-elevado text-tinta placeholder:text-tinta-3">
               <div id="lista-perfil-popover" class="max-h-64 overflow-y-auto mt-2">${htmlListaPerfilPopover()}</div>
             </div>
           </div>
-          <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">${telasLiberadas} de ${FEATURES.length} telas liberadas · ${membros.length === 1 ? '1 usuário' : `${membros.length} usuários`}</p>
+          <p class="text-sm text-tinta-2 mt-1">${telasLiberadas} de ${FEATURES.length} telas liberadas · ${membros.length === 1 ? '1 usuário' : `${membros.length} usuários`}</p>
           <div class="mt-2 flex flex-wrap items-center gap-1.5">
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mr-1">Para</span>
-            ${Permissoes.tiposDoPerfil(perfil).map((t) => chipTipoHtml(t)).join('') || '<span class="text-xs text-amber-700 dark:text-amber-300">ninguém — defina o público</span>'}
+            <span class="text-xs font-medium text-tinta-3 mr-1">Para</span>
+            ${Permissoes.tiposDoPerfil(perfil).map((t) => chipTipoHtml(t)).join('') || '<span class="text-xs text-aviso">ninguém — defina o público</span>'}
             <button type="button" data-editar-tipos title="Alterar para quem é o perfil"
-              class="ml-0.5 p-1 rounded-md text-slate-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40">
+              class="ml-0.5 p-1 rounded-md text-tinta-3 hover:text-marca-tinta hover:bg-realce transition">
               <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
             </button>
           </div>
         </div>
         <div class="flex items-center gap-4">
-          <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-neutral-400">
+          <label class="flex items-center gap-2 text-sm text-tinta-2">
             ${perfil.ativo ? 'Ativo' : 'Inativo'}
             ${switchHtml(perfil.ativo, 'data-toggle-ativo', perfil.ativo ? 'Inativar perfil (suspende as permissões sem perder a configuração)' : 'Reativar perfil')}
           </label>
           <button type="button" data-duplicar title="Duplicar perfil (copia as permissões, sem os usuários)"
-            class="p-2 rounded-lg text-slate-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40">
+            class="p-2 rounded-lg text-tinta-3 hover:text-marca-tinta hover:bg-realce transition">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 8.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v8.25A2.25 2.25 0 006 16.5h2.25m8.25-8.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-7.5A2.25 2.25 0 018.25 18v-7.5a2.25 2.25 0 012.25-2.25h6z" /></svg>
           </button>
           <button type="button" data-excluir title="Excluir perfil"
-            class="p-2 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400">
+            class="p-2 rounded-lg text-tinta-3 hover:text-ruim hover:bg-ruim/10 transition">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
           </button>
         </div>
       </div>
 
-      <div class="px-5 flex gap-1 border-b border-slate-100 dark:border-neutral-900">
+      <div class="px-5 flex gap-1 border-b border-linha">
         ${abas.map((aba) => `
           <button type="button" data-aba="${aba.id}"
-            class="px-3 py-2.5 text-sm font-medium border-b-2 -mb-px transition focus:outline-none
+            class="px-3 py-2.5 text-sm font-medium border-b-2 -mb-px transition
               ${estado.aba === aba.id
-                ? 'border-laranja text-slate-900 dark:text-neutral-100'
-                : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-200'}">
+                ? 'border-tinta text-tinta'
+                : 'border-transparent text-tinta-3 hover:text-tinta-2'}">
             ${aba.rotulo}
           </button>`).join('')}
       </div>
 
       <div class="p-5">
         ${perfil.protegido ? `
-          <div class="mb-4 rounded-lg bg-petrol-800/5 dark:bg-sky-950/40 border border-petrol-800/15 dark:border-sky-900 text-slate-700 dark:text-neutral-200 text-sm px-4 py-2.5">
+          <div class="mb-4 rounded-lg bg-selecao border border-marca-tinta/30 text-tinta text-sm px-4 py-2.5">
             Perfil protegido: o Administrador sempre tem acesso a todas as telas, inclusive as que forem criadas depois. Não pode ser editado, inativado nem excluído — duplique-o para criar uma variação.
           </div>` : ''}
-        ${SOMENTE_LEITURA ? '<div class="mb-4 rounded-lg bg-slate-100 dark:bg-neutral-900 text-sm px-4 py-2.5">Somente consulta: seu perfil não gerencia perfis de acesso.</div>' : ''}
+        ${SOMENTE_LEITURA ? '<div class="mb-4 rounded-lg bg-etiqueta text-sm px-4 py-2.5">Somente consulta: seu perfil não gerencia perfis de acesso.</div>' : ''}
         ${perfil.ativo ? '' : `
-          <div class="mb-4 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm px-4 py-2.5">
+          <div class="mb-4 rounded-lg bg-cobre/15 border border-cobre/40 text-tinta text-sm px-4 py-2.5">
             Perfil inativo — as permissões abaixo estão suspensas e voltam a valer quando o perfil for reativado.
           </div>`}
         ${estado.aba === 'permissoes' ? htmlAbaPermissoes() : htmlAbaUsuarios(perfil, membros)}
@@ -769,33 +761,33 @@ function wireListaUsuarios(perfil) {
 function htmlAbaPermissoes() {
   const perfil = Permissoes.getPerfil(estado.perfilSelecionadoId);
   return `
-    <div class="mb-4 flex gap-6 border-b border-slate-200 dark:border-neutral-800">
+    <div class="mb-4 flex gap-6 border-b border-linha">
       ${PORTAIS.map((portal) => {
         const { ativas } = Permissoes.contagemAcoes(perfil, Permissoes.featuresDoPortal(portal.id));
         const selecionado = estado.portalAtivo === portal.id;
         return `
           <button type="button" data-portal="${portal.id}"
-            class="flex items-center gap-2 py-2.5 text-sm font-medium border-b-2 -mb-px transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40
+            class="flex items-center gap-2 py-2.5 text-sm font-medium border-b-2 -mb-px transition
               ${selecionado
-                ? 'border-petrol-800 dark:border-sky-400 text-slate-900 dark:text-neutral-100'
-                : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-200'}">
+                ? 'border-marca-tinta text-tinta'
+                : 'border-transparent text-tinta-3 hover:text-tinta-2'}">
             ${esc(portal.nome)}
-            <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${ativas ? 'bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300' : 'bg-slate-200 text-slate-500 dark:bg-neutral-800 dark:text-neutral-300'}">${ativas}</span>
+            <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${ativas ? 'bg-selecao text-marca-tinta' : 'bg-etiqueta text-tinta-2'}">${ativas}</span>
           </button>`;
       }).join('')}
     </div>
     <div class="flex items-center gap-2 mb-4">
       <div class="relative flex-1">
-        <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+        <svg class="h-4 w-4 text-tinta-3 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
         <input id="busca-permissoes" type="text" value="${esc(estado.busca)}" placeholder="Buscar tela ou ação — ex.: estornar, certificado, aula…" autocomplete="off"
-          class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
+          class="w-full border border-linha-forte rounded-lg pl-9 pr-3 py-2.5 text-sm focus:border-marca-tinta bg-elevado text-tinta placeholder:text-tinta-3">
       </div>
       ${(() => {
         const modulosDoPortal = Permissoes.modulosDoPortal(estado.portalAtivo);
         const todosAbertos = modulosDoPortal.every((m) => estado.modulosAbertos.has(m.id));
         return `
           <button type="button" id="btn-expandir-modulos" data-expandir="${!todosAbertos}"
-            class="shrink-0 inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-neutral-400 border border-slate-300 dark:border-neutral-700 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 px-3 py-2.5 rounded-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">
+            class="shrink-0 inline-flex items-center gap-1.5 text-sm font-medium text-tinta-2 border border-linha-forte hover:border-marca-tinta hover:text-marca-tinta px-3 py-2.5 rounded-lg transition">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="${todosAbertos ? 'M4.5 15.75l7.5-7.5 7.5 7.5' : 'M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9'}" /></svg>
             ${todosAbertos ? 'Minimizar todos' : 'Expandir todos'}
           </button>`;
@@ -822,45 +814,45 @@ function htmlModulos(perfil) {
     const { ativas, total } = Permissoes.contagemAcoes(perfil, todasDoModulo);
 
     return `
-      <div class="border border-slate-200 dark:border-neutral-800 rounded-lg mb-3 overflow-hidden">
-        <div class="flex items-center gap-1 bg-slate-50 dark:bg-neutral-900 pr-2">
+      <div class="border border-linha rounded-lg mb-3 overflow-hidden">
+        <div class="flex items-center gap-1 bg-faixa pr-2">
           <button type="button" data-toggle-modulo="${modulo.id}" aria-expanded="${aberto}"
-            class="flex-1 flex items-center gap-2.5 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-petrol-800/40">
-            <svg class="h-4 w-4 text-slate-400 transition-transform ${aberto ? 'rotate-90' : ''}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
-            <span class="text-sm font-semibold text-slate-800 dark:text-neutral-100">${esc(modulo.nome)}</span>
-            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${ativas ? 'bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300' : 'bg-slate-200 text-slate-500 dark:bg-neutral-800 dark:text-neutral-300'}">${ativas}/${total} ações</span>
+            class="flex-1 flex items-center gap-2.5 px-4 py-3 text-left hover:bg-realce transition">
+            <svg class="h-4 w-4 text-tinta-3 transition-transform ${aberto ? 'rotate-90' : ''}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+            <span class="text-sm font-semibold text-tinta">${esc(modulo.nome)}</span>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${ativas ? 'bg-selecao text-marca-tinta' : 'bg-etiqueta text-tinta-2'}">${ativas}/${total} ações</span>
           </button>
           <button type="button" data-modulo-tudo="${modulo.id}" title="Liberar todas as ações do módulo"
-            class="text-xs font-medium text-petrol-800 dark:text-sky-300 hover:bg-petrol-800/10 dark:hover:bg-petrol-700/40 px-2.5 py-1.5 rounded-md transition">Liberar tudo</button>
+            class="text-xs font-medium text-marca-tinta hover:bg-selecao px-2.5 py-1.5 rounded-md transition">Liberar tudo</button>
           <button type="button" data-modulo-nenhum="${modulo.id}" title="Remover todas as ações do módulo"
-            class="text-xs font-medium text-slate-500 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-800 px-2.5 py-1.5 rounded-md transition">Limpar</button>
+            class="text-xs font-medium text-tinta-2 hover:bg-realce px-2.5 py-1.5 rounded-md transition">Limpar</button>
         </div>
         ${aberto ? `<div class="px-4">${features.map((f) => htmlLinhaFeature(perfil, f)).join('')}</div>` : ''}
       </div>`;
   }).filter(Boolean);
 
   return secoes.join('') ||
-    `<p class="text-sm text-slate-400 py-8 text-center">Nenhuma tela ou ação encontrada para "${esc(estado.busca)}".</p>`;
+    `<p class="text-sm text-tinta-3 py-8 text-center">Nenhuma tela ou ação encontrada para "${esc(estado.busca)}".</p>`;
 }
 
 function htmlLinhaFeature(perfil, feature) {
   const ativas = perfil.permissoes[feature.id] || [];
   const acessoTela = ativas.includes('visualizar');
   return `
-    <div class="py-3.5 flex flex-col sm:flex-row sm:items-center gap-2 border-b border-slate-100 dark:border-neutral-900 last:border-0">
+    <div class="py-3.5 flex flex-col sm:flex-row sm:items-center gap-2 border-b border-linha last:border-0">
       <div class="w-52 shrink-0">
-        <p class="text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(feature.nome)}</p>
-        <p class="text-xs mt-0.5 ${acessoTela ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}">${acessoTela ? 'tela liberada' : 'sem acesso à tela'}</p>
+        <p class="text-sm font-medium text-tinta">${esc(feature.nome)}</p>
+        <p class="text-xs mt-0.5 ${acessoTela ? 'text-bom' : 'text-tinta-3'}">${acessoTela ? 'tela liberada' : 'sem acesso à tela'}</p>
       </div>
       <div class="flex flex-wrap gap-2">
         ${feature.acoes.map((acao) => {
           const ligada = ativas.includes(acao.id);
           return `
             <button type="button" data-feature="${feature.id}" data-acao="${acao.id}" aria-pressed="${ligada}"
-              class="px-3 py-1.5 rounded-full text-xs font-medium border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40
+              class="px-3 py-1.5 rounded-full text-xs font-medium border transition
                 ${ligada
-                  ? 'bg-petrol-800 border-petrol-800 text-white dark:bg-petrol-700 dark:border-petrol-700'
-                  : 'bg-white border-slate-300 text-slate-500 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300'}">
+                  ? 'bg-marca border-marca text-sobre-marca'
+                  : 'bg-elevado border-linha-forte text-tinta-2 hover:border-marca-tinta hover:text-marca-tinta'}">
               ${ligada ? '✓ ' : ''}${esc(acao.nome)}
             </button>`;
         }).join('')}
@@ -952,22 +944,22 @@ function htmlAbaUsuarios(perfil, membros) {
     { id: 'fora', rotulo: `Fora do perfil (${compativeis.length - membros.length})` },
   ];
   return `
-    <p class="text-sm text-slate-500 dark:text-neutral-400 mb-3">
+    <p class="text-sm text-tinta-2 mb-3">
       Use o interruptor para incluir ou remover cada usuário deste perfil.
-      ${tiposPerfil.length ? `Perfil para <strong class="font-medium text-slate-700 dark:text-neutral-200">${esc(tiposPerfil.map((t) => t.plural.toLowerCase()).join(' e '))}</strong>${foraDoPublico ? ` — ${foraDoPublico} usuário(s) de outros tipos não aparecem aqui.` : '.'}` : ''}
+      ${tiposPerfil.length ? `Perfil para <strong class="font-medium text-tinta">${esc(tiposPerfil.map((t) => t.plural.toLowerCase()).join(' e '))}</strong>${foraDoPublico ? ` — ${foraDoPublico} usuário(s) de outros tipos não aparecem aqui.` : '.'}` : ''}
     </p>
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
       <div class="relative flex-1">
-        <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+        <svg class="h-4 w-4 text-tinta-3 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
         <input id="busca-usuarios" type="text" value="${esc(estado.buscaUsuarios)}" placeholder="Buscar usuário pelo nome…" autocomplete="off"
-          class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
+          class="w-full border border-linha-forte rounded-lg pl-9 pr-3 py-2 text-sm focus:border-marca-tinta bg-elevado text-tinta placeholder:text-tinta-3">
       </div>
       ${tiposPerfil.length > 1 ? selectTipoHtml('tipo-usuarios', estado.tipoUsuarios, tiposPerfil) : ''}
-      <div class="inline-flex rounded-lg border border-slate-200 dark:border-neutral-800 bg-slate-100 dark:bg-neutral-900 p-0.5 gap-0.5 shrink-0">
+      <div class="inline-flex rounded-lg border border-linha bg-etiqueta p-0.5 gap-0.5 shrink-0">
         ${filtros.map((f) => `
           <button type="button" data-filtro-usuarios="${f.id}"
-            class="px-2.5 py-1.5 rounded-md text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40
-              ${estado.filtroUsuarios === f.id ? 'bg-white dark:bg-neutral-950 text-slate-900 dark:text-neutral-100 shadow-sm' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-200'}">
+            class="px-2.5 py-1.5 rounded-md text-xs font-medium transition
+              ${estado.filtroUsuarios === f.id ? 'bg-elevado text-tinta' : 'text-tinta-2 hover:text-tinta'}">
             ${f.rotulo}
           </button>`).join('')}
       </div>
@@ -986,7 +978,7 @@ function htmlListaUsuarios(perfil) {
   });
 
   if (!filtrados.length) {
-    return '<p class="text-sm text-slate-400 py-6 text-center">Nenhum usuário encontrado com esse filtro.</p>';
+    return '<p class="text-sm text-tinta-3 py-6 text-center">Nenhum usuário encontrado com esse filtro.</p>';
   }
 
   return `
@@ -998,12 +990,12 @@ function htmlListaUsuarios(perfil) {
           .map((id) => Permissoes.getPerfil(id)?.nome)
           .filter(Boolean);
         return `
-          <li class="flex items-center justify-between gap-4 py-3 border-b border-slate-100 dark:border-neutral-900 last:border-0">
+          <li class="flex items-center justify-between gap-4 py-3 border-b border-linha last:border-0">
             <div class="flex items-center gap-3 min-w-0">
               ${avatarHtml(usuario, 'h-9 w-9 text-xs')}
               <div class="min-w-0">
-                <p class="text-sm font-medium text-slate-800 dark:text-neutral-100 truncate flex items-center gap-2">${esc(usuario.nome)} ${tiposUsuarioHtml(usuario)}</p>
-                <p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${outros.length ? `Também em: ${esc(outros.join(', '))}` : 'Sem outros perfis'}</p>
+                <p class="text-sm font-medium text-tinta truncate flex items-center gap-2">${esc(usuario.nome)} ${tiposUsuarioHtml(usuario)}</p>
+                <p class="text-xs text-tinta-2 truncate">${outros.length ? `Também em: ${esc(outros.join(', '))}` : 'Sem outros perfis'}</p>
               </div>
             </div>
             <div class="flex items-center gap-3 shrink-0">
@@ -1030,10 +1022,10 @@ function renderTrocaVisao() {
     <nav class="flex gap-6 -mb-px">
       ${VISOES.map((visao) => `
         <button type="button" data-visao="${visao.id}"
-          class="pb-2.5 text-sm font-medium border-b-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40
+          class="pb-2.5 text-sm font-medium border-b-2 transition
             ${estado.visao === visao.id
-              ? 'border-laranja text-slate-900 dark:text-neutral-100'
-              : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-200'}">
+              ? 'border-tinta text-tinta'
+              : 'border-transparent text-tinta-3 hover:text-tinta-2'}">
           ${visao.rotulo}
         </button>`).join('')}
     </nav>`;
@@ -1051,8 +1043,8 @@ function botaoExtrasHtml(usuario) {
   const total = Permissoes.totalExtras(usuario);
   return `
     <button type="button" data-abrir-extras="${usuario.id}" title="Permissões extras de ${esc(usuario.nome)}"
-      class="ml-auto shrink-0 text-[11px] font-semibold px-2 py-1 rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-laranja/50
-        ${total ? 'bg-laranja/10 text-laranja-escuro dark:text-laranja hover:bg-laranja/20' : 'text-slate-400 hover:text-laranja-escuro dark:hover:text-laranja hover:bg-laranja/10'}">
+      class="ml-auto shrink-0 text-[11px] font-semibold px-2 py-1 rounded-md transition
+        ${total ? 'bg-cobre/15 text-cobre-tinta hover:bg-cobre/25' : 'text-tinta-3 hover:text-cobre-tinta hover:bg-cobre/15'}">
       ${total ? `+${total} extras` : '+ extras'}
     </button>`;
 }
@@ -1062,8 +1054,8 @@ function botaoExtrasHtml(usuario) {
 function miniSwitchHtml(ligado, atributos, titulo = '') {
   return `
     <button type="button" role="switch" aria-checked="${ligado}" ${atributos} title="${esc(titulo)}"
-      class="relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 ${ligado ? 'bg-emerald-500' : 'bg-slate-200 hover:bg-slate-300 dark:bg-neutral-700 dark:hover:bg-neutral-500'}">
-      <span class="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white dark:bg-neutral-950 shadow transition-transform ${ligado ? 'translate-x-4' : ''}"></span>
+      class="relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${ligado ? 'bg-bom' : 'bg-etiqueta hover:bg-realce'}">
+      <span class="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-elevado shadow transition-transform ${ligado ? 'translate-x-4' : ''}"></span>
     </button>`;
 }
 
@@ -1115,18 +1107,18 @@ function htmlSeletorColunas() {
   return `
     <div class="relative shrink-0" id="seletor-colunas">
       <button type="button" id="btn-colunas"
-        class="inline-flex items-center gap-2 border border-slate-300 dark:border-neutral-700 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 text-slate-600 dark:text-neutral-400 text-sm font-medium px-3 py-2 rounded-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">
+        class="inline-flex items-center gap-2 border border-linha-forte hover:border-marca-tinta hover:text-marca-tinta text-tinta-2 text-sm font-medium px-3 py-2 rounded-lg transition">
         Perfis exibidos
-        <span id="contagem-colunas" class="text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-200">${perfisExibidos().length}/${PERFIS.length}</span>
+        <span id="contagem-colunas" class="text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-etiqueta text-tinta-2">${perfisExibidos().length}/${PERFIS.length}</span>
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
       </button>
-      <div id="popover-colunas" class="hidden absolute right-0 top-full mt-1.5 w-72 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-40 p-3">
+      <div id="popover-colunas" class="hidden absolute right-0 top-full mt-1.5 w-72 bg-elevado border border-linha rounded-xl shadow-[0_24px_60px_-20px_rgba(0,0,0,.4)] z-40 p-3">
         <input id="busca-colunas" type="text" value="${esc(estado.buscaColunas)}" placeholder="Buscar perfil…" autocomplete="off"
-          class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
+          class="w-full border border-linha-forte rounded-lg px-3 py-2 text-sm focus:border-marca-tinta bg-elevado text-tinta placeholder:text-tinta-3">
         <div id="lista-colunas" class="max-h-60 overflow-y-auto mt-2">${htmlListaColunas()}</div>
-        <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-neutral-900 text-xs font-medium">
-          <button type="button" data-colunas-todos class="text-petrol-800 dark:text-sky-300 hover:bg-petrol-800/10 dark:hover:bg-petrol-700/40 px-2 py-1 rounded transition">Marcar todos</button>
-          <button type="button" data-colunas-nenhum class="text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900 px-2 py-1 rounded transition">Desmarcar todos</button>
+        <div class="flex items-center justify-between mt-2 pt-2 border-t border-linha text-xs font-medium">
+          <button type="button" data-colunas-todos class="text-marca-tinta hover:bg-selecao px-2 py-1 rounded transition">Marcar todos</button>
+          <button type="button" data-colunas-nenhum class="text-tinta-2 hover:bg-realce px-2 py-1 rounded transition">Desmarcar todos</button>
         </div>
       </div>
     </div>`;
@@ -1136,15 +1128,15 @@ function htmlListaColunas() {
   const termo = estado.buscaColunas.trim().toLowerCase();
   const perfis = PERFIS.filter((p) => !termo || p.nome.toLowerCase().includes(termo));
   if (!perfis.length) {
-    return '<p class="text-xs text-slate-400 px-2 py-3 text-center">Nenhum perfil encontrado.</p>';
+    return '<p class="text-xs text-tinta-3 px-2 py-3 text-center">Nenhum perfil encontrado.</p>';
   }
   return perfis.map((perfil) => {
     const marcado = !estado.perfisVisiveis || estado.perfisVisiveis.has(perfil.id);
     return `
-      <label class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-900 cursor-pointer">
-        <input type="checkbox" data-coluna-perfil="${perfil.id}" ${marcado ? 'checked' : ''} class="h-4 w-4 accent-[#0F3D4E] dark:accent-sky-400">
-        <span class="h-1.5 w-1.5 rounded-full shrink-0 ${perfil.ativo ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}"></span>
-        <span class="text-sm truncate ${perfil.ativo ? 'text-slate-700 dark:text-neutral-200' : 'text-slate-400'}">${esc(perfil.nome)}</span>
+      <label class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-realce cursor-pointer">
+        <input type="checkbox" data-coluna-perfil="${perfil.id}" ${marcado ? 'checked' : ''} class="check">
+        <span class="h-1.5 w-1.5 rounded-full shrink-0 ${perfil.ativo ? 'bg-bom' : 'bg-linha-forte'}"></span>
+        <span class="text-sm truncate ${perfil.ativo ? 'text-tinta' : 'text-tinta-3'}">${esc(perfil.nome)}</span>
       </label>`;
   }).join('');
 }
@@ -1194,17 +1186,17 @@ function renderMatrizUsuarios() {
   if (estado.tipoMatrizUsuarios === 'aluno') estado.tipoMatrizUsuarios = 'todos';
   const container = document.getElementById('visao-matriz');
   container.innerHTML = `
-    <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm">
-      <div class="p-4 border-b border-slate-100 dark:border-neutral-900 flex flex-col sm:flex-row sm:items-center gap-3">
+    <div class="bg-elevado rounded-xl border border-linha">
+      <div class="p-4 border-b border-linha flex flex-col sm:flex-row sm:items-center gap-3">
         <div class="relative flex-1 max-w-md">
-          <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+          <svg class="h-4 w-4 text-tinta-3 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
           <input id="busca-matriz-usuarios" type="text" value="${esc(estado.buscaMatrizUsuarios)}" placeholder="Buscar usuário pelo nome…" autocomplete="off"
-            class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
+            class="w-full border border-linha-forte rounded-lg pl-9 pr-3 py-2 text-sm focus:border-marca-tinta bg-elevado text-tinta placeholder:text-tinta-3">
         </div>
         ${selectTipoHtml('tipo-matriz-usuarios', estado.tipoMatrizUsuarios, TIPOS_MATRIZ)}
         <div class="sm:ml-auto">${htmlSeletorColunas()}</div>
       </div>
-      <p class="px-4 pt-3 text-xs text-slate-400">Alunos não aparecem aqui — a matriz é só da equipe (colaboradores) e dos professores.</p>
+      <p class="px-4 pt-3 text-xs text-tinta-3">Alunos não aparecem aqui — a matriz é só da equipe (colaboradores) e dos professores.</p>
       <div id="tabela-matriz">${htmlTabelaMatrizUsuarios()}</div>
     </div>`;
 
@@ -1256,10 +1248,10 @@ function htmlTabelaMatrizUsuarios() {
   const colunas = perfisExibidos();
 
   if (!colunas.length) {
-    return '<p class="text-sm text-slate-400 py-10 text-center">Nenhum perfil selecionado — escolha as colunas em "Perfis exibidos".</p>';
+    return '<p class="text-sm text-tinta-3 py-10 text-center">Nenhum perfil selecionado — escolha as colunas em "Perfis exibidos".</p>';
   }
   if (!usuarios.length) {
-    return '<p class="text-sm text-slate-400 py-10 text-center">Nenhum usuário encontrado.</p>';
+    return '<p class="text-sm text-tinta-3 py-10 text-center">Nenhum usuário encontrado.</p>';
   }
 
   return `
@@ -1267,15 +1259,15 @@ function htmlTabelaMatrizUsuarios() {
       <table class="min-w-full text-sm border-separate border-spacing-0">
         <thead>
           <tr>
-            <th class="sticky top-0 left-0 z-30 bg-slate-50 dark:bg-neutral-900 text-left px-4 py-3 border-b border-slate-200 dark:border-neutral-800 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 min-w-[220px]">Usuário</th>
+            <th class="sticky top-0 left-0 z-30 bg-faixa text-left px-4 py-3 border-b border-linha text-xs font-medium text-tinta-2 min-w-[220px]">Usuário</th>
             ${colunas.map((perfil) => {
               const membros = membrosDoPerfil(perfil.id).length;
               return `
-                <th class="sticky top-0 z-20 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800 px-3 py-2.5 text-center min-w-[130px]">
-                  <span class="flex items-center justify-center gap-1.5 text-xs font-semibold ${perfil.ativo ? 'text-slate-700 dark:text-neutral-200' : 'text-slate-400'}">
-                    <span class="h-1.5 w-1.5 rounded-full ${perfil.ativo ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}"></span>${esc(perfil.nome)}
+                <th class="sticky top-0 z-20 bg-faixa border-b border-linha px-3 py-2.5 text-center min-w-[130px]">
+                  <span class="flex items-center justify-center gap-1.5 text-xs font-semibold ${perfil.ativo ? 'text-tinta' : 'text-tinta-3'}">
+                    <span class="h-1.5 w-1.5 rounded-full ${perfil.ativo ? 'bg-bom' : 'bg-linha-forte'}"></span>${esc(perfil.nome)}
                   </span>
-                  <span class="block text-[10px] font-normal text-slate-400 mt-0.5">${perfil.ativo ? `${membros} usuário(s)` : 'inativo'} · ${esc(tiposPerfilTexto(perfil))}</span>
+                  <span class="block text-[10px] font-normal text-tinta-3 mt-0.5">${perfil.ativo ? `${membros} usuário(s)` : 'inativo'} · ${esc(tiposPerfilTexto(perfil))}</span>
                 </th>`;
             }).join('')}
           </tr>
@@ -1283,12 +1275,12 @@ function htmlTabelaMatrizUsuarios() {
         <tbody>
           ${usuarios.map((usuario) => `
             <tr class="group">
-              <td class="sticky left-0 z-10 bg-white dark:bg-neutral-950 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 px-4 py-2 border-b border-slate-100 dark:border-neutral-900">
+              <td class="sticky left-0 z-10 bg-elevado group-hover:bg-realce px-4 py-2 border-b border-linha">
                 <div class="flex items-center gap-2.5 min-w-0">
                   <button type="button" data-validar-usuario="${usuario.id}" title="Ver o acesso consolidado de ${esc(usuario.nome)}"
-                    class="group flex items-center gap-2.5 min-w-0 rounded-lg -ml-1.5 pl-1.5 pr-2 py-0.5 text-left hover:bg-petrol-800/5 dark:hover:bg-white/5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40">
+                    class="group flex items-center gap-2.5 min-w-0 rounded-lg -ml-1.5 pl-1.5 pr-2 py-0.5 text-left hover:bg-realce transition">
                     ${avatarHtml(usuario, 'h-7 w-7 text-[10px]')}
-                    <span class="text-sm font-medium text-slate-800 dark:text-neutral-100 truncate group-hover:text-petrol-800 dark:group-hover:text-sky-300 group-hover:underline decoration-petrol-800/40 dark:decoration-sky-300/40 underline-offset-2">${esc(usuario.nome)}</span>
+                    <span class="text-sm font-medium text-tinta truncate group-hover:text-marca-tinta group-hover:underline decoration-marca-tinta/40 underline-offset-2">${esc(usuario.nome)}</span>
                   </button>
                   ${tiposUsuarioHtml(usuario, { link: false })}
                   ${botaoExtrasHtml(usuario)}
@@ -1298,11 +1290,11 @@ function htmlTabelaMatrizUsuarios() {
                 const incluido = usuario.perfis.includes(perfil.id);
                 if (!Permissoes.perfilAplicaA(perfil, usuario)) {
                   return `
-                  <td class="text-center border-b border-slate-100 dark:border-neutral-900 px-3 py-2 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 text-slate-300 dark:text-neutral-700 select-none"
+                  <td class="text-center border-b border-linha px-3 py-2 group-hover:bg-realce text-tinta-3 select-none"
                     title="Perfil para ${esc(tiposPerfilTexto(perfil).toLowerCase())} — não se aplica a ${esc(usuario.nome)}">—</td>`;
                 }
                 return `
-                  <td class="text-center border-b border-slate-100 dark:border-neutral-900 px-3 py-2 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 ${perfil.ativo ? '' : 'opacity-50'}">
+                  <td class="text-center border-b border-linha px-3 py-2 group-hover:bg-realce ${perfil.ativo ? '' : 'opacity-50'}">
                     ${miniSwitchHtml(incluido, `data-mu-usuario="${usuario.id}" data-mu-perfil="${perfil.id}"`, `${incluido ? 'Remover' : 'Incluir'} ${usuario.nome} — ${perfil.nome}`)}
                   </td>`;
               }).join('')}
@@ -1317,22 +1309,22 @@ function htmlTabelaMatrizUsuarios() {
 function renderMatrizPermissoes() {
   const container = document.getElementById('visao-matriz');
   container.innerHTML = `
-    <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm">
-      <div class="px-4 border-b border-slate-100 dark:border-neutral-900 flex gap-6">
+    <div class="bg-elevado rounded-xl border border-linha">
+      <div class="px-4 border-b border-linha flex gap-6">
         ${PORTAIS.map((portal) => `
           <button type="button" data-portal-matriz="${portal.id}"
-            class="py-3 text-sm font-medium border-b-2 -mb-px transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40
+            class="py-3 text-sm font-medium border-b-2 -mb-px transition
               ${estado.portalAtivo === portal.id
-                ? 'border-petrol-800 dark:border-sky-400 text-slate-900 dark:text-neutral-100'
-                : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-200'}">
+                ? 'border-marca-tinta text-tinta'
+                : 'border-transparent text-tinta-3 hover:text-tinta-2'}">
             ${esc(portal.nome)}
           </button>`).join('')}
       </div>
-      <div class="p-4 border-b border-slate-100 dark:border-neutral-900 flex flex-col lg:flex-row lg:items-center gap-3">
+      <div class="p-4 border-b border-linha flex flex-col lg:flex-row lg:items-center gap-3">
         <div class="relative flex-1 max-w-md">
-          <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+          <svg class="h-4 w-4 text-tinta-3 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
           <input id="busca-matriz" type="text" value="${esc(estado.buscaMatriz)}" placeholder="Buscar tela ou ação…" autocomplete="off"
-            class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
+            class="w-full border border-linha-forte rounded-lg pl-9 pr-3 py-2 text-sm focus:border-marca-tinta bg-elevado text-tinta placeholder:text-tinta-3">
         </div>
         <div class="lg:ml-auto">${htmlSeletorColunas()}</div>
       </div>
@@ -1372,7 +1364,7 @@ function htmlTabelaMatrizPermissoes() {
   const totalColunas = colunas.length + 1;
 
   if (!colunas.length) {
-    return '<p class="text-sm text-slate-400 py-10 text-center">Nenhum perfil selecionado — escolha as colunas em "Perfis exibidos".</p>';
+    return '<p class="text-sm text-tinta-3 py-10 text-center">Nenhum perfil selecionado — escolha as colunas em "Perfis exibidos".</p>';
   }
 
   const linhas = modulos.map((modulo) => {
@@ -1390,19 +1382,19 @@ function htmlTabelaMatrizPermissoes() {
 
     return `
       <tr>
-        <td colspan="${totalColunas}" data-sticky-modulo class="sticky left-0 z-20 bg-slate-100 dark:bg-neutral-900 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-300 border-b border-slate-200 dark:border-neutral-800">${esc(modulo.nome)}</td>
+        <td colspan="${totalColunas}" data-sticky-modulo class="sticky left-0 z-20 bg-etiqueta px-4 py-2 text-xs font-medium text-tinta-2 border-b border-linha">${esc(modulo.nome)}</td>
       </tr>
       ${features.map(({ feature, acoes }) => `
         <tr>
-          <td colspan="${totalColunas}" data-sticky-feature class="sticky left-0 z-[15] bg-slate-50 dark:bg-neutral-925 px-4 py-1.5 text-xs font-semibold text-slate-700 dark:text-neutral-200 border-b border-slate-100 dark:border-neutral-900">${esc(feature.nome)}</td>
+          <td colspan="${totalColunas}" data-sticky-feature class="sticky left-0 z-[15] bg-faixa px-4 py-1.5 text-xs font-semibold text-tinta border-b border-linha">${esc(feature.nome)}</td>
         </tr>
         ${acoes.map((acao) => `
           <tr class="group">
-            <td class="sticky left-0 z-10 bg-white dark:bg-neutral-950 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 pl-8 pr-4 py-2 border-b border-slate-100 dark:border-neutral-900 text-sm text-slate-600 dark:text-neutral-400 min-w-[240px]">${esc(acao.nome)}</td>
+            <td class="sticky left-0 z-10 bg-elevado group-hover:bg-realce pl-8 pr-4 py-2 border-b border-linha text-sm text-tinta-2 min-w-[240px]">${esc(acao.nome)}</td>
             ${colunas.map((perfil) => {
               const ligada = (perfil.permissoes[feature.id] || []).includes(acao.id);
               return `
-                <td class="text-center border-b border-slate-100 dark:border-neutral-900 px-3 py-2 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 ${perfil.ativo ? '' : 'opacity-50'}">
+                <td class="text-center border-b border-linha px-3 py-2 group-hover:bg-realce ${perfil.ativo ? '' : 'opacity-50'}">
                   ${miniSwitchHtml(ligada, `data-mx-perfil="${perfil.id}" data-mx-feature="${feature.id}" data-mx-acao="${acao.id}"`, `${perfil.nome} — ${feature.nome} · ${acao.nome}`)}
                 </td>`;
             }).join('')}
@@ -1410,7 +1402,7 @@ function htmlTabelaMatrizPermissoes() {
   }).filter(Boolean);
 
   if (!linhas.length) {
-    return `<p class="text-sm text-slate-400 py-10 text-center">Nenhuma tela ou ação encontrada para "${esc(estado.buscaMatriz)}".</p>`;
+    return `<p class="text-sm text-tinta-3 py-10 text-center">Nenhuma tela ou ação encontrada para "${esc(estado.buscaMatriz)}".</p>`;
   }
 
   return `
@@ -1418,15 +1410,15 @@ function htmlTabelaMatrizPermissoes() {
       <table class="min-w-full text-sm border-separate border-spacing-0">
         <thead>
           <tr>
-            <th class="sticky top-0 left-0 z-40 bg-slate-50 dark:bg-neutral-900 text-left px-4 py-3 border-b border-slate-200 dark:border-neutral-800 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 min-w-[240px]">Tela / Ação</th>
+            <th class="sticky top-0 left-0 z-40 bg-faixa text-left px-4 py-3 border-b border-linha text-xs font-medium text-tinta-2 min-w-[240px]">Tela / Ação</th>
             ${colunas.map((perfil) => {
               const { ativas } = Permissoes.contagemAcoes(perfil, Permissoes.featuresDoPortal(estado.portalAtivo));
               return `
-                <th class="sticky top-0 z-30 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800 px-3 py-2.5 text-center min-w-[130px]">
-                  <span class="flex items-center justify-center gap-1.5 text-xs font-semibold ${perfil.ativo ? 'text-slate-700 dark:text-neutral-200' : 'text-slate-400'}">
-                    <span class="h-1.5 w-1.5 rounded-full ${perfil.ativo ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}"></span>${esc(perfil.nome)}
+                <th class="sticky top-0 z-30 bg-faixa border-b border-linha px-3 py-2.5 text-center min-w-[130px]">
+                  <span class="flex items-center justify-center gap-1.5 text-xs font-semibold ${perfil.ativo ? 'text-tinta' : 'text-tinta-3'}">
+                    <span class="h-1.5 w-1.5 rounded-full ${perfil.ativo ? 'bg-bom' : 'bg-linha-forte'}"></span>${esc(perfil.nome)}
                   </span>
-                  <span class="block text-[10px] font-normal text-slate-400 mt-0.5">${perfil.ativo ? `${ativas} ações neste portal` : 'inativo'}</span>
+                  <span class="block text-[10px] font-normal text-tinta-3 mt-0.5">${perfil.ativo ? `${ativas} ações neste portal` : 'inativo'}</span>
                 </th>`;
             }).join('')}
           </tr>
@@ -1455,26 +1447,26 @@ function abrirValidacao(usuarioId = null) {
 function renderValidacao() {
   const root = document.getElementById('visao-matriz');
   root.innerHTML = `
-    <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm">
-      <div class="p-5 border-b border-slate-100 dark:border-neutral-900">
-        <h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Validação de acesso</h3>
-        <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">Resultado consolidado — união dos perfis ativos do usuário mais as permissões extras.</p>
+    <div class="bg-elevado rounded-xl border border-linha">
+      <div class="p-5 border-b border-linha">
+        <h3 class="font-display font-semibold text-tinta">Validação de acesso</h3>
+        <p class="text-sm text-tinta-2 mt-0.5">Resultado consolidado — união dos perfis ativos do usuário mais as permissões extras.</p>
       </div>
       <div class="px-5 pt-4 flex items-center gap-2">
         <div class="relative flex-1 max-w-xl" id="seletor-usuario-validacao">
           <button type="button" id="btn-usuario-validacao"
-            class="w-full flex items-center gap-2.5 border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-neutral-950 text-left hover:border-petrol-800 dark:hover:border-sky-400 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">
-            <span id="rotulo-usuario-validacao" class="flex-1 flex items-center gap-2.5 min-w-0 text-slate-400">Selecione um usuário…</span>
-            <svg class="h-4 w-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            class="w-full flex items-center gap-2.5 border border-linha-forte rounded-lg px-3 py-2 text-sm bg-elevado text-left hover:border-marca-tinta transition">
+            <span id="rotulo-usuario-validacao" class="flex-1 flex items-center gap-2.5 min-w-0 text-tinta-3">Selecione um usuário…</span>
+            <svg class="h-4 w-4 text-tinta-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
           </button>
-          <div id="popover-usuario-validacao" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-50 p-2">
+          <div id="popover-usuario-validacao" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-elevado border border-linha rounded-xl shadow-[0_24px_60px_-20px_rgba(0,0,0,.4)] z-50 p-2">
             <input id="busca-usuario-validacao" type="text" placeholder="Buscar usuário pelo nome…" autocomplete="off"
-              class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
+              class="w-full border border-linha-forte rounded-lg px-3 py-2 text-sm focus:border-marca-tinta bg-elevado text-tinta placeholder:text-tinta-3">
             <div id="lista-usuario-validacao" class="max-h-64 overflow-y-auto mt-2">${htmlListaUsuariosValidacao()}</div>
           </div>
         </div>
         <button type="button" id="btn-extras-validacao" title="Conceder permissões além dos perfis deste usuário"
-          class="shrink-0 text-xs font-semibold px-3 py-2 rounded-lg bg-laranja/10 text-laranja-escuro dark:text-laranja hover:bg-laranja/20 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-laranja/50">
+          class="shrink-0 text-xs font-semibold px-3 py-2 rounded-lg bg-cobre/15 text-cobre-tinta hover:bg-cobre/25 transition">
           Permissões extras
         </button>
       </div>
@@ -1516,20 +1508,20 @@ function htmlListaUsuariosValidacao() {
   const termo = estado.buscaUsuarioValidacao.trim().toLowerCase();
   const usuarios = USUARIOS.filter((u) => !termo || u.nome.toLowerCase().includes(termo));
   if (!usuarios.length) {
-    return '<p class="text-xs text-slate-400 px-2 py-3 text-center">Nenhum usuário encontrado.</p>';
+    return '<p class="text-xs text-tinta-3 px-2 py-3 text-center">Nenhum usuário encontrado.</p>';
   }
   return usuarios.map((usuario) => {
     const selecionado = usuario.id === estado.usuarioInspecionadoId;
     const perfis = usuario.perfis.map((id) => Permissoes.getPerfil(id)?.nome).filter(Boolean);
     return `
       <button type="button" data-usuario-validacao="${usuario.id}"
-        class="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left transition hover:bg-slate-50 dark:hover:bg-neutral-900 ${selecionado ? 'bg-slate-50 dark:bg-neutral-900' : ''}">
+        class="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left transition hover:bg-realce ${selecionado ? 'bg-faixa' : ''}">
         ${avatarHtml(usuario, 'h-7 w-7 text-[10px]')}
         <span class="flex-1 min-w-0">
-          <span class="flex items-center gap-2 text-sm text-slate-800 dark:text-neutral-100 truncate">${esc(usuario.nome)} ${tiposUsuarioHtml(usuario, { link: false })}</span>
-          <span class="block text-xs text-slate-400 truncate">${perfis.length ? esc(perfis.join(', ')) : 'Sem perfis'}</span>
+          <span class="flex items-center gap-2 text-sm text-tinta truncate">${esc(usuario.nome)} ${tiposUsuarioHtml(usuario, { link: false })}</span>
+          <span class="block text-xs text-tinta-3 truncate">${perfis.length ? esc(perfis.join(', ')) : 'Sem perfis'}</span>
         </span>
-        ${selecionado ? '<svg class="h-4 w-4 text-petrol-800 dark:text-sky-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>' : ''}
+        ${selecionado ? '<svg class="h-4 w-4 text-marca-tinta shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>' : ''}
       </button>`;
   }).join('');
 }
@@ -1545,29 +1537,29 @@ function abrirModalExtras(usuarioId) {
   const nomesPerfis = usuario.perfis.map((id) => Permissoes.getPerfil(id)?.nome).filter(Boolean);
 
   abrirModal(`
-        <div class="p-5 border-b border-slate-100 dark:border-neutral-900 flex items-start justify-between gap-4">
+        <div class="p-5 border-b border-linha flex items-start justify-between gap-4">
           <div class="flex items-center gap-3">
             ${avatarHtml(usuario, 'h-10 w-10 text-sm')}
             <div>
-              <h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2 flex-wrap">Permissões extras · ${esc(usuario.nome)} ${tiposUsuarioHtml(usuario)}</h3>
-              <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">Perfis: ${nomesPerfis.length ? esc(nomesPerfis.join(', ')) : 'nenhum'}</p>
+              <h3 class="font-display font-semibold text-tinta flex items-center gap-2 flex-wrap">Permissões extras · ${esc(usuario.nome)} ${tiposUsuarioHtml(usuario)}</h3>
+              <p class="text-sm text-tinta-2 mt-0.5">Perfis: ${nomesPerfis.length ? esc(nomesPerfis.join(', ')) : 'nenhum'}</p>
             </div>
           </div>
           <button type="button" data-fechar-modal-extras title="Fechar"
-            class="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40">
+            class="p-2 rounded-lg text-tinta-3 hover:text-tinta-2 hover:bg-realce transition">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
         <div class="px-5 pt-4 space-y-3">
-          <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-neutral-400">
-            <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-emerald-100 border border-emerald-300 dark:bg-emerald-950 dark:border-emerald-600"></span>herdada dos perfis (gerencie no perfil)</span>
-            <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-laranja"></span>extra deste usuário</span>
-            <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-white dark:bg-neutral-900 border border-slate-300 dark:border-neutral-500"></span>clique para conceder</span>
+          <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-tinta-2">
+            <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-bom/10 border border-bom/30"></span>herdada dos perfis (gerencie no perfil)</span>
+            <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-cobre"></span>extra deste usuário</span>
+            <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-elevado border border-linha-forte"></span>clique para conceder</span>
           </div>
           <div class="relative">
-            <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+            <svg class="h-4 w-4 text-tinta-3 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
             <input id="busca-extras" type="text" placeholder="Buscar tela ou ação…" autocomplete="off"
-              class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
+              class="w-full border border-linha-forte rounded-lg pl-9 pr-3 py-2 text-sm focus:border-marca-tinta bg-elevado text-tinta placeholder:text-tinta-3">
           </div>
         </div>
         <div id="conteudo-extras" class="flex-1 min-h-0 overflow-y-auto px-5 py-4">${htmlConteudoExtras(usuario)}</div>`,
@@ -1617,28 +1609,28 @@ function htmlConteudoExtras(usuario) {
 
       return `
         <div class="pt-3">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 pb-1">${esc(modulo.nome)}</p>
+          <p class="text-xs font-medium text-tinta-3 pb-1">${esc(modulo.nome)}</p>
           ${features.map(({ feature, acoes }) => `
-            <div class="py-2.5 border-t border-slate-100 dark:border-neutral-900">
-              <p class="text-sm font-medium text-slate-800 dark:text-neutral-100 mb-1.5">
+            <div class="py-2.5 border-t border-linha">
+              <p class="text-sm font-medium text-tinta mb-1.5">
                 ${esc(feature.nome)}
-                ${Permissoes.pode(usuario, feature.id, 'visualizar') ? '' : '<span class="ml-1.5 text-[11px] font-normal text-amber-600 dark:text-amber-400">sem acesso à tela — conceda "Visualizar"</span>'}
+                ${Permissoes.pode(usuario, feature.id, 'visualizar') ? '' : '<span class="ml-1.5 text-[11px] font-normal text-aviso">sem acesso à tela — conceda "Visualizar"</span>'}
               </p>
               <div class="flex flex-wrap gap-1.5">
                 ${acoes.map((acao) => {
                   const doPerfil = Permissoes.concedidaPorPerfis(usuario, feature.id, acao.id);
                   const extra = Permissoes.concedidaPorExtra(usuario, feature.id, acao.id);
                   if (doPerfil) {
-                    return `<span class="px-2.5 py-1 rounded-full text-xs bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 cursor-default"
+                    return `<span class="px-2.5 py-1 rounded-full text-xs bg-bom/10 text-bom border border-bom/30 cursor-default"
                       title="Concedida pelos perfis do usuário — para remover, ajuste o perfil">✓ ${esc(acao.nome)}</span>`;
                   }
                   if (extra) {
                     return `<button type="button" data-ex-feature="${feature.id}" data-ex-acao="${acao.id}"
-                      class="px-2.5 py-1 rounded-full text-xs font-medium bg-laranja border border-laranja text-white transition hover:bg-laranja-escuro focus:outline-none focus-visible:ring-2 focus-visible:ring-laranja/50"
+                      class="px-2.5 py-1 rounded-full text-xs font-medium bg-selecao border border-marca-tinta/40 text-marca-tinta transition hover:border-marca-tinta"
                       title="Permissão extra — clique para remover">✓ ${esc(acao.nome)}</button>`;
                   }
                   return `<button type="button" data-ex-feature="${feature.id}" data-ex-acao="${acao.id}"
-                    class="px-2.5 py-1 rounded-full text-xs font-medium bg-white border border-slate-300 text-slate-500 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-300 transition hover:border-laranja hover:text-laranja-escuro dark:hover:text-laranja focus:outline-none focus-visible:ring-2 focus-visible:ring-laranja/50"
+                    class="px-2.5 py-1 rounded-full text-xs font-medium bg-elevado border border-linha-forte text-tinta-2 transition hover:border-cobre hover:text-cobre-tinta"
                     title="Clique para conceder como permissão extra">${esc(acao.nome)}</button>`;
                 }).join('')}
               </div>
@@ -1650,13 +1642,13 @@ function htmlConteudoExtras(usuario) {
 
     return `
       <div class="pt-5 first:pt-0">
-        <p class="font-display text-sm font-semibold text-petrol-800 dark:text-sky-300 border-b-2 border-laranja/60 inline-block pb-0.5">${esc(portal.nome)}</p>
+        <p class="text-sm font-semibold text-tinta border-b-2 border-linha-forte inline-block pb-0.5">${esc(portal.nome)}</p>
         ${modulosHtml.join('')}
       </div>`;
   }).filter(Boolean);
 
   return secoes.join('') ||
-    `<p class="text-sm text-slate-400 py-8 text-center">Nenhuma tela ou ação encontrada para "${esc(estado.buscaExtras)}".</p>`;
+    `<p class="text-sm text-tinta-3 py-8 text-center">Nenhuma tela ou ação encontrada para "${esc(estado.buscaExtras)}".</p>`;
 }
 
 function renderConteudoValidacao() {
@@ -1667,7 +1659,7 @@ function renderConteudoValidacao() {
   // Atualiza o rótulo do combobox de usuário.
   const rotulo = document.getElementById('rotulo-usuario-validacao');
   if (rotulo) {
-    rotulo.className = `flex-1 flex items-center gap-2.5 min-w-0 ${usuario ? 'text-slate-800 dark:text-neutral-100' : 'text-slate-400'}`;
+    rotulo.className = `flex-1 flex items-center gap-2.5 min-w-0 ${usuario ? 'text-tinta' : 'text-tinta-3'}`;
     rotulo.innerHTML = usuario
       ? `${avatarHtml(usuario, 'h-6 w-6 text-[10px]')}<span class="truncate text-sm font-medium">${esc(usuario.nome)}</span>`
       : 'Selecione um usuário…';
@@ -1684,11 +1676,11 @@ function renderConteudoValidacao() {
   if (!usuario) {
     container.innerHTML = `
       <div class="text-center pt-10">
-        <div class="h-11 w-11 mx-auto rounded-full bg-slate-100 text-slate-400 dark:bg-neutral-900 grid place-items-center">
+        <div class="h-11 w-11 mx-auto rounded-full bg-etiqueta text-tinta-3 grid place-items-center">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
         </div>
-        <p class="font-display font-semibold text-slate-800 dark:text-neutral-100 mt-3">Selecione um usuário</p>
-        <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1 max-w-xs mx-auto">Escolha um usuário acima para ver o acesso consolidado dele — a união dos perfis ativos mais as permissões extras.</p>
+        <p class="font-display font-semibold text-tinta mt-3">Selecione um usuário</p>
+        <p class="text-sm text-tinta-2 mt-1 max-w-xs mx-auto">Escolha um usuário acima para ver o acesso consolidado dele — a união dos perfis ativos mais as permissões extras.</p>
       </div>
       <div class="pb-6"></div>`;
     return;
@@ -1718,16 +1710,16 @@ function renderConteudoValidacao() {
 
       return `
         <div class="pt-3">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 pb-1">${esc(modulo.nome)}</p>
+          <p class="text-xs font-medium text-tinta-3 pb-1">${esc(modulo.nome)}</p>
           ${acessiveis.map(({ feature, liberadas }) => `
-            <div class="flex flex-col sm:flex-row sm:items-center gap-2 py-2.5 border-t border-slate-100 dark:border-neutral-900">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 py-2.5 border-t border-linha">
               <div class="w-52 shrink-0 flex items-center gap-2">
-                <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-                <span class="text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(feature.nome)}</span>
+                <span class="h-2 w-2 rounded-full bg-bom"></span>
+                <span class="text-sm font-medium text-tinta">${esc(feature.nome)}</span>
               </div>
               <div class="flex flex-wrap gap-1.5">
                 ${liberadas.map((acao) => `
-                  <span class="px-2.5 py-1 rounded-full text-xs border ${acao.somenteExtra ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800' : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'}"
+                  <span class="px-2.5 py-1 rounded-full text-xs border ${acao.somenteExtra ? 'bg-cobre/15 text-aviso border-cobre/40' : 'bg-bom/10 text-bom border-bom/30'}"
                     title="Concedida por: ${esc(acao.origens.join(', '))}">${esc(acao.nome)}${acao.somenteExtra ? ' ★' : ''}</span>`).join('')}
               </div>
             </div>`).join('')}
@@ -1738,16 +1730,16 @@ function renderConteudoValidacao() {
 
     return `
       <div class="pt-5 first:pt-2">
-        <p class="font-display text-sm font-semibold text-petrol-800 dark:text-sky-300 border-b-2 border-laranja/60 inline-block pb-0.5">${esc(portal.nome)}</p>
+        <p class="text-sm font-semibold text-tinta border-b-2 border-linha-forte inline-block pb-0.5">${esc(portal.nome)}</p>
         ${modulosComAcesso.join('')}
       </div>`;
   }).filter(Boolean);
 
   container.innerHTML = `
     <div class="flex flex-wrap items-center gap-1.5 pb-2">${tiposUsuarioHtml(usuario)}</div>
-    <p class="text-sm text-slate-500 dark:text-neutral-400 pb-1">Perfis de ${esc(usuario.nome.split(' ')[0])}: ${nomesPerfis.length ? esc(nomesPerfis.join(', ')) : '<em>nenhum</em>'}</p>
-    ${secoes.join('') || '<p class="text-sm text-slate-400 py-6 text-center">Este usuário não tem acesso a nenhuma tela.</p>'}
-    ${secoes.length && semAcesso.length ? `<p class="text-xs text-slate-400 pt-4 border-t border-slate-100 dark:border-neutral-900 mt-4">Sem acesso: ${esc(semAcesso.join(', '))}</p>` : ''}`;
+    <p class="text-sm text-tinta-2 pb-1">Perfis de ${esc(usuario.nome.split(' ')[0])}: ${nomesPerfis.length ? esc(nomesPerfis.join(', ')) : '<em>nenhum</em>'}</p>
+    ${secoes.join('') || '<p class="text-sm text-tinta-3 py-6 text-center">Este usuário não tem acesso a nenhuma tela.</p>'}
+    ${secoes.length && semAcesso.length ? `<p class="text-xs text-tinta-3 pt-4 border-t border-linha mt-4">Sem acesso: ${esc(semAcesso.join(', '))}</p>` : ''}`;
 }
 
 // ---------- Bootstrap ----------

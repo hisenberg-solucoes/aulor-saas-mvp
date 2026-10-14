@@ -24,29 +24,29 @@
       <li class="px-5 py-4">
         <div class="flex flex-wrap items-start justify-between gap-2">
           <div class="min-w-0">
-            <a href="matricula.html?id=${m.id}" class="font-medium text-slate-900 dark:text-neutral-100 hover:underline">${esc(c.nome)}</a>
-            <p class="text-xs text-slate-500 dark:text-neutral-400">Matrícula ${m.codigo} · <a class="hover:underline" href="turma.html?id=${t.id}">${esc(t.codigo)}</a> · ${dataBr(t.inicio)} a ${dataBr(t.fim)}</p>
+            <a href="matricula.html?id=${m.id}" class="font-medium text-tinta hover:underline">${esc(c.nome)}</a>
+            <p class="text-xs text-tinta-2">Matrícula ${m.codigo} · <a class="hover:underline" href="turma.html?id=${t.id}">${esc(t.codigo)}</a> · ${dataBr(t.inicio)} a ${dataBr(t.fim)}</p>
           </div>
           ${status(m.status === 'concluida' && m.resultado !== 'aprovado' ? 'perigo' : st.tom, resultado)}
         </div>
         <div class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-          <div><p class="text-xs text-slate-500 dark:text-neutral-400 mb-0.5">Frequência</p>${m.status === 'cancelada' ? '<span class="text-slate-400">—</span>' : barraFrequencia(f, { compacta: true })}</div>
-          <div><p class="text-xs text-slate-500 dark:text-neutral-400 mb-0.5">Parcelas</p>${ativas ? `<span class="tabular-nums">${pagas} de ${ativas} pagas</span>${vencidas ? ` · <span class="text-red-700 dark:text-red-400">${vencidas} vencida${vencidas > 1 ? 's' : ''}</span>` : ''}` : '<span class="text-slate-400">—</span>'}</div>
-          <div><p class="text-xs text-slate-500 dark:text-neutral-400 mb-0.5">Certificado</p>${e.id === 'emitido' ? `<a class="link text-sm" href="certificado.html?id=${e.certificado.id}">${esc(e.certificado.codigo)}</a>` : status(e.tom, e.nome, '', true)}</div>
+          <div><p class="text-xs text-tinta-2 mb-0.5">Frequência</p>${m.status === 'cancelada' ? '<span class="text-tinta-3">—</span>' : barraFrequencia(f, { compacta: true })}</div>
+          <div><p class="text-xs text-tinta-2 mb-0.5">Parcelas</p>${ativas ? `<span class="tabular-nums">${pagas} de ${ativas} pagas</span>${vencidas ? ` · <span class="text-ruim">${vencidas} vencida${vencidas > 1 ? 's' : ''}</span>` : ''}` : '<span class="text-tinta-3">—</span>'}</div>
+          <div><p class="text-xs text-tinta-2 mb-0.5">Certificado</p>${e.id === 'emitido' ? `<a class="link text-sm" href="certificado.html?id=${e.certificado.id}">${esc(e.certificado.codigo)}</a>` : status(e.tom, e.nome, '', true)}</div>
         </div>
-        ${m.status === 'cancelada' ? `<p class="mt-2 text-xs text-slate-500 dark:text-neutral-400">Cancelada em ${dataBr(m.canceladaEm)} — ${esc(m.motivoCancelamento)}</p>` : ''}
+        ${m.status === 'cancelada' ? `<p class="mt-2 text-xs text-tinta-2">Cancelada em ${dataBr(m.canceladaEm)} — ${esc(m.motivoCancelamento)}</p>` : ''}
       </li>`;
   }
 
   function dado(rotulo, valor, classe = '') {
-    return `<div class="${classe}"><dt class="text-xs text-slate-500 dark:text-neutral-400">${rotulo}</dt><dd class="text-sm text-slate-800 dark:text-neutral-100 mt-0.5 break-words">${valor || '<span class="text-slate-400">—</span>'}</dd></div>`;
+    return `<div class="${classe}"><dt class="text-xs text-tinta-2">${rotulo}</dt><dd class="text-sm text-tinta mt-0.5 break-words">${valor || '<span class="text-tinta-3">—</span>'}</dd></div>`;
   }
 
   // Seção no padrão do original: título, explicação e ação à direita.
   const secao = (titulo, descricao, acao, corpo) => `
     <section class="painel">
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-start justify-between gap-3">
-        <div><h3 class="font-display font-semibold">${titulo}</h3>${descricao ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${descricao}</p>` : ''}</div>
+      <div class="px-5 py-4 border-b border-linha flex items-start justify-between gap-3">
+        <div><h3 class="font-display font-semibold">${titulo}</h3>${descricao ? `<p class="text-xs text-tinta-2 mt-0.5">${descricao}</p>` : ''}</div>
         ${acao}
       </div>
       ${corpo}
@@ -65,7 +65,7 @@
             ${dado('Nome completo', esc(a.nome), 'col-span-2')}
             ${dado('CPF', `<span class="tabular-nums">${cpfFmt(a.cpf)}</span>`)}
             ${dado('RG', esc(a.rg))}
-            ${dado('Nascimento', a.nascimento ? `${dataBr(a.nascimento)}${idade != null ? ` <span class="text-xs text-slate-400">· ${idade} anos</span>` : ''}` : '')}
+            ${dado('Nascimento', a.nascimento ? `${dataBr(a.nascimento)}${idade != null ? ` <span class="text-xs text-tinta-3">· ${idade} anos</span>` : ''}` : '')}
             ${dado('Como conheceu a escola', esc(a.origem))}
           </dl>`)}
         ${secao('Contato', 'Por onde a escola fala com o aluno: avisos, cobrança e certificado.', botao, `
@@ -82,19 +82,19 @@
     const menor = Aulor.ehMenor(a);
     const semLegal = menor && !lista.some((r) => r.papeis.includes('legal'));
     return `
-      ${semLegal ? `<div class="mb-4 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900 dark:text-amber-200"><b>Aluno menor de idade sem responsável legal.</b> O contrato precisa ser assinado por pai, mãe ou tutor com o papel Legal.</div>` : ''}
-      ${secao(`Responsáveis <span class="font-normal text-slate-400 text-sm">${lista.length}</span>`, menor ? 'Aluno menor de idade: precisa de pelo menos um responsável legal.' : 'Opcional para maiores de idade: quem paga ou contato de emergência.', editar ? `<button type="button" data-novo-resp class="btn-pri btn-pequeno">${ICONE.mais}Novo responsável</button>` : '', lista.length ? `
+      ${semLegal ? `<div class="mb-4 rounded-xl border border-cobre/40 bg-cobre/15 px-4 py-3 text-sm text-tinta"><b>Aluno menor de idade sem responsável legal.</b> O contrato precisa ser assinado por pai, mãe ou tutor com o papel Legal.</div>` : ''}
+      ${secao(`Responsáveis <span class="font-normal text-tinta-3 text-sm">${lista.length}</span>`, menor ? 'Aluno menor de idade: precisa de pelo menos um responsável legal.' : 'Opcional para maiores de idade: quem paga ou contato de emergência.', editar ? `<button type="button" data-novo-resp class="btn-pri btn-pequeno">${ICONE.mais}Novo responsável</button>` : '', lista.length ? `
         <div class="overflow-x-auto"><table class="tabela">
           <thead><tr><th>Responsável</th><th>Papéis</th><th>Celular</th><th>CPF</th><th></th></tr></thead>
           <tbody>${lista.map((r) => `<tr>
-            <td><p class="font-medium text-slate-900 dark:text-neutral-100">${esc(r.nome)}</p><p class="text-xs text-slate-500 dark:text-neutral-400">${esc([r.parentesco, r.email].filter(Boolean).join(' · ') || '—')}</p></td>
+            <td><p class="font-medium text-tinta">${esc(r.nome)}</p><p class="text-xs text-tinta-2">${esc([r.parentesco, r.email].filter(Boolean).join(' · ') || '—')}</p></td>
             <td><div class="flex flex-wrap gap-1">${r.papeis.map((p) => pilula(TOM_PAPEL[p], NOME_PAPEL[p])).join('')}</div></td>
             <td class="whitespace-nowrap tabular-nums">${telefoneFmt(r.telefone)}${r.telefone ? ` <a class="link text-xs ml-1" target="_blank" rel="noopener" href="https://wa.me/55${r.telefone}">WhatsApp</a>` : ''}</td>
-            <td class="whitespace-nowrap tabular-nums">${r.cpf ? cpfFmt(r.cpf) : '<span class="text-slate-400">—</span>'}</td>
-            <td class="text-right whitespace-nowrap space-x-2">${editar ? `<button type="button" data-editar-resp="${r.id}" class="text-xs font-semibold link">Editar</button><button type="button" data-remover-resp="${r.id}" class="text-xs font-semibold text-slate-500 hover:text-red-700 dark:text-neutral-400 dark:hover:text-red-400">Remover</button>` : ''}</td>
+            <td class="whitespace-nowrap tabular-nums">${r.cpf ? cpfFmt(r.cpf) : '<span class="text-tinta-3">—</span>'}</td>
+            <td class="text-right whitespace-nowrap space-x-2">${editar ? `<button type="button" data-editar-resp="${r.id}" class="text-xs font-semibold link">Editar</button><button type="button" data-remover-resp="${r.id}" class="text-xs font-semibold text-tinta-2 hover:text-ruim">Remover</button>` : ''}</td>
           </tr>`).join('')}</tbody>
         </table></div>` : vazio('Nenhum responsável cadastrado', menor ? 'Cadastre o responsável legal para poder matricular.' : '')) }
-      <p class="mt-3 text-xs text-slate-500 dark:text-neutral-400">Papéis: <b>Legal</b> responde e assina pelo menor · <b>Financeiro</b> é quem paga (contrato e boleto no nome dele; só um por aluno) · <b>Emergência</b> recebe avisos de falta e ocorrências.</p>`;
+      <p class="mt-3 text-xs text-tinta-2">Papéis: <b>Legal</b> responde e assina pelo menor · <b>Financeiro</b> é quem paga (contrato e boleto no nome dele; só um por aluno) · <b>Emergência</b> recebe avisos de falta e ocorrências.</p>`;
   }
 
   function abaEndereco(a, editar) {
@@ -114,14 +114,14 @@
             ${dado('Bairro', esc(e.bairro), 'col-span-2')}
             ${dado('Cidade', esc(e.cidade), 'sm:col-span-3')}
             ${dado('UF', esc(e.uf))}
-          </dl>` : `<div class="p-5 text-sm text-slate-500 dark:text-neutral-400">Endereço ainda não informado.</div>`)}
+          </dl>` : `<div class="p-5 text-sm text-tinta-2">Endereço ainda não informado.</div>`)}
         ${secao('Quem paga', 'Define em nome de quem saem contrato e cobrança. Vale como sugestão na próxima matrícula.', botao, `
           <div class="p-5 space-y-4">
             <div>${pilula(pagaResp ? 'info' : 'neutro', pagaResp ? 'Responsável financeiro' : 'O próprio aluno')}</div>
             ${pagaResp
-              ? `<dl class="grid grid-cols-2 gap-4">${dado('Nome', `${esc(fin.nome)}${fin.parentesco ? ` <span class="text-slate-400">· ${esc(fin.parentesco)}</span>` : ''}`, 'col-span-2')}${dado('CPF', fin.cpf ? cpfFmt(fin.cpf) : '<span class="text-amber-700 dark:text-amber-400">Falta o CPF</span>')}${dado('Celular', telefoneFmt(fin.telefone))}</dl>`
-              : `<p class="text-sm text-slate-700 dark:text-neutral-200">Contrato e cobrança em nome de <b>${esc(a.nome)}</b>, CPF ${cpfFmt(a.cpf)}.</p>${Aulor.ehMenor(a) ? '<p class="text-sm text-amber-700 dark:text-amber-400">Aluno menor de idade: o contrato precisa de um responsável.</p>' : ''}`}
-            <dl class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-neutral-900">
+              ? `<dl class="grid grid-cols-2 gap-4">${dado('Nome', `${esc(fin.nome)}${fin.parentesco ? ` <span class="text-tinta-3">· ${esc(fin.parentesco)}</span>` : ''}`, 'col-span-2')}${dado('CPF', fin.cpf ? cpfFmt(fin.cpf) : '<span class="text-aviso">Falta o CPF</span>')}${dado('Celular', telefoneFmt(fin.telefone))}</dl>`
+              : `<p class="text-sm text-tinta">Contrato e cobrança em nome de <b>${esc(a.nome)}</b>, CPF ${cpfFmt(a.cpf)}.</p>${Aulor.ehMenor(a) ? '<p class="text-sm text-aviso">Aluno menor de idade: o contrato precisa de um responsável.</p>' : ''}`}
+            <dl class="grid grid-cols-2 gap-4 pt-4 border-t border-linha">
               ${dado('Forma preferida', esc(c.formaPreferida ? nomeForma(c.formaPreferida) : ''))}
               ${dado('Dia de vencimento', c.diaVencimento ? `Dia ${c.diaVencimento}` : `Padrão da escola (dia ${Aulor.config().financeiro.diaVencimentoPadrao})`)}
             </dl>
@@ -130,9 +130,9 @@
   }
 
   // Faixa-resumo acima das abas: responde no balcão "está em dia, o que cursa e com quem eu falo".
-  const bloco = (rotulo, corpo) => `<div class="px-5 py-4 min-w-0"><p class="text-xs font-medium text-slate-500 dark:text-neutral-400">${rotulo}</p>${corpo}</div>`;
-  const valor = (texto, cor = 'text-slate-900 dark:text-neutral-100') => `<p class="mt-1 font-display text-lg font-semibold leading-snug ${cor}">${texto}</p>`;
-  const linha = (texto) => `<p class="mt-0.5 text-sm text-slate-600 dark:text-neutral-300">${texto}</p>`;
+  const bloco = (rotulo, corpo) => `<div class="px-5 py-4 min-w-0"><p class="text-xs font-medium text-tinta-2">${rotulo}</p>${corpo}</div>`;
+  const valor = (texto, cor = 'text-tinta') => `<p class="mt-1 font-display text-lg font-semibold leading-snug ${cor}">${texto}</p>`;
+  const linha = (texto) => `<p class="mt-0.5 text-sm text-tinta-2">${texto}</p>`;
   const zap = (tel) => (tel ? ` <a class="link text-xs ml-1" target="_blank" rel="noopener" href="https://wa.me/55${tel}">WhatsApp</a>` : '');
 
   function blocoFinanceiro(a, parcelas) {
@@ -143,7 +143,7 @@
       const lembrete = lembreteCobranca(devido);
       const receber = Shell.pode('receber', 'registrar') ? `<button type="button" data-baixar="${antiga.id}" class="btn-sec btn-pequeno">Receber ${dataCurta(antiga.vencimento)}</button>` : '';
       return bloco('Financeiro', `
-        ${valor(`${moeda(devido.total)} vencido`, 'text-red-700 dark:text-red-400 tabular-nums')}
+        ${valor(`${moeda(devido.total)} vencido`, 'text-ruim tabular-nums')}
         ${linha(`${devido.parcelas.length === 1 ? '1 parcela' : `${devido.parcelas.length} parcelas`} · a mais antiga há ${devido.maiorAtraso} ${devido.maiorAtraso === 1 ? 'dia' : 'dias'}`)}
         <div class="mt-3 flex flex-wrap items-center gap-2">
           ${receber}
@@ -152,8 +152,8 @@
         </div>`);
     }
     const proxima = parcelas.find((l) => Aulor.situacaoLancamento(l) === 'a_vencer');
-    if (proxima) return bloco('Financeiro', `${valor('Em dia', 'text-emerald-700 dark:text-emerald-400')}${linha(`Próxima: <span class="tabular-nums">${moeda(proxima.valor)}</span> ${quando(proxima.vencimento)} (${dataCurta(proxima.vencimento)})`)}<div class="mt-2">${linkParcelas}</div>`);
-    if (parcelas.length) return bloco('Financeiro', `${valor('Tudo pago', 'text-emerald-700 dark:text-emerald-400')}${linha(`${parcelas.length} ${parcelas.length === 1 ? 'parcela recebida' : 'parcelas recebidas'}`)}<div class="mt-2">${linkParcelas}</div>`);
+    if (proxima) return bloco('Financeiro', `${valor('Em dia', 'text-bom')}${linha(`Próxima: <span class="tabular-nums">${moeda(proxima.valor)}</span> ${quando(proxima.vencimento)} (${dataCurta(proxima.vencimento)})`)}<div class="mt-2">${linkParcelas}</div>`);
+    if (parcelas.length) return bloco('Financeiro', `${valor('Tudo pago', 'text-bom')}${linha(`${parcelas.length} ${parcelas.length === 1 ? 'parcela recebida' : 'parcelas recebidas'}`)}<div class="mt-2">${linkParcelas}</div>`);
     return bloco('Financeiro', `${valor('Sem cobranças')}${linha('Nenhuma parcela gerada ainda.')}`);
   }
 
@@ -175,15 +175,15 @@
     const menor = Aulor.ehMenor(a);
     const r = (a.cobranca?.pagador === 'responsavel' && Aulor.responsavelFinanceiro(a)) || (menor ? Aulor.responsavelPrincipal(a) : null);
     if (r) {
-      return bloco('Com quem falar', `${valor(esc(r.nome))}${linha(esc([r.parentesco, ...r.papeis.map((p) => NOME_PAPEL[p])].filter(Boolean).join(' · ')))}<p class="mt-2 text-sm tabular-nums text-slate-700 dark:text-neutral-200">${telefoneFmt(r.telefone)}${zap(r.telefone)}</p>`);
+      return bloco('Com quem falar', `${valor(esc(r.nome))}${linha(esc([r.parentesco, ...r.papeis.map((p) => NOME_PAPEL[p])].filter(Boolean).join(' · ')))}<p class="mt-2 text-sm tabular-nums text-tinta">${telefoneFmt(r.telefone)}${zap(r.telefone)}</p>`);
     }
-    if (menor) return bloco('Com quem falar', `${valor('Sem responsável legal', 'text-amber-700 dark:text-amber-400')}${linha('Aluno menor de idade precisa de pai, mãe ou tutor.')}<div class="mt-2"><a class="link text-xs" href="aluno.html?id=${a.id}&aba=responsaveis">Cadastrar responsável</a></div>`);
-    return bloco('Com quem falar', `${valor('O próprio aluno')}${linha('Paga e recebe os avisos.')}<p class="mt-2 text-sm tabular-nums text-slate-700 dark:text-neutral-200">${telefoneFmt(a.telefone)}${zap(a.telefone)}</p>`);
+    if (menor) return bloco('Com quem falar', `${valor('Sem responsável legal', 'text-aviso')}${linha('Aluno menor de idade precisa de pai, mãe ou tutor.')}<div class="mt-2"><a class="link text-xs" href="aluno.html?id=${a.id}&aba=responsaveis">Cadastrar responsável</a></div>`);
+    return bloco('Com quem falar', `${valor('O próprio aluno')}${linha('Paga e recebe os avisos.')}<p class="mt-2 text-sm tabular-nums text-tinta">${telefoneFmt(a.telefone)}${zap(a.telefone)}</p>`);
   }
 
   function resumo(a, ms, parcelas, verFin) {
     const blocos = [verFin && blocoFinanceiro(a, parcelas), blocoCurso(a, ms), blocoContato(a)].filter(Boolean);
-    return `<section data-resumo aria-label="Resumo do aluno" class="painel mb-5 grid ${blocos.length === 3 ? 'lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]' : 'lg:grid-cols-2'} divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-neutral-800">${blocos.join('')}</section>`;
+    return `<section data-resumo aria-label="Resumo do aluno" class="painel mb-5 grid ${blocos.length === 3 ? 'lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]' : 'lg:grid-cols-2'} divide-y lg:divide-y-0 lg:divide-x divide-linha">${blocos.join('')}</section>`;
   }
 
   function render() {
@@ -211,20 +211,20 @@
       dados: () => abaDados(a, editar),
       responsaveis: () => abaResponsaveis(a, editar),
       endereco: () => abaEndereco(a, editar),
-      matriculas: () => `<section class="painel">${ms.length ? `<ul class="divide-y divide-slate-100 dark:divide-neutral-900">${ms.map(blocoMatricula).join('')}</ul>` : vazio('Ainda sem matrícula', 'Matricule o aluno em uma turma para gerar as parcelas e acompanhar a frequência.', acoes)}</section>`,
+      matriculas: () => `<section class="painel">${ms.length ? `<ul class="divide-y divide-linha">${ms.map(blocoMatricula).join('')}</ul>` : vazio('Ainda sem matrícula', 'Matricule o aluno em uma turma para gerar as parcelas e acompanhar a frequência.', acoes)}</section>`,
       financeiro: () => `
         <section class="painel" data-parcelas>
-          <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-2">
+          <div class="px-5 py-4 border-b border-linha flex flex-wrap items-center justify-between gap-2">
             <h3 class="font-display font-semibold">Parcelas de todas as matrículas</h3>
-            <span class="text-xs text-slate-500 dark:text-neutral-400 tabular-nums">${vencido || aVencer ? [vencido && `<span class="font-medium text-red-700 dark:text-red-400">${moeda(vencido)} vencido</span>`, aVencer && `${moeda(aVencer)} a vencer`].filter(Boolean).join(' · ') : 'Nada em aberto'}</span>
+            <span class="text-xs text-tinta-2 tabular-nums">${vencido || aVencer ? [vencido && `<span class="font-medium text-ruim">${moeda(vencido)} vencido</span>`, aVencer && `${moeda(aVencer)} a vencer`].filter(Boolean).join(' · ') : 'Nada em aberto'}</span>
           </div>
           ${tabelaParcelas(parcelas, { mostrarCurso: true })}
         </section>`,
     }[aba]();
     tela.innerHTML = `
       <div class="max-w-6xl mx-auto">
-        ${parametroUrl('novo') ? `<div class="mb-4 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-200 flex flex-wrap items-center justify-between gap-2">Cadastro criado. Próximo passo: matricular em uma turma. ${Shell.pode('matriculas', 'criar') ? `<a class="font-semibold underline" href="matricula-nova.html?aluno=${a.id}">Matricular agora</a>` : ''}</div>` : ''}
-        ${cabecalhoPagina({ titulo: `${esc(a.nome)} <span class="align-middle ml-1">${pilula(s.tom, s.nome)}</span>`, subtitulo: `${idade != null ? `${idade} anos · ` : ''}CPF ${cpfFmt(a.cpf)} · ${telefoneFmt(a.telefone)}${a.endereco?.cidade ? ` · ${esc(a.endereco.cidade)}/${esc(a.endereco.uf)}` : ''} · aluno desde ${dataBr(a.criadoEm)}`, voltar: { href: 'alunos.html', rotulo: 'Alunos' }, acoes })}
+        ${parametroUrl('novo') ? `<div class="mb-4 rounded-xl border border-bom/30 bg-bom/10 px-4 py-3 text-sm text-tinta flex flex-wrap items-center justify-between gap-2">Cadastro criado. Próximo passo: matricular em uma turma. ${Shell.pode('matriculas', 'criar') ? `<a class="font-semibold underline" href="matricula-nova.html?aluno=${a.id}">Matricular agora</a>` : ''}</div>` : ''}
+        ${cabecalhoPagina({ titulo: `${esc(a.nome)} <span class="align-middle ml-1">${pilula(s.tom, s.nome)}</span>`, subtitulo: `${idade != null ? `${idade} anos · ` : ''}CPF ${cpfFmt(a.cpf)} · ${telefoneFmt(a.telefone)}${a.endereco?.cidade ? ` · ${esc(a.endereco.cidade)}/${esc(a.endereco.uf)}` : ''} · aluno desde ${dataBr(a.criadoEm)}`, voltar: { href: 'alunos.html', rotulo: 'Alunos' }, acoes , registro: true})}
         ${resumo(a, ms, parcelas, verFin)}
         ${abasHtml(abas, aba)}
         ${corpo}

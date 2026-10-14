@@ -118,9 +118,9 @@ const Agenda = (() => {
 
   // ---------- Editor (usado dentro dos drawers das telas) ----------
 
-  const OPCAO = 'cursor-pointer rounded-lg border p-3 has-[:checked]:border-petrol-800 dark:has-[:checked]:border-sky-400 has-[:checked]:bg-petrol-800/5 dark:has-[:checked]:bg-sky-950/40 border-slate-300 dark:border-neutral-700 hover:border-slate-400 dark:hover:border-neutral-500 transition';
-  const DIA = 'cursor-pointer select-none rounded-md border px-2 py-1 text-xs font-medium has-[:checked]:border-petrol-800 dark:has-[:checked]:border-sky-400 has-[:checked]:bg-petrol-800 dark:has-[:checked]:bg-sky-400 has-[:checked]:text-white dark:has-[:checked]:text-black border-slate-300 dark:border-neutral-700 text-slate-600 dark:text-neutral-300 hover:border-slate-400 dark:hover:border-neutral-500 transition';
-  const ERRO = (campo) => `<p data-erro="${campo}" class="text-xs text-red-600 dark:text-red-400 mt-1 hidden"></p>`;
+  const OPCAO = 'cursor-pointer rounded-lg border p-3 has-[:checked]:border-marca has-[:checked]:bg-selecao border-linha-forte hover:border-tinta-3 transition';
+  const DIA = 'cursor-pointer select-none rounded-md border px-2 py-1 text-xs font-medium has-[:checked]:border-marca has-[:checked]:bg-marca has-[:checked]:text-sobre-marca border-linha-forte text-tinta-2 hover:border-tinta-3 transition';
+  const ERRO = (campo) => `<p data-erro="${campo}" class="text-xs text-ruim mt-1 hidden"></p>`;
   const LIXEIRA = '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>';
 
   const cartoes = (name, opcoes, valor, colunas) => `
@@ -128,24 +128,24 @@ const Agenda = (() => {
       ${opcoes.map((o) => `
       <label class="${OPCAO}">
         <input type="radio" name="${name}" value="${o.id}" class="sr-only" ${valor === o.id ? 'checked' : ''}>
-        <p class="text-sm font-medium text-slate-800 dark:text-neutral-100">${o.nome}</p>
-        <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${o.descricao}</p>
+        <p class="text-sm font-medium text-tinta">${o.nome}</p>
+        <p class="text-xs text-tinta-2 mt-0.5">${o.descricao}</p>
       </label>`).join('')}
     </div>`;
 
   const linhaPeriodo = (p, i) => `
-    <div data-periodo="${i}" class="rounded-lg border border-slate-200 dark:border-neutral-800 p-3 space-y-2">
+    <div data-periodo="${i}" class="rounded-lg border border-linha p-3 space-y-2">
       <div class="flex items-center justify-between gap-2">
         <div class="flex flex-wrap gap-1">
           ${DIAS.map((d) => `<label class="${DIA}"><input type="checkbox" name="ag-dia-${i}" value="${d.id}" class="sr-only" ${p.dias.includes(d.id) ? 'checked' : ''}>${d.curto}</label>`).join('')}
         </div>
-        <button type="button" data-remover-periodo="${i}" title="Remover período" class="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition">${LIXEIRA}</button>
+        <button type="button" data-remover-periodo="${i}" title="Remover período" class="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-md text-tinta-3 hover:text-ruim hover:bg-ruim/10 transition">${LIXEIRA}</button>
       </div>
       ${ERRO(`ag-dias-${i}`)}
-      <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-neutral-300">
-        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">das</span>
+      <div class="flex items-center gap-2 text-sm text-tinta-2">
+        <span class="text-xs font-medium text-tinta-2">das</span>
         <input type="time" name="ag-inicio-${i}" value="${p.inicio ?? ''}" step="300" class="campo w-32">
-        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">às</span>
+        <span class="text-xs font-medium text-tinta-2">às</span>
         <input type="time" name="ag-fim-${i}" value="${p.fim ?? ''}" step="300" class="campo w-32">
       </div>
       ${ERRO(`ag-horario-${i}`)}
@@ -162,12 +162,12 @@ const Agenda = (() => {
       <div>
         <div class="flex items-center justify-between mb-1">
           <p class="rotulo mb-0">Dias e horários</p>
-          <button type="button" data-add-periodo class="inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline">+ Adicionar período</button>
+          <button type="button" data-add-periodo class="inline-flex items-center gap-1 text-xs font-medium text-marca-tinta hover:underline">+ Adicionar período</button>
         </div>
         <div data-periodos class="space-y-2">${agenda.periodos.map(linhaPeriodo).join('')}</div>
-        <p data-periodos-vazio class="text-xs text-slate-400 ${agenda.periodos.length ? 'hidden' : ''}">Nenhum período. Ex.: Seg/Qua/Sex das 18:15 às 22:15; ou Sáb das 8:00 às 12:00 e das 13:00 às 19:00.</p>
+        <p data-periodos-vazio class="text-xs text-tinta-3 ${agenda.periodos.length ? 'hidden' : ''}">Nenhum período. Ex.: Seg/Qua/Sex das 18:15 às 22:15; ou Sáb das 8:00 às 12:00 e das 13:00 às 19:00.</p>
         ${ERRO('ag-periodos')}
-        <p data-agenda-resumo class="text-xs text-slate-500 dark:text-neutral-400 mt-2"></p>
+        <p data-agenda-resumo class="text-xs text-tinta-2 mt-2"></p>
       </div>
       <fieldset>
         <legend class="rotulo">Recorrência</legend>

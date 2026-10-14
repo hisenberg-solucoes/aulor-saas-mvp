@@ -16,13 +16,14 @@
 
   const saudacao = () => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; };
 
-  function indicador(rotulo, valor, detalhe, href, extra = '', tom = '') {
+  // Linha de indicadores (DESIGN.md, Painéis): valor sempre em tinta; pendência é ponto cobre no rótulo.
+  function indicador(rotulo, valor, detalhe, href, extra = '', pendente = false) {
     return `
-      <a href="${href}" class="block p-4 bg-white dark:bg-neutral-950 hover:bg-slate-50 dark:hover:bg-neutral-900 transition">
-        <p class="text-xs font-medium text-slate-500 dark:text-neutral-400">${esc(rotulo)}</p>
-        <p class="mt-1 font-display text-2xl font-semibold tabular-nums ${tom || 'text-slate-900 dark:text-neutral-100'}">${valor}</p>
+      <a href="${href}" class="block p-4 bg-elevado hover:bg-realce transition">
+        <p class="flex items-center gap-1.5 text-xs font-medium text-tinta-3">${pendente ? '<span class="h-[7px] w-[7px] rounded-full bg-cobre"></span>' : ''}${esc(rotulo)}</p>
+        <p class="mt-1 text-2xl leading-7 font-semibold tracking-[-0.02em] text-tinta">${valor}</p>
         ${extra}
-        <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">${detalhe}</p>
+        <p class="mt-1 text-xs text-tinta-2">${detalhe}</p>
       </a>`;
   }
 
@@ -38,11 +39,11 @@
       const inad = Aulor.inadimplentes();
       const p = r.receberPrevisto ? Math.min(100, Math.round((r.recebido / r.receberPrevisto) * 100)) : 0;
       blocos.push(indicador(`Recebido em ${nomeMes}`, moeda(r.recebido), `de ${moeda(r.receberPrevisto)} previstos para o mês`, 'financeiro.html',
-        `<div class="mt-2 h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden"><div class="h-full bg-emerald-500" style="width:${p}%"></div></div>`));
-      blocos.push(indicador('Em atraso', moeda(r.vencido), `${inad.length} ${inad.length === 1 ? 'aluno' : 'alunos'} com parcela vencida`, 'cobrancas.html', '', r.vencido ? 'text-red-700 dark:text-red-400' : ''));
+        `<div class="mt-2 h-1.5 rounded-full bg-etiqueta overflow-hidden"><div class="h-full rounded-full bg-tinta" style="width:${p}%"></div></div>`));
+      blocos.push(indicador('Em atraso', moeda(r.vencido), `${inad.length} ${inad.length === 1 ? 'aluno' : 'alunos'} com parcela vencida`, 'cobrancas.html', '', r.vencido > 0));
     }
     blocos.push(indicador('Turmas em andamento', numero(andamento), `${aIniciar} ${aIniciar === 1 ? 'começa' : 'começam'} nas próximas semanas`, 'turmas.html'));
-    return `<div class="grid grid-cols-2 ${blocos.length === 4 ? 'lg:grid-cols-4' : ''} gap-px bg-slate-200 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-800 rounded-xl overflow-hidden">${blocos.join('')}</div>`;
+    return `<div class="grid grid-cols-2 ${blocos.length === 4 ? 'lg:grid-cols-4' : ''} gap-px bg-linha border border-linha rounded-xl overflow-hidden">${blocos.join('')}</div>`;
   }
 
   // Fila "precisa de atenção": cada item leva para onde a pessoa resolve.
@@ -90,19 +91,19 @@
     itens.sort((a, b) => ordem[a.tom] - ordem[b.tom]);
     return `
       <section class="painel">
-        <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
-          <h2 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Precisa de atenção</h2>
-          <span class="text-xs text-slate-500 dark:text-neutral-400">${itens.length ? `${itens.length} ${itens.length === 1 ? 'item' : 'itens'}` : ''}</span>
+        <div class="px-5 py-4 border-b border-linha flex items-center justify-between">
+          <h2 class="font-display font-semibold text-tinta">Precisa de atenção</h2>
+          <span class="text-xs text-tinta-2">${itens.length ? `${itens.length} ${itens.length === 1 ? 'item' : 'itens'}` : ''}</span>
         </div>
-        ${itens.length ? `<ul class="divide-y divide-slate-100 dark:divide-neutral-900">${itens.map((i) => `
+        ${itens.length ? `<ul class="divide-y divide-linha">${itens.map((i) => `
           <li>
-            <a href="${i.href}" class="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition group">
+            <a href="${i.href}" class="flex items-center gap-3 px-5 py-3.5 hover:bg-realce transition group">
               <span class="h-2 w-2 rounded-full shrink-0 ${TOM[i.tom].ponto}"></span>
               <span class="flex-1 min-w-0">
-                <span class="block text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(i.titulo)}</span>
-                <span class="block text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(i.detalhe)}</span>
+                <span class="block text-sm font-medium text-tinta">${esc(i.titulo)}</span>
+                <span class="block text-xs text-tinta-2 truncate">${esc(i.detalhe)}</span>
               </span>
-              <span class="text-xs font-semibold text-petrol-800 dark:text-sky-300 shrink-0 group-hover:underline">${esc(i.acao)}</span>
+              <span class="text-xs font-semibold text-marca-tinta shrink-0 group-hover:underline">${esc(i.acao)}</span>
             </a>
           </li>`).join('')}</ul>` : vazio('Tudo em dia', 'Nenhuma pendência para hoje.')}
       </section>`;
@@ -113,22 +114,22 @@
     const aulas = Aulor.aulasDoDia(hoje);
     return `
       <section class="painel">
-        <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
-          <h2 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Aulas de hoje</h2>
+        <div class="px-5 py-4 border-b border-linha flex items-center justify-between">
+          <h2 class="font-display font-semibold text-tinta">Aulas de hoje</h2>
           <a href="aulas.html" class="text-xs font-semibold link">Agenda</a>
         </div>
-        ${aulas.length ? `<ul class="divide-y divide-slate-100 dark:divide-neutral-900">${aulas.map((a) => {
+        ${aulas.length ? `<ul class="divide-y divide-linha">${aulas.map((a) => {
           const t = Aulor.turma(a.turmaId);
           const feita = a.status === 'realizada';
-          return `<li><a href="chamada.html?aula=${a.id}" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition">
-            <span class="text-sm font-semibold tabular-nums text-slate-900 dark:text-neutral-100 w-12">${a.inicio}</span>
+          return `<li><a href="chamada.html?aula=${a.id}" class="flex items-center gap-3 px-5 py-3 hover:bg-realce transition">
+            <span class="text-sm font-semibold tabular-nums text-tinta w-12">${a.inicio}</span>
             <span class="flex-1 min-w-0">
-              <span class="block text-sm text-slate-800 dark:text-neutral-100 truncate">${esc(Aulor.curso(t.cursoId).nome)}</span>
-              <span class="block text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(t.codigo)} · ${esc(Aulor.professor(t.professorId).nome)} · ${esc(t.local)}</span>
+              <span class="block text-sm text-tinta truncate">${esc(Aulor.curso(t.cursoId).nome)}</span>
+              <span class="block text-xs text-tinta-2 truncate">${esc(t.codigo)} · ${esc(Aulor.professor(t.professorId).nome)} · ${esc(t.local)}</span>
             </span>
             ${feita ? status('ok', 'Chamada feita') : status('neutro', 'A fazer')}
           </a></li>`;
-        }).join('')}</ul>` : '<p class="px-5 py-6 text-sm text-slate-500 dark:text-neutral-400">Nenhuma aula hoje.</p>'}
+        }).join('')}</ul>` : '<p class="px-5 py-6 text-sm text-tinta-2">Nenhuma aula hoje.</p>'}
       </section>`;
   }
 
@@ -137,19 +138,19 @@
     const lista = [...Aulor.matriculas()].sort((a, b) => b.data.localeCompare(a.data) || b.codigo.localeCompare(a.codigo)).slice(0, 5);
     return `
       <section class="painel">
-        <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
-          <h2 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Matrículas recentes</h2>
+        <div class="px-5 py-4 border-b border-linha flex items-center justify-between">
+          <h2 class="font-display font-semibold text-tinta">Matrículas recentes</h2>
           <a href="matriculas.html" class="text-xs font-semibold link">Todas</a>
         </div>
-        <ul class="divide-y divide-slate-100 dark:divide-neutral-900">${lista.map((m) => {
+        <ul class="divide-y divide-linha">${lista.map((m) => {
           const t = Aulor.turma(m.turmaId);
-          return `<li><a href="matricula.html?id=${m.id}" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition">
+          return `<li><a href="matricula.html?id=${m.id}" class="flex items-center gap-3 px-5 py-3 hover:bg-realce transition">
             ${avatar(Aulor.aluno(m.alunoId).nome)}
             <span class="flex-1 min-w-0">
-              <span class="block text-sm text-slate-800 dark:text-neutral-100 truncate">${esc(Aulor.aluno(m.alunoId).nome)}</span>
-              <span class="block text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(Aulor.curso(t.cursoId).nome)} · ${t.codigo}</span>
+              <span class="block text-sm text-tinta truncate">${esc(Aulor.aluno(m.alunoId).nome)}</span>
+              <span class="block text-xs text-tinta-2 truncate">${esc(Aulor.curso(t.cursoId).nome)} · ${t.codigo}</span>
             </span>
-            <span class="text-xs text-slate-500 dark:text-neutral-400 shrink-0">${quando(m.data)}</span>
+            <span class="text-xs text-tinta-2 shrink-0">${quando(m.data)}</span>
           </a></li>`;
         }).join('')}</ul>
       </section>`;

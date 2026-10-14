@@ -9,7 +9,7 @@
   const tela = document.getElementById('tela');
   const R = Aulor.RISCO;
   let nivel = R[parametroUrl('nivel')] ? parametroUrl('nivel') : '';
-  const COR = { critico: 'bg-red-500', alerta: 'bg-amber-500', atencao: 'bg-slate-400' };
+  const COR = { critico: 'bg-ruim', alerta: 'bg-cobre', atencao: 'bg-tinta-3/60' };
   const AJUDA = {
     critico: `começa em até ${R.critico.dias} dias`,
     alerta: `começa em até ${R.alerta.dias} dias`,
@@ -38,10 +38,10 @@
               <tbody>${lista.map((r) => {
                 const t = r.turma;
                 return `<tr data-href="turma.html?id=${t.id}">
-                  <td><a href="turma.html?id=${t.id}" class="font-medium text-slate-900 dark:text-neutral-100 hover:underline whitespace-nowrap">${esc(t.codigo)}</a><p class="text-xs text-slate-500 dark:text-neutral-400 truncate max-w-[11rem]" title="${esc(Aulor.curso(t.cursoId).nome)}">${esc(Aulor.curso(t.cursoId).nome)}</p></td>
-                  <td class="whitespace-nowrap tabular-nums text-sm">${dataBr(t.inicio)}<p class="text-xs text-slate-500 dark:text-neutral-400">${emDias(r.diasParaInicio)}</p></td>
+                  <td><a href="turma.html?id=${t.id}" class="font-medium text-tinta hover:underline whitespace-nowrap">${esc(t.codigo)}</a><p class="text-xs text-tinta-2 truncate max-w-[11rem]" title="${esc(Aulor.curso(t.cursoId).nome)}">${esc(Aulor.curso(t.cursoId).nome)}</p></td>
+                  <td class="whitespace-nowrap tabular-nums text-sm">${dataBr(t.inicio)}<p class="text-xs text-tinta-2">${emDias(r.diasParaInicio)}</p></td>
                   <td>${esc(Aulor.professor(t.professorId).nome)}</td>
-                  <td>${ocupacaoHtml(t, { minimo: true })}<p class="text-xs ${r.nivel === 'critico' ? 'text-red-700 dark:text-red-400' : 'text-slate-500 dark:text-neutral-400'}" title="${t.minimoAlunos ? 'Mínimo definido na turma' : 'Sem mínimo na turma: metade das vagas'}">mínimo ${r.minimo}${t.minimoAlunos ? '' : '*'} · ${r.faltam === 1 ? 'falta 1' : `faltam ${r.faltam}`}</p></td>
+                  <td>${ocupacaoHtml(t, { minimo: true })}<p class="text-xs ${r.nivel === 'critico' ? 'text-ruim' : 'text-tinta-2'}" title="${t.minimoAlunos ? 'Mínimo definido na turma' : 'Sem mínimo na turma: metade das vagas'}">mínimo ${r.minimo}${t.minimoAlunos ? '' : '*'} · ${r.faltam === 1 ? 'falta 1' : `faltam ${r.faltam}`}</p></td>
                   <td class="num">${moeda(r.valorEmJogo)}</td>
                   <td>${status(R[r.nivel].tom, R[r.nivel].nome)}</td>
                   <td class="text-right whitespace-nowrap">${podeMatricular ? `<a class="btn-sec btn-pequeno" href="matricula-nova.html?turma=${t.id}">Matricular</a>` : ''}</td>
@@ -49,11 +49,11 @@
               }).join('')}</tbody>
             </table>
           </div>` : vazio(nivel ? 'Nenhuma turma neste nível' : 'Nenhuma turma em risco', 'Todas as turmas a iniciar já têm o mínimo de alunos ou começam daqui a muito tempo.')}
-          <p class="px-4 py-2.5 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-100 dark:border-neutral-900 tabular-nums">${lista.length} ${lista.length === 1 ? 'turma' : 'turmas'}${nivel ? ` de ${todas.length}` : ''}</p>
+          <p class="px-4 py-2.5 text-xs text-tinta-2 border-t border-linha tabular-nums">${lista.length} ${lista.length === 1 ? 'turma' : 'turmas'}${nivel ? ` de ${todas.length}` : ''}</p>
         </div>
 
-        <details class="mt-4 text-sm text-slate-600 dark:text-neutral-300">
-          <summary class="cursor-pointer font-medium text-slate-700 dark:text-neutral-200">Como calculamos</summary>
+        <details class="mt-4 text-sm text-tinta-2">
+          <summary class="cursor-pointer font-medium text-tinta">Como calculamos</summary>
           <ul class="mt-2 ml-5 list-disc space-y-1">
             <li>Entram as turmas que ainda não começaram e têm menos alunos que o mínimo para abrir. O mínimo é definido na turma; sem ele (*), vale metade das vagas.</li>
             <li><b>Crítico</b>: ${AJUDA.critico}. <b>Alerta</b>: ${AJUDA.alerta}. <b>Atenção</b>: ${AJUDA.atencao}.</li>

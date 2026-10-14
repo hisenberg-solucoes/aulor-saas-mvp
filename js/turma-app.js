@@ -13,8 +13,8 @@
   function fatos(t) {
     const pr = Aulor.progressoTurma(t);
     const o = Aulor.ocupacao(t);
-    const f = (r, v) => `<div class="px-4 py-3 bg-white dark:bg-neutral-950"><dt class="text-xs text-slate-500 dark:text-neutral-400">${r}</dt><dd class="text-sm font-medium mt-0.5">${v}</dd></div>`;
-    return `<dl class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-px bg-slate-200 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-800 rounded-xl overflow-hidden mb-5">
+    const f = (r, v) => `<div class="px-4 py-3 bg-elevado"><dt class="text-xs text-tinta-2">${r}</dt><dd class="text-sm font-medium mt-0.5">${v}</dd></div>`;
+    return `<dl class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-px bg-linha border border-linha rounded-xl overflow-hidden mb-5">
       ${f('Professor', esc(Aulor.professor(t.professorId).nome))}
       ${f('Dias e horário', esc(Agenda.descrever(t.agenda)))}
       ${f('Período', `${dataBr(t.inicio)} a ${dataBr(t.fim)}`)}
@@ -43,17 +43,17 @@
               const e = concluida ? Aulor.elegibilidade(m) : null;
               const link = Shell.pode('matriculas') ? `matricula.html?id=${m.id}` : (Shell.pode('alunos') ? `aluno.html?id=${a.id}` : '');
               return `<tr ${link ? `data-href="${link}"` : ''} class="${cancelada ? 'opacity-60' : ''}">
-                <td><div class="flex items-center gap-3 min-w-[13rem]">${avatar(a.nome)}<div class="min-w-0"><p class="font-medium text-slate-900 dark:text-neutral-100">${esc(a.nome)}</p><p class="text-xs text-slate-500 dark:text-neutral-400">Matrícula ${m.codigo}${m.data > t.inicio ? ` · entrou em ${dataCurta(m.data)}` : ''}</p></div></div></td>
-                <td>${cancelada ? '<span class="text-slate-400">—</span>' : barraFrequencia(f)}</td>
+                <td><div class="flex items-center gap-3 min-w-[13rem]">${avatar(a.nome)}<div class="min-w-0"><p class="font-medium text-tinta">${esc(a.nome)}</p><p class="text-xs text-tinta-2">Matrícula ${m.codigo}${m.data > t.inicio ? ` · entrou em ${dataCurta(m.data)}` : ''}</p></div></div></td>
+                <td>${cancelada ? '<span class="text-tinta-3">—</span>' : barraFrequencia(f)}</td>
                 <td class="num">${cancelada ? '—' : f.faltas + f.justificadas}</td>
-                ${verFin ? `<td>${cancelada ? '<span class="text-slate-400">—</span>' : deve ? status('perigo', 'Parcela vencida') : status('ok', 'Em dia')}</td>` : ''}
+                ${verFin ? `<td>${cancelada ? '<span class="text-tinta-3">—</span>' : deve ? status('perigo', 'Parcela vencida') : status('ok', 'Em dia')}</td>` : ''}
                 <td>${situacao}</td>
                 ${concluida ? `<td>${e.id === 'emitido' ? `<a class="link text-sm" href="certificado.html?id=${e.certificado.id}">Emitido</a>` : status(e.tom, e.nome)}</td>` : ''}
               </tr>`;
             }).join('')}</tbody>
           </table>
         </div>
-        <p class="px-4 py-2.5 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-100 dark:border-neutral-900">Frequência mínima: ${Aulor.config().academico.frequenciaMinima}% das aulas com chamada registrada (a linha vertical na barra). ${Aulor.config().academico.justificadaContaPresenca ? 'Falta justificada conta como presença.' : 'Falta justificada conta como falta.'}</p>
+        <p class="px-4 py-2.5 text-xs text-tinta-2 border-t border-linha">Frequência mínima: ${Aulor.config().academico.frequenciaMinima}% das aulas com chamada registrada (a linha vertical na barra). ${Aulor.config().academico.justificadaContaPresenca ? 'Falta justificada conta como presença.' : 'Falta justificada conta como falta.'}</p>
       </div>`;
   }
 
@@ -63,7 +63,7 @@
     const participantes = (a) => Aulor.participantes(a).length;
     return `
       <div class="painel overflow-hidden">
-        <ul class="divide-y divide-slate-100 dark:divide-neutral-900">${aulas.map((a) => {
+        <ul class="divide-y divide-linha">${aulas.map((a) => {
           const pendente = Aulor.chamadaPendente(a);
           const hojeAula = a.data === hoje && a.status === 'prevista';
           const presentes = Object.values(a.presencas).filter((v) => v === 'P').length;
@@ -72,8 +72,8 @@
               : pendente ? status('atencao', 'Chamada pendente')
                 : hojeAula ? status('info', 'Hoje') : status('neutro', 'Prevista');
           const podeAbrir = a.status === 'realizada' || pendente || hojeAula;
-          return `<li class="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 ${a.data > hoje ? 'text-slate-500 dark:text-neutral-400' : ''}">
-            <span class="w-8 text-xs tabular-nums text-slate-400">${a.n}</span>
+          return `<li class="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 ${a.data > hoje ? 'text-tinta-2' : ''}">
+            <span class="w-8 text-xs tabular-nums text-tinta-3">${a.n}</span>
             <span class="w-36 text-sm tabular-nums">${diaSemana(a.data)} ${dataBr(a.data)}</span>
             <span class="w-24 text-sm tabular-nums">${a.inicio}–${a.fim}</span>
             <span class="flex-1 min-w-[10rem] text-sm truncate">${esc(a.conteudo || '')}</span>
@@ -97,11 +97,11 @@
     ].join('');
     const ms = Aulor.matriculasDaTurma(t.id);
     const avisos = [];
-    if (parametroUrl('nova')) avisos.push(`<div class="mb-4 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-200">Turma criada com ${Aulor.progressoTurma(t).total} aulas na agenda. Agora é só matricular os alunos.</div>`);
-    if (s === 'a_concluir') avisos.push(`<div class="mb-4 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">A última aula foi em ${dataBr(t.fim)}. Conclua a turma para fechar o resultado de cada aluno e liberar os certificados.</div>`);
+    if (parametroUrl('nova')) avisos.push(`<div class="mb-4 rounded-xl border border-bom/30 bg-bom/10 px-4 py-3 text-sm text-tinta">Turma criada com ${Aulor.progressoTurma(t).total} aulas na agenda. Agora é só matricular os alunos.</div>`);
+    if (s === 'a_concluir') avisos.push(`<div class="mb-4 rounded-xl border border-cobre/40 bg-cobre/15 px-4 py-3 text-sm text-tinta">A última aula foi em ${dataBr(t.fim)}. Conclua a turma para fechar o resultado de cada aluno e liberar os certificados.</div>`);
     if (s === 'concluida') {
       const prontos = ms.filter((m) => Aulor.elegibilidade(m).id === 'elegivel').length;
-      avisos.push(`<div class="mb-4 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-4 py-3 text-sm flex flex-wrap items-center justify-between gap-2"><span>Turma concluída em ${dataBr(t.concluidaEm)}${t.concluidaPor ? ` por ${esc(t.concluidaPor)}` : ''}. ${ms.filter((m) => m.resultado === 'aprovado').length} aprovados, ${ms.filter((m) => m.resultado === 'reprovado_frequencia').length} reprovados por frequência.</span>${prontos && Shell.pode('certificados') ? `<a class="font-semibold link" href="certificados.html?turma=${t.id}">${prontos} certificado${prontos > 1 ? 's' : ''} para emitir</a>` : ''}</div>`);
+      avisos.push(`<div class="mb-4 rounded-xl border border-linha bg-elevado px-4 py-3 text-sm flex flex-wrap items-center justify-between gap-2"><span>Turma concluída em ${dataBr(t.concluidaEm)}${t.concluidaPor ? ` por ${esc(t.concluidaPor)}` : ''}. ${ms.filter((m) => m.resultado === 'aprovado').length} aprovados, ${ms.filter((m) => m.resultado === 'reprovado_frequencia').length} reprovados por frequência.</span>${prontos && Shell.pode('certificados') ? `<a class="font-semibold link" href="certificados.html?turma=${t.id}">${prontos} certificado${prontos > 1 ? 's' : ''} para emitir</a>` : ''}</div>`);
     }
     tela.innerHTML = `
       <div class="max-w-6xl mx-auto">
@@ -122,20 +122,20 @@
       : p.futuras.length ? `Ainda há ${p.futuras.length} aula(s) prevista(s), a última em ${dataBr(p.futuras[p.futuras.length - 1].data)}. A turma pode ser concluída depois da última aula.` : '';
     const reprovados = p.alunos.filter((x) => x.resultado !== 'aprovado');
     const root = abrirModal(`
-      <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800">
-        <h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Concluir ${esc(t.codigo)}</h3>
-        <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Fecha o resultado de cada aluno pela frequência mínima de ${Aulor.config().academico.frequenciaMinima}%.</p>
+      <div class="px-5 py-4 border-b border-linha">
+        <h3 class="font-display font-semibold text-tinta">Concluir ${esc(t.codigo)}</h3>
+        <p class="text-xs text-tinta-2 mt-0.5">Fecha o resultado de cada aluno pela frequência mínima de ${Aulor.config().academico.frequenciaMinima}%.</p>
       </div>
       <div class="px-5 py-4 space-y-4 overflow-y-auto">
-        ${bloqueio ? `<p class="rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 px-3 py-2.5 text-sm text-amber-900 dark:text-amber-200">${esc(bloqueio)}</p>` : ''}
+        ${bloqueio ? `<p class="rounded-lg bg-cobre/15 border border-cobre/40 px-3 py-2.5 text-sm text-tinta">${esc(bloqueio)}</p>` : ''}
         <dl class="grid grid-cols-2 gap-3">
-          <div class="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 px-3 py-2.5"><dt class="text-xs text-emerald-800 dark:text-emerald-300">Aprovados</dt><dd class="font-display text-2xl font-semibold text-emerald-900 dark:text-emerald-200">${p.aprovados}</dd></div>
-          <div class="rounded-lg bg-red-50 dark:bg-red-950/40 px-3 py-2.5"><dt class="text-xs text-red-800 dark:text-red-300">Reprovados por frequência</dt><dd class="font-display text-2xl font-semibold text-red-900 dark:text-red-200">${reprovados.length}</dd></div>
+          <div class="rounded-lg bg-bom/10 px-3 py-2.5"><dt class="text-xs text-tinta">Aprovados</dt><dd class="font-display text-2xl font-semibold text-tinta">${p.aprovados}</dd></div>
+          <div class="rounded-lg bg-ruim/10 px-3 py-2.5"><dt class="text-xs text-tinta">Reprovados por frequência</dt><dd class="font-display text-2xl font-semibold text-tinta">${reprovados.length}</dd></div>
         </dl>
-        ${reprovados.length ? `<ul class="text-sm divide-y divide-slate-100 dark:divide-neutral-900 border-y border-slate-100 dark:border-neutral-900">${reprovados.map((x) => `<li class="flex justify-between py-2"><span>${esc(x.aluno.nome)}</span><span class="tabular-nums text-red-700 dark:text-red-400">${x.f.percentual ?? 0}%</span></li>`).join('')}</ul>` : ''}
-        <p class="text-xs text-slate-500 dark:text-neutral-400">Depois de concluída, a chamada não pode mais ser alterada e os aprovados ficam prontos para receber o certificado.</p>
+        ${reprovados.length ? `<ul class="text-sm divide-y divide-linha border-y border-linha">${reprovados.map((x) => `<li class="flex justify-between py-2"><span>${esc(x.aluno.nome)}</span><span class="tabular-nums text-ruim">${x.f.percentual ?? 0}%</span></li>`).join('')}</ul>` : ''}
+        <p class="text-xs text-tinta-2">Depois de concluída, a chamada não pode mais ser alterada e os aprovados ficam prontos para receber o certificado.</p>
       </div>
-      <div class="px-5 py-3 border-t border-slate-200 dark:border-neutral-800 flex justify-end gap-2">
+      <div class="px-5 py-3 border-t border-linha flex justify-end gap-2">
         <button type="button" data-fechar-modal class="btn-sec">Cancelar</button>
         <button type="button" data-confirmar class="btn-pri" ${bloqueio ? 'disabled' : ''}>Concluir turma</button>
       </div>`, 'max-w-md');

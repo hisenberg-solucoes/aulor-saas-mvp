@@ -12,9 +12,9 @@
   let salvo = false;
 
   const OPCOES = [
-    { id: 'P', nome: 'Presente', curto: 'Presente', cor: 'has-[:checked]:bg-emerald-600 has-[:checked]:border-emerald-600 has-[:checked]:text-white' },
-    { id: 'F', nome: 'Falta', curto: 'Falta', cor: 'has-[:checked]:bg-red-600 has-[:checked]:border-red-600 has-[:checked]:text-white' },
-    { id: 'J', nome: 'Falta justificada', curto: 'Justif.', cor: 'has-[:checked]:bg-amber-500 has-[:checked]:border-amber-500 has-[:checked]:text-white' },
+    { id: 'P', nome: 'Presente', curto: 'Presente', cor: 'has-[:checked]:bg-bom/15 has-[:checked]:border-bom has-[:checked]:text-bom' },
+    { id: 'F', nome: 'Falta', curto: 'Falta', cor: 'has-[:checked]:bg-ruim/15 has-[:checked]:border-ruim has-[:checked]:text-ruim' },
+    { id: 'J', nome: 'Falta justificada', curto: 'Justif.', cor: 'has-[:checked]:bg-cobre/15 has-[:checked]:border-cobre has-[:checked]:text-cobre-tinta' },
   ];
 
   function sugestaoConteudo(a, t) {
@@ -42,20 +42,20 @@
 
     tela.innerHTML = `
       <form id="form-chamada" novalidate class="max-w-2xl mx-auto">
-        <a href="${Shell.pode('turmas') && !Shell.ehSoProfessor() ? `turma.html?id=${t.id}&aba=aulas` : 'aulas.html'}" class="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-petrol-800 dark:text-neutral-400 dark:hover:text-sky-300 mb-2">${ICONE.voltar}${Shell.ehSoProfessor() ? 'Minhas aulas' : `Turma ${esc(t.codigo)}`}</a>
+        <a href="${Shell.pode('turmas') && !Shell.ehSoProfessor() ? `turma.html?id=${t.id}&aba=aulas` : 'aulas.html'}" class="inline-flex items-center gap-1 text-xs font-medium text-tinta-2 hover:text-marca-tinta mb-2">${ICONE.voltar}${Shell.ehSoProfessor() ? 'Minhas aulas' : `Turma ${esc(t.codigo)}`}</a>
         <div class="mb-4">
-          <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100">${esc(c.nome)}</h2>
-          <p class="text-sm text-slate-500 dark:text-neutral-400">${esc(t.codigo)} · ${dataLonga(a.data)}, ${a.inicio}–${a.fim} · aula ${a.n} de ${total}</p>
+          <h2 class="font-display text-xl font-semibold text-tinta">${esc(c.nome)}</h2>
+          <p class="text-sm text-tinta-2">${esc(t.codigo)} · ${dataLonga(a.data)}, ${a.inicio}–${a.fim} · aula ${a.n} de ${total}</p>
         </div>
-        ${salvo ? `<div class="mb-4 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-200 flex items-center justify-between gap-2">Chamada salva. A frequência dos alunos já foi atualizada. <a href="aulas.html" class="font-semibold underline shrink-0">Voltar</a></div>` : ''}
-        ${a.status === 'realizada' && !salvo ? `<p class="mb-4 text-xs text-slate-500 dark:text-neutral-400">Registrada em ${dataBr(a.registradaEm)}${a.registradaPor ? ` por ${esc(a.registradaPor)}` : ''}.${editavel ? ' Você pode corrigir e salvar de novo.' : ''}</p>` : ''}
-        ${aviso ? `<p class="mb-4 rounded-xl bg-slate-100 dark:bg-neutral-900 px-4 py-3 text-sm text-slate-700 dark:text-neutral-300">${aviso}</p>` : ''}
+        ${salvo ? `<div class="mb-4 rounded-xl border border-bom/30 bg-bom/10 px-4 py-3 text-sm text-tinta flex items-center justify-between gap-2">Chamada salva. A frequência dos alunos já foi atualizada. <a href="aulas.html" class="font-semibold underline shrink-0">Voltar</a></div>` : ''}
+        ${a.status === 'realizada' && !salvo ? `<p class="mb-4 text-xs text-tinta-2">Registrada em ${dataBr(a.registradaEm)}${a.registradaPor ? ` por ${esc(a.registradaPor)}` : ''}.${editavel ? ' Você pode corrigir e salvar de novo.' : ''}</p>` : ''}
+        ${aviso ? `<p class="mb-4 rounded-xl bg-etiqueta px-4 py-3 text-sm text-tinta">${aviso}</p>` : ''}
 
         <div class="flex items-center justify-between gap-2 mb-2">
-          <p data-contagem class="text-sm font-medium text-slate-700 dark:text-neutral-200"></p>
+          <p data-contagem class="text-sm font-medium text-tinta"></p>
           ${editavel ? '<button type="button" data-todos class="text-sm font-semibold link">Todos presentes</button>' : ''}
         </div>
-        <ul class="painel divide-y divide-slate-100 dark:divide-neutral-900">
+        <ul class="painel divide-y divide-linha">
           ${lista.map((m) => {
             const al = Aulor.aluno(m.alunoId);
             const f = Aulor.frequencia(m);
@@ -63,18 +63,18 @@
               <div class="flex items-center gap-3 flex-1 min-w-0">
                 ${avatar(al.nome, 'h-9 w-9 text-xs')}
                 <div class="min-w-0">
-                  <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(al.nome)}</p>
-                  <p class="text-xs ${f.abaixo ? 'text-red-700 dark:text-red-400' : 'text-slate-500 dark:text-neutral-400'}">${f.percentual == null ? 'primeira chamada' : `frequência ${f.percentual}%${f.abaixo ? ' · abaixo do mínimo' : ''}`}</p>
+                  <p class="text-sm font-medium text-tinta truncate">${esc(al.nome)}</p>
+                  <p class="text-xs ${f.abaixo ? 'text-ruim' : 'text-tinta-2'}">${f.percentual == null ? 'primeira chamada' : `frequência ${f.percentual}%${f.abaixo ? ' · abaixo do mínimo' : ''}`}</p>
                 </div>
               </div>
               <div role="radiogroup" aria-label="Presença de ${esc(al.nome)}" class="grid grid-cols-3 gap-1.5 sm:w-72 shrink-0">
                 ${OPCOES.map((o) => `
-                  <label class="cursor-pointer select-none rounded-lg border border-slate-300 dark:border-neutral-700 text-center text-sm font-semibold py-2.5 min-h-11 text-slate-600 dark:text-neutral-300 transition ${o.cor} has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-petrol-800/40 ${editavel ? '' : 'opacity-70 cursor-default'}" title="${o.nome}">
+                  <label class="cursor-pointer select-none rounded-lg border border-linha-forte text-center text-sm font-semibold py-2.5 min-h-11 text-tinta-2 transition ${o.cor} has-[:checked]:ring-1 has-[:checked]:ring-inset has-[:checked]:ring-current has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-marca-tinta/40 ${editavel ? '' : 'opacity-70 cursor-default'}" title="${o.nome}">
                     <input type="radio" name="p-${m.id}" value="${o.id}" class="sr-only" ${marcas[m.id] === o.id ? 'checked' : ''} ${editavel ? '' : 'disabled'}>${o.curto}
                   </label>`).join('')}
               </div>
             </li>`;
-          }).join('') || '<li class="px-4 py-6 text-sm text-slate-500">Nenhum aluno matriculado nesta data.</li>'}
+          }).join('') || '<li class="px-4 py-6 text-sm text-tinta-2">Nenhum aluno matriculado nesta data.</li>'}
         </ul>
         ${ERRO('presencas')}
 
@@ -84,9 +84,9 @@
         </div>
 
         ${editavel ? `
-        <div class="sticky -bottom-4 md:-bottom-6 z-20 mt-5 -mx-4 sm:mx-0 sm:rounded-xl bg-white/95 dark:bg-neutral-950/95 backdrop-blur border-t sm:border border-slate-200 dark:border-neutral-800 px-4 py-3 shadow-[0_-4px_12px_rgba(15,23,42,.06)]">
+        <div class="sticky -bottom-4 md:-bottom-6 z-20 mt-5 -mx-4 sm:mx-0 sm:rounded-xl bg-elevado/95 backdrop-blur border-t sm:border border-linha px-4 py-3 shadow-[0_-4px_12px_rgba(15,23,42,.06)]">
           <div class="flex items-center justify-between gap-3">
-            <p data-contagem-rodape class="text-sm text-slate-600 dark:text-neutral-300 hidden sm:block"></p>
+            <p data-contagem-rodape class="text-sm text-tinta-2 hidden sm:block"></p>
             <button type="submit" class="btn-pri w-full sm:w-auto py-3 sm:py-2">Salvar chamada</button>
           </div>
         </div>` : ''}

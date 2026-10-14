@@ -13,12 +13,12 @@
     ? '<div id="detalhe-perfil"></div>'
     : `<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100">Perfis de acesso</h2>
-          <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">Cada perfil define o que a pessoa vê e faz. O usuário soma os perfis que recebe e pode ter permissões adicionais (em Pessoas › <a class="link" href="usuarios.html">Usuários</a>).</p>
+          <h2 class="font-display text-xl font-semibold text-tinta">Perfis de acesso</h2>
+          <p class="text-sm text-tinta-2 mt-0.5">Cada perfil define o que a pessoa vê e faz. O usuário soma os perfis que recebe e pode ter permissões adicionais (em Pessoas › <a class="link" href="usuarios.html">Usuários</a>).</p>
         </div>
         ${gerenciar ? '<button id="btn-novo-perfil" class="btn-pri"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Novo perfil</button>' : ''}
       </div>
-      <div id="troca-visao" class="mb-5 border-b border-slate-200 dark:border-neutral-800"></div>
+      <div id="troca-visao" class="mb-5 border-b border-linha"></div>
       <div id="visao-perfis"><div id="lista-perfis"></div></div>
       <div id="visao-matriz" class="hidden"></div>`;
   // Sem acesso: o shell já mostrou o aviso; os contêineres ficam ocultos só para o app não quebrar.

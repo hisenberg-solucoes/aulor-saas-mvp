@@ -21,7 +21,7 @@
   ];
   let aba = ['prontos', 'emitidos', 'bloqueados'].includes(parametroUrl('aba')) ? parametroUrl('aba') : (prontos().length ? 'prontos' : 'emitidos');
 
-  const cursoTurma = (turmaId) => { const t = Aulor.turma(turmaId); return `${esc(Aulor.curso(t.cursoId).nome)}<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(t.codigo)} · concluída em ${dataBr(t.concluidaEm)}</p>`; };
+  const cursoTurma = (turmaId) => { const t = Aulor.turma(turmaId); return `${esc(Aulor.curso(t.cursoId).nome)}<p class="text-xs text-tinta-2">${esc(t.codigo)} · concluída em ${dataBr(t.concluidaEm)}</p>`; };
 
   function abaProntos() {
     const lista = prontos();
@@ -34,15 +34,15 @@
           <tbody>${lista.map((m) => `
             <tr>
               ${podeEmitir ? `<td><input type="checkbox" class="check" data-sel value="${m.id}" checked aria-label="Selecionar ${esc(Aulor.aluno(m.alunoId).nome)}"></td>` : ''}
-              <td><a class="font-medium text-slate-900 dark:text-neutral-100 hover:underline" href="matricula.html?id=${m.id}">${esc(Aulor.aluno(m.alunoId).nome)}</a><p class="text-xs text-slate-500 dark:text-neutral-400">CPF ${cpfFmt(Aulor.aluno(m.alunoId).cpf)}</p></td>
+              <td><a class="font-medium text-tinta hover:underline" href="matricula.html?id=${m.id}">${esc(Aulor.aluno(m.alunoId).nome)}</a><p class="text-xs text-tinta-2">CPF ${cpfFmt(Aulor.aluno(m.alunoId).cpf)}</p></td>
               <td>${cursoTurma(m.turmaId)}</td>
               <td class="num">${m.frequenciaFinal}%</td>
               <td class="num">${Aulor.curso(Aulor.turma(m.turmaId).cursoId).cargaHoraria} h</td>
             </tr>`).join('')}
           </tbody>
         </table></div>
-        ${podeEmitir ? `<div class="px-4 py-3 border-t border-slate-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3">
-          <p class="text-xs text-slate-500 dark:text-neutral-400">Cada certificado recebe um código único${Aulor.temModulo('validacao_publica') ? ' que pode ser conferido na página pública de validação' : ''}.</p>
+        ${podeEmitir ? `<div class="px-4 py-3 border-t border-linha flex flex-wrap items-center justify-between gap-3">
+          <p class="text-xs text-tinta-2">Cada certificado recebe um código único${Aulor.temModulo('validacao_publica') ? ' que pode ser conferido na página pública de validação' : ''}.</p>
           <button type="button" data-emitir class="btn-pri">Emitir selecionados</button>
         </div>` : ''}
       </div>`;
@@ -57,9 +57,9 @@
         <tbody>${lista.map((c) => `
           <tr data-href="certificado.html?id=${c.id}">
             <td class="font-mono text-xs whitespace-nowrap">${esc(c.codigo)}</td>
-            <td class="font-medium text-slate-900 dark:text-neutral-100">${esc(c.dados.aluno)}</td>
-            <td>${esc(c.dados.curso)}<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(c.dados.turma)}</p></td>
-            <td class="whitespace-nowrap">${dataBr(c.emitidoEm)}<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(c.emitidoPor)}</p></td>
+            <td class="font-medium text-tinta">${esc(c.dados.aluno)}</td>
+            <td>${esc(c.dados.curso)}<p class="text-xs text-tinta-2">${esc(c.dados.turma)}</p></td>
+            <td class="whitespace-nowrap">${dataBr(c.emitidoEm)}<p class="text-xs text-tinta-2">${esc(c.emitidoPor)}</p></td>
             <td>${c.status === 'valido' ? status('ok', 'Válido') : status('neutro', 'Cancelado', c.motivoCancelamento)}</td>
             <td class="text-right"><a href="certificado.html?id=${c.id}" class="text-xs font-semibold link">Abrir</a></td>
           </tr>`).join('')}
@@ -74,12 +74,12 @@
         <thead><tr><th>Aluno</th><th>Curso</th><th>Motivo</th></tr></thead>
         <tbody>${lista.map((m) => `
           <tr data-href="matricula.html?id=${m.id}">
-            <td class="font-medium text-slate-900 dark:text-neutral-100">${esc(Aulor.aluno(m.alunoId).nome)}</td>
+            <td class="font-medium text-tinta">${esc(Aulor.aluno(m.alunoId).nome)}</td>
             <td>${cursoTurma(m.turmaId)}</td>
             <td>${(() => { const e = Aulor.elegibilidade(m); return status(e.tom, e.nome); })()}</td>
           </tr>`).join('')}
         </tbody></table></div></div>
-      <p class="text-xs text-slate-500 dark:text-neutral-400 mt-3">Regras em Configurações: frequência mínima (Regras acadêmicas) e bloqueio por parcela vencida (Financeiro).</p>`;
+      <p class="text-xs text-tinta-2 mt-3">Regras em Configurações: frequência mínima (Regras acadêmicas) e bloqueio por parcela vencida (Financeiro).</p>`;
   }
 
   function render() {
