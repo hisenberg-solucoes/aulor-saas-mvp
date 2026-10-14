@@ -79,8 +79,8 @@
     }));
   }
 
-  function opcoesPerfis(tipo, marcados) {
-    return PERFIS.filter((p) => p.tipos.includes(tipo)).map((p) => `
+  function opcoesPerfis(marcados) {
+    return PERFIS.map((p) => `
       <label class="flex items-start gap-3 rounded-lg border border-linha px-3 py-2.5 cursor-pointer has-[:checked]:border-marca">
         <input type="checkbox" name="perfil" value="${p.id}" class="check mt-0.5" ${marcados.includes(p.id) ? 'checked' : ''} ${p.ativo ? '' : 'disabled'}>
         <span class="text-sm"><span class="font-medium">${esc(p.nome)}</span>${p.protegido ? ' <span class="text-xs text-tinta-3">· acesso total</span>' : ''}${p.ativo ? '' : ' <span class="text-xs text-aviso">· inativo</span>'}
@@ -89,7 +89,6 @@
   }
 
   function abrirForm(u = null) {
-    const tipo = u ? tipoDe(u) : 'colaborador';
     const semUsuario = Aulor.professores().filter((p) => !USUARIOS.some((x) => x.vinculos.some((v) => v.tipo === 'instrutor' && v.id === p.id)));
     const { form } = modalFormulario({
       id: 'form-usuario',
@@ -119,7 +118,7 @@
         ${u ? campo('cargo', 'Cargo', u.cargo) : ''}
         <div>
           <p class="rotulo">Perfis de acesso</p>
-          <div data-perfis class="grid gap-2">${opcoesPerfis(tipo, u ? u.perfis : [])}</div>
+          <div data-perfis class="grid gap-2">${opcoesPerfis(u ? u.perfis : [])}</div>
           ${ERRO('perfil')}
           ${u && Shell.pode('perfis-acesso') ? `<p class="text-xs text-tinta-2 mt-2"><a class="link" href="perfis.html?aba=validacao&usuario=${u.id}">Ver o acesso efetivo de ${esc(u.nome.split(' ')[0])}</a> · permissões adicionais em <a class="link" href="perfis.html?aba=matriz-usuarios">Usuários × perfis</a>.</p>` : ''}
         </div>`,
@@ -166,7 +165,7 @@
       const t = form.querySelector('[name="tipo"]:checked').value;
       form.querySelector('[data-campos-equipe]').classList.toggle('hidden', t !== 'colaborador');
       form.querySelector('[data-campos-professor]').classList.toggle('hidden', t !== 'instrutor');
-      form.querySelector('[data-perfis]').innerHTML = opcoesPerfis(t, t === 'instrutor' ? ['professor'] : []);
+      form.querySelector('[data-perfis]').innerHTML = opcoesPerfis(t === 'instrutor' ? ['professor'] : []);
     }));
   }
 
