@@ -278,7 +278,7 @@ Densidade é virtude: controles de 32px, linhas de 36px, texto de 13px. A hierar
 
 Claro e escuro são de primeira classe, e o escuro não é o claro invertido: é a mesma ficha à noite. No claro, o papel é areia e a tinta é azul profundo; no escuro, os dois trocam de lugar. A troca acontece só nos tokens, nunca no componente.
 
-Este documento é normativo para o MVP comercial. Veio do protótipo original (`snorlax-jornada`, mesmo nome de arquivo) em 2026-10-14, e as duas cópias andam juntas: uma regra nova entra nas duas. No MVP a Ficha vale em todas as telas: tokens, tipografia, shell e componentes compartilhados. O layout de cada tela ainda é o do original (cartões, filtros e tabela), só que nos papéis da Ficha; os cartões em elevado sobre o papel são herança desse layout e saem quando a tela for repaginada. Perfis de acesso ainda não tem o desenho Ficha do original, que também tirou os tipos de usuário do motor.
+Este documento é normativo para o MVP comercial. Veio do protótipo original (`snorlax-jornada`, mesmo nome de arquivo) em 2026-10-14, e as duas cópias andam juntas: uma regra nova entra nas duas. No MVP a Ficha vale em todas as telas: tokens, tipografia, shell e componentes compartilhados. O layout de cada tela ainda é o do original (cartões, filtros e tabela), só que nos papéis da Ficha; os cartões em elevado sobre o papel são herança desse layout e saem quando a tela for repaginada. Perfis de acesso já tem o desenho Ficha do original (papel com divisórias, sem cartões) e, como lá, perfis sem tipos de usuário: qualquer perfil vale para qualquer pessoa.
 
 **Key Characteristics:**
 - Papel com divisórias: areia no claro, azul profundo no escuro.

@@ -10,11 +10,6 @@
 // (Acessos.CHAVE, em js/shell.js); este arquivo é só a semente.
 // ============================================================
 
-const TIPOS_USUARIO = [
-  { id: 'colaborador', nome: 'Equipe', plural: 'Equipe da escola', descricao: 'Direção, secretaria, financeiro e coordenação. Usa o sistema da escola.', portal: 'escola', cadastro: 'usuarios.html?id=', lista: 'Usuários' },
-  { id: 'instrutor', nome: 'Professor', plural: 'Professores', descricao: 'Dá aulas nas turmas. Vê as próprias aulas e registra chamada e diário.', portal: 'escola', cadastro: 'professores.html?professor=', lista: 'Professores' },
-];
-
 const PORTAIS = [
   { id: 'escola', nome: 'Sistema da escola' },
 ];
@@ -62,9 +57,9 @@ function todasAsPermissoes() {
 // Administrador é protegido (como o AccessProfile.IsProtected do backend):
 // sempre tem tudo e não pode ser editado, inativado nem excluído.
 const PERFIS = [
-  { id: 'administrador', nome: 'Administrador', tipos: ['colaborador'], ativo: true, protegido: true, permissoes: todasAsPermissoes() },
+  { id: 'administrador', nome: 'Administrador', ativo: true, protegido: true, permissoes: todasAsPermissoes() },
   {
-    id: 'secretaria', nome: 'Secretaria', tipos: ['colaborador'], ativo: true,
+    id: 'secretaria', nome: 'Secretaria', ativo: true,
     permissoes: {
       painel: ['visualizar'], alunos: ['visualizar', 'criar', 'editar'], matriculas: ['visualizar', 'criar', 'cancelar'],
       cursos: ['visualizar'], turmas: ['visualizar'], professores: ['visualizar'], frequencia: ['visualizar'],
@@ -72,14 +67,14 @@ const PERFIS = [
     },
   },
   {
-    id: 'financeiro', nome: 'Financeiro', tipos: ['colaborador'], ativo: true,
+    id: 'financeiro', nome: 'Financeiro', ativo: true,
     permissoes: {
       painel: ['visualizar'], alunos: ['visualizar'], matriculas: ['visualizar'],
       receber: ['visualizar', 'registrar', 'estornar'], pagar: ['visualizar', 'lancar', 'pagar'],
     },
   },
   {
-    id: 'coordenacao', nome: 'Coordenação pedagógica', tipos: ['colaborador'], ativo: true,
+    id: 'coordenacao', nome: 'Coordenação pedagógica', ativo: true,
     permissoes: {
       painel: ['visualizar'], alunos: ['visualizar', 'editar'], matriculas: ['visualizar'],
       cursos: ['visualizar', 'criar', 'editar'], turmas: ['visualizar', 'criar', 'editar', 'concluir'], professores: ['visualizar', 'gerenciar'],
@@ -87,7 +82,7 @@ const PERFIS = [
     },
   },
   {
-    id: 'professor', nome: 'Professor', tipos: ['instrutor'], ativo: true,
+    id: 'professor', nome: 'Professor', ativo: true,
     permissoes: { 'minhas-aulas': ['visualizar', 'registrar'] },
   },
 ];

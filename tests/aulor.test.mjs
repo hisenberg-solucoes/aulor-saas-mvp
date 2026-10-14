@@ -190,6 +190,9 @@ test('permissões: perfis padrão e administrador protegido', () => {
   assert.equal(Permissoes.alternarPermissao('administrador', 'painel', 'visualizar'), false);
   Permissoes.excluirPerfil('administrador');
   assert.ok(PERFIS.some((p) => p.id === 'administrador'));
+  // Sem tipos de usuário: qualquer perfil vale para qualquer pessoa (professor recebe Secretaria).
+  assert.equal(Permissoes.alternarUsuarioNoPerfil('u5', 'secretaria').incluido, true);
+  assert.ok(Permissoes.pode(u('u5'), 'alunos', 'visualizar'));
 });
 
 test('turmas em risco: mínimo da turma ou metade das vagas, nível pelo prazo', () => {
