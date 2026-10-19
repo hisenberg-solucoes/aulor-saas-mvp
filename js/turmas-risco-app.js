@@ -46,7 +46,7 @@
                   <td class="num">${t.capacidade}<p class="text-xs ${APOIO}">${r.ocupacaoPct}% ocupada</p></td>
                   <td class="num">${moeda(r.valorEmJogo)}</td>
                   <td>${status(R[r.nivel].tom, R[r.nivel].nome)}</td>
-                  ${podeMatricular ? `<td class="text-right whitespace-nowrap"><a class="${BOTAO_LINK}" href="matricula-nova.html?turma=${t.id}">Matricular</a></td>` : ''}
+                  ${podeMatricular ? `<td class="text-right whitespace-nowrap"><a class="${BOTAO_LINK}" href="matricula-nova.html?turma=${t.id}">Nova venda</a></td>` : ''}
                 </tr>`;
               }).join('') : `
                 <tr><td colspan="${podeMatricular ? 8 : 7}" class="py-10 text-center text-sm ${APOIO}">${nivel ? `Nenhuma turma neste nível. <button type="button" data-cartao="" class="${BOTAO_LINK} ml-1">Ver todos os níveis</button>` : 'Nenhuma turma em risco: as turmas a iniciar já têm o mínimo de alunos ou começam daqui a muito tempo.'}</td></tr>`}</tbody>

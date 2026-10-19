@@ -1,5 +1,6 @@
 // ============================================================
-// Nova matrícula em uma tela: aluno → turma → condições → confirmar.
+// Nova venda em uma tela: aluno → turma → condições → confirmar. A venda gera a
+// matrícula na turma e as parcelas.
 // O resumo à direita mostra as parcelas exatamente como serão lançadas
 // (mesma regra do motor: Aulor.simularMatricula / Aulor.matricular).
 // Atalhos: ?aluno=ID e ?turma=ID já vêm preenchidos.
@@ -7,7 +8,7 @@
 
 (function () {
   if (!Shell.permitido) return;
-  if (!Shell.pode('matriculas', 'criar')) { document.getElementById('tela').innerHTML = vazio('Seu perfil não pode criar matrículas', 'Peça ao administrador para liberar "Matrículas › Matricular".', '<a class="btn-sec" href="matriculas.html">Ver matrículas</a>'); return; }
+  if (!Shell.pode('matriculas', 'criar')) { document.getElementById('tela').innerHTML = vazio('Seu perfil não pode criar vendas', 'Peça ao administrador para liberar "Vendas › Vender".', '<a class="btn-sec" href="matriculas.html">Ver vendas</a>'); return; }
   const tela = document.getElementById('tela');
   const cfg = Aulor.config().financeiro;
   const hoje = Aulor.hoje();
@@ -52,7 +53,7 @@
     const lot = lotadas();
     tela.innerHTML = `
       <form id="form-matricula" novalidate>
-        ${cabecalhoPagina({ titulo: 'Nova matrícula', subtitulo: 'Três passos. As parcelas são lançadas em Contas a receber ao confirmar.', voltar: { href: 'matriculas.html', rotulo: 'Matrículas' } })}
+        ${cabecalhoPagina({ titulo: 'Nova venda', subtitulo: 'Três passos. Ao confirmar, o aluno entra na turma e as parcelas são lançadas em Contas a receber.', voltar: { href: 'matriculas.html', rotulo: 'Vendas' } })}
         <div class="grid lg:grid-cols-3 gap-4 items-start">
           <div class="lg:col-span-2 space-y-4">
             ${secao(1, 'Aluno', 'Quem vai estudar. Responsável e quem paga vêm do cadastro.', htmlAluno(alunoId), Shell.pode('alunos', 'criar') ? `<button type="button" data-novo-aluno class="btn-fantasma">${ICONE.mais}Novo aluno</button>` : '')}
@@ -88,14 +89,14 @@
               </div>
               <label class="mt-4 flex items-start gap-3 text-sm cursor-pointer text-slate-700 dark:text-neutral-200">
                 <input type="checkbox" name="pagarPrimeira" value="1" class="check mt-0.5">
-                <span>Registrar agora o pagamento da 1ª parcela <span class="block text-xs ${APOIO}">Quando o aluno já paga no ato da matrícula.</span></span>
+                <span>Registrar agora o pagamento da 1ª parcela <span class="block text-xs ${APOIO}">Quando o aluno já paga no ato da venda.</span></span>
               </label>`)}
           </div>
           <aside class="painel lg:sticky lg:top-0">
             ${cabecalhoCartao('Resumo', 'As parcelas exatamente como serão lançadas.')}
             <div data-resumo></div>
             <div class="px-4 py-4 border-t border-slate-100 dark:border-neutral-900 space-y-3">
-              <button type="submit" class="btn-pri w-full">Confirmar matrícula</button>
+              <button type="submit" class="btn-pri w-full">Confirmar venda</button>
               <p class="text-xs ${APOIO}">Cobrança manual nesta versão: a secretaria envia boleto/Pix e registra o recebimento. Integração com provedor de pagamento prevista.</p>
             </div>
           </aside>
@@ -148,7 +149,7 @@
       const ativas = Aulor.matriculasDoAluno(a.id).filter((m) => m.status === 'ativa');
       const deve = Aulor.estaInadimplente(a.id);
       infoAluno.innerHTML = info([['Celular', telefoneFmt(a.telefone)], ['Responsável financeiro', Aulor.responsavelFinanceiro(a) ? esc(Aulor.responsavelFinanceiro(a).nome) : 'O próprio aluno'], ['Cursando agora', ativas.length ? esc(ativas.map((m) => Aulor.curso(Aulor.turma(m.turmaId).cursoId).nome).join(', ')) : 'Nenhum curso']])
-        + (deve && Shell.pode('receber') ? `<p class="mt-2 text-xs font-medium text-red-700 dark:text-red-400">Este aluno tem parcela vencida em outra matrícula. <a class="underline" href="aluno.html?id=${a.id}&aba=financeiro">Ver financeiro</a></p>` : '');
+        + (deve && Shell.pode('receber') ? `<p class="mt-2 text-xs font-medium text-red-700 dark:text-red-400">Este aluno tem parcela vencida em outra venda. <a class="underline" href="aluno.html?id=${a.id}&aba=financeiro">Ver financeiro</a></p>` : '');
     } else infoAluno.innerHTML = '';
 
     const infoTurma = form.querySelector('[data-info-turma]');

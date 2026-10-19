@@ -76,7 +76,7 @@
     const editando = lancando && podeNota;
     const o = Aulor.ocupacao(t);
     const matricular = Shell.pode('matriculas', 'criar') && ['planejada', 'em_andamento'].includes(s) && !o.lotada
-      ? `<a href="matricula-nova.html?turma=${t.id}" class="btn-fantasma">${ICONE.mais}Matricular</a>` : '';
+      ? `<a href="matricula-nova.html?turma=${t.id}" class="btn-fantasma">${ICONE.mais}Nova venda</a>` : '';
     if (!ms.length) {
       return cartao({ titulo: 'Alunos matriculados', contexto: 'As matrículas feitas para esta turma aparecem aqui.', acao: matricular, corpo: `<p class="px-4 py-8 text-center text-sm ${APOIO}">Nenhum aluno matriculado nesta turma ainda.</p>` });
     }
@@ -215,7 +215,7 @@
     const aulas = Aulor.aulasDaTurma(t.id);
     const pendentes = aulas.filter((a) => Aulor.chamadaPendente(a));
     const podeMatricular = Shell.pode('matriculas', 'criar') && ['planejada', 'em_andamento'].includes(s) && !o.lotada;
-    const matricular = (classe) => (podeMatricular ? `<a href="matricula-nova.html?turma=${t.id}" class="${classe}">Matricular aluno</a>` : '');
+    const matricular = (classe) => (podeMatricular ? `<a href="matricula-nova.html?turma=${t.id}" class="${classe}">Nova venda</a>` : '');
     const r = Aulor.riscoTurma(t);
     if (r) {
       lista.push(faixa(r.nivel === 'critico' ? 'erro' : 'aviso', `<span class="font-medium">Em risco de não fechar (${Aulor.RISCO[r.nivel].nome.toLowerCase()}):</span> <span class="tabular-nums">${r.ocupadas} de ${r.minimo} alunos mínimos, início ${quando(t.inicio)} (${dataCurta(t.inicio)}) · ${r.faltam === 1 ? 'falta 1' : `faltam ${r.faltam}`} · ${moeda(r.valorEmJogo)} em jogo</span>`, matricular(LINK_FAIXA)));
@@ -248,7 +248,7 @@
     const aberta = ['planejada', 'em_andamento'].includes(s);
     return [
       Shell.pode('matriculas', 'criar') && !['concluida', 'cancelada'].includes(s) ? {
-        nome: 'Matricular aluno',
+        nome: 'Nova venda',
         desabilitado: !aberta || o.lotada,
         detalhe: o.lotada ? 'Turma lotada: aumente as vagas em Editar dados' : !aberta ? 'As aulas terminaram: matricule numa turma aberta' : plural(o.livres, 'vaga livre', 'vagas livres'),
         acao: () => { location.href = `matricula-nova.html?turma=${t.id}`; },

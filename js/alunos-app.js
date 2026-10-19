@@ -80,7 +80,7 @@
     const verFin = Shell.pode('receber');
     const filtrando = filtro.q || filtro.situacao !== 'todos' || filtro.curso !== 'todos';
     const acoes = [
-      Shell.pode('matriculas', 'criar') ? '<a href="matricula-nova.html" class="btn-sec">Nova matrícula</a>' : '',
+      Shell.pode('matriculas', 'criar') ? '<a href="matricula-nova.html" class="btn-sec">Nova venda</a>' : '',
       Shell.pode('alunos', 'criar') ? `<button type="button" data-novo class="btn-pri">${ICONE.mais}Novo aluno</button>` : '',
     ].join('');
     tela.innerHTML = `

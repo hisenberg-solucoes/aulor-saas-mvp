@@ -36,7 +36,7 @@ const FEATURES = [
   { id: 'painel', modulo: 'visao', nome: 'Painel da escola', acoes: [VER] },
 
   { id: 'alunos', modulo: 'comercial', nome: 'Alunos', acoes: [VER, ACAO_('criar', 'Cadastrar'), ACAO_('editar', 'Editar')] },
-  { id: 'matriculas', modulo: 'comercial', nome: 'Matrículas', acoes: [VER, ACAO_('criar', 'Matricular'), ACAO_('trocar', 'Trocar de turma'), ACAO_('cancelar', 'Cancelar matrícula')] },
+  { id: 'matriculas', modulo: 'comercial', nome: 'Vendas', acoes: [VER, ACAO_('criar', 'Vender'), ACAO_('trocar', 'Trocar de turma'), ACAO_('cancelar', 'Cancelar venda')] },
 
   { id: 'cursos', modulo: 'pedagogico', nome: 'Cursos', acoes: [VER, ACAO_('criar', 'Criar'), ACAO_('editar', 'Editar')] },
   { id: 'turmas', modulo: 'pedagogico', nome: 'Turmas', acoes: [VER, ACAO_('criar', 'Criar'), ACAO_('editar', 'Editar'), ACAO_('concluir', 'Concluir turma')] },

@@ -38,7 +38,7 @@
     const turmas = Aulor.turmas();
     const andamento = turmas.filter((t) => ['em_andamento', 'a_concluir'].includes(Aulor.situacaoTurma(t))).length;
     const aIniciar = turmas.filter((t) => Aulor.situacaoTurma(t) === 'planejada').length;
-    const celulas = [{ rotulo: 'Alunos ativos', valor: numero(ativos), contexto: `${plural(recentes, 'matrícula', 'matrículas')} nos últimos 30 dias`, href: pode('alunos') ? 'alunos.html?situacao=ativo' : '' }];
+    const celulas = [{ rotulo: 'Alunos ativos', valor: numero(ativos), contexto: `${plural(recentes, 'venda', 'vendas')} nos últimos 30 dias`, href: pode('alunos') ? 'alunos.html?situacao=ativo' : '' }];
     if (verFin) {
       const r = Aulor.resumoMes(mes);
       const inad = Aulor.inadimplentes();
@@ -144,7 +144,7 @@
     if (!pode('matriculas')) return '';
     const lista = [...Aulor.matriculas()].sort((a, b) => b.data.localeCompare(a.data) || b.codigo.localeCompare(a.codigo)).slice(0, 5);
     return cartao({
-      titulo: 'Matrículas recentes',
+      titulo: 'Vendas recentes',
       contexto: 'As cinco últimas',
       acao: '<a href="matriculas.html" class="btn-fantasma">Todas</a>',
       classe: 'overflow-hidden',
@@ -163,7 +163,7 @@
   }
 
   const acoes = [
-    pode('matriculas', 'criar') ? `<a href="matricula-nova.html" class="btn-pri">${ICONE.mais}Nova matrícula</a>` : '',
+    pode('matriculas', 'criar') ? `<a href="matricula-nova.html" class="btn-pri">${ICONE.mais}Nova venda</a>` : '',
     pode('alunos', 'criar') ? '<a href="alunos.html?novo=1" class="btn-sec">Novo aluno</a>' : '',
   ].join('');
 

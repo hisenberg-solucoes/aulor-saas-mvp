@@ -215,7 +215,7 @@ function trilha(itens) {
 }
 
 // Topo de uma lista: título, contagem e frase de contexto sobre o fundo; ações à direita.
-// `voltar` (página de passo, ex.: Nova matrícula) vira a trilha acima do título.
+// `voltar` (página de passo, ex.: Nova venda) vira a trilha acima do título.
 function cabecalhoPagina({ titulo, subtitulo = '', acoes = '', voltar = null }) {
   return `
     ${voltar ? trilha([{ rotulo: voltar.rotulo, href: voltar.href }, { rotulo: titulo }]) : ''}

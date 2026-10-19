@@ -80,7 +80,7 @@ const Shell = (() => {
   const MENU = [
     { href: 'inicio.html', nome: 'Visão geral', icone: 'inicio', features: ['painel'] },
     { grupo: 'comercial', href: 'alunos.html', nome: 'Alunos', icone: 'alunos', features: ['alunos'] },
-    { grupo: 'comercial', href: 'matriculas.html', nome: 'Matrículas', icone: 'matriculas', features: ['matriculas'] },
+    { grupo: 'comercial', href: 'matriculas.html', nome: 'Vendas', icone: 'matriculas', features: ['matriculas'] },
     { grupo: 'comercial', href: 'turmas-risco.html', nome: 'Turmas em risco', icone: 'risco', features: ['turmas'] },
     { grupo: 'pedagogico', href: 'cursos.html', nome: 'Cursos', icone: 'cursos', features: ['cursos'] },
     { grupo: 'pedagogico', href: 'turmas.html', nome: 'Turmas', icone: 'turmas', features: ['turmas'] },
@@ -291,7 +291,7 @@ const Shell = (() => {
     ['Visão geral: o que precisa de atenção hoje', 'inicio.html'],
     ['Turmas: horários, vagas e situação', 'turmas.html'],
     ['Turmas em risco de não fechar', 'turmas-risco.html'],
-    ['Nova matrícula com parcelamento', 'matricula-nova.html?turma=tu6'],
+    ['Nova venda com parcelamento', 'matricula-nova.html?turma=tu6'],
     ['Parcelas em Contas a receber', 'financeiro.html'],
     ['Em atraso: quem deve e o lembrete pronto', 'financeiro.html?aba=atraso'],
     ['Chamada do professor (abra no celular)', 'aulas.html'],

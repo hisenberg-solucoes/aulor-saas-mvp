@@ -241,7 +241,7 @@
     const faixas = [
       devido && faixa('erro', `<span class="font-medium">Em atraso</span> — ${plural(devido.parcelas.length, 'parcela vencida', 'parcelas vencidas')} · <span class="tabular-nums">${moeda(devido.total)}</span>, a mais antiga há ${plural(devido.maiorAtraso, 'dia', 'dias')}${pagaResp ? `. Quem paga: ${esc(fin.nome)}` : ''}.`, aba === 'financeiro' ? '' : `<a class="${BOTAO_LINK}" href="aluno.html?id=${a.id}&aba=financeiro">Ver financeiro</a>`),
       semLegal && faixa('aviso', '<span class="font-medium">Menor de idade sem responsável legal.</span> O contrato precisa ser assinado por pai, mãe ou tutor com o papel Legal.', editar ? `<button type="button" data-novo-resp class="${BOTAO_LINK}">Cadastrar responsável</button>` : ''),
-      novo && faixa('passo', '<span class="font-medium">Cadastro criado.</span> Próximo passo: matricular em uma turma.', podeMatricular ? `<a class="${BOTAO_LINK}" href="matricula-nova.html?aluno=${a.id}">Matricular agora</a>` : ''),
+      novo && faixa('passo', '<span class="font-medium">Cadastro criado.</span> Próximo passo: a venda de um curso, que matricula o aluno na turma.', podeMatricular ? `<a class="${BOTAO_LINK}" href="matricula-nova.html?aluno=${a.id}">Nova venda</a>` : ''),
     ].filter(Boolean).join('');
     const corpo = {
       dados: () => abaDados(a, ms, parcelas, devido, editar, verFin),
@@ -262,7 +262,7 @@
             a.telefone && chip(ICONE.telefone, `<span class="tabular-nums">${telefoneFmt(a.telefone)}</span>`, 'Celular'),
             a.endereco?.cidade && chip(ICONE.local, `${esc(a.endereco.cidade)}${a.endereco.uf ? `/${esc(a.endereco.uf)}` : ''}`, 'Cidade'),
           ],
-          acoes: `${iconeZap(a.telefone)}${podeMatricular ? `<a href="matricula-nova.html?aluno=${a.id}" class="btn-pri">${ICONE.mais}Matricular</a>` : ''}`,
+          acoes: `${iconeZap(a.telefone)}${podeMatricular ? `<a href="matricula-nova.html?aluno=${a.id}" class="btn-pri">${ICONE.mais}Nova venda</a>` : ''}`,
           mais,
         })}
         ${faixas}

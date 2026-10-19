@@ -43,7 +43,7 @@
     const mais = [
       valido && publica ? { nome: 'Copiar link de validação', detalhe: 'Para enviar ao aluno ou a quem vai conferir', acao: () => copiarTexto(link, 'Link de validação copiado') } : null,
       publica ? { nome: 'Abrir a página de validação', detalhe: 'O que aparece para quem confere o código', acao: () => window.open(link, '_blank', 'noopener') } : null,
-      c.matriculaId && Aulor.matricula(c.matriculaId) ? { nome: 'Ver a matrícula', detalhe: 'Frequência, nota e parcelas do aluno', acao: () => { location.href = `matricula.html?id=${c.matriculaId}`; } } : null,
+      c.matriculaId && Aulor.matricula(c.matriculaId) ? { nome: 'Ver a venda', detalhe: 'Frequência, nota e parcelas do aluno', acao: () => { location.href = `matricula.html?id=${c.matriculaId}`; } } : null,
       valido ? 'sep' : null,
       valido ? { nome: 'Cancelar certificado', perigo: true, desabilitado: !podeCancelar, detalhe: podeCancelar ? 'A validação passa a mostrar "cancelado"' : 'Seu perfil não cancela certificados', acao: () => cancelar(c) } : null,
     ].filter(Boolean);
