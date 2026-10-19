@@ -59,7 +59,6 @@
     const criticas = risco.filter((r) => r.nivel === 'critico').length;
     const pendentes = Aulor.chamadasPendentes();
 
-    // Os selects ficam em max-w-32, como no original: o nome de curso mais longo não estica a barra.
     tela.innerHTML = `
       <div>
         ${cabecalhoPagina({
@@ -78,8 +77,8 @@
         <div class="flex flex-wrap items-center gap-2 mb-4">
           ${campoBusca('busca', filtro.q, 'Buscar por código, curso ou professor')}
           <div class="ml-auto flex flex-wrap items-center gap-2">
-            <span class="flex max-w-32">${selectFiltro('f-curso', [{ id: '', nome: 'Curso' }, ...Aulor.cursos().map((c) => ({ id: c.id, nome: c.nome }))], filtro.cursoId, 'Curso')}</span>
-            <span class="flex max-w-32">${selectFiltro('f-professor', [{ id: '', nome: 'Professor' }, ...Aulor.professores().map((p) => ({ id: p.id, nome: p.nome }))], filtro.professorId, 'Professor')}</span>
+            ${selectFiltro('f-curso', [{ id: '', nome: 'Curso' }, ...Aulor.cursos().map((c) => ({ id: c.id, nome: c.nome }))], filtro.cursoId, 'Curso')}
+            ${selectFiltro('f-professor', [{ id: '', nome: 'Professor' }, ...Aulor.professores().map((p) => ({ id: p.id, nome: p.nome }))], filtro.professorId, 'Professor')}
             ${filtrando ? `<button type="button" data-limpar class="${BOTAO_LINK}">Limpar</button>` : ''}
           </div>
         </div>
@@ -89,7 +88,7 @@
         <div class="painel overflow-hidden">
           ${lista.length ? `<div class="overflow-x-auto">
             <table class="tabela table-fixed">
-              <thead><tr><th>Turma</th><th class="w-[168px]">Período e agenda</th><th class="w-[168px]">Professor e local</th><th class="w-[104px]" title="Matrículas que ocupam vaga / vagas. Em risco de não fechar: matrículas / mínimo de alunos.">Matrículas</th><th class="w-[104px]" title="Aulas com chamada / previstas">Aulas</th><th class="w-[144px]">Situação</th></tr></thead>
+              <thead><tr><th>Turma</th><th class="w-[168px]">Período e agenda</th><th class="w-[168px]">Professor e local</th><th class="w-[104px]" title="Matrículas que ocupam vaga / vagas. Em risco de não fechar: matrículas / mínimo de alunos.">Matrículas</th><th class="w-[120px]" title="Aulas com chamada / previstas">Aulas</th><th class="w-[176px]">Situação</th></tr></thead>
               <tbody>${lista.map((t) => {
                 const s = sit.get(t.id);
                 const c = Aulor.curso(t.cursoId);
@@ -98,13 +97,18 @@
                 return `<tr data-href="turma.html?id=${t.id}" class="${FOCO_LINHA} ${['concluida', 'cancelada'].includes(s) ? 'linha-apagada' : ''}">
                   <td>
                     <p class="truncate"><span class="font-mono text-xs ${APOIO} mr-1.5">${esc(t.codigo)}</span><a href="turma.html?id=${t.id}" class="${LINK_REGISTRO}" title="${esc(c.nome)}">${esc(c.nome)}</a></p>
-                    ${pend ? `<p class="text-xs ${AVISO} truncate">${plural(pend, 'chamada pendente', 'chamadas pendentes')}</p>` : `<p class="text-xs ${APOIO} truncate">${c.cargaHoraria} h · ${esc(nomeModalidade(t.agenda.formato))}</p>`}
+                    ${pend || abaixo
+                      ? `<p class="text-xs truncate">${[
+                        pend ? `<span class="${AVISO}">${plural(pend, 'chamada pendente', 'chamadas pendentes')}</span>` : '',
+                        abaixo ? `<a href="alertas-frequencia.html?turma=${t.id}" class="text-red-700 dark:text-red-400 hover:underline underline-offset-2 tabular-nums" title="Ver os alertas de frequência da turma">${plural(abaixo, 'aluno abaixo', 'alunos abaixo')} da frequência</a>` : '',
+                      ].filter(Boolean).join(`<span class="${APOIO}"> · </span>`)}</p>`
+                      : `<p class="text-xs ${APOIO} truncate">${c.cargaHoraria} h · ${esc(nomeModalidade(t.agenda.formato))}</p>`}
                   </td>
                   <td><p class="tabular-nums whitespace-nowrap">${dataCurta(t.inicio)} → ${dataCurta(t.fim)}</p><p class="text-xs ${APOIO} truncate" title="${esc(Agenda.descrever(t.agenda))}">${esc(Agenda.descrever(t.agenda))}</p></td>
                   <td><p class="truncate">${esc(Aulor.professor(t.professorId).nome)}</p><p class="text-xs ${APOIO} truncate" title="${esc(t.local)}">${esc(t.local || 'local a definir')}</p></td>
                   <td>${celulaMatriculas(t)}</td>
                   <td>${celulaAulas(t)}</td>
-                  <td>${status(Aulor.SITUACAO_TURMA[s].tom, Aulor.SITUACAO_TURMA[s].nome, '', true)}${abaixo ? `<a href="alertas-frequencia.html?turma=${t.id}" class="block text-xs text-red-700 dark:text-red-400 hover:underline tabular-nums">${plural(abaixo, 'aluno abaixo', 'alunos abaixo')} da frequência</a>` : ''}</td>
+                  <td>${status(Aulor.SITUACAO_TURMA[s].tom, Aulor.SITUACAO_TURMA[s].nome)}</td>
                 </tr>`;
               }).join('')}</tbody>
             </table>
