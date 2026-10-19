@@ -65,7 +65,7 @@ const Semente = (() => {
   ];
 
   const CURSOS = [
-    { id: 'cu1', codigo: 'EXC', nome: 'Excel Essencial', area: 'Informática', modalidade: 'presencial', cargaHoraria: 24, valor: 690, parcelasSugeridas: 3,
+    { id: 'cu1', codigo: 'EXC', nome: 'Excel Essencial', area: 'Informática', modalidade: 'presencial', cargaHoraria: 24, valor: 690, parcelasSugeridas: 3, notaMinima: 7,
       descricao: 'Do zero às planilhas do dia a dia: fórmulas, formatação, gráficos e tabelas dinâmicas.',
       modulos: [{ nome: 'Interface e primeiras planilhas', cargaHoraria: 6 }, { nome: 'Fórmulas e funções', cargaHoraria: 10 }, { nome: 'Gráficos e tabelas dinâmicas', cargaHoraria: 8 }] },
     { id: 'cu2', codigo: 'EXA', nome: 'Excel Avançado', area: 'Informática', modalidade: 'hibrido', cargaHoraria: 32, valor: 890, parcelasSugeridas: 4,
@@ -188,7 +188,7 @@ const Semente = (() => {
       assinatura: { planoId: 'gestao', condicoes: {} },
       modelosCertificado: modelosCertificado(hoje),
       professores: PROFESSORES.map((p) => ({ ...p, ativo: true })),
-      cursos: CURSOS.map((c) => ({ modeloCertificadoId: null, ...c, modulos: c.modulos.map((m) => ({ ...m })), ativo: true })),
+      cursos: CURSOS.map((c) => ({ modeloCertificadoId: null, notaMinima: null, ...c, modulos: c.modulos.map((m) => ({ ...m })), ativo: true })),
       turmas: [], aulas: [], alunos: [], matriculas: [], lancamentos: [], certificados: [],
     };
     const curso = (id) => db.cursos.find((c) => c.id === id);
@@ -287,7 +287,7 @@ const Semente = (() => {
       const m = {
         id: `ma${db.matriculas.length + 1}`, codigo: '', alunoId: aluno.id, turmaId: t.id, data,
         valorCurso: c.valor, desconto, valorFinal, parcelas, primeiroVencimento: primeiro, formaPagamento: forma, pagador: aluno.responsavel ? 'responsavel' : 'aluno',
-        status: 'ativa', resultado: null, frequenciaFinal: null, concluidaEm: null, canceladaEm: null, motivoCancelamento: '', criadaPor: 'Paula Ribeiro',
+        status: 'ativa', resultado: null, frequenciaFinal: null, notaFinal: null, concluidaEm: null, canceladaEm: null, motivoCancelamento: '', criadaPor: 'Paula Ribeiro',
       };
       db.matriculas.push(m);
       if (!aluno.criadoEm || data < aluno.criadoEm) aluno.criadoEm = data;
@@ -404,7 +404,13 @@ const Semente = (() => {
       const realizadas = db.aulas.filter((a) => a.turmaId === 'tu1' && a.status === 'realizada' && a.data >= m.data);
       const validas = realizadas.filter((a) => ['P', 'J'].includes(a.presencas[m.id])).length;
       const freq = Math.round((validas / realizadas.length) * 100);
-      Object.assign(m, { status: 'concluida', frequenciaFinal: freq, resultado: freq >= 75 ? 'aprovado' : 'reprovado_frequencia', concluidaEm: t1.concluidaEm });
+      // Nota final de 5,5 a 10 tirada do id (sem sortear: não desloca os sorteios seguintes da semente).
+      let hn = 0;
+      for (const ch of m.id) hn = (hn * 31 + ch.charCodeAt(0)) % 1000;
+      const nota = Math.round((5.5 + (hn % 46) / 10) * 10) / 10;
+      const minimaNota = curso(t1.cursoId).notaMinima;
+      const resultado = freq < 75 ? 'reprovado_frequencia' : minimaNota != null && nota < minimaNota ? 'reprovado_nota' : 'aprovado';
+      Object.assign(m, { status: 'concluida', frequenciaFinal: freq, notaFinal: nota, resultado, concluidaEm: t1.concluidaEm });
       if (m.resultado !== 'aprovado') return;
       const a = db.alunos.find((x) => x.id === m.alunoId);
       const c = curso(t1.cursoId);

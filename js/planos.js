@@ -14,7 +14,7 @@ const Planos = (() => {
   const MODULOS = [
     { id: 'painel', nome: 'Visão geral da escola', fase: 'mvp' },
     { id: 'cadastros', nome: 'Alunos, cursos, turmas e professores', fase: 'mvp' },
-    { id: 'matriculas', nome: 'Matrículas com parcelamento', fase: 'mvp' },
+    { id: 'matriculas', nome: 'Vendas com parcelamento', fase: 'mvp' },
     { id: 'receber', nome: 'Contas a receber e inadimplência', fase: 'mvp' },
     { id: 'frequencia', nome: 'Aulas, chamada e diário', fase: 'mvp' },
     { id: 'certificados', nome: 'Certificados com código de validação', fase: 'mvp' },

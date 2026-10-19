@@ -57,6 +57,14 @@ html.sidebar-fechada [data-sidebar] {
   display: none !important;
 }
 
+/* Linha apagada (inativo, cancelado, desistiu), em <tr> ou <li>: o texto cai para 60%, mas a pílula que
+   diz o porquê fica nítida. Opacidade na linha inteira levava a pílula junto (~3:1). Apaga só os maiores
+   trechos sem pílula, em qualquer profundidade, para nada ficar apagado duas vezes. Pílula = .pilula. */
+.linha-apagada > :not(:has(.pilula)),
+.linha-apagada :has(.pilula) > :not(:has(.pilula)):not(.pilula) {
+  opacity: 0.6;
+}
+
 /* Controles nativos (calendário do input date, select, scrollbar) seguem o tema. */
 html {
   color-scheme: light;
@@ -66,10 +74,112 @@ html.dark {
   color-scheme: dark;
 }
 
-/* Menu lateral no celular: abre por cima do conteúdo (js/shell.js). */
+/* Impressão de documentos (certificado): só a folha. */
+@media print {
+  [data-sidebar], header, #toast-root, #demo-root, [data-nao-imprimir] { display: none !important; }
+}
+
+/* ---------- Papéis --f-* (paleta oficial, ver DESIGN.md do original) ----------
+   Azul profundo #071E2C, petróleo #0F3D4E, cobre #C47A3A, areia #F5F0E8, cinza #64727A.
+   As telas em cartões usam estes papéis no foco, no sublinhado da aba, no aviso e no cobre;
+   o resto é Tailwind com o par dark: (js/estilo.js). .ficha-inverso aplica os tokens do modo
+   oposto (toast). .shell aplica sempre os do escuro (sidebar e barra de contexto). */
+:root,
+html.dark .ficha-inverso {
+  --f-papel: #F5F0E8;
+  --f-elevado: #FFFFFF;
+  --f-faixa: #F0EADF;
+  --f-linha: #E4DCCF;
+  --f-linha-forte: #D6CCBC;
+  --f-tinta: #071E2C;
+  --f-tinta-2: #4E5B61;
+  --f-tinta-3: #5E6C74; /* cinza oficial escurecido o mínimo para passar AA sobre areia (4,8:1) */
+  --f-realce: #EDE6DA;
+  --f-selecao: #DFE8EB;
+  --f-marca: #0F3D4E;
+  --f-sobre-marca: #F5F0E8;
+  --f-marca-tinta: #0F3D4E;
+  --f-foco: #0F3D4E;
+  --f-cobre: #C47A3A;
+  --f-cobre-tinta: #985824; /* cobre como texto: o oficial dá 3:1 sobre areia */
+  --f-bom: #2F7A55;
+  --f-ruim: #B4452F;
+  --f-sobre-ruim: #FFFFFF;
+  --f-aviso: var(--f-cobre-tinta); /* atenção é cobre; sem âmbar paralelo */
+  --f-etiqueta: #EAE3D7;
+  --f-etiqueta-tinta: #3F4B50;
+  --f-veu: rgb(7 30 44 / 0.32);
+}
+
+html.dark,
+.ficha-inverso,
+.shell {
+  /* Azul profundo como papel; areia como tinta, a assinatura da marca sobre fundo escuro. */
+  --f-papel: #071E2C;
+  --f-elevado: #0C2838;
+  --f-faixa: #0A2332;
+  --f-linha: #16313F;
+  --f-linha-forte: #224050;
+  --f-tinta: #F5F0E8;
+  --f-tinta-2: #AAB6BB;
+  --f-tinta-3: #8A989E;
+  --f-realce: #0E2B3B;
+  --f-selecao: #123A4B;
+  --f-marca: #F5F0E8;
+  --f-sobre-marca: #0F3D4E;
+  --f-marca-tinta: #9CC3D1;
+  --f-foco: #9CC3D1;
+  --f-cobre: #C47A3A;
+  --f-cobre-tinta: #E2A56D;
+  --f-bom: #6CC496;
+  --f-ruim: #F08A72;
+  --f-sobre-ruim: #1A0D09;
+  --f-aviso: var(--f-cobre-tinta);
+  --f-etiqueta: #10303F;
+  --f-etiqueta-tinta: #CBD5D9;
+  --f-veu: rgb(2 11 17 / 0.6);
+}
+
+/* ---------- Shell: sidebar (aside.shell-lateral) e barra de contexto (header.shell-topo) ----------
+   Estrutura copiada em cada página do admin; itens e busca vêm de js/menu.js. Tokens do modo
+   escuro nos dois modos (ver .shell acima). No escuro o conteúdo também é azul profundo, então a
+   divisória linha separa shell e conteúdo; no claro a mesma linha só aparece dentro do shell.
+   CSS comum (fora do Tailwind) e sem camada: vence os utilitários das páginas. */
+.shell {
+  color-scheme: dark;
+  background: var(--f-papel);
+  color: var(--f-tinta-2);
+  font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 20px;
+  scrollbar-color: var(--f-linha-forte) transparent;
+}
+
+.shell :focus-visible {
+  outline: 2px solid var(--f-foco);
+  outline-offset: 2px;
+}
+
+.shell ::selection {
+  background: color-mix(in srgb, var(--f-marca-tinta) 30%, transparent);
+}
+
+.shell-lateral {
+  display: flex;
+  flex-direction: column;
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--f-linha);
+}
+
+/* Menu lateral no celular (só o professor usa o sistema no celular): abre por cima do conteúdo
+   (js/shell.js). Vem depois de .shell-lateral, que não tem camada e anularia o display:none. */
 @media (max-width: 767px) {
-  html.menu-aberto [data-sidebar] {
-    display: flex !important;
+  .shell-lateral {
+    display: none;
+  }
+  html.menu-aberto .shell-lateral {
+    display: flex;
     position: fixed;
     top: 0;
     bottom: 0;
@@ -78,7 +188,330 @@ html.dark {
   }
 }
 
-/* Impressão de documentos (certificado): só a folha. */
-@media print {
-  [data-sidebar], header, #toast-root, #demo-root, [data-nao-imprimir] { display: none !important; }
+.shell-marca {
+  box-sizing: border-box;
+  height: 48px; /* alinha a divisória com a da barra de contexto */
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--f-linha);
+}
+
+.shell-marca .shell-simbolo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.shell-marca .shell-wordmark {
+  display: block;
+  height: 15px;
+  width: auto;
+}
+
+.shell-sub {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--f-tinta-3);
+}
+
+.shell-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.shell-rodape {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--f-linha);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--f-tinta-3);
+}
+
+.shell-rodape a {
+  color: var(--f-tinta-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.shell-rodape a:hover {
+  color: var(--f-tinta);
+}
+
+/* Rodapé do MVP: o botão da demonstração (trocar de usuário, plano, restaurar). */
+.shell-demo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: calc(100% + 16px);
+  margin: -4px -8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-align: left;
+  color: var(--f-tinta-3);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.shell-demo:hover {
+  background: var(--f-realce);
+  color: var(--f-tinta-2);
+}
+
+.shell-demo-titulo {
+  display: block;
+  color: var(--f-tinta);
+  font-weight: 500;
+}
+
+/* Busca no menu: campo da Ficha (elevado, contorno linha forte, 32px). */
+.shell-busca {
+  position: relative;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.shell-busca svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translateY(-50%);
+  color: var(--f-tinta-3);
+  pointer-events: none;
+}
+
+.shell-busca input {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px 0 30px;
+  border: 1px solid var(--f-linha-forte);
+  border-radius: 8px;
+  background: var(--f-elevado);
+  color: var(--f-tinta);
+  font: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.shell-busca input::placeholder {
+  color: var(--f-tinta-3);
+  opacity: 1;
+}
+
+.shell-busca input:hover {
+  border-color: color-mix(in srgb, var(--f-tinta-3) 60%, transparent);
+}
+
+.shell-busca input:focus {
+  border-color: var(--f-marca-tinta);
+}
+
+.shell-busca input:focus-visible {
+  outline-offset: 0;
+}
+
+/* Item do menu. O ativo é marcado por fundo (seleção) e peso, nunca por borda colorida. */
+.shell .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  margin-top: 2px;
+  padding: 0 8px;
+  border-radius: 6px;
+  color: var(--f-tinta-2);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.shell .nav-item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--f-tinta-3);
+  transition: color 0.15s ease;
+}
+
+.shell .nav-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell .nav-item:hover {
+  background: var(--f-realce);
+  color: var(--f-tinta);
+}
+
+.shell .nav-item:hover svg {
+  color: var(--f-tinta-2);
+}
+
+.shell .nav-item-ativo,
+.shell .nav-item-ativo:hover {
+  background: var(--f-selecao);
+  color: var(--f-tinta);
+  font-weight: 600;
+}
+
+.shell .nav-item-ativo svg,
+.shell .nav-item-ativo:hover svg {
+  color: var(--f-tinta);
+}
+
+/* Rótulo do grupo (Diretoria, Comercial…): botão que recolhe o grupo. Tinta 3 sobre azul
+   profundo dá 5,74:1. A seta gira -90° com o grupo fechado (classe posta pelo menu.js). */
+.shell .menu-grupo {
+  margin-top: 12px;
+}
+
+.shell .menu-grupo-botao {
+  width: 100%;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  border-radius: 6px;
+  color: var(--f-tinta-3);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.shell .menu-grupo-botao:hover {
+  background: var(--f-realce);
+  color: var(--f-tinta);
+}
+
+.shell .menu-grupo-botao [data-seta] {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.15s ease;
+}
+
+.shell .menu-grupo-botao[aria-expanded="false"] [data-seta] {
+  transform: rotate(-90deg);
+}
+
+/* Barra de contexto: o nome do módulo é contexto (title, 13px), não título; o título da
+   tela fica no conteúdo. Continua sendo o único h1 da página. */
+.shell-topo {
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 16px 0 12px;
+  border-bottom: 1px solid var(--f-linha);
+}
+
+.shell-contexto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.shell-titulo {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--f-tinta);
+}
+
+.shell-acoes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.shell-icone {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: var(--f-tinta-2);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.shell-icone:hover {
+  background: var(--f-realce);
+  color: var(--f-tinta);
+}
+
+.shell-icone svg {
+  width: 18px;
+  height: 18px;
+}
+
+html.dark .shell-tema-lua,
+html:not(.dark) .shell-tema-sol {
+  display: none;
+}
+
+/* Usuário: avatar da Ficha (círculo em seleção com iniciais em tinta) e link para Minha conta. */
+.shell-usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  margin-left: 8px;
+  padding: 0 8px 0 4px;
+  border-radius: 8px;
+  position: relative;
+  transition: background-color 0.15s ease;
+}
+
+.shell-usuario::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 8px;
+  bottom: 8px;
+  border-left: 1px solid var(--f-linha);
+}
+
+.shell-usuario:hover {
+  background: var(--f-realce);
+}
+
+.shell-avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: var(--f-selecao);
+  color: var(--f-tinta);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shell-usuario-nome {
+  display: block;
+  color: var(--f-tinta);
+  font-weight: 500;
+}
+
+.shell-usuario-papel {
+  display: block;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--f-tinta-3);
 }

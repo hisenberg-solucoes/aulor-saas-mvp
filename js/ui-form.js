@@ -23,13 +23,15 @@ function pontoStatus(status, texto, titulo = '') {
 
 function mostrarErros(form, erros) {
   form.querySelectorAll('[data-erro]').forEach((p) => { p.classList.add('hidden'); p.textContent = ''; });
-  form.querySelectorAll('.campo-erro').forEach((c) => c.classList.remove('campo-erro'));
+  form.querySelectorAll('.campo-erro').forEach((c) => { c.classList.remove('campo-erro'); c.removeAttribute('aria-invalid'); });
   if (!erros.length) return false;
   erros.forEach((erro) => {
     const p = form.querySelector(`[data-erro="${erro.campo}"]`);
     if (p) { p.textContent = erro.mensagem; p.classList.remove('hidden'); }
     const campo = form.querySelector(`[name="${erro.campo}"]`);
-    (campo?.type === 'hidden' ? campo.closest('[data-combo]')?.querySelector('[data-combo-gatilho]') : campo)?.classList.add('campo-erro');
+    const alvo = campo?.type === 'hidden' ? campo.closest('[data-combo]')?.querySelector('[data-combo-gatilho]') : campo;
+    alvo?.classList.add('campo-erro');
+    alvo?.setAttribute('aria-invalid', 'true');
   });
   const primeiro = form.querySelector(`[name="${erros[0].campo}"]`);
   (primeiro?.type === 'hidden' ? primeiro.closest('[data-combo]')?.querySelector('[data-combo-gatilho]') : primeiro)?.focus();
@@ -38,12 +40,12 @@ function mostrarErros(form, erros) {
 
 function cabecalhoModal(titulo, subtitulo) {
   return `
-    <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-start justify-between gap-3">
+    <div class="px-5 pt-5 pb-3 flex items-start justify-between gap-3">
       <div>
-        <h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100">${titulo}</h3>
-        <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${subtitulo}</p>
+        <h3 class="text-[15px] font-semibold text-slate-900 dark:text-neutral-100">${titulo}</h3>
+        ${subtitulo ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${subtitulo}</p>` : ''}
       </div>
-      <button type="button" data-fechar-modal class="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-neutral-200" aria-label="Fechar">${UI_ICONE.fechar}</button>
+      <button type="button" data-fechar-modal class="btn-fantasma -mr-2 -mt-1 px-1.5" aria-label="Fechar">${UI_ICONE.fechar}</button>
     </div>`;
 }
 
@@ -98,7 +100,7 @@ function campoCombo(name, opcoes, valor, { id = `f-${name}`, vazio = 'Escolha…
       <input type="hidden" name="${name}" value="${esc(atual?.id ?? '')}">
       <button type="button" id="${id}" data-combo-gatilho aria-haspopup="listbox" aria-expanded="false" class="${base}">
         <span data-combo-logo class="shrink-0 ${atual && atual.logo !== undefined ? '' : 'hidden'}">${atual && atual.logo !== undefined ? logoInstituicao(atual) : ''}</span>
-        <span data-combo-rotulo class="flex-1 min-w-0 truncate ${atual ? '' : (filtro ? '' : 'text-slate-400')}">${esc(atual?.nome ?? vazio)}</span>
+        <span data-combo-rotulo class="flex-1 min-w-0 truncate ${atual ? '' : (filtro ? '' : 'text-slate-500 dark:text-neutral-400')}">${esc(atual?.nome ?? vazio)}</span>
         <svg class="h-4 w-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
       </button>
     </div>`;
@@ -170,10 +172,10 @@ function abrirCombo(raiz) {
         ${o.logo !== undefined && !o.limpar ? `<span class="shrink-0">${logoInstituicao(o)}</span>` : ''}
         <span class="flex-1 min-w-0">
           <span class="block text-sm truncate ${o.limpar ? 'text-slate-500 dark:text-neutral-400' : 'text-slate-800 dark:text-neutral-100'}">${esc(o.nome)}</span>
-          ${o.descricao ? `<span class="block text-[11px] text-slate-400 truncate">${esc(o.descricao)}</span>` : ''}
+          ${o.descricao ? `<span class="block text-[11px] text-slate-500 dark:text-neutral-400 truncate">${esc(o.descricao)}</span>` : ''}
         </span>
         ${o.id === hidden.value && !o.limpar ? `<span class="text-petrol-800 dark:text-sky-300 shrink-0">${UI_ICONE.check}</span>` : ''}
-      </button>`).join('') : '<p class="text-xs text-slate-400 px-2 py-3 text-center">Nenhum resultado.</p>';
+      </button>`).join('') : '<p class="text-xs text-slate-500 dark:text-neutral-400 px-2 py-3 text-center">Nenhum resultado.</p>';
     lista.querySelectorAll('[data-combo-opcao]').forEach((b) => b.addEventListener('click', () => escolher(b.dataset.comboOpcao)));
     lista.querySelector('[aria-selected="true"]')?.scrollIntoView?.({ block: 'nearest' });
   };
