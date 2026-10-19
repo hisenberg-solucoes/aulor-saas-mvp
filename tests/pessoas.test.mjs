@@ -111,6 +111,40 @@ for (const hoje of ['2026-10-19', '2027-01-03', '2026-03-31']) {
   });
 }
 
+test('pagamento do instrutor é a conta a pagar: programar abre, pagar baixa, remover cancela', () => {
+  const { rodar, Aulor } = contexto('2026-10-19');
+  const contas = (pgId) => Aulor.lancamentos().filter((l) => l.pagamentoInstrutorId === pgId);
+  // Semente: cada pagamento programado tem uma conta só, no mesmo estado; sem "Aulas de" à parte.
+  rodar('Instrutores.carregar()').flatMap((i) => i.pagamentos).forEach((p) => {
+    const [l, ...resto] = contas(p.id);
+    assert.equal(resto.length, 0, p.id);
+    assert.equal(l.status, p.pagoEm ? 'pago' : 'aberto', p.id);
+    assert.equal(l.valor, p.valor);
+  });
+  assert.ok(!Aulor.lancamentos().some((l) => /^Aulas de /.test(l.descricao)));
+  // Beatriz (RPA): parcial de tu4 com 25% do item.
+  const pg = rodar(`(() => {
+    const i = Instrutores.porId(Instrutores.carregar(), 'pr4'); const c = i.contratos[0]; const it = c.itens[0];
+    const r = Instrutores.incluirPagamento(Instrutores.carregar(), 'pr4', c.id, { tipo: 'parcial', itemId: it.id, valor: String(it.total / 4), previsto: '2026-11-10', descricao: 'Segunda parte' });
+    Instrutores.salvar(r.lista);
+    return r.pagamento;
+  })()`);
+  let [l] = contas(pg.id);
+  assert.deepEqual([l.status, l.categoria, l.fornecedor, l.vencimento, l.valor], ['aberto', 'Professores', 'Beatriz Nogueira', '2026-11-10', pg.valor]);
+  assert.equal(contas(pg.id).length, 1);
+  rodar(`Instrutores.salvar(Instrutores.registrarNf(Instrutores.carregar(), 'pr4', '${pg.id}', { numero: 'RPA-0050', emitidaEm: '2026-10-19' }))`);
+  rodar(`Instrutores.salvar(Instrutores.registrarPagamento(Instrutores.carregar(), 'pr4', '${pg.id}', '2026-10-19'))`);
+  [l] = contas(pg.id);
+  assert.deepEqual([l.status, l.pagoEm, l.valorPago, l.forma], ['pago', '2026-10-19', pg.valor, 'pix']);
+  assert.equal(contas(pg.id).length, 1, 'pagar não cria outra conta');
+  assert.ok(Aulor.resumoMes('2026-10').pago >= pg.valor);
+  // Carlos (PJ): conta em nome da empresa; remover a programação cancela.
+  const pg3 = 'pg-pr1-3';
+  assert.equal(contas(pg3)[0].fornecedor, 'C. Mendes Treinamentos ME');
+  rodar(`Instrutores.salvar(Instrutores.removerPagamento(Instrutores.carregar(), 'pr1', '${pg3}'))`);
+  assert.deepEqual(Array.from(contas(pg3), (x) => x.status), ['cancelado']);
+});
+
 test('acesso do colaborador: criar, vincular e desvincular mantém os vínculos do usuário', () => {
   const { rodar } = contexto('2026-10-19');
   const u = rodar(`(() => {

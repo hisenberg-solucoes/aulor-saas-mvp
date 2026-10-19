@@ -1777,6 +1777,7 @@ function abrirDrawerPagar(pagamentoId) {
       ${campoTexto('pagoEm', 'Pago em', Instrutores.hoje(), { tipo: 'date' })}`,
     aoSalvar: (fd) => {
       if (!fd.get('pagoEm')) return [{ campo: 'pagoEm', mensagem: 'Data do pagamento.' }];
+      if (fd.get('pagoEm') > Instrutores.hoje()) return [{ campo: 'pagoEm', mensagem: 'Não registre pagamento com data futura.' }]; // a conta a pagar recusa
       estado.lista = Instrutores.registrarPagamento(estado.lista, i.id, pagamentoId, fd.get('pagoEm'));
       persistir(); renderInstrutor(); toast(`Pagamento de ${fmtMoeda(p.valor)} registrado.`);
     },

@@ -15,7 +15,7 @@
 // ============================================================
 
 const Aulor = (() => {
-  const CHAVE = 'aulor-mvp-dados-v4'; // v4: colaboradores e instrutores completos (Pessoas)
+  const CHAVE = 'aulor-mvp-dados-v5'; // v5: pagamento de instrutor vira conta a pagar
 
   // ---------- Datas e números ----------
 
@@ -124,7 +124,7 @@ const Aulor = (() => {
     } catch (_) { /* volta para a semente */ }
     db = Semente.gerar(hoje());
     salvar();
-    ['aulor-mvp-dados-v1', 'aulor-mvp-dados-v2', 'aulor-mvp-dados-v3'].forEach((k) => localStorage.removeItem(k)); // formatos anteriores
+    ['aulor-mvp-dados-v1', 'aulor-mvp-dados-v2', 'aulor-mvp-dados-v3', 'aulor-mvp-dados-v4'].forEach((k) => localStorage.removeItem(k)); // formatos anteriores
     return db;
   }
   function salvar() {
@@ -860,6 +860,7 @@ const Aulor = (() => {
       id: novoId('lc', lancamentos()), tipo, descricao: texto(d.descricao), categoria: d.categoria, valor: arred(d.valor), vencimento: d.vencimento,
       status: 'aberto', pagoEm: null, valorPago: null, forma: null, matriculaId: null, alunoId: d.alunoId || null, parcela: null,
       fornecedor: texto(d.fornecedor), observacao: texto(d.observacao), cobranca: null, criadoEm: hoje(), criadoPor: usuario, baixadoPor: null,
+      pagamentoInstrutorId: d.pagamentoInstrutorId || null,
     };
     lancamentos().push(l);
     if (d.jaPago) baixar(l, { data: d.vencimento <= hoje() ? d.vencimento : hoje(), valor: l.valor, forma: d.forma || 'pix' }, usuario);
@@ -874,6 +875,26 @@ const Aulor = (() => {
     l.canceladoEm = hoje();
     salvar();
     return { lancamento: l };
+  }
+
+  // ---------- Pagamento de instrutor = conta a pagar ----------
+  // O pagamento programado na ficha do instrutor (js/instrutores-motor.js) é a própria conta a pagar:
+  // nasce junto (aguardando NF/recibo), recebe a baixa quando a ficha paga e é cancelada se a programação sai.
+  // A semente (js/semente.js) usa o mesmo formato. PJ paga a empresa; RPA, a pessoa.
+  const contaDoPagamentoInstrutor = (i, p) => ({
+    tipo: 'pagar', categoria: 'Professores', descricao: `${p.descricao} — ${i.nome}`, valor: p.valor, vencimento: p.previsto,
+    fornecedor: i.remuneracao === 'pj' && i.empresa?.razaoSocial ? i.empresa.razaoSocial : i.nome, pagamentoInstrutorId: p.id,
+  });
+  const formaDoInstrutor = (i) => ((i.remuneracao === 'rpa' ? i.contaPessoal : i.empresa)?.pix ? 'pix' : 'transferencia');
+
+  // Roda a cada gravação da ficha (Instrutores.salvar): quem decide é o pagamento, a conta acompanha.
+  function sincronizarPagamentosInstrutores() {
+    const pagamentos = new Map(professores().flatMap((i) => i.pagamentos.map((p) => [p.id, { i, p }])));
+    lancamentos().filter((l) => l.pagamentoInstrutorId && l.status === 'aberto' && !pagamentos.has(l.pagamentoInstrutorId)).forEach((l) => cancelarLancamento(l.id));
+    pagamentos.forEach(({ i, p }) => {
+      const l = lancamentos().find((x) => x.pagamentoInstrutorId === p.id && x.status !== 'cancelado') ?? lancarConta(contaDoPagamentoInstrutor(i, p)).lancamento;
+      if (p.pagoEm && l?.status === 'aberto') registrarBaixa(l.id, { data: p.pagoEm, valor: p.valor, forma: formaDoInstrutor(i) });
+    });
   }
 
   // ---------- Chamada ----------
@@ -1201,7 +1222,7 @@ const Aulor = (() => {
     ORIGENS, PAPEIS_RESPONSAVEL, UFS, ehMenor, responsavelFinanceiro, responsavelPrincipal, contatoCobranca, criarCurso, atualizarCurso,
     turmaTemChamada, criarTurma, atualizarTurma,
     validarMatricula, simularMatricula, matricular, cancelarMatricula,
-    registrarBaixa, estornar, lancarConta, cancelarLancamento,
+    registrarBaixa, estornar, lancarConta, cancelarLancamento, contaDoPagamentoInstrutor, formaDoInstrutor, sincronizarPagamentosInstrutores,
     registrarChamada, previaConclusao, concluirTurma,
     elegibilidade, prontosParaEmitir, emitirCertificado, emitirLote, cancelarCertificado, certificadoPorCodigo,
     modelosCertificado, modeloCertificado, modeloPadrao, modeloDoCurso, modeloDoCertificado, cursosDoModelo, emitidosComModelo,

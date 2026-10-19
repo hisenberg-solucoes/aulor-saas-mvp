@@ -317,6 +317,15 @@ const Semente = (() => {
       i.contratos.forEach((c) => i.historico.push(ev(c.criadoEm, `Contrato ${c.codigo} criado`)));
       i.historico.sort((a, b) => a.em.localeCompare(b.em));
     });
+
+    // Cada pagamento programado é a conta a pagar em Financeiro (mesmo formato de Aulor.sincronizarPagamentosInstrutores).
+    db.professores.forEach((i) => i.pagamentos.forEach((p) => {
+      const pago = p.pagoEm ? { status: 'pago', pagoEm: p.pagoEm, valorPago: p.valor, forma: Aulor.formaDoInstrutor(i), baixadoPor: 'Renato Siqueira' } : { status: 'aberto', pagoEm: null, valorPago: null, forma: null, baixadoPor: null };
+      db.lancamentos.push({
+        id: `lc${db.lancamentos.length + 1}`, ...Aulor.contaDoPagamentoInstrutor(i, p), ...pago,
+        matriculaId: null, alunoId: null, parcela: null, observacao: '', cobranca: null, criadoEm: i.contratos.find((c) => c.id === p.contratoId).clicksign.escolaAssinouEm, criadoPor: 'Renato Siqueira',
+      });
+    }));
   }
 
   function gerar(hoje) {
@@ -589,14 +598,8 @@ const Semente = (() => {
     for (let k = -3; k <= 1; k += 1) {
       const mes = somarMeses(mesAtual, k, 1);
       FIXAS.forEach((f) => novoLanc({ tipo: 'pagar', descricao: f.descricao, categoria: f.categoria, fornecedor: f.fornecedor, valor: arred(f.valor()), vencimento: `${mes.slice(0, 8)}${String(f.dia).padStart(2, '0')}`, status: 'aberto', forma: 'boleto', criadoEm: somarDias(mes, -10), criadoPor: 'Renato Siqueira' }));
-      // Professores: horas de aula do mês anterior × valor-hora, pagas no dia 5.
-      const anterior = somarMeses(mes, -1, 1).slice(0, 7);
-      PROFESSORES.filter((p) => DOCENTES[p.id].remuneracao !== 'folha').forEach((p) => { // folha: a aula já está no salário
-        const h = db.aulas.filter((a) => a.data.startsWith(anterior) && db.turmas.find((t) => t.id === a.turmaId).professorId === p.id)
-          .reduce((soma, a) => soma + duracao(a), 0);
-        if (h > 0) novoLanc({ tipo: 'pagar', descricao: `Aulas de ${p.nome} (${String(h).replace('.', ',')} h)`, categoria: 'Professores', fornecedor: p.nome, valor: arred(h * p.valorHora), vencimento: `${mes.slice(0, 8)}05`, status: 'aberto', forma: 'pix', criadoEm: mes, criadoPor: 'Renato Siqueira' });
-      });
     }
+    // Professores não entram aqui: cada pagamento programado na ficha do instrutor vira a conta (fim de pessoas()).
     novoLanc({ tipo: 'pagar', descricao: 'Apostilas impressas — turmas do semestre', categoria: 'Material e insumos', fornecedor: 'Gráfica Rápida Norte', valor: 1150, vencimento: somarDias(hoje, -26), status: 'aberto', forma: 'pix', criadoEm: somarDias(hoje, -30), criadoPor: 'Renato Siqueira' });
     novoLanc({ tipo: 'pagar', descricao: 'Manutenção dos computadores do laboratório', categoria: 'Outras despesas', fornecedor: 'TecnoAssist', valor: 480, vencimento: somarDias(hoje, 6), status: 'aberto', forma: 'pix', criadoEm: somarDias(hoje, -3), criadoPor: 'Renato Siqueira' });
 

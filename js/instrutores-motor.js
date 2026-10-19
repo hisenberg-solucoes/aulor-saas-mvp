@@ -11,6 +11,7 @@ const Instrutores = (() => {
 
   function salvar(lista) {
     Aulor.carregar().professores = clonar(lista);
+    Aulor.sincronizarPagamentosInstrutores(); // pagamento programado/pago/removido → conta a pagar
     Aulor.salvar();
   }
 

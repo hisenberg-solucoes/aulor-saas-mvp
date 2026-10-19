@@ -56,7 +56,7 @@ Contratos corporativos (pacotes de vagas, in company, aprovação de inscritos),
 | Regra de frequência | Aula sem chamada não conta e falta justificada conta como presença (configurável). Confirmar com coordenações. |
 | Certificado com dívida | O bloqueio é opcional e vem desligado. Há escolas que exigem quitação. |
 | Cancelamento sem multa | O MVP não calcula rescisão. Escolas com contrato rígido podem precisar disso cedo. |
-| Pagamento de instrutor × contas a pagar | Na demo, o pagamento registrado na ficha do instrutor não vira lançamento em Contas a pagar, e a semente lança as aulas do mês à parte. No SaaS, o pagamento do instrutor deve gerar (ou baixar) a conta a pagar. |
+| Pagamento de instrutor × contas a pagar | Resolvido na demo: programar o pagamento na ficha do instrutor cria a conta a pagar (Professores, em nome da empresa no PJ ou da pessoa no RPA, vencimento no previsto); pagar na ficha dá a baixa e remover a programação cancela a conta. Em Contas a pagar essa conta não tem Pagar nem Estornar: a ficha é a fonte (exige NF/recibo). Falta decidir se o perfil Financeiro, que hoje não vê Instrutores, ganha acesso para pagar instrutores. |
 | Provedor de cobrança | Para boleto e Pix, Asaas é o caminho natural; Stripe faz sentido se houver cartão recorrente internacional. |
 | Migração das planilhas | O maior esforço de onboarding. Sem importação, o ciclo de venda trava. |
 | Persistência do protótipo | O localStorage existe só para a demonstração. Não há multi-tenancy nem segurança: o backend usa RLS por tenant (ADR 0002). |

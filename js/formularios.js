@@ -171,6 +171,11 @@ function situacaoLancHtml(l) {
 const nomeForma = (id) => Aulor.FORMAS_PAGAMENTO.find((f) => f.id === id)?.nome ?? '—';
 
 function acaoParcela(l) {
+  if (l.pagamentoInstrutorId && l.status !== 'cancelado') { // a baixa e o estorno são da ficha do instrutor, para não haver duas fontes
+    const i = Aulor.professores().find((x) => x.pagamentos.some((p) => p.id === l.pagamentoInstrutorId));
+    if (i && Shell.pode('instrutores')) return `<a class="link text-xs" href="instrutor.html?id=${encodeURIComponent(i.id)}&aba=pagamentos">Na ficha do instrutor</a>`;
+    return '<span class="text-xs text-slate-500 dark:text-neutral-400">Pela ficha do instrutor</span>';
+  }
   const s = Aulor.situacaoLancamento(l);
   const feature = l.tipo === 'receber' ? 'receber' : 'pagar';
   const podeBaixar = Shell.pode(feature, l.tipo === 'receber' ? 'registrar' : 'pagar');
