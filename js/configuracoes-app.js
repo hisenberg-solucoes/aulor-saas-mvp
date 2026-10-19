@@ -213,7 +213,7 @@
   function render() {
     const corpo = { escola: abaEscola, academico: abaAcademico, financeiro: abaFinanceiro, plano: abaPlano }[aba]();
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({ titulo: 'Escola e regras', subtitulo: `O básico para a escola operar. Sem painel técnico.${podeEditar ? '' : ' Seu perfil só consulta estas configurações.'}` })}
         ${abasHtml(ABAS, aba)}
         ${corpo}

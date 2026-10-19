@@ -48,7 +48,7 @@
       valido ? { nome: 'Cancelar certificado', perigo: true, desabilitado: !podeCancelar, detalhe: podeCancelar ? 'A validação passa a mostrar "cancelado"' : 'Seu perfil não cancela certificados', acao: () => cancelar(c) } : null,
     ].filter(Boolean);
     tela.innerHTML = `
-      <div class="max-w-5xl mx-auto">
+      <div>
         ${cabecalhoFicha({
           trilha: [{ rotulo: 'Certificados', href: 'certificados.html?aba=emitidos' }, { rotulo: `<span class="font-mono">${esc(c.codigo)}</span>` }],
           avatar: Certificado.miniatura(modelo, { dados, altura: 48 }),

@@ -18,7 +18,7 @@
     const filtrando = !!(filtro.q || filtro.modalidade);
     const comNota = todos.filter(Aulor.temNota).length;
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({
           titulo: 'Cursos',
           subtitulo: `${todos.length} ${todos.length === 1 ? 'curso' : 'cursos'} no catálogo. Carga horária, modalidade, aprovação e valor de referência; cada curso vira uma ou mais <a class="link" href="turmas.html">turmas</a>.`,

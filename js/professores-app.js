@@ -33,7 +33,7 @@
     const todos = Aulor.professores();
     const lista = filtrados();
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({
           titulo: `Professores <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${todos.length}</span>`,
           subtitulo: `Quem dá aulas na escola. Com acesso ao Aulor, o professor vê só as próprias turmas e faz a chamada pelo celular. Quem trabalha na secretaria tem cadastro em ${Shell.pode('usuarios') ? '<a class="link" href="usuarios.html">Usuários</a>' : 'Usuários'}.`,
@@ -141,7 +141,7 @@
     if (!p) { tela.innerHTML = `<div class="painel max-w-xl mx-auto">${vazio('Professor não encontrado', '', '<a class="btn-sec" href="professores.html">Voltar para os professores</a>')}</div>`; return; }
     const tel = String(p.telefone ?? '').replace(/\D/g, '');
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoFicha({
           trilha: [{ rotulo: 'Professores', href: 'professores.html' }, { rotulo: esc(p.nome) }],
           avatar: avatar(p.nome, 'h-12 w-12 text-base'),

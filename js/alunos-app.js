@@ -83,7 +83,7 @@
       Shell.pode('alunos', 'criar') ? `<button type="button" data-novo class="btn-pri">${ICONE.mais}Cadastrar aluno</button>` : '',
     ].join('');
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({ titulo: `Alunos <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${total}</span>`, subtitulo: `Quem se matricula na escola: dados do contrato, responsáveis, matrículas e parcelas. ${ativos} com curso em andamento.`, acoes })}
         <div class="flex flex-wrap items-center gap-2 mb-4">
           ${campoBusca('busca', filtro.q, 'Buscar por nome, CPF, e-mail ou celular')}

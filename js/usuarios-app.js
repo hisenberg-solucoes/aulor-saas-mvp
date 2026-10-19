@@ -63,7 +63,7 @@
   function renderLista() {
     const pendentes = USUARIOS.filter((u) => u.status === 'convidado').length;
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({
           titulo: `Usuários <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${USUARIOS.length}</span>`,
           subtitulo: `Quem acessa o Aulor. Cada pessoa recebe um ou mais perfis; o acesso efetivo é a soma dos perfis com as permissões adicionais.${pendentes ? ` <span class="${AVISO} font-medium">${pendentes} ${pendentes === 1 ? 'convite pendente' : 'convites pendentes'}.</span>` : ''}`,
@@ -162,7 +162,7 @@
         ? faixa('neutra', '<span class="font-medium">Inativo:</span> não entra no Aulor. Perfis e histórico ficam guardados.', Shell.pode('usuarios', 'inativar') ? '<button type="button" data-reativar class="btn-sec btn-pequeno">Reativar</button>' : '')
         : '';
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoFicha({
           trilha: [{ rotulo: 'Usuários', href: 'usuarios.html' }, { rotulo: esc(u.nome) }],
           avatar: avatar(u.nome, 'h-12 w-12 text-base'),

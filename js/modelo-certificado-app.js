@@ -309,7 +309,7 @@
     }
     const formulario = { aparencia: formAparencia, frente: formFrente, verso: formVerso }[estado.aba];
     tela.innerHTML = `
-      <div class="max-w-7xl mx-auto">
+      <div>
         ${cabecalho(m)}
         ${faixaStatus(m)}
         ${abas(m)}

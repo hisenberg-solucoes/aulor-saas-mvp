@@ -187,7 +187,7 @@
     const partes = PARTES.map((p) => (p.id === 'atraso' && inad.length ? { ...p, n: inad.length } : p));
     const novaContaBtn = estado.aba === 'pagar' && Shell.pode('pagar', 'lancar') ? `<button type="button" data-nova-conta class="btn-pri">${ICONE.mais}Nova conta a pagar</button>` : '';
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({ titulo: 'Financeiro', subtitulo: 'Parcelas das matrículas e despesas da escola, mês a mês. Nada é cobrado sozinho nesta versão: o recebimento é registrado aqui.', acoes: seletorMes() })}
         ${indicadores(inad)}
         ${partes.length > 1 || novaContaBtn ? `<div class="mb-3 flex flex-wrap items-center gap-2">

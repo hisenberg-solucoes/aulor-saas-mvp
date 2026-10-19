@@ -260,7 +260,7 @@
       financeiro: () => abaFinanceiro(a, parcelas, devido),
     }[aba]();
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoFicha({
           trilha: [{ rotulo: 'Alunos', href: 'alunos.html' }, { rotulo: esc(a.nome) }],
           avatar: avatar(a.nome, 'h-12 w-12 text-base'),

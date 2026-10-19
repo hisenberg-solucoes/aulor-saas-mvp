@@ -96,7 +96,7 @@
     const t = filtroTurma && Aulor.turma(filtroTurma);
     const total = emitidos().length;
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({
           titulo: `Certificados <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${total}</span>`,
           subtitulo: t ? `Turma <span class="font-mono">${esc(t.codigo)}</span> · <a class="link" href="certificados.html">ver todas as turmas</a>` : `Emitidos para quem concluiu a turma com frequência mínima de ${Aulor.config().academico.frequenciaMinima}% e, quando o curso pede, a nota mínima.`,

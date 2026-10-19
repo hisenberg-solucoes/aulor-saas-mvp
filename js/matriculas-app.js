@@ -56,7 +56,7 @@
     const verFin = Shell.pode('receber');
     const filtrando = filtro.q || filtro.status !== 'ativa' || filtro.curso !== 'todos' || filtro.periodo !== 'todos';
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({ titulo: `Matrículas <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${total}</span>`, subtitulo: 'Aluno + turma + condições de pagamento. Ao confirmar, as parcelas entram em Contas a receber.', acoes: Shell.pode('matriculas', 'criar') ? `<a href="matricula-nova.html" class="btn-pri">${ICONE.mais}Nova matrícula</a>` : '' })}
         <div class="flex flex-wrap items-center gap-2 mb-4">
           ${campoBusca('busca', filtro.q, 'Buscar por aluno, código ou turma')}

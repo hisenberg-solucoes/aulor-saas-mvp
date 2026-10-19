@@ -171,7 +171,7 @@
 
   const lateral = aulasDeHoje() + matriculasRecentes();
   tela.innerHTML = `
-    <div class="max-w-6xl mx-auto">
+    <div>
       ${cabecalhoPagina({ titulo: `${saudacao()}, ${esc(Shell.nome().split(' ')[0])}`, subtitulo: `${dataLonga(hoje)} · ${esc(Aulor.escola().nome)}`, acoes })}
       ${indicadores()}
       <div class="grid grid-cols-1 ${lateral ? 'xl:grid-cols-3' : ''} gap-4 items-start">

@@ -25,8 +25,8 @@
       <div id="visao-matriz" hidden></div>`;
   // Sem acesso: o shell já mostrou o aviso; os contêineres ficam ocultos só para o app não quebrar.
   if (!Shell.permitido) { tela.insertAdjacentHTML('beforeend', `<div hidden>${html}</div>`); return; }
-  if (detalhe) { tela.innerHTML = `<div class="max-w-6xl mx-auto">${html}</div>`; return; }
+  if (detalhe) { tela.innerHTML = `<div>${html}</div>`; return; }
   // Lista: coluna flexível como o <main> do original; nas matrizes o app trava a altura (min-h-0) para elas rolarem dentro do cartão.
   tela.classList.add('flex', 'flex-col');
-  tela.innerHTML = `<div class="max-w-6xl w-full mx-auto flex-1 flex flex-col">${html}</div>`;
+  tela.innerHTML = `<div class="w-full flex-1 flex flex-col">${html}</div>`;
 })();

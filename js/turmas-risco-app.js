@@ -23,7 +23,7 @@
     const emJogo = todas.reduce((s, r) => s + r.valorEmJogo, 0);
     const podeMatricular = Shell.pode('matriculas', 'criar');
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({ titulo: `Turmas em risco de não fechar <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${todas.length}</span>`, subtitulo: 'Turmas a iniciar que ainda não atingiram o mínimo de alunos. Foto de hoje, para quem vende saber cedo onde falta matrícula.' })}
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">

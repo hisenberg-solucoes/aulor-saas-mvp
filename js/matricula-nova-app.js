@@ -51,7 +51,7 @@
     const turmaId = opcoesTurmas().some((o) => o.id === parametroUrl('turma')) ? parametroUrl('turma') : '';
     const lot = lotadas();
     tela.innerHTML = `
-      <form id="form-matricula" novalidate class="max-w-6xl mx-auto">
+      <form id="form-matricula" novalidate>
         ${cabecalhoPagina({ titulo: 'Nova matrícula', subtitulo: 'Três passos. As parcelas são lançadas em Contas a receber ao confirmar.', voltar: { href: 'matriculas.html', rotulo: 'Matrículas' } })}
         <div class="grid lg:grid-cols-3 gap-4 items-start">
           <div class="lg:col-span-2 space-y-4">

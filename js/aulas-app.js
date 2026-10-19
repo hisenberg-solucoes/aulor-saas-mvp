@@ -105,7 +105,7 @@
   }
 
   tela.innerHTML = `
-    <div class="max-w-4xl mx-auto">
+    <div>
       ${cabecalhoPagina({
         titulo: todas ? 'Aulas e chamadas' : 'Minhas aulas',
         subtitulo: todas ? 'Aulas de hoje, chamadas que ficaram para trás e a próxima semana de todas as turmas.' : `Olá, ${esc(Shell.nome().split(' ')[0])}. Suas turmas, chamadas e diário.`,

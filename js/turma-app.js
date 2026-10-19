@@ -265,7 +265,7 @@
       ? `<button type="button" data-editar class="btn-sec" ${encerrada ? `disabled title="Turma ${s === 'concluida' ? 'concluída' : 'cancelada'}: os dados ficam como registro"` : ''}>${ICONE.editar}Editar dados</button>` : '';
     const volta = Shell.pode('turmas') ? { rotulo: 'Turmas', href: 'turmas.html' } : { rotulo: Shell.ehSoProfessor() ? 'Minhas aulas' : 'Aulas e chamadas', href: 'aulas.html' };
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoFicha({
           trilha: [volta, { rotulo: `<span class="font-mono text-xs mr-1">${esc(t.codigo)}</span>${esc(c.nome)}` }],
           avatar: avatarRegistro(c.codigo, 'Código do curso'),

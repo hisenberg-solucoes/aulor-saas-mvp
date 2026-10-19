@@ -115,7 +115,7 @@
     });
 
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoFicha({
           trilha: [{ rotulo: 'Matrículas', href: 'matriculas.html' }, { rotulo: esc(m.codigo) }],
           avatar: avatarRegistro(c.codigo, c.nome),

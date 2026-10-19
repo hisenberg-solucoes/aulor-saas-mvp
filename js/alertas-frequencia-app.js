@@ -71,7 +71,7 @@
     const turmas = [...new Set(alertas.map((x) => x.m.turmaId))].map((id) => Aulor.turma(id));
     const filtrando = !!(filtro.nivel || filtro.turmaId || filtro.q);
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({
           titulo: 'Alunos para contatar',
           subtitulo: `Quem está abaixo ou perto do mínimo de ${min}% nas turmas em andamento, pela chamada até ${dataBr(hoje)}. ${alertas.length ? `${plural(alertas.length, 'alerta')} em ${plural(turmas.length, 'turma')}.` : 'Nenhum alerta no momento.'}`,

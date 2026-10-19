@@ -44,7 +44,7 @@
     const volta = Shell.pode('turmas') && !Shell.ehSoProfessor() ? { rotulo: 'Turmas', href: 'turmas.html' } : { rotulo: Shell.ehSoProfessor() ? 'Minhas aulas' : 'Aulas e chamadas', href: 'aulas.html' };
 
     tela.innerHTML = `
-      <form id="form-chamada" novalidate class="max-w-3xl mx-auto">
+      <form id="form-chamada" novalidate>
         ${cabecalhoFicha({
           trilha: [volta, { rotulo: t.codigo, href: `turma.html?id=${t.id}&aba=aulas` }, { rotulo: `Aula ${a.n}` }],
           avatar: avatarRegistro(c.codigo, 'Código do curso'),

@@ -51,7 +51,7 @@
     const pendentes = Aulor.chamadasPendentes();
 
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({
           titulo: 'Turmas',
           subtitulo: `${plural(todas.length, 'turma')}. Cada turma é um curso do catálogo acontecendo num período, com professor, agenda e vagas; chamada e conclusão acontecem dentro dela.`,

@@ -111,7 +111,7 @@
     const corpo = { dados: () => abaDados(c, editar), conteudo: () => abaConteudo(c, editar), turmas: () => abaTurmas(c, turmas) }[aba]();
     const mais = Shell.pode('turmas', 'criar') ? [{ nome: 'Nova turma', detalhe: 'Professor, agenda e vagas; as aulas saem da carga horária', acao: novaTurma }] : null;
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoFicha({
           trilha: [{ rotulo: 'Cursos', href: 'cursos.html' }, { rotulo: esc(c.nome) }],
           avatar: avatarRegistro(c.codigo, 'Código do curso'),

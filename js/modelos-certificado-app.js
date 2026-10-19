@@ -68,7 +68,7 @@
       { id: 'inativo', nome: 'Inativos', n: conta('inativo') },
     ];
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
+      <div>
         ${cabecalhoPagina({
           titulo: `Modelos de certificado <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${todos.length}</span>`,
           subtitulo: 'Frente e verso do certificado que a escola emite. O <a class="link" href="cursos.html">curso</a> escolhe o modelo no próprio cadastro; sem escolha, emite com o padrão da escola. Editar um modelo não muda os certificados já emitidos.',
