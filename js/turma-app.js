@@ -275,7 +275,7 @@
     const mais = itensMais(t, s);
     const editar = Shell.pode('turmas', 'editar')
       ? `<button type="button" data-editar class="btn-sec" ${encerrada ? `disabled title="Turma ${s === 'concluida' ? 'concluída' : 'cancelada'}: os dados ficam como registro"` : ''}>${ICONE.editar}Editar dados</button>` : '';
-    const volta = Shell.ehSoProfessor() ? { rotulo: 'Minhas turmas', href: 'minhas-turmas.html' } : Shell.pode('turmas') ? { rotulo: 'Turmas', href: 'turmas.html' } : { rotulo: 'Aulas e chamadas', href: 'aulas.html' };
+    const volta = Shell.ehSoProfessor() ? { rotulo: 'Minhas turmas', href: 'minhas-turmas.html' } : { rotulo: 'Turmas', href: 'turmas.html' };
     // Aula hoje ainda sem chamada: o atalho fica à vista no topo (como na turma do Portal do Professor do original).
     const aulaHoje = encerrada ? null : Aulor.aulasDoDia().find((a) => a.turmaId === t.id && a.status === 'prevista');
     const chamada = aulaHoje && Shell.podeChamada(t) ? `<a href="chamada.html?aula=${aulaHoje.id}" class="btn-pri">Fazer a chamada · ${aulaHoje.inicio}</a>` : '';

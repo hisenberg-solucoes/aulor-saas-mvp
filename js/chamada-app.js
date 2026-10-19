@@ -41,7 +41,7 @@
       : futura ? `A chamada abre no dia da aula (${quando(a.data)}). Até lá, confira a lista e a frequência de cada aluno.`
         : encerrada ? 'Turma concluída: a chamada não pode mais ser alterada.'
           : !Shell.podeChamada(t) ? 'Seu perfil pode ver, mas não registrar esta chamada.' : '';
-    const volta = Shell.ehSoProfessor() ? { rotulo: 'Minhas turmas', href: 'minhas-turmas.html' } : Shell.pode('turmas') ? { rotulo: 'Turmas', href: 'turmas.html' } : { rotulo: 'Aulas e chamadas', href: 'aulas.html' };
+    const volta = Shell.ehSoProfessor() ? { rotulo: 'Minhas turmas', href: 'minhas-turmas.html' } : { rotulo: 'Turmas', href: 'turmas.html' };
 
     tela.innerHTML = `
       <form id="form-chamada" novalidate>

@@ -59,7 +59,7 @@
       if (pend.length) {
         const a = pend[0];
         const t = Aulor.turma(a.turmaId);
-        itens.push({ tom: 'atencao', titulo: `${pend.length} ${pend.length === 1 ? 'chamada pendente' : 'chamadas pendentes'}`, detalhe: pend.length === 1 ? `${t.codigo} · aula de ${dataLonga(a.data).toLowerCase()} sem registro de presença` : 'Aulas que já aconteceram sem registro de presença', href: pend.length === 1 ? `chamada.html?aula=${a.id}` : 'aulas.html', acao: 'Registrar' });
+        itens.push({ tom: 'atencao', titulo: `${pend.length} ${pend.length === 1 ? 'chamada pendente' : 'chamadas pendentes'}`, detalhe: pend.length === 1 ? `${t.codigo} · aula de ${dataLonga(a.data).toLowerCase()} sem registro de presença` : 'Aulas que já aconteceram sem registro de presença', href: pend.length === 1 ? `chamada.html?aula=${a.id}` : 'turmas.html', acao: pend.length === 1 ? 'Registrar' : 'Ver turmas' });
       }
       Aulor.turmas().filter((t) => Aulor.situacaoTurma(t) === 'a_concluir').forEach((t) => {
         itens.push({ tom: 'atencao', titulo: `${t.codigo} terminou e aguarda conclusão`, detalhe: `${Aulor.curso(t.cursoId).nome} · última aula em ${dataBr(t.fim)}. Concluir libera os certificados.`, href: `turma.html?id=${t.id}`, acao: 'Concluir' });
@@ -124,7 +124,7 @@
     return cartao({
       titulo: 'Aulas de hoje',
       contexto: aulas.length ? plural(aulas.length, 'aula', 'aulas') : 'Nenhuma aula hoje',
-      acao: '<a href="aulas.html" class="btn-fantasma">Agenda</a>',
+      acao: '<a href="turmas.html" class="btn-fantasma">Turmas</a>',
       classe: 'overflow-hidden',
       corpo: aulas.length ? `<ul class="mt-2 pb-2 divide-y divide-slate-100 dark:divide-neutral-900">${aulas.map((a) => {
         const t = Aulor.turma(a.turmaId);

@@ -84,7 +84,6 @@ const Shell = (() => {
     { grupo: 'comercial', href: 'turmas-risco.html', nome: 'Turmas em risco', icone: 'risco', features: ['turmas'] },
     { grupo: 'pedagogico', href: 'cursos.html', nome: 'Cursos', icone: 'cursos', features: ['cursos'] },
     { grupo: 'pedagogico', href: 'turmas.html', nome: 'Turmas', icone: 'turmas', features: ['turmas'] },
-    { grupo: 'pedagogico', href: 'aulas.html', nome: 'Aulas e chamadas', icone: 'aulas', features: ['frequencia'] },
     { grupo: 'pedagogico', href: 'alertas-frequencia.html', nome: 'Alertas de frequência', icone: 'alertas', features: ['frequencia'] },
     { grupo: 'pedagogico', href: 'certificados.html', nome: 'Certificados', icone: 'certificados', features: ['certificados'] },
     { grupo: 'pedagogico', href: 'templates-certificado.html', nome: 'Modelos de certificado', icone: 'template', features: ['configuracoes'] },
@@ -96,7 +95,7 @@ const Shell = (() => {
   ];
   const ALIAS = {
     'aluno.html': 'alunos.html', 'curso.html': 'cursos.html', 'turma.html': 'turmas.html',
-    'matricula.html': 'matriculas.html', 'matricula-nova.html': 'matriculas.html', 'chamada.html': 'aulas.html',
+    'matricula.html': 'matriculas.html', 'matricula-nova.html': 'matriculas.html', 'chamada.html': 'turmas.html',
     'certificado.html': 'certificados.html', 'modelo-certificado.html': 'templates-certificado.html', 'perfil.html': 'perfis.html',
     'cobrancas.html': 'financeiro.html', // Cobranças virou a aba "Em atraso" do Financeiro
   };

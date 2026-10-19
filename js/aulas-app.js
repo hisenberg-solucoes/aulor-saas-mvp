@@ -1,18 +1,18 @@
 // ============================================================
-// Aulas e chamadas (no Portal do Professor: "Minhas aulas").
-// Escopo pela permissão: "frequencia" vê a agenda de todas as turmas; só
-// "minhas-aulas" vê as próprias. As turmas e a frequência do professor
-// ficam no portal (meu-dia.html, minhas-turmas.html e a aba Alunos da turma).
+// Portal do Professor › Minhas aulas: a agenda das turmas do professor.
+// O admin não tem esta tela, como no original: a coordenação vê e corrige
+// a chamada pela aba Aulas da turma (permissão "frequencia").
+// As turmas e a frequência do professor ficam em meu-dia.html e minhas-turmas.html.
 // Pensada para o celular: cartões em lista e botões de 44px abaixo de 640px.
 // ============================================================
 
 (function () {
   if (!Shell.permitido) return;
+  if (!Shell.ehSoProfessor()) { location.replace('turmas.html'); return; } // endereço antigo de "Aulas e chamadas"
   const tela = document.getElementById('tela');
   const hoje = Aulor.hoje();
-  const todas = Shell.pode('frequencia');
   const meus = new Set(Shell.professorIds());
-  const turmasEscopo = Aulor.turmas().filter((t) => t.status !== 'cancelada' && (todas || meus.has(t.professorId)));
+  const turmasEscopo = Aulor.turmas().filter((t) => t.status !== 'cancelada' && meus.has(t.professorId));
   const idsEscopo = new Set(turmasEscopo.map((t) => t.id));
   const noEscopo = (a) => idsEscopo.has(a.turmaId);
   const TOQUE = 'w-full sm:w-auto max-sm:h-11';
@@ -38,7 +38,7 @@
         </div>
         <div class="flex-1 min-w-[12rem]">
           <a href="turma.html?id=${t.id}" class="text-sm font-medium ${TITULO} hover:underline underline-offset-2">${esc(c.nome)}</a>
-          <p class="text-xs ${APOIO}"><span class="font-mono">${esc(t.codigo)}</span> · aula ${a.n} de ${Aulor.progressoTurma(t).total}${t.local ? ` · ${esc(t.local)}` : ''}${todas ? ` · ${esc(Aulor.professor(t.professorId).nome)}` : ''}</p>
+          <p class="text-xs ${APOIO}"><span class="font-mono">${esc(t.codigo)}</span> · aula ${a.n} de ${Aulor.progressoTurma(t).total}${t.local ? ` · ${esc(t.local)}` : ''}</p>
         </div>
         <div class="w-full sm:w-auto">${acao}</div>
       </li>`;
@@ -61,12 +61,11 @@
       </div>`;
   }
 
-  if (!todas) document.title = 'Aulor · Minhas aulas';
   tela.innerHTML = `
     <div>
       ${cabecalhoPagina({
-        titulo: todas ? 'Aulas e chamadas' : 'Minhas aulas',
-        subtitulo: `Aulas de hoje, chamadas que ficaram para trás e a próxima semana ${todas ? 'de todas as turmas' : 'das suas turmas'}.`,
+        titulo: 'Minhas aulas',
+        subtitulo: 'Aulas de hoje, chamadas que ficaram para trás e a próxima semana das suas turmas.',
       })}
       ${abaAgenda()}
     </div>`;
