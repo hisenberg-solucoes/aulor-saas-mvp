@@ -23,14 +23,23 @@
     situacao: SITUACOES.includes(parametroUrl('situacao')) ? parametroUrl('situacao') : '',
   };
 
-  // Vagas: ocupadas/capacidade; em risco de não fechar, ocupadas/mínimo e quanto falta.
-  function celulaAlunos(t) {
+  // Matrículas: ocupadas/vagas em texto; em risco de não fechar, ponto do nível + ocupadas/mínimo e quanto falta.
+  function celulaMatriculas(t) {
+    const o = Aulor.ocupacao(t);
     const r = Aulor.riscoTurma(t);
-    if (!r) return ocupacaoHtml(t);
-    const tom = r.nivel === 'critico' ? 'text-red-700 dark:text-red-400' : AVISO;
-    return `<div title="Em risco de não fechar (${Aulor.RISCO[r.nivel].nome.toLowerCase()}): ${r.ocupadas} de ${r.minimo} alunos mínimos, início ${quando(t.inicio)}">
-      ${ocupacaoHtml(t, { minimo: true })}
-      <p class="text-xs tabular-nums mt-0.5 ${tom}">${r.faltam === 1 ? 'falta 1' : `faltam ${r.faltam}`} para abrir</p>
+    if (!r) return `<span class="tabular-nums text-xs" title="${o.ocupadas} matrículas em ${o.capacidade} vagas">${o.ocupadas}<span class="${APOIO}">/${o.capacidade}</span></span>`;
+    return `<div class="whitespace-nowrap" title="Em risco de não fechar (${Aulor.RISCO[r.nivel].nome.toLowerCase()}): ${r.ocupadas} de ${r.minimo} alunos mínimos, início ${quando(t.inicio)}">
+      <p class="flex items-center gap-1.5 text-xs tabular-nums ${r.nivel === 'critico' ? 'text-red-700 dark:text-red-400' : AVISO}"><span class="h-2 w-2 shrink-0 rounded-full ${TOM[Aulor.RISCO[r.nivel].tom].ponto}" aria-hidden="true"></span><span class="font-medium">${r.ocupadas}/${r.minimo}</span><span class="opacity-70">mín.</span></p>
+      <p class="text-[11px] ${APOIO} tabular-nums mt-0.5">${r.faltam === 1 ? 'falta 1' : `faltam ${r.faltam}`} · ${o.capacidade} vagas</p>
+    </div>`;
+  }
+
+  // Aulas: com chamada/previstas e o percentual em cima, o medidor embaixo (barraConclusao do original).
+  function celulaAulas(t) {
+    const pr = Aulor.progressoTurma(t);
+    return `<div title="${pr.realizadas} de ${pr.total} aulas com chamada">
+      <div class="flex items-center justify-between text-xs tabular-nums"><span class="text-slate-700 dark:text-neutral-200">${pr.realizadas}/${pr.total}</span><span class="${APOIO}">${pr.percentual}%</span></div>
+      <div class="mt-1 flex">${medidor(pr.percentual, { largura: 'w-full' })}</div>
     </div>`;
   }
 
@@ -50,11 +59,12 @@
     const criticas = risco.filter((r) => r.nivel === 'critico').length;
     const pendentes = Aulor.chamadasPendentes();
 
+    // Os selects ficam em max-w-32, como no original: o nome de curso mais longo não estica a barra.
     tela.innerHTML = `
       <div>
         ${cabecalhoPagina({
           titulo: 'Turmas',
-          subtitulo: `${plural(todas.length, 'turma')}. Cada turma é um curso do catálogo acontecendo num período, com professor, agenda e vagas; chamada e conclusão acontecem dentro dela.`,
+          subtitulo: 'Cada turma é um curso do catálogo acontecendo num período, com agenda, professor, local e vagas. Chamada, notas e conclusão acontecem dentro dela.',
           acoes: Shell.pode('turmas', 'criar') ? `<button type="button" data-nova class="btn-pri">${ICONE.mais}Nova turma</button>` : '',
         })}
 
@@ -67,9 +77,11 @@
 
         <div class="flex flex-wrap items-center gap-2 mb-4">
           ${campoBusca('busca', filtro.q, 'Buscar por código, curso ou professor')}
-          ${selectFiltro('f-curso', [{ id: '', nome: 'Todos os cursos' }, ...Aulor.cursos().map((c) => ({ id: c.id, nome: c.nome }))], filtro.cursoId, 'Curso')}
-          ${selectFiltro('f-professor', [{ id: '', nome: 'Todos os professores' }, ...Aulor.professores().map((p) => ({ id: p.id, nome: p.nome }))], filtro.professorId, 'Professor')}
-          ${filtrando ? '<button type="button" data-limpar class="text-sm font-medium link">Limpar</button>' : ''}
+          <div class="ml-auto flex flex-wrap items-center gap-2">
+            <span class="flex max-w-32">${selectFiltro('f-curso', [{ id: '', nome: 'Curso' }, ...Aulor.cursos().map((c) => ({ id: c.id, nome: c.nome }))], filtro.cursoId, 'Curso')}</span>
+            <span class="flex max-w-32">${selectFiltro('f-professor', [{ id: '', nome: 'Professor' }, ...Aulor.professores().map((p) => ({ id: p.id, nome: p.nome }))], filtro.professorId, 'Professor')}</span>
+            ${filtrando ? `<button type="button" data-limpar class="${BOTAO_LINK}">Limpar</button>` : ''}
+          </div>
         </div>
 
         ${risco.length && !filtrando && Shell.pode('turmas') ? faixa(criticas ? 'erro' : 'aviso', `<span class="font-medium tabular-nums">${plural(risco.length, 'turma em risco', 'turmas em risco')} de não fechar</span>${criticas ? `<span class="tabular-nums"> · ${criticas} ${criticas === 1 ? 'crítica' : 'críticas'}, começam em até ${Aulor.RISCO.critico.dias} dias</span>` : ''}. Ainda não atingiram o mínimo de alunos para abrir.`, '<a href="turmas-risco.html" class="font-medium underline-offset-2 hover:underline">Ver turmas em risco</a>') : ''}
@@ -77,28 +89,27 @@
         <div class="painel overflow-hidden">
           ${lista.length ? `<div class="overflow-x-auto">
             <table class="tabela table-fixed">
-              <thead><tr><th>Turma</th><th class="w-[156px]">Período e agenda</th><th class="w-[160px]">Professor e local</th><th class="w-[144px]">Alunos</th><th class="w-[124px]">Aulas</th><th class="w-[156px]">Situação</th></tr></thead>
+              <thead><tr><th>Turma</th><th class="w-[168px]">Período e agenda</th><th class="w-[168px]">Professor e local</th><th class="w-[104px]" title="Matrículas que ocupam vaga / vagas. Em risco de não fechar: matrículas / mínimo de alunos.">Matrículas</th><th class="w-[104px]" title="Aulas com chamada / previstas">Aulas</th><th class="w-[144px]">Situação</th></tr></thead>
               <tbody>${lista.map((t) => {
                 const s = sit.get(t.id);
                 const c = Aulor.curso(t.cursoId);
-                const pr = Aulor.progressoTurma(t);
                 const pend = pendentes.filter((a) => a.turmaId === t.id).length;
                 const abaixo = ['em_andamento', 'a_concluir'].includes(s) ? Aulor.matriculasDaTurma(t.id).filter((m) => m.status === 'ativa' && Aulor.frequencia(m).abaixo).length : 0;
                 return `<tr data-href="turma.html?id=${t.id}" class="${FOCO_LINHA} ${['concluida', 'cancelada'].includes(s) ? 'linha-apagada' : ''}">
                   <td>
                     <p class="truncate"><span class="font-mono text-xs ${APOIO} mr-1.5">${esc(t.codigo)}</span><a href="turma.html?id=${t.id}" class="${LINK_REGISTRO}" title="${esc(c.nome)}">${esc(c.nome)}</a></p>
-                    ${pend ? `<p class="text-xs ${AVISO}">${plural(pend, 'chamada pendente', 'chamadas pendentes')}</p>` : `<p class="text-xs ${APOIO}">${c.cargaHoraria} h · ${esc(nomeModalidade(t.agenda.formato))}</p>`}
+                    ${pend ? `<p class="text-xs ${AVISO} truncate">${plural(pend, 'chamada pendente', 'chamadas pendentes')}</p>` : `<p class="text-xs ${APOIO} truncate">${c.cargaHoraria} h · ${esc(nomeModalidade(t.agenda.formato))}</p>`}
                   </td>
                   <td><p class="tabular-nums whitespace-nowrap">${dataCurta(t.inicio)} → ${dataCurta(t.fim)}</p><p class="text-xs ${APOIO} truncate" title="${esc(Agenda.descrever(t.agenda))}">${esc(Agenda.descrever(t.agenda))}</p></td>
                   <td><p class="truncate">${esc(Aulor.professor(t.professorId).nome)}</p><p class="text-xs ${APOIO} truncate" title="${esc(t.local)}">${esc(t.local || 'local a definir')}</p></td>
-                  <td>${celulaAlunos(t)}</td>
-                  <td><span class="inline-flex items-center gap-2" title="${pr.realizadas} de ${pr.total} aulas com chamada">${medidor(pr.percentual, { largura: 'w-12' })}<span class="text-sm tabular-nums">${pr.realizadas}/${pr.total}</span></span></td>
+                  <td>${celulaMatriculas(t)}</td>
+                  <td>${celulaAulas(t)}</td>
                   <td>${status(Aulor.SITUACAO_TURMA[s].tom, Aulor.SITUACAO_TURMA[s].nome, '', true)}${abaixo ? `<a href="alertas-frequencia.html?turma=${t.id}" class="block text-xs text-red-700 dark:text-red-400 hover:underline tabular-nums">${plural(abaixo, 'aluno abaixo', 'alunos abaixo')} da frequência</a>` : ''}</td>
                 </tr>`;
               }).join('')}</tbody>
             </table>
           </div>` : vazio(todas.length ? 'Nenhuma turma corresponde aos filtros' : 'Nenhuma turma cadastrada ainda')}
-          <p class="px-4 py-2.5 text-xs ${APOIO} border-t border-slate-100 dark:border-neutral-900 tabular-nums">${plural(lista.length, 'turma')}${filtrando ? ` de ${todas.length}` : ' em andamento, a iniciar ou aguardando conclusão'}</p>
+          <p class="${RODAPE_TABELA}">${plural(lista.length, 'turma')}${filtrando ? ` de ${todas.length}` : ' em andamento, a iniciar ou aguardando conclusão'}</p>
         </div>
       </div>`;
     ligar();

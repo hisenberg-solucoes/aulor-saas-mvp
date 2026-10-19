@@ -13,7 +13,7 @@ Para o dono de uma escola com cerca de 200 alunos. A escola fictícia é a **Atl
 | Tempo | Tela | O que fazer | O que dizer |
 |---|---|---|---|
 | 0:00 | Entrar | Escolha **Marina Azevedo (Diretora)** | "Cada pessoa da escola vê só o que o perfil dela libera." |
-| 0:30 | Visão geral | Passe pelos quatro números e pela lista **Precisa de atenção** | "Ao abrir o sistema, você sabe quem está devendo, que chamada falta e que turma precisa ser fechada. Tudo é calculado dos registros, não é painel decorativo." |
+| 0:30 | Visão geral | Passe pelos quatro números e pela lista **Requer atenção** | "Ao abrir o sistema, você sabe quem está devendo, que chamada falta e que turma precisa ser fechada. Tudo é calculado dos registros, não é painel decorativo." |
 | 1:30 | Pedagógico › Turmas, depois Comercial › Turmas em risco | Mostre as contagens por situação e o aviso de turmas que não atingiram o mínimo. Em **Turmas em risco**, aponte **WEB-2026-1** (8 de 20 vagas, começa nas próximas duas semanas). Se quiser, clique em **Nova turma** e mostre a prévia ("12 aulas, de… a…") | "O curso é o produto; a turma é a oferta com professor, horário e vagas. Você vê cedo onde falta aluno para a turma abrir." |
 | 2:30 | Turmas em risco › Matricular | Escolha um aluno (ou **+ Cadastrar novo aluno**, que pede só nome, CPF e celular). Desconto de 10%, 5 parcelas. Mostre o resumo à direita e clique em **Confirmar matrícula** | "Três passos. As parcelas que você vê no resumo são exatamente as que entram no financeiro." |
 | 4:00 | Matrícula confirmada | Clique em **Receber** na 1ª parcela e confirme | "A baixa muda o status aqui, na ficha do aluno e no financeiro, porque é o mesmo registro." |

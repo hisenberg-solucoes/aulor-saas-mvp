@@ -33,6 +33,7 @@
     const aberto = ativas.filter((l) => l.status === 'aberto').reduce((s, l) => s + l.valor, 0);
     const vencido = vencidas.reduce((s, l) => s + l.valor, 0);
     const pagador = m.pagador === 'responsavel' ? (Aulor.responsavelFinanceiro(a)?.nome ?? 'Responsável financeiro') : 'O aluno';
+    const nomePagador = m.pagador === 'responsavel' ? pagador : a.nome;
     const podeEmitir = Shell.pode('certificados', 'emitir');
     const destinos = m.status === 'ativa' ? destinosTroca(m) : [];
     const motivoTroca = m.status !== 'ativa' ? 'Só matrículas em curso trocam de turma'
@@ -55,7 +56,7 @@
       nova && faixa('passo', `<span class="font-medium">Matrícula confirmada.</span> ${plural(ativas.length, 'parcela lançada', 'parcelas lançadas')} em Contas a receber e ${esc(a.nome.split(' ')[0])} já aparece na lista da turma ${esc(t.codigo)}.`,
         `<span class="flex gap-2">${verFin ? '<a class="btn-sec btn-pequeno" href="financeiro.html?situacao=a_vencer">Ver no financeiro</a>' : ''}<a class="btn-sec btn-pequeno" href="turma.html?id=${t.id}">Ver turma</a></span>`),
       m.status === 'cancelada' && faixa('neutra', `<span class="font-medium">Cancelada em ${dataBr(m.canceladaEm)}.</span> ${esc(m.motivoCancelamento)}. Parcelas não pagas foram canceladas; as pagas ficam no histórico.`),
-      verFin && antiga && faixa('erro', `<span class="font-medium">${plural(vencidas.length, 'parcela vencida', 'parcelas vencidas')} · ${moeda(vencido)}</span>, a mais antiga há ${plural(Aulor.diasAtraso(antiga), 'dia', 'dias')}. Quem paga: ${esc(pagador)}.`,
+      verFin && antiga && faixa('erro', `<span class="font-medium">${plural(vencidas.length, 'parcela vencida', 'parcelas vencidas')} · ${moeda(vencido)}</span>, a mais antiga há ${plural(Aulor.diasAtraso(antiga), 'dia', 'dias')}. Paga: ${esc(nomePagador)}.`,
         Shell.pode('receber', 'registrar') ? `<button type="button" data-baixar="${antiga.id}" class="btn-sec btn-pequeno">Receber ${dataCurta(antiga.vencimento)}</button>` : ''),
     ].filter(Boolean).join('');
 
@@ -117,14 +118,15 @@
     tela.innerHTML = `
       <div>
         ${cabecalhoFicha({
-          trilha: [{ rotulo: 'Matrículas', href: 'matriculas.html' }, { rotulo: esc(m.codigo) }],
-          avatar: avatarRegistro(c.codigo, c.nome),
+          trilha: [{ rotulo: 'Matrículas', href: 'matriculas.html' }, { rotulo: `<span class="font-mono">${esc(m.codigo)}</span>` }],
+          avatar: `<div class="h-12 w-12 shrink-0 rounded-xl bg-petrol-800/10 dark:bg-sky-950/60 text-petrol-800 dark:text-sky-300 grid place-items-center">${ICONE.documento.replace('h-3.5 w-3.5', 'h-6 w-6')}</div>`,
           nome: `Matrícula <span class="tabular-nums">${esc(m.codigo)}</span>`,
           pilulas,
+          descricao: esc(c.nome),
           chips: [
-            chip(ICONE.pessoa, Shell.pode('alunos') ? `<a class="hover:underline" href="aluno.html?id=${a.id}">${esc(a.nome)}</a>` : esc(a.nome), 'Aluno'),
+            chip(ICONE.pessoa, `${Shell.pode('alunos') ? `<a class="hover:underline" href="aluno.html?id=${a.id}">${esc(a.nome)}</a>` : esc(a.nome)} · <span class="font-mono">${cpfFmt(a.cpf)}</span>`, 'Aluno · CPF'),
             chip(ICONE.pessoas, `<a class="hover:underline" href="turma.html?id=${t.id}">${esc(t.codigo)}</a> · ${esc(Agenda.descrever(t.agenda))}`, 'Turma · dias e horário'),
-            chip(ICONE.tag, esc(c.nome), 'Curso'),
+            chip(ICONE.tag, `<span class="tabular-nums">${moeda(m.valorFinal)}</span>`, 'Valor final'),
             chip(ICONE.calendario, `${dataBr(m.data)}${m.criadaPor ? ` · ${esc(m.criadaPor)}` : ''}`, 'Feita em · por'),
           ],
           acoes,

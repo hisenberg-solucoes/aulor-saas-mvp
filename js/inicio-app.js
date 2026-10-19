@@ -18,8 +18,6 @@
   const COBRE = 'bg-[color:var(--f-cobre)]';
   const pontoPendencia = `<span class="h-2 w-2 shrink-0 rounded-full ${COBRE}" aria-hidden="true"></span>`;
 
-  const saudacao = () => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; };
-
   // Regra da Linha de Indicadores: células lado a lado sobre o fundo, divisórias de 1px, sem fundo nem sombra.
   // A célula inteira leva à lista que explica o número; pendência é ponto cobre antes do rótulo, valor em tinta.
   function celula({ rotulo, valor, contexto, href = '', extra = '', pendente = false }, i) {
@@ -53,7 +51,7 @@
     return `<section aria-label="Indicadores" class="mb-6 grid grid-cols-2 xl:grid-cols-${celulas.length}">${celulas.map(celula).join('')}</section>`;
   }
 
-  // Fila "Precisa de atenção": cada item leva para onde a pessoa resolve. Urgente primeiro.
+  // Fila "Requer atenção" (o cartão do Meu dia do original): cada item leva para onde a pessoa resolve. Urgente primeiro.
   function pendencias() {
     const itens = [];
     if (verAcad) {
@@ -99,10 +97,10 @@
     // Painel não pinta ponto de vermelho (Regra do Azul e do Vermelho): o que é com você é cobre; o próximo passo, neutro.
     const ponto = (tom) => (tom === 'info' ? '<span class="h-2 w-2 shrink-0 rounded-full bg-slate-400 dark:bg-neutral-500" aria-hidden="true"></span>' : pontoPendencia);
     return cartao({
-      titulo: 'Precisa de atenção',
-      contexto: itens.length ? `${plural(itens.length, 'item', 'itens')}, o mais urgente primeiro` : '',
+      titulo: 'Requer atenção',
+      contexto: itens.length ? 'O que precisa da sua ação, do mais urgente para o menos.' : '',
       classe: 'overflow-hidden',
-      corpo: itens.length ? `<ul class="mt-2 divide-y divide-slate-100 dark:divide-neutral-900 border-t border-slate-100 dark:border-neutral-900">${itens.map((i) => `
+      corpo: itens.length ? `<ul class="mt-2 pb-2 divide-y divide-slate-100 dark:divide-neutral-900">${itens.map((i) => `
           <li>
             <a href="${i.href}" class="group flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-neutral-900 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--f-foco)]">
               ${ponto(i.tom)}
@@ -110,7 +108,7 @@
                 <span class="block text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(i.titulo)}</span>
                 <span class="block text-xs ${APOIO} truncate">${esc(i.detalhe)}</span>
               </span>
-              <span class="text-xs font-semibold text-petrol-800 dark:text-sky-300 shrink-0 group-hover:underline underline-offset-2">${esc(i.acao)}</span>
+              <span class="text-xs font-medium text-petrol-800 dark:text-sky-300 shrink-0 group-hover:underline underline-offset-2">${esc(i.acao)}</span>
             </a>
           </li>`).join('')}</ul>` : vazio('Tudo em dia', 'Nenhuma pendência para hoje.'),
     });
@@ -128,7 +126,7 @@
       contexto: aulas.length ? plural(aulas.length, 'aula', 'aulas') : 'Nenhuma aula hoje',
       acao: '<a href="aulas.html" class="btn-fantasma">Agenda</a>',
       classe: 'overflow-hidden',
-      corpo: aulas.length ? `<ul class="mt-2 divide-y divide-slate-100 dark:divide-neutral-900 border-t border-slate-100 dark:border-neutral-900">${aulas.map((a) => {
+      corpo: aulas.length ? `<ul class="mt-2 pb-2 divide-y divide-slate-100 dark:divide-neutral-900">${aulas.map((a) => {
         const t = Aulor.turma(a.turmaId);
         return `<li><a href="chamada.html?aula=${a.id}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-neutral-900 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--f-foco)]">
             <span class="text-sm font-semibold tabular-nums ${TITULO} w-12 shrink-0">${a.inicio}</span>
@@ -150,7 +148,7 @@
       contexto: 'As cinco últimas',
       acao: '<a href="matriculas.html" class="btn-fantasma">Todas</a>',
       classe: 'overflow-hidden',
-      corpo: `<ul class="mt-2 divide-y divide-slate-100 dark:divide-neutral-900 border-t border-slate-100 dark:border-neutral-900">${lista.map((m) => {
+      corpo: `<ul class="mt-2 pb-2 divide-y divide-slate-100 dark:divide-neutral-900">${lista.map((m) => {
         const t = Aulor.turma(m.turmaId);
         return `<li><a href="matricula.html?id=${m.id}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-neutral-900 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--f-foco)]">
             ${avatar(Aulor.aluno(m.alunoId).nome)}
@@ -166,13 +164,13 @@
 
   const acoes = [
     pode('matriculas', 'criar') ? `<a href="matricula-nova.html" class="btn-pri">${ICONE.mais}Nova matrícula</a>` : '',
-    pode('alunos', 'criar') ? '<a href="alunos.html?novo=1" class="btn-sec">Cadastrar aluno</a>' : '',
+    pode('alunos', 'criar') ? '<a href="alunos.html?novo=1" class="btn-sec">Novo aluno</a>' : '',
   ].join('');
 
   const lateral = aulasDeHoje() + matriculasRecentes();
   tela.innerHTML = `
     <div>
-      ${cabecalhoPagina({ titulo: `${saudacao()}, ${esc(Shell.nome().split(' ')[0])}`, subtitulo: `${dataLonga(hoje)} · ${esc(Aulor.escola().nome)}`, acoes })}
+      ${cabecalhoPagina({ titulo: `Olá, ${esc(Shell.nome().split(' ')[0])}`, subtitulo: `${dataLonga(hoje)} · ${esc(Aulor.escola().nome)}`, acoes })}
       ${indicadores()}
       <div class="grid grid-cols-1 ${lateral ? 'xl:grid-cols-3' : ''} gap-4 items-start">
         <div class="${lateral ? 'xl:col-span-2' : ''}">${pendencias()}</div>

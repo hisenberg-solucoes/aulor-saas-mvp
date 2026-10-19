@@ -54,13 +54,13 @@
         ${href ? `<a href="${href}" class="${LINK_REGISTRO} block truncate" title="${esc(a.nome)}">${esc(a.nome)}</a>` : `<p class="truncate text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(a.nome)}</p>`}
         <p class="text-xs ${APOIO} tabular-nums truncate">${c.menor ? `Resp.: ${esc(c.quem.nome)} · ` : ''}${telefoneFmt(c.quem.telefone)}</p>
       </td>
-      <td><a class="link font-mono text-sm" href="turma.html?id=${t.id}" title="Abrir a turma">${esc(t.codigo)}</a><p class="text-xs ${APOIO} truncate" title="${esc(Aulor.curso(t.cursoId).nome)}">${esc(Aulor.curso(t.cursoId).nome)}</p></td>
-      <td>${status(n.tom, n.rotulo)}<p class="text-xs ${APOIO} tabular-nums">${plural(faltas, 'falta')} em ${plural(x.f.total, 'aula')}${x.f.restantes ? ` · ${x.f.restantes} pela frente` : ''}</p></td>
+      <td><a class="link text-sm font-medium" href="turma.html?id=${t.id}" title="Abrir a turma">${esc(t.codigo)}</a><p class="text-xs ${APOIO} truncate" title="${esc(Aulor.curso(t.cursoId).nome)}">${esc(Aulor.curso(t.cursoId).nome)}</p></td>
+      <td>${status(n.tom, n.rotulo)}<p class="text-xs ${APOIO} tabular-nums truncate" title="${x.f.restantes ? `${plural(x.f.restantes, 'aula')} pela frente` : 'Nenhuma aula pela frente'}">${plural(faltas, 'falta')} em ${plural(x.f.total, 'aula')}${x.f.restantes ? ` · ${x.f.restantes} pela frente` : ''}</p></td>
       <td>${barraFrequencia(x.f)}</td>
       <td class="whitespace-nowrap tabular-nums">${x.proxima ? `${dataCurta(x.proxima.data)}<p class="text-xs ${['hoje', 'amanhã'].includes(quando(x.proxima.data)) ? 'font-medium text-slate-800 dark:text-neutral-100' : APOIO}">${quando(x.proxima.data)}</p>` : `<span class="${APOIO}" title="Não há mais aulas previstas nesta turma">—</span>`}</td>
-      <td class="text-right">${c.fone
-        ? `<a class="btn-sec btn-pequeno" target="_blank" rel="noopener" href="https://wa.me/55${c.fone}?text=${encodeURIComponent(c.texto)}" title="Abre o WhatsApp com a mensagem pronta${c.menor ? ' para o responsável' : ''}">${ICONE.whatsapp}Mensagem</a>`
-        : `<button type="button" class="btn-sec btn-pequeno" disabled title="Sem telefone no cadastro">${ICONE.whatsapp}Mensagem</button><p class="text-xs ${APOIO} mt-0.5">sem telefone</p>`}</td>
+      <td>${c.fone
+        ? `<a class="${BOTAO_LINK}" target="_blank" rel="noopener" href="https://wa.me/55${c.fone}?text=${encodeURIComponent(c.texto)}" aria-label="Enviar mensagem para ${esc(c.quem.nome)}" title="Abre o WhatsApp com a mensagem pronta${c.menor ? ' para o responsável' : ''}">${ICONE.whatsapp.replace('h-4 w-4', 'h-3.5 w-3.5')} Enviar mensagem</a>`
+        : `<span class="text-xs ${APOIO}" title="Cadastre um telefone para mandar a mensagem">Sem telefone</span>`}</td>
     </tr>`;
   }
 
@@ -78,7 +78,7 @@
         })}
 
         ${alertas.length ? `
-        <div class="grid grid-cols-3 gap-3 mb-4" role="group" aria-label="Filtrar por nível">
+        <div class="grid grid-cols-3 xl:grid-cols-5 gap-3 mb-4" role="group" aria-label="Filtrar por nível">
           ${Object.entries(NIVEIS).map(([id, n]) => {
             const total = alertas.filter((x) => x.nivel === id).length;
             return cartaoNumero({ rotulo: n.rotulo, valor: total, ajuda: n.ajuda, cor: TOM[n.tom].ponto, filtro: id, ativo: filtro.nivel === id, tomValor: total ? n.tomValor : '' });
@@ -87,18 +87,20 @@
 
         <div class="flex flex-wrap items-center gap-2 mb-4">
           ${campoBusca('busca', filtro.q, 'Buscar por aluno, turma ou curso')}
+          <div class="ml-auto flex flex-wrap items-center gap-3">
           ${selectFiltro('f-turma', [{ id: '', nome: 'Todas as turmas' }, ...turmas.map((t) => ({ id: t.id, nome: `${t.codigo} · ${Aulor.curso(t.cursoId).nome} (${alertas.filter((x) => x.m.turmaId === t.id).length})` }))], filtro.turmaId, 'Turma')}
-          ${filtrando ? '<button type="button" data-limpar class="text-sm font-medium link">Limpar</button>' : ''}
+          ${filtrando ? `<button type="button" data-limpar class="${BOTAO_LINK} text-sm">Limpar</button>` : ''}
+          </div>
         </div>
 
         <div class="painel overflow-hidden">
           ${lista.length ? `<div class="overflow-x-auto">
-            <table class="tabela table-fixed">
-              <thead><tr><th>Aluno</th><th class="w-[150px]">Turma</th><th class="w-[176px]">Motivo</th><th class="w-[150px]">Frequência</th><th class="w-[104px]">Próxima aula</th><th class="w-[140px] text-right">Contato</th></tr></thead>
+            <table class="tabela table-fixed min-w-[960px]">
+              <thead><tr><th>Aluno</th><th class="w-[160px]">Turma</th><th class="w-[184px]">Motivo</th><th class="w-[150px]">Frequência</th><th class="w-[112px]">Próxima aula</th><th class="w-[160px]">Contato</th></tr></thead>
               <tbody>${lista.map(linha).join('')}</tbody>
             </table>
           </div>` : vazio('Nenhum alerta com esses filtros', '', '<button type="button" data-limpar class="btn-sec">Limpar filtros</button>')}
-          <p class="px-4 py-2.5 text-xs ${APOIO} border-t border-slate-100 dark:border-neutral-900 tabular-nums">${filtrando ? `${lista.length} de ${plural(alertas.length, 'alerta')}` : plural(lista.length, 'alerta')}</p>
+          <p class="${RODAPE_TABELA}">${filtrando ? `${lista.length} de ${plural(alertas.length, 'alerta')}` : plural(lista.length, 'alerta')}</p>
         </div>` : `
         <div class="painel">${vazio('Ninguém para contatar hoje', 'Nenhum aluno das turmas em andamento está abaixo ou perto do mínimo. Os alertas aparecem aqui assim que a chamada registrar faltas.', '<a href="turmas.html" class="btn-sec">Ver turmas</a>')}</div>`}
 
@@ -108,7 +110,7 @@
             <li>Entram as matrículas cursando em turmas em andamento ou aguardando conclusão, com pelo menos uma chamada registrada. Aula sem chamada não conta.</li>
             <li><strong>Não alcança mais</strong>: mesmo indo a todas as aulas que faltam, não chega a ${min}%. <strong>Abaixo do mínimo</strong>: menos de ${min}% hoje, mas ainda recupera. <strong>Perto do limite</strong>: até 10 pontos acima do mínimo.</li>
             <li>${Aulor.config().academico.justificadaContaPresenca ? 'Falta justificada conta como presença.' : 'Falta justificada conta como falta.'} Depois de uma troca de turma, conta só a turma atual.</li>
-            <li>"Mensagem" abre o WhatsApp com o texto pronto; para menor de idade, vai ao responsável principal.</li>
+            <li>"Enviar mensagem" abre o WhatsApp com o texto pronto; para menor de idade, vai ao responsável principal.</li>
           </ul>
         </details>
       </div>`;

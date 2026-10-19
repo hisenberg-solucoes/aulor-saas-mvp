@@ -15,13 +15,13 @@
     const porHora = c.cargaHoraria ? c.valor / c.cargaHoraria : null;
     return `
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        ${cartao({ titulo: 'Identificação e carga horária', contexto: 'Como o curso aparece no catálogo e no certificado.', acao: acaoEditar, corpo: gradeCampos([
-          campoValor('Nome', esc(c.nome), 'sm:col-span-2'),
+        ${cartao({ titulo: 'Identificação e carga horária', contexto: 'Como o curso aparece no catálogo e no certificado.', acao: acaoEditar, corpo: `<div class="p-4 grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-4">${[
           campoValor('Código', `<span class="font-mono">${esc(c.codigo)}</span>`),
+          campoValor('Nome', esc(c.nome), 'col-span-2'),
           campoValor('Área', esc(c.area)),
           campoValor('Modalidade', esc(nomeModalidade(c.modalidade))),
           campoValor('Carga horária', `<span class="tabular-nums">${c.cargaHoraria} h</span>${c.modulos.length ? `<span class="text-xs ${APOIO}"> · ${plural(c.modulos.length, 'módulo')}</span>` : ''}`),
-        ]) })}
+        ].join('')}</div>` })}
         ${cartao({ titulo: 'Descrição', contexto: 'O que o aluno aprende no curso.', acao: acaoEditar, corpo: `<div class="p-4">${c.descricao ? `<p class="text-sm text-slate-700 dark:text-neutral-300 whitespace-pre-line max-w-prose">${esc(c.descricao)}</p>` : `<p class="text-sm ${APOIO}">Sem descrição.</p>`}</div>` })}
         ${cartao({ titulo: 'Aprovação e certificado', contexto: 'A frequência mínima é da escola; a nota mínima é deste curso.', acao: acaoEditar, corpo: gradeCampos([
           campoValor('Frequência mínima', `<span class="tabular-nums">${cfg.academico.frequenciaMinima}%</span><span class="text-xs ${APOIO}"> das aulas com chamada</span>`),
@@ -40,59 +40,68 @@
   }
 
   function abaConteudo(c, editar) {
-    if (!c.modulos.length) return `<section class="painel">${vazio('Curso sem módulos', `Divida as ${c.cargaHoraria} h em módulos: eles orientam o diário das aulas e vão para o verso do certificado.`, editar ? `<button type="button" data-editar class="btn-sec">${ICONE.editar}Cadastrar módulos</button>` : '')}</section>`;
     const soma = c.modulos.reduce((s, m) => s + m.cargaHoraria, 0);
     const dif = Math.round((soma - c.cargaHoraria) * 10) / 10;
     // Horas que batem não se anunciam em verde; falta é pendência (cobre), excesso é erro.
-    const horas = dif === 0 ? `<span class="${APOIO_FUNDO}">${soma} h distribuídas em ${plural(c.modulos.length, 'módulo')}</span>`
-      : dif < 0 ? `<span class="${AVISO}">${soma} de ${c.cargaHoraria} h distribuídas · faltam ${-dif} h</span>`
-        : `<span class="text-red-700 dark:text-red-400">${soma} h distribuídas · excede a carga horária em ${dif} h</span>`;
-    const ultimo = c.modulos.length - 1;
-    const seta = (i, dir, desab) => `<button type="button" data-mover="${dir}" data-i="${i}" ${desab ? 'disabled' : ''} aria-label="Mover ${esc(c.modulos[i].nome)} para ${dir}" class="h-6 w-6 grid place-items-center rounded-md text-slate-400 dark:text-neutral-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:pointer-events-none">${ICONE[dir]}</button>`;
-    return `
-      <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+    const horas = !c.modulos.length ? `<span class="font-normal ${APOIO_FUNDO}">Nenhum módulo — ${c.cargaHoraria} h a distribuir</span>`
+      : dif === 0 ? `<span class="font-normal ${APOIO_FUNDO}">${soma} h distribuídas em ${plural(c.modulos.length, 'módulo')}</span>`
+        : dif < 0 ? `<span class="${AVISO}">${soma} de ${c.cargaHoraria} h distribuídas · faltam ${-dif} h</span>`
+          : `<span class="text-red-700 dark:text-red-400">${soma} h distribuídas · excede a carga horária em ${dif} h</span>`;
+    const acoes = `
+      <div class="mb-4 flex flex-wrap items-center gap-2">
         <p class="text-sm font-medium tabular-nums">${horas}</p>
-        ${editar ? `<div class="ml-auto flex items-center gap-2">${c.modulos.length > 1 ? `<span class="text-xs ${APOIO_FUNDO}">As setas mudam a ordem das aulas e do certificado.</span>` : ''}<button type="button" data-editar class="btn-sec">${ICONE.editar}Editar módulos</button></div>` : ''}
-      </div>
+        ${editar && c.modulos.length ? `<div class="ml-auto flex items-center gap-2"><button type="button" data-editar class="btn-sec">${ICONE.editar}Editar módulos</button></div>` : ''}
+      </div>`;
+    if (!c.modulos.length) {
+      return `${acoes}
+      <div class="painel border-dashed p-10 text-center">
+        <p class="text-sm ${APOIO}">Sem conteúdo programático. Divida as ${c.cargaHoraria} h em módulos: eles orientam o diário das aulas e vão para o verso do certificado.</p>
+        ${editar ? `<button type="button" data-editar class="btn-pri mt-4">${ICONE.mais}Cadastrar módulos</button>` : ''}
+      </div>`;
+    }
+    const ultimo = c.modulos.length - 1;
+    const seta = (i, dir, desab) => `<button type="button" data-mover="${dir}" data-i="${i}" ${desab ? 'disabled' : ''} title="${dir === 'cima' ? 'Subir' : 'Descer'}" aria-label="Mover ${esc(c.modulos[i].nome)} para ${dir}" class="h-5 w-7 grid place-items-center rounded-md text-slate-400 dark:text-neutral-500 hover:text-petrol-800 hover:bg-slate-100 dark:hover:text-sky-300 dark:hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 dark:focus-visible:ring-sky-400/50 disabled:opacity-30 disabled:pointer-events-none">${ICONE[dir].replace('h-4 w-4', 'h-3.5 w-3.5')}</button>`;
+    return `${acoes}
       <ol class="space-y-3">
-        ${c.modulos.map((m, i) => {
-          const parte = soma ? Math.round((m.cargaHoraria / soma) * 100) : 0;
-          return `
-          <li class="painel px-3 py-3 flex items-center gap-3">
+        ${c.modulos.map((m, i) => `
+          <li class="painel px-3 py-2.5 flex items-center gap-2">
             ${editar && ultimo ? `<div class="flex flex-col shrink-0 -my-1">${seta(i, 'cima', i === 0)}${seta(i, 'baixo', i === ultimo)}</div>` : ''}
-            <span class="h-8 w-8 shrink-0 rounded-lg grid place-items-center text-sm font-semibold tabular-nums bg-petrol-800/10 text-petrol-800 dark:bg-sky-950/60 dark:text-sky-300">${i + 1}</span>
-            <div class="min-w-0 flex-1">
-              <p class="text-[15px] font-semibold ${TITULO} truncate">${esc(m.nome)}</p>
-              <div class="mt-1.5 flex items-center gap-3">${medidor(parte, { largura: 'w-40' })}<span class="text-xs ${APOIO} tabular-nums">${parte}% do curso</span></div>
+            <div class="min-w-0 flex-1 flex items-center gap-3 px-1 py-1">
+              <span class="h-8 w-8 shrink-0 rounded-lg grid place-items-center text-sm font-semibold tabular-nums bg-petrol-800/10 text-petrol-800 dark:bg-sky-950/60 dark:text-sky-300">${i + 1}</span>
+              <div class="min-w-0">
+                <p class="text-[15px] font-semibold ${TITULO} truncate">${esc(m.nome)}</p>
+                <p class="text-xs ${APOIO} tabular-nums">${m.cargaHoraria} h · ${soma ? Math.round((m.cargaHoraria / soma) * 100) : 0}% do curso</p>
+              </div>
             </div>
-            <span class="text-sm font-semibold tabular-nums ${TITULO} whitespace-nowrap">${m.cargaHoraria} h</span>
-          </li>`;
-        }).join('')}
+          </li>`).join('')}
       </ol>`;
   }
 
   function abaTurmas(c, turmas) {
     const nova = Shell.pode('turmas', 'criar') ? `<button type="button" data-nova-turma class="btn-fantasma">${ICONE.mais}Nova turma</button>` : '';
     return cartao({
-      titulo: 'Turmas deste curso',
-      contexto: 'Cada turma tem professor, agenda e vagas próprias. A mais recente primeiro.',
+      titulo: `Turmas <span class="ml-1 text-sm font-normal ${APOIO} tabular-nums">${turmas.length}</span>`,
+      contexto: `Turmas deste curso, da mais recente. São cadastradas em ${Shell.pode('turmas') ? '<a href="turmas.html" class="link">Turmas</a>' : 'Turmas'}.`,
       acao: nova,
+      classe: 'overflow-hidden',
       corpo: turmas.length ? `
         <div class="mt-3 overflow-x-auto border-t border-slate-200 dark:border-neutral-800">
           <table class="tabela">
-            <thead><tr><th>Turma</th><th>Professor</th><th>Período</th><th>Alunos</th><th>Situação</th></tr></thead>
+            <thead><tr><th>Turma</th><th>Professor</th><th>Agenda · modalidade</th><th>Período</th><th>Vagas</th><th>Situação</th></tr></thead>
             <tbody>${turmas.map((t) => {
               const s = Aulor.situacaoTurma(t);
+              const o = Aulor.ocupacao(t);
               return `<tr data-href="turma.html?id=${t.id}" class="${FOCO_LINHA} ${['concluida', 'cancelada'].includes(s) ? 'linha-apagada' : ''}">
-                <td><a href="turma.html?id=${t.id}" class="${LINK_REGISTRO} font-mono">${esc(t.codigo)}</a><p class="text-xs ${APOIO}">${esc(Agenda.descrever(t.agenda))}</p></td>
+                <td class="whitespace-nowrap"><a href="turma.html?id=${t.id}" class="${LINK_REGISTRO} font-mono">${esc(t.codigo)}</a></td>
                 <td>${esc(Aulor.professor(t.professorId).nome)}</td>
-                <td class="tabular-nums whitespace-nowrap">${dataCurta(t.inicio)} → ${dataCurta(t.fim)}</td>
-                <td>${ocupacaoHtml(t)}</td>
+                <td class="whitespace-nowrap">${esc(Agenda.descrever(t.agenda))} · ${esc(nomeModalidade(t.agenda.formato))}</td>
+                <td class="tabular-nums whitespace-nowrap text-xs">${dataCurta(t.inicio)} → ${dataCurta(t.fim)}</td>
+                <td class="tabular-nums" title="${o.ocupadas} de ${o.capacidade} vagas ocupadas">${o.ocupadas}<span class="${APOIO}">/${o.capacidade}</span></td>
                 <td>${status(Aulor.SITUACAO_TURMA[s].tom, Aulor.SITUACAO_TURMA[s].nome)}</td>
               </tr>`;
             }).join('')}</tbody>
           </table>
-        </div>` : vazio('Nenhuma turma ainda', 'Crie a primeira turma para abrir matrículas neste curso.'),
+        </div>` : `<p class="px-4 py-6 text-center text-sm ${APOIO}">Nenhuma turma deste curso. Crie a primeira para abrir matrículas.</p>`,
     });
   }
 
@@ -116,6 +125,7 @@
           trilha: [{ rotulo: 'Cursos', href: 'cursos.html' }, { rotulo: esc(c.nome) }],
           avatar: avatarRegistro(c.codigo, 'Código do curso'),
           nome: esc(c.nome),
+          descricao: esc(c.descricao),
           chips: [
             chip(ICONE.tag, esc(c.area || 'sem área'), 'Área'),
             chip(ICONE.relogio, `<span class="tabular-nums">${c.cargaHoraria} h</span>${c.modulos.length ? ` · ${plural(c.modulos.length, 'módulo')}` : ''}`, 'Carga horária'),

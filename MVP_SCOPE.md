@@ -67,8 +67,8 @@ O menu mantém a divisão por módulos do protótipo original. Cada perfil vê s
 
 | Grupo › tela | Inclui |
 |---|---|
-| Visão geral | Alunos ativos, recebido × previsto no mês, valor em atraso, turmas em andamento, a fila "Precisa de atenção", aulas de hoje e matrículas recentes |
-| Comercial › Alunos | Cadastro rápido (nome, CPF, celular; responsável obrigatório para menor), busca e filtros. Ficha em abas: **Dados**, **Responsáveis** (papéis legal, financeiro e emergência), **Endereço e pagamento** (quem paga, com CPF ou CNPJ; forma e dia de vencimento preferidos, que a matrícula nova já sugere), **Matrículas** (frequência e nota) e **Financeiro** |
+| Visão geral | Alunos ativos, recebido × previsto no mês, valor em atraso, turmas em andamento, a fila "Requer atenção", aulas de hoje e matrículas recentes |
+| Comercial › Alunos | Cadastro rápido (nome, CPF, celular; responsável obrigatório para menor), busca e filtros. Ficha em abas: **Dados** (com os cartões Quem paga, com CPF ou CNPJ e forma e dia de vencimento preferidos que a matrícula nova já sugere, e Endereço), **Responsáveis** (papéis legal, financeiro e emergência), **Matrículas** (frequência e nota) e **Financeiro** |
 | Comercial › Matrículas | Uma tela em três passos com prévia das parcelas; bloqueio de lotação e de duplicidade; **trocar de turma** (a matrícula e as parcelas mudam de turma, se houver vaga); cancelamento que cancela só as parcelas em aberto |
 | Comercial › Turmas em risco | Turmas a iniciar abaixo do mínimo de alunos (crítico, alerta, atenção), valor em jogo e atalho para matricular. Mesma regra do original |
 | Pedagógico › Cursos | Carga, modalidade, nota mínima (opcional), valor de referência, parcelas sugeridas, modelo de certificado e módulos |

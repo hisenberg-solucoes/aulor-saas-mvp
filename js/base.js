@@ -68,7 +68,11 @@ function iniciais(nome) {
 const BOTAO_PRI = 'btn-pri';
 const BOTAO_CANCELAR = 'btn-sec';
 const CAMPO_BUSCA = 'h-9 w-full rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 pl-8 pr-3 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-400 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20';
-const SELECT_FILTRO = 'h-9 max-w-full rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-2.5 text-sm text-slate-700 dark:text-neutral-200 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400';
+const SELECT_FILTRO = 'h-9 max-w-40 truncate rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-2.5 text-sm text-slate-700 dark:text-neutral-200 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400';
+const FILTRO_ATIVO = 'border-petrol-800 dark:border-sky-400 text-petrol-800 dark:text-sky-300'; // filtro fora do padrão
+const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline underline-offset-2 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 dark:focus-visible:ring-sky-400/50';
+// Rodapé da tabela da lista: contagem sobre o cinza do cabeçalho.
+const RODAPE_TABELA = 'px-4 py-2.5 border-t border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-sm text-slate-700 dark:text-neutral-200 tabular-nums';
 // Cartão e textos de apoio das telas em cartões (DESIGN.md do original, "Cartões nos dois modos").
 const CARTAO = 'painel';
 const TITULO = 'text-slate-900 dark:text-neutral-100';
@@ -215,12 +219,12 @@ function trilha(itens) {
 function cabecalhoPagina({ titulo, subtitulo = '', acoes = '', voltar = null }) {
   return `
     ${voltar ? trilha([{ rotulo: voltar.rotulo, href: voltar.href }, { rotulo: titulo }]) : ''}
-    <div class="flex flex-wrap items-end justify-between gap-3 mb-5">
+    <div class="mb-4 flex items-start justify-between gap-6">
       <div class="min-w-0">
-        <h2 class="text-xl font-semibold tracking-[-0.01em] ${TITULO}">${titulo}</h2>
-        ${subtitulo ? `<p class="text-sm ${APOIO_FUNDO} mt-0.5">${subtitulo}</p>` : ''}
+        <h2 class="font-display text-xl font-semibold ${TITULO}">${titulo}</h2>
+        ${subtitulo ? `<p class="max-w-3xl text-sm ${APOIO_FUNDO} mt-0.5">${subtitulo}</p>` : ''}
       </div>
-      ${acoes ? `<div class="flex flex-wrap items-center gap-2">${acoes}</div>` : ''}
+      ${acoes ? `<div class="shrink-0 flex items-center gap-2">${acoes}</div>` : ''}
     </div>`;
 }
 
@@ -297,7 +301,7 @@ function campoValor(rotulo, valorHtml, largura = '') {
 }
 
 // Grade de campos de duas colunas dentro do cartão.
-const gradeCampos = (campos) => `<div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">${campos.filter(Boolean).join('')}</div>`;
+const gradeCampos = (campos) => `<div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">${campos.filter(Boolean).join('')}</div>`;
 
 // Abas sobre uma linha de 1px; abas: [{ id, nome, n? }] geram links ?aba=id preservando os demais parâmetros.
 // A contagem em tinta 2; `atencao: true` pinta a contagem em âmbar (o que espera alguém).
@@ -359,8 +363,8 @@ function cartaoNumero({ rotulo, valor, ajuda = '', cor = '', filtro = '', ativo 
 
 function vazio(titulo, texto = '', acao = '') {
   return `
-    <div class="px-6 py-12 text-center">
-      <p class="font-medium text-slate-700 dark:text-neutral-200">${esc(titulo)}</p>
+    <div class="px-6 py-14 text-center">
+      <p class="text-[15px] font-semibold ${TITULO}">${esc(titulo)}</p>
       ${texto ? `<p class="text-sm ${APOIO} mt-1 max-w-md mx-auto">${texto}</p>` : ''}
       ${acao ? `<div class="mt-4">${acao}</div>` : ''}
     </div>`;
@@ -368,12 +372,12 @@ function vazio(titulo, texto = '', acao = '') {
 
 // Avatar de pessoa: círculo com as iniciais (48px no cabeçalho da ficha: 'h-12 w-12 text-base').
 function avatar(nome, tamanho = 'h-8 w-8 text-xs') {
-  return `<span class="${tamanho} shrink-0 rounded-full bg-petrol-800/10 text-petrol-800 dark:bg-sky-950/60 dark:text-sky-300 grid place-items-center font-semibold" aria-hidden="true">${esc(iniciais(nome))}</span>`;
+  return `<span class="${tamanho} shrink-0 rounded-full bg-petrol-800 text-white grid place-items-center font-semibold" aria-hidden="true">${esc(iniciais(nome))}</span>`;
 }
 
-function campoBusca(id, valor, placeholder) {
+function campoBusca(id, valor, placeholder, largura = 'w-72') {
   return `
-    <label class="relative flex-1 min-w-[14rem] max-w-sm">
+    <label class="relative ${largura} max-w-full">
       <span class="sr-only">${esc(placeholder)}</span>
       <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">${ICONE.lupa.replace('h-4 w-4', 'h-3.5 w-3.5')}</span>
       <input id="${id}" type="search" value="${esc(valor)}" placeholder="${esc(placeholder)}" autocomplete="off" class="${CAMPO_BUSCA}">
@@ -381,7 +385,8 @@ function campoBusca(id, valor, placeholder) {
 }
 
 function selectFiltro(id, opcoes, valor, rotulo = '') {
-  return `<select id="${id}" ${rotulo ? `aria-label="${esc(rotulo)}"` : ''} class="${SELECT_FILTRO}">${opcoes.map((o) => `<option value="${esc(o.id)}" ${o.id === valor ? 'selected' : ''}>${esc(o.nome)}</option>`).join('')}</select>`;
+  // A primeira opção é o padrão; fora dela, o select fica marcado como filtro ativo.
+  return `<select id="${id}" ${rotulo ? `aria-label="${esc(rotulo)}"` : ''} class="${SELECT_FILTRO} ${valor !== opcoes[0]?.id ? FILTRO_ATIVO : ''}">${opcoes.map((o) => `<option value="${esc(o.id)}" ${o.id === valor ? 'selected' : ''}>${esc(o.nome)}</option>`).join('')}</select>`;
 }
 
 // ---------- Menu "Mais" (js/menu-mais.js do original) ----------

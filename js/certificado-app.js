@@ -33,7 +33,7 @@
 
   function render() {
     const c = Aulor.certificado(id);
-    if (!c) { tela.innerHTML = `<div class="painel max-w-xl mx-auto">${vazio('Certificado não encontrado', '', '<a class="btn-sec" href="certificados.html">Voltar para os certificados</a>')}</div>`; return; }
+    if (!c) { tela.innerHTML = `<div class="painel p-10 text-center text-sm ${APOIO}">Certificado não encontrado. <a href="certificados.html" class="link font-medium ml-1">Voltar para a lista</a></div>`; return; }
     const valido = c.status === 'valido';
     const modelo = Aulor.modeloDoCertificado(c);
     const dados = Certificado.dadosDe(c);
@@ -50,7 +50,7 @@
     tela.innerHTML = `
       <div>
         ${cabecalhoFicha({
-          trilha: [{ rotulo: 'Certificados', href: 'certificados.html?aba=emitidos' }, { rotulo: `<span class="font-mono">${esc(c.codigo)}</span>` }],
+          trilha: [{ rotulo: 'Certificados', href: 'certificados.html?aba=emitidos' }, { rotulo: esc(c.dados.aluno) }],
           avatar: Certificado.miniatura(modelo, { dados, altura: 48 }),
           nome: esc(c.dados.aluno),
           chips: [

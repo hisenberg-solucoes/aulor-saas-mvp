@@ -14,12 +14,14 @@
   const usuarioDe = (p) => USUARIOS.find((u) => u.vinculos.some((v) => v.tipo === 'instrutor' && v.id === p.id));
   const abertas = (p) => Aulor.turmasDoProfessor(p.id).filter((t) => !['concluida', 'cancelada'].includes(Aulor.situacaoTurma(t)));
 
-  // Acesso na lista: sem acesso é opcional (apoio); convite espera o professor; inativo, em apoio.
+  // Acesso na lista, como em Colaboradores no original: os perfis em texto. Sem acesso é opcional (apoio);
+  // convite espera o professor; sem perfil, em cobre (é com você).
   function textoAcesso(u) {
     if (!u) return `<span class="${APOIO}">sem acesso</span>`;
     if (u.status === 'convidado') return status('atencao', 'Convite enviado');
     if (u.status === 'inativo') return `<span class="${APOIO}">acesso inativo</span>`;
-    return 'Com acesso';
+    const nomes = u.perfis.map((id) => PERFIS.find((x) => x.id === id)?.nome).filter(Boolean).join(' · ');
+    return nomes ? `<span class="block truncate" title="${esc(nomes)}">${esc(nomes)}</span>` : `<span class="text-xs font-medium ${AVISO}">sem perfil</span>`;
   }
 
   // ---------- Lista ----------
@@ -39,7 +41,7 @@
           subtitulo: `Quem dá aulas na escola. Com acesso ao Aulor, o professor vê só as próprias turmas e faz a chamada pelo celular. Quem trabalha na secretaria tem cadastro em ${Shell.pode('usuarios') ? '<a class="link" href="usuarios.html">Usuários</a>' : 'Usuários'}.`,
           acoes: gerencia ? `<button type="button" data-novo class="btn-pri">${ICONE.mais}Novo professor</button>` : '',
         })}
-        <div class="flex flex-wrap items-center gap-2 mb-4">${campoBusca('busca', filtro.q, 'Buscar por nome, especialidade ou e-mail')}</div>
+        <div class="flex flex-wrap items-center gap-2 mb-4">${campoBusca('busca', filtro.q, 'Buscar nome ou especialidade', 'w-96')}</div>
         <div data-tabela>${tabela(lista, todos.length)}</div>
       </div>`;
     ligarLinhasLink(tela);
@@ -50,7 +52,7 @@
       <div class="painel overflow-hidden">
         ${lista.length ? `<div class="overflow-x-auto">
           <table class="tabela table-fixed">
-            <thead><tr><th>Professor</th><th class="w-[30%]">Contato</th><th class="w-[20%]">Turmas abertas</th><th class="w-36">Acesso ao Aulor</th></tr></thead>
+            <thead><tr><th>Professor</th><th class="w-[220px]">Contato</th><th class="w-[220px]">Turmas abertas</th><th class="w-[180px]">Acesso ao Aulor</th></tr></thead>
             <tbody>${lista.map((p) => {
               const turmas = abertas(p);
               return `<tr data-href="${urlFicha(p.id)}" class="${FOCO_LINHA}">
@@ -64,8 +66,10 @@
               </tr>`;
             }).join('')}</tbody>
           </table>
-        </div>` : vazio('Nenhum professor encontrado', '', filtro.q ? '<button type="button" data-limpar class="btn-sec">Limpar busca</button>' : '')}
-        <p class="px-4 py-2.5 text-xs ${APOIO} border-t border-slate-100 dark:border-neutral-900 tabular-nums">${lista.length} ${lista.length === 1 ? 'professor' : 'professores'}${filtro.q ? ` de ${total}` : ''}</p>
+        </div>` : `<p class="px-4 py-10 text-center text-sm ${APOIO}">${total
+          ? `Nenhum professor corresponde à busca. <button type="button" data-limpar class="${BOTAO_LINK} ml-1">Limpar busca</button>`
+          : `Nenhum professor cadastrado ainda.${gerencia ? `<br><button type="button" data-novo class="btn-pri mt-4">${ICONE.mais}Cadastrar o primeiro professor</button>` : ''}`}</p>`}
+        <p class="${RODAPE_TABELA}">${lista.length} ${lista.length === 1 ? 'professor' : 'professores'}${filtro.q ? ` de ${total}` : ''}</p>
       </div>`;
   }
 
@@ -110,8 +114,8 @@
       corpo: gradeCampos([
         campoValor('Usuário', esc(u.email)),
         campoValor('Situação', situacao),
-        campoValor('Perfis de acesso', perfis.length ? `<span class="flex flex-wrap gap-1 mt-0.5">${perfis.map((x) => `<span class="${TAG}">${esc(x.nome)}</span>`).join('')}</span>` : `<span class="font-medium ${AVISO}">Nenhum perfil: o usuário existe, mas não acessa nada.</span>`),
         campoValor('Permissões adicionais', extras ? `${extras} ${extras === 1 ? 'ação' : 'ações'} <span class="${APOIO}">· fora dos perfis</span>` : `<span class="${APOIO}">nenhuma</span>`),
+        campoValor('Perfis de acesso', perfis.length ? `<span class="flex flex-wrap gap-1 mt-0.5">${perfis.map((x) => `<span class="${TAG}">${esc(x.nome)}</span>`).join('')}</span>` : `<span class="font-medium ${AVISO}">Nenhum perfil: o usuário existe, mas não acessa nada.</span>`, 'sm:col-span-2'),
       ]),
     });
   }
@@ -123,13 +127,13 @@
     return cartao({
       titulo: 'Turmas',
       contexto: turmas.length ? `${n} ${n === 1 ? 'aberta' : 'abertas'} de ${turmas.length}. A turma escolhe o professor no próprio cadastro.` : 'A turma escolhe o professor no próprio cadastro.',
-      classe: 'xl:col-span-2 overflow-hidden',
-      corpo: turmas.length ? `<div class="mt-3 overflow-x-auto border-t border-slate-200 dark:border-neutral-800"><table class="tabela">
-        <thead><tr><th>Turma</th><th>Situação</th><th class="text-right num">Período</th><th class="text-right num">Alunos</th></tr></thead>
+      classe: 'xl:col-span-2 overflow-hidden', // fecha a grade: ocupa a linha inteira em vez de sobrar sozinho
+      corpo: turmas.length ? `<div class="mt-4 overflow-x-auto"><table class="tabela">
+        <thead><tr><th>Turma</th><th>Situação</th><th>Período</th><th class="text-right num">Alunos</th></tr></thead>
         <tbody>${turmas.map(({ t, s }) => `<tr data-href="turma.html?id=${t.id}" class="${FOCO_LINHA}">
           <td><a href="turma.html?id=${t.id}" class="link-registro font-medium font-mono ${TITULO} hover:underline underline-offset-2 focus-visible:outline-none">${esc(t.codigo)}</a><p class="text-xs ${APOIO} truncate">${esc(Aulor.curso(t.cursoId)?.nome ?? '')}</p></td>
           <td>${status(Aulor.SITUACAO_TURMA[s].tom, Aulor.SITUACAO_TURMA[s].nome)}</td>
-          <td class="num">${dataBr(t.inicio)} a ${dataBr(t.fim)}</td>
+          <td class="whitespace-nowrap tabular-nums">${dataBr(t.inicio)} – ${dataBr(t.fim)}</td>
           <td class="num">${Aulor.ocupacao(t).ocupadas} / ${t.capacidade}</td>
         </tr>`).join('')}</tbody>
       </table></div>` : `<p class="p-4 text-sm ${APOIO}">Nenhuma turma com este professor ainda.</p>`,
@@ -138,8 +142,9 @@
 
   function renderFicha(id) {
     const p = Aulor.professor(id);
-    if (!p) { tela.innerHTML = `<div class="painel max-w-xl mx-auto">${vazio('Professor não encontrado', '', '<a class="btn-sec" href="professores.html">Voltar para os professores</a>')}</div>`; return; }
+    if (!p) { tela.innerHTML = `<div class="painel p-10 text-center text-sm ${APOIO}">Professor não encontrado. <a href="professores.html" class="link font-medium ml-1">Voltar para a lista</a></div>`; return; }
     const tel = String(p.telefone ?? '').replace(/\D/g, '');
+    const editar = gerencia ? `<button type="button" data-editar class="btn-fantasma">${ICONE.editar}Editar</button>` : '';
     tela.innerHTML = `
       <div>
         ${cabecalhoFicha({
@@ -147,17 +152,17 @@
           avatar: avatar(p.nome, 'h-12 w-12 text-base'),
           nome: esc(p.nome),
           chips: [
-            p.especialidade ? chip(ICONE.tag, esc(p.especialidade), 'Especialidade') : '',
+            p.especialidade ? chip(ICONE.documento, esc(p.especialidade), 'Especialidade') : '',
             p.email ? chip(ICONE.email, `<a href="mailto:${esc(p.email)}" class="hover:underline">${esc(p.email)}</a>`, 'E-mail') : '',
             tel ? chip(ICONE.telefone, `<span class="tabular-nums">${telefoneFmt(p.telefone)}</span>`, 'Celular') : '',
           ],
-          acoes: `${tel.length >= 10 ? `<a href="https://wa.me/55${tel}" target="_blank" rel="noopener" class="btn-sec px-2.5" title="Conversar no WhatsApp" aria-label="Conversar com ${esc(p.nome)} no WhatsApp">${ICONE.whatsapp}</a>` : ''}${gerencia ? `<button type="button" data-editar class="btn-sec">${ICONE.editar}Editar dados</button>` : ''}`,
+          acoes: `${tel.length >= 10 ? `<a href="https://wa.me/55${tel}" target="_blank" rel="noopener" class="btn-sec w-9 px-0" title="WhatsApp ${telefoneFmt(p.telefone)}" aria-label="Abrir conversa no WhatsApp">${ICONE.whatsapp}</a>` : ''}${gerencia ? `<button type="button" data-editar class="btn-sec">${ICONE.editar}Editar dados</button>` : ''}`,
         })}
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
           ${cartao({
             titulo: 'Dados',
             contexto: 'Como aparece nas turmas, na chamada e no certificado.',
-            acao: gerencia ? '<button type="button" data-editar class="btn-fantasma">Editar</button>' : '',
+            acao: editar,
             corpo: gradeCampos([
               campoValor('Nome completo', esc(p.nome), 'sm:col-span-2'),
               campoValor('E-mail', p.email ? `<a href="mailto:${esc(p.email)}" class="link">${esc(p.email)}</a>` : ''),

@@ -1,9 +1,9 @@
 // ============================================================
 // Ficha do aluno na direção "Ficha em cartões" do original: cabeçalho com
 // avatar, chips e "Matricular"; faixas só quando alguém precisa agir (atraso,
-// menor sem responsável legal); abas Dados, Responsáveis, Endereço e
-// pagamento, Matrículas (frequência, nota e resultado) e Financeiro.
-// Aba na URL: ?aba=.
+// menor sem responsável legal); abas Dados (com endereço e quem paga, como no
+// original), Responsáveis, Matrículas (frequência, nota e resultado) e
+// Financeiro. Aba na URL: ?aba= (?aba=endereco cai em Dados).
 // ============================================================
 
 (function () {
@@ -15,7 +15,11 @@
   // Âmbar para quem assina pelo menor, petróleo para quem paga, neutra para emergência (DESIGN.md, Pills).
   const TOM_PAPEL = { legal: 'atencao', financeiro: 'info', emergencia: 'neutro' };
   const urlZap = (tel, texto = '') => `https://wa.me/55${tel}${texto ? `?text=${encodeURIComponent(texto)}` : ''}`;
-  const linkZap = (tel) => (tel ? ` <a class="link text-xs ml-1" target="_blank" rel="noopener" href="${urlZap(tel)}">WhatsApp</a>` : '');
+  const linkZap = (tel) => (tel ? ` <a class="${BOTAO_LINK} ml-1" target="_blank" rel="noopener" href="${urlZap(tel)}">WhatsApp</a>` : '');
+  const iconeZap = (tel) => (tel ? `<a href="${urlZap(tel)}" target="_blank" rel="noopener" title="WhatsApp ${telefoneFmt(tel)}" aria-label="Abrir conversa no WhatsApp" class="inline-flex items-center justify-center h-7 w-7 rounded-md text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition">${ICONE.whatsapp}</a>` : '');
+  // Aba com tabela (como Vendas e Responsáveis no original): ações da aba numa linha, frase de contexto e a tabela num cartão.
+  const acoesAba = (html) => (html ? `<div class="mb-4 flex flex-wrap items-center gap-2">${html}</div>` : '');
+  const contextoAba = (texto) => `<p class="text-sm ${APOIO_FUNDO} mb-3">${texto}</p>`;
   const botaoEditar = (atributo, pode) => (pode ? `<button type="button" ${atributo} class="btn-fantasma">${ICONE.editar}Editar</button>` : '');
   const nomeCurso = (m) => Aulor.curso(Aulor.turma(m.turmaId).cursoId).nome;
 
@@ -56,10 +60,9 @@
     return cartao({
       titulo: 'Situação financeira',
       contexto: 'Parcelas vencidas, a próxima a vencer e o que já entrou, de todas as matrículas.',
-      acao: parcelas.length ? `<a class="btn-fantasma" href="aluno.html?id=${a.id}&aba=financeiro">Ver parcelas</a>` : '',
       classe: devido ? 'border-red-300 dark:border-red-800' : '',
       corpo: parcelas.length ? gradeCampos([
-        campoValor('Em atraso', devido ? `<span class="font-medium text-red-700 dark:text-red-400 tabular-nums">${moeda(devido.total)}</span> · ${plural(devido.parcelas.length, 'parcela', 'parcelas')}, a mais antiga há ${plural(devido.maiorAtraso, 'dia', 'dias')}` : 'Nenhuma parcela vencida.', 'sm:col-span-2'),
+        campoValor('Em atraso', devido ? `<span class="font-medium text-red-700 dark:text-red-400 tabular-nums">${moeda(devido.total)}</span> · ${plural(devido.parcelas.length, 'parcela', 'parcelas')}, a mais antiga há ${plural(devido.maiorAtraso, 'dia', 'dias')} <a class="${BOTAO_LINK} ml-1" href="aluno.html?id=${a.id}&aba=financeiro">Ver parcelas</a>` : 'Nenhuma parcela vencida.', 'sm:col-span-2'),
         campoValor('Próxima parcela', proxima ? `<span class="tabular-nums">${moeda(proxima.valor)}</span> ${quando(proxima.vencimento)} <span class="text-xs ${APOIO}">· ${dataCurta(proxima.vencimento)}</span>` : ''),
         campoValor('Recebido', pagas.length ? `<span class="tabular-nums">${moeda(pagas.reduce((s, l) => s + (l.valorPago ?? l.valor), 0))}</span> <span class="text-xs ${APOIO}">· ${plural(pagas.length, 'parcela', 'parcelas')}</span>` : ''),
       ]) : `<p class="p-4 text-sm ${APOIO}">Nenhuma parcela gerada ainda.</p>`,
@@ -67,6 +70,7 @@
   }
 
   function abaDados(a, ms, parcelas, devido, editar, verFin) {
+    const cob = cartoesCobranca(a, editar);
     const idade = Aulor.idade(a.nascimento);
     const menor = Aulor.ehMenor(a);
     // Com quem falar quando não é o próprio aluno: quem paga por ele ou, se menor, o responsável principal.
@@ -82,13 +86,15 @@
           campoValor('Aluno desde', dataBr(a.criadoEm)),
         ]) })}
         ${cartao({ titulo: 'Contato', contexto: 'Por onde a escola fala com o aluno: avisos, cobrança e certificado.', acao: botaoEditar('data-editar', editar), corpo: gradeCampos([
-          campoValor('Celular / WhatsApp', `<span class="tabular-nums">${telefoneFmt(a.telefone)}</span>${linkZap(a.telefone)}`),
           campoValor('E-mail', esc(a.email)),
+          campoValor('Celular / WhatsApp', a.telefone ? `<span class="tabular-nums">${telefoneFmt(a.telefone)}</span>` : ''),
           r && campoValor('Falar com', `${esc(r.nome)} <span class="text-xs ${APOIO}">· ${esc([r.parentesco, ...r.papeis.map((p) => NOME_PAPEL[p])].filter(Boolean).join(' · '))}</span><br><span class="tabular-nums">${telefoneFmt(r.telefone)}</span>${linkZap(r.telefone)}`, 'sm:col-span-2'),
           campoValor('Observações', a.observacoes ? `<span class="whitespace-pre-line">${esc(a.observacoes)}</span>` : '', 'sm:col-span-2'),
         ]) })}
-        ${cartaoCurso(a, ms)}
         ${verFin ? cartaoFinanceiro(a, parcelas, devido) : ''}
+        ${cob.quemPaga}
+        ${cob.endereco}
+        ${cartaoCurso(a, ms)}
       </div>`;
   }
 
@@ -98,64 +104,58 @@
     const lista = a.responsaveis ?? [];
     const menor = Aulor.ehMenor(a);
     return `
-      ${cartao({
-        titulo: 'Responsáveis',
-        contexto: menor ? 'Aluno menor de idade: precisa de pelo menos um responsável legal.' : 'Opcional para maiores de idade: quem paga ou contato de emergência.',
-        acao: editar ? `<button type="button" data-novo-resp class="btn-fantasma">${ICONE.mais}Novo responsável</button>` : '',
-        classe: 'overflow-hidden',
-        corpo: lista.length ? `
-          <div class="mt-3 overflow-x-auto"><table class="tabela">
-            <thead><tr><th>Responsável</th><th>Papéis</th><th>Celular</th><th>CPF</th>${editar ? '<th></th>' : ''}</tr></thead>
-            <tbody>${lista.map((r) => `<tr>
-              <td><div class="flex items-center gap-3 min-w-[13rem]">${avatar(r.nome)}<div class="min-w-0"><p class="font-medium ${TITULO}">${esc(r.nome)}</p><p class="text-xs ${APOIO} truncate">${esc([r.parentesco, r.email].filter(Boolean).join(' · ') || '—')}</p></div></div></td>
-              <td><div class="flex flex-wrap gap-1">${r.papeis.map((p) => pilula(TOM_PAPEL[p], NOME_PAPEL[p])).join('')}</div></td>
-              <td class="whitespace-nowrap tabular-nums">${telefoneFmt(r.telefone)}${linkZap(r.telefone)}</td>
-              <td class="whitespace-nowrap">${r.cpf ? `<span class="font-mono">${cpfFmt(r.cpf)}</span>` : `<span class="${APOIO}">—</span>`}</td>
-              ${editar ? `<td class="text-right"><button type="button" data-menu-resp="${r.id}" class="btn-fantasma btn-pequeno" aria-haspopup="menu" aria-expanded="false" aria-label="Ações de ${esc(r.nome)}">⋯</button></td>` : ''}
-            </tr>`).join('')}</tbody>
-          </table></div>` : vazio('Nenhum responsável cadastrado', menor ? 'Cadastre o responsável legal para poder matricular.' : ''),
-      })}
+      ${acoesAba(editar ? `<button type="button" data-novo-resp class="btn-pri">${ICONE.mais}Novo responsável</button>` : '')}
+      <div class="painel overflow-hidden"><div class="overflow-x-auto"><table class="tabela">
+        <thead><tr><th>Responsável</th><th>Parentesco</th><th>Papéis</th><th>Contato</th><th></th></tr></thead>
+        <tbody>${lista.length ? lista.map((r) => `<tr>
+          <td><div class="flex items-center gap-3">${avatar(r.nome, 'h-9 w-9 text-xs')}<div class="min-w-0"><p class="text-sm font-medium ${TITULO} truncate">${esc(r.nome)}</p><p class="text-xs ${APOIO} truncate">${r.cpf ? `<span class="font-mono">${cpfFmt(r.cpf)}</span>` : 'sem CPF'}</p></div></div></td>
+          <td class="whitespace-nowrap">${r.parentesco ? esc(r.parentesco) : `<span class="${APOIO}">—</span>`}</td>
+          <td><div class="flex flex-wrap items-center gap-1">${r.papeis.map((p) => pilula(TOM_PAPEL[p], NOME_PAPEL[p])).join('')}</div></td>
+          <td>${r.email ? esc(r.email) : `<span class="${APOIO}">sem e-mail</span>`}<br><span class="text-xs ${APOIO} tabular-nums">${r.telefone ? telefoneFmt(r.telefone) : 'sem celular'}</span></td>
+          <td><div class="flex items-center justify-end gap-1">${iconeZap(r.telefone)}${editar ? `<button type="button" data-menu-resp="${r.id}" class="btn-fantasma btn-pequeno" aria-haspopup="menu" aria-expanded="false" aria-label="Ações de ${esc(r.nome)}">⋯</button>` : ''}</div></td>
+        </tr>`).join('') : `<tr><td colspan="5" class="py-10 text-center text-sm ${APOIO}">${menor ? 'Nenhum responsável cadastrado: aluno menor de idade precisa de pelo menos um responsável legal.' : 'Nenhum responsável cadastrado. Para maiores de idade é opcional (contato de emergência, quem paga).'}</td></tr>`}</tbody>
+      </table></div></div>
       <p class="mt-3 text-xs ${APOIO_FUNDO}">Papéis: <b class="font-medium">Legal</b> responde e assina pelo menor · <b class="font-medium">Financeiro</b> é quem paga (contrato e boleto no nome dele; só um por aluno) · <b class="font-medium">Emergência</b> recebe avisos de falta e ocorrências.</p>`;
   }
 
-  // ---------- Endereço e pagamento ----------
+  // ---------- Endereço e quem paga (cartões da aba Dados) ----------
 
-  function abaEndereco(a, editar) {
+  function cartoesCobranca(a, editar) {
     const e = a.endereco ?? {};
     const c = a.cobranca ?? {};
     const fin = Aulor.responsavelFinanceiro(a);
     const pagaResp = c.pagador === 'responsavel' && fin;
     const botao = botaoEditar('data-editar-endereco', editar);
-    const preferencias = [
-      campoValor('Forma preferida', c.formaPreferida ? esc(nomeForma(c.formaPreferida)) : ''),
-      campoValor('Dia de vencimento', c.diaVencimento ? `Dia ${c.diaVencimento}` : `Padrão da escola (dia ${Aulor.config().financeiro.diaVencimentoPadrao})`),
-    ];
-    return `
-      <div class="grid gap-4 xl:grid-cols-2">
-        ${cartao({ titulo: 'Endereço', contexto: 'Vai para o contrato e para a cobrança quando o próprio aluno paga.', acao: botao, corpo: e.logradouro || e.cidade ? gradeCampos([
-          campoValor('CEP', e.cep ? e.cep.replace(/(\d{5})(\d{3})/, '$1-$2') : ''),
-          campoValor('Logradouro', esc([e.logradouro, e.numero].filter(Boolean).join(', '))),
-          campoValor('Complemento', esc(e.complemento)),
-          campoValor('Bairro', esc(e.bairro)),
-          campoValor('Cidade', e.cidade ? `${esc(e.cidade)}${e.uf ? `/${esc(e.uf)}` : ''}` : ''),
-        ]) : `<p class="p-4 text-sm ${APOIO}">Endereço ainda não informado.</p>` })}
-        ${cartao({ titulo: 'Quem paga', contexto: 'Em nome de quem saem contrato e cobrança. Vale como sugestão na próxima matrícula.', acao: botao, corpo: gradeCampos(pagaResp ? [
-          campoValor('Responsável financeiro', `${esc(fin.nome)}${fin.parentesco ? ` <span class="text-xs ${APOIO}">· ${esc(fin.parentesco)}</span>` : ''}`, 'sm:col-span-2'),
-          campoValor('CPF', fin.cpf ? `<span class="font-mono">${cpfFmt(fin.cpf)}</span>` : `<span class="${AVISO}">Falta o CPF</span>`),
-          campoValor('Celular', `<span class="tabular-nums">${telefoneFmt(fin.telefone)}</span>`),
-          ...preferencias,
-        ] : [
-          campoValor('Quem paga', `O próprio aluno <span class="block text-xs ${APOIO}">Contrato e cobrança em nome de ${esc(a.nome)}, CPF ${cpfFmt(a.cpf)}.</span>${Aulor.ehMenor(a) ? `<span class="block mt-1 ${AVISO}">Aluno menor de idade: o contrato precisa de um responsável.</span>` : ''}`, 'sm:col-span-2'),
-          ...preferencias,
-        ]) })}
+    const preferencias = `
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 pt-3 border-t border-slate-100 dark:border-neutral-900">
+        ${campoValor('Forma preferida', c.formaPreferida ? esc(nomeForma(c.formaPreferida)) : '')}
+        ${campoValor('Dia de vencimento', c.diaVencimento ? `Dia ${c.diaVencimento}` : `Padrão da escola (dia ${Aulor.config().financeiro.diaVencimentoPadrao})`)}
       </div>`;
+    return {
+      endereco: cartao({ titulo: 'Endereço', contexto: 'Vai para o contrato e para a cobrança quando o próprio aluno paga.', acao: botao, corpo: e.logradouro || e.cidade ? gradeCampos([
+        campoValor('CEP', e.cep ? e.cep.replace(/(\d{5})(\d{3})/, '$1-$2') : ''),
+        campoValor('Logradouro', esc([e.logradouro, e.numero].filter(Boolean).join(', '))),
+        campoValor('Complemento', esc(e.complemento)),
+        campoValor('Bairro', esc(e.bairro)),
+        campoValor('Cidade', e.cidade ? `${esc(e.cidade)}${e.uf ? `/${esc(e.uf)}` : ''}` : ''),
+      ]) : `<p class="p-4 text-sm ${APOIO}">Endereço ainda não informado.</p>` }),
+      quemPaga: cartao({ titulo: 'Quem paga', contexto: 'Em nome de quem saem contrato e cobrança. Vale como sugestão na próxima matrícula.', acao: botao, corpo: `
+        <div class="p-4 space-y-4">
+          ${pagaResp ? `<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+            ${campoValor('Responsável financeiro', `${esc(fin.nome)}${fin.parentesco ? ` <span class="text-xs ${APOIO}">· ${esc(fin.parentesco)}</span>` : ''}`, 'sm:col-span-2')}
+            ${campoValor('CPF', fin.cpf ? `<span class="font-mono">${cpfFmt(fin.cpf)}</span>` : `<span class="${AVISO}">Falta o CPF</span>`)}
+            ${campoValor('Celular', fin.telefone ? `<span class="tabular-nums">${telefoneFmt(fin.telefone)}</span>` : '')}
+          </div>` : `<p class="text-sm text-slate-700 dark:text-neutral-200">Contrato e cobrança em nome de <strong class="font-semibold">${esc(a.nome)}</strong>, CPF <span class="font-mono">${cpfFmt(a.cpf)}</span>, no endereço ao lado.</p>${Aulor.ehMenor(a) ? `<p class="text-sm ${AVISO}">Aluno menor de idade: o contrato precisa de um responsável.</p>` : ''}`}
+          ${preferencias}
+        </div>` }),
+    };
   }
 
   // ---------- Matrículas ----------
 
   function abaMatriculas(a, ms, verFin) {
-    if (!ms.length) return cartao({ titulo: 'Matrículas', corpo: vazio('Ainda sem matrícula', 'Matricule o aluno em uma turma para gerar as parcelas e acompanhar a frequência.') });
     const comNota = ms.some((m) => Aulor.temNota(Aulor.curso(Aulor.turma(m.turmaId).cursoId)));
+    const colunas = 3 + (comNota ? 1 : 0) + (verFin ? 1 : 0);
     const linha = (m) => {
       const t = Aulor.turma(m.turmaId);
       const c = Aulor.curso(t.cursoId);
@@ -171,24 +171,20 @@
         : m.status === 'concluida' && m.resultado === 'aprovado' ? `Certificado: ${esc(e.nome.toLowerCase())}` : '';
       return `
         <tr data-href="matricula.html?id=${m.id}" class="${FOCO_LINHA} ${m.status === 'cancelada' ? 'linha-apagada' : ''}">
-          <td class="min-w-[15rem]"><a href="matricula.html?id=${m.id}" class="link-registro font-medium ${TITULO} hover:underline underline-offset-2 focus-visible:outline-none">${esc(c.nome)}</a>
-            <p class="text-xs ${APOIO}">Turma <a class="hover:underline" href="turma.html?id=${t.id}">${esc(t.codigo)}</a> · ${dataBr(t.inicio)} a ${dataBr(t.fim)} · matrícula ${esc(m.codigo)}</p></td>
+          <td class="min-w-[15rem]"><p><span class="font-mono text-xs ${APOIO} mr-1.5">${esc(t.codigo)}</span><a href="matricula.html?id=${m.id}" class="${LINK_REGISTRO}">${esc(c.nome)}</a></p>
+            <p class="text-xs ${APOIO}">${dataBr(t.inicio)} a ${dataBr(t.fim)} · matrícula <span class="font-mono">${esc(m.codigo)}</span></p></td>
           <td>${m.status === 'cancelada' ? `<span class="${APOIO}">—</span>` : barraFrequencia(Aulor.frequencia(m), { compacta: true })}</td>
           ${comNota ? `<td class="whitespace-nowrap">${Aulor.temNota(c) && m.notaFinal != null ? `<span class="tabular-nums">${Aulor.fmtNota(m.notaFinal)}</span> <span class="text-xs ${APOIO}">mín. ${Aulor.fmtNota(c.notaMinima)}</span>` : `<span class="${APOIO}">—</span>`}</td>` : ''}
           <td>${r ? status(r.tom, r.nome) : status(st.tom, st.nome)}${m.status === 'cancelada' ? `<p class="text-xs ${APOIO}">Em ${dataBr(m.canceladaEm)} — ${esc(m.motivoCancelamento)}</p>` : certificado ? `<p class="text-xs ${APOIO}">${certificado}</p>` : ''}</td>
-          ${verFin ? `<td class="whitespace-nowrap">${ps.length ? `<span class="tabular-nums">${pagas} de ${ps.length} pagas</span>${vencidas ? `<p class="text-xs text-red-700 dark:text-red-400">${plural(vencidas, 'vencida', 'vencidas')}</p>` : ''}` : `<span class="${APOIO}">—</span>`}</td>` : ''}
+          ${verFin ? `<td class="whitespace-nowrap">${ps.length ? `<span class="tabular-nums">${pagas} de ${ps.length} pagas</span>${vencidas ? `<p class="text-xs font-medium text-red-700 dark:text-red-400">${plural(vencidas, 'vencida', 'vencidas')}</p>` : ''}` : `<span class="${APOIO}">—</span>`}</td>` : ''}
         </tr>`;
     };
-    return cartao({
-      titulo: 'Matrículas',
-      contexto: `Turma, frequência${comNota ? ', nota final' : ''} e resultado de cada curso. A linha abre a matrícula.`,
-      classe: 'overflow-hidden',
-      corpo: `
-        <div class="mt-3 overflow-x-auto"><table class="tabela">
-          <thead><tr><th>Curso e turma</th><th>Frequência</th>${comNota ? '<th>Nota final</th>' : ''}<th>Situação</th>${verFin ? '<th>Parcelas</th>' : ''}</tr></thead>
-          <tbody>${ms.map(linha).join('')}</tbody>
-        </table></div>`,
-    });
+    return `
+      ${contextoAba(`Turma, frequência${comNota ? ', nota final' : ''} e resultado de cada curso. A linha abre a matrícula.`)}
+      <div class="painel overflow-hidden"><div class="overflow-x-auto"><table class="tabela">
+        <thead><tr><th>Curso / turma</th><th>Frequência</th>${comNota ? '<th>Nota final</th>' : ''}<th>Situação</th>${verFin ? '<th>Parcelas</th>' : ''}</tr></thead>
+        <tbody>${ms.length ? ms.map(linha).join('') : `<tr><td colspan="${colunas}" class="py-10 text-center text-sm ${APOIO}">Nenhuma matrícula ainda. Matricule o aluno em uma turma para gerar as parcelas e acompanhar a frequência.</td></tr>`}</tbody>
+      </table></div></div>`;
   }
 
   // ---------- Financeiro ----------
@@ -198,14 +194,10 @@
     const vencido = somar('vencido');
     const aVencer = somar('a_vencer');
     const lembrete = devido && lembreteCobranca(devido);
-    return cartao({
-      titulo: 'Parcelas de todas as matrículas',
-      contexto: vencido || aVencer ? [vencido && `<span class="font-medium text-red-700 dark:text-red-400">${moeda(vencido)} vencido</span>`, aVencer && `${moeda(aVencer)} a vencer`].filter(Boolean).join(' · ') : 'Nada em aberto.',
-      acao: lembrete ? `<button type="button" data-copiar-lembrete class="btn-fantasma">${ICONE.copiar}Copiar lembrete</button><a class="btn-fantasma" target="_blank" rel="noopener" href="${urlZap(lembrete.telefone, lembrete.texto)}">${ICONE.whatsapp}Enviar no WhatsApp</a>` : '',
-      classe: 'overflow-hidden',
-      atributos: 'data-parcelas',
-      corpo: `<div class="mt-3">${tabelaParcelas(parcelas, { mostrarCurso: true })}</div>`,
-    });
+    return `
+      ${acoesAba(lembrete ? `<button type="button" data-copiar-lembrete class="btn-sec">${ICONE.copiar}Copiar lembrete</button><a class="btn-sec" target="_blank" rel="noopener" href="${urlZap(lembrete.telefone, lembrete.texto)}">${ICONE.whatsapp}Enviar no WhatsApp</a>` : '')}
+      ${contextoAba(`Parcelas de todas as matrículas. ${vencido || aVencer ? [vencido && `<span class="font-medium text-red-700 dark:text-red-400">${moeda(vencido)} vencido</span>`, aVencer && `${moeda(aVencer)} a vencer`].filter(Boolean).join(' · ') : 'Nada em aberto.'}`)}
+      <div class="painel overflow-hidden" data-parcelas>${tabelaParcelas(parcelas, { mostrarCurso: true })}</div>`;
   }
 
   // ---------- Ficha ----------
@@ -229,7 +221,6 @@
     const abas = [
       { id: 'dados', nome: 'Dados' },
       { id: 'responsaveis', nome: 'Responsáveis', n: (a.responsaveis ?? []).length },
-      { id: 'endereco', nome: 'Endereço e pagamento' },
       { id: 'matriculas', nome: 'Matrículas', n: ms.length },
       verFin && { id: 'financeiro', nome: 'Financeiro', n: devido?.parcelas.length, atencao: true },
     ].filter(Boolean);
@@ -248,14 +239,13 @@
       pagaResp ? pilula('info', 'Paga: responsável', `${fin.nome} (responsável financeiro)`) : '',
     ].join('');
     const faixas = [
-      devido && faixa('erro', `<span class="font-medium">${moeda(devido.total)} vencido</span> em ${plural(devido.parcelas.length, 'parcela', 'parcelas')}, a mais antiga há ${plural(devido.maiorAtraso, 'dia', 'dias')}${pagaResp ? `. Quem paga: ${esc(fin.nome)}` : ''}.`, aba === 'financeiro' ? '' : `<a class="btn-sec btn-pequeno" href="aluno.html?id=${a.id}&aba=financeiro">Ver financeiro</a>`),
-      semLegal && faixa('aviso', '<span class="font-medium">Menor de idade sem responsável legal.</span> O contrato precisa ser assinado por pai, mãe ou tutor com o papel Legal.', editar ? '<button type="button" data-novo-resp class="btn-sec btn-pequeno">Cadastrar responsável</button>' : ''),
-      novo && faixa('passo', '<span class="font-medium">Cadastro criado.</span> Próximo passo: matricular em uma turma.', podeMatricular ? `<a class="btn-sec btn-pequeno" href="matricula-nova.html?aluno=${a.id}">Matricular agora</a>` : ''),
+      devido && faixa('erro', `<span class="font-medium">Em atraso</span> — ${plural(devido.parcelas.length, 'parcela vencida', 'parcelas vencidas')} · <span class="tabular-nums">${moeda(devido.total)}</span>, a mais antiga há ${plural(devido.maiorAtraso, 'dia', 'dias')}${pagaResp ? `. Quem paga: ${esc(fin.nome)}` : ''}.`, aba === 'financeiro' ? '' : `<a class="${BOTAO_LINK}" href="aluno.html?id=${a.id}&aba=financeiro">Ver financeiro</a>`),
+      semLegal && faixa('aviso', '<span class="font-medium">Menor de idade sem responsável legal.</span> O contrato precisa ser assinado por pai, mãe ou tutor com o papel Legal.', editar ? `<button type="button" data-novo-resp class="${BOTAO_LINK}">Cadastrar responsável</button>` : ''),
+      novo && faixa('passo', '<span class="font-medium">Cadastro criado.</span> Próximo passo: matricular em uma turma.', podeMatricular ? `<a class="${BOTAO_LINK}" href="matricula-nova.html?aluno=${a.id}">Matricular agora</a>` : ''),
     ].filter(Boolean).join('');
     const corpo = {
       dados: () => abaDados(a, ms, parcelas, devido, editar, verFin),
       responsaveis: () => abaResponsaveis(a, editar),
-      endereco: () => abaEndereco(a, editar),
       matriculas: () => abaMatriculas(a, ms, verFin),
       financeiro: () => abaFinanceiro(a, parcelas, devido),
     }[aba]();
@@ -268,11 +258,11 @@
           pilulas,
           chips: [
             chip(ICONE.pessoa, `<span class="font-mono">${cpfFmt(a.cpf)}</span>${idade != null ? ` · ${idade} anos` : ''}`, 'CPF · idade'),
-            a.telefone && chip(ICONE.telefone, `<span class="tabular-nums">${telefoneFmt(a.telefone)}</span>`, 'Celular'),
             a.email && chip(ICONE.email, esc(a.email), 'E-mail'),
+            a.telefone && chip(ICONE.telefone, `<span class="tabular-nums">${telefoneFmt(a.telefone)}</span>`, 'Celular'),
             a.endereco?.cidade && chip(ICONE.local, `${esc(a.endereco.cidade)}${a.endereco.uf ? `/${esc(a.endereco.uf)}` : ''}`, 'Cidade'),
           ],
-          acoes: `${a.telefone ? `<a class="btn-sec w-9 px-0" target="_blank" rel="noopener" href="${urlZap(a.telefone)}" title="WhatsApp ${telefoneFmt(a.telefone)}" aria-label="Abrir conversa no WhatsApp">${ICONE.whatsapp}</a>` : ''}${podeMatricular ? `<a href="matricula-nova.html?aluno=${a.id}" class="btn-pri">${ICONE.mais}Matricular</a>` : ''}`,
+          acoes: `${iconeZap(a.telefone)}${podeMatricular ? `<a href="matricula-nova.html?aluno=${a.id}" class="btn-pri">${ICONE.mais}Matricular</a>` : ''}`,
           mais,
         })}
         ${faixas}

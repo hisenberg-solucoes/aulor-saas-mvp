@@ -28,7 +28,7 @@
           <div class="flex items-center gap-3 min-w-0">
             ${Certificado.miniatura(m)}
             <div class="min-w-0">
-              <p class="flex flex-wrap items-center gap-x-2 gap-y-0.5"><a href="${urlModelo(m.id)}" class="link-registro font-medium ${TITULO} hover:underline underline-offset-2 focus-visible:outline-none">${esc(m.nome)}</a>${pilulasModelo(m)}</p>
+              <p class="flex items-center gap-2 min-w-0"><a href="${urlModelo(m.id)}" class="${LINK_REGISTRO} truncate">${esc(m.nome)}</a>${pilulasModelo(m)}</p>
               <p class="text-xs ${APOIO} truncate" title="${esc(m.descricao)}">${esc(m.descricao || aparenciaTexto(m))}</p>
             </div>
           </div>
@@ -45,11 +45,11 @@
     const filtrando = filtro.q || filtro.status;
     return `
       <div class="painel overflow-hidden">
-        ${lista.length ? `<div class="overflow-x-auto"><table class="tabela">
-          <thead><tr><th>Modelo</th><th class="w-[16rem]">Usado por</th><th class="text-right num w-28">Emitidos</th><th class="text-right num w-28">Atualizado</th></tr></thead>
+        ${lista.length ? `<div class="overflow-x-auto"><table class="tabela table-fixed">
+          <thead><tr><th>Modelo</th><th class="w-[240px]">Usado por</th><th class="text-right num w-[100px]">Emitidos</th><th class="text-right num w-[120px]">Atualizado</th></tr></thead>
           <tbody>${lista.map(linha).join('')}</tbody>
-        </table></div>` : vazio('Nenhum modelo com esse filtro', '', '<button type="button" data-limpar class="btn-sec">Limpar filtros</button>')}
-        <p class="px-4 py-2.5 text-xs ${APOIO} border-t border-slate-100 dark:border-neutral-900 tabular-nums">${plural(lista.length, 'modelo', 'modelos')}${filtrando ? ` de ${todos}` : ''}${podeEditar ? '' : ' · somente leitura: seu perfil não edita as configurações'}</p>
+        </table></div>` : `<p class="px-4 py-10 text-center text-sm ${APOIO}">Nenhum modelo com esse filtro. <button type="button" data-limpar class="${BOTAO_LINK} ml-1">Limpar filtros</button></p>`}
+        <p class="${RODAPE_TABELA}">${plural(lista.length, 'modelo', 'modelos')}${filtrando ? ` de ${todos}` : ''}${podeEditar ? '' : ' · somente leitura: seu perfil não edita as configurações'}</p>
       </div>`;
   }
 
@@ -70,7 +70,7 @@
     tela.innerHTML = `
       <div>
         ${cabecalhoPagina({
-          titulo: `Modelos de certificado <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${todos.length}</span>`,
+          titulo: 'Modelos de certificado', // sem contagem no título, como no original: o rodapé e o segmentado já contam
           subtitulo: 'Frente e verso do certificado que a escola emite. O <a class="link" href="cursos.html">curso</a> escolhe o modelo no próprio cadastro; sem escolha, emite com o padrão da escola. Editar um modelo não muda os certificados já emitidos.',
         })}
         <div class="flex flex-wrap items-center gap-2 mb-4">

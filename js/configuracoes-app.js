@@ -115,7 +115,7 @@
   function abaAcademico() {
     const a = Aulor.config().academico;
     return `
-      <div class="grid xl:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
         ${cartao({
           titulo: 'Frequência e aprovação',
           contexto: 'Valem para todas as turmas: frequência, conclusão e certificado.',
@@ -139,7 +139,7 @@
   function abaFinanceiro() {
     const f = Aulor.config().financeiro;
     return `
-      <div class="grid xl:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
         ${cartao({
           titulo: 'Preferências financeiras',
           contexto: 'Sugestões usadas na matrícula e no registro de recebimentos.',
@@ -170,15 +170,15 @@
     const noPlano = Planos.MODULOS.filter((m) => p.modulos.includes(m.id));
     const fora = Planos.MODULOS.filter((m) => !p.modulos.includes(m.id));
     const preco = (pl) => (pl.preco == null ? `<span class="${APOIO}">A definir</span>` : `${moeda(pl.preco)}<span class="text-xs font-normal ${APOIO}">/mês</span>`);
-    // Pílula de Exceção: módulo ativo é o comum e não se anuncia; só "Em breve" e o plano que traz o que falta.
+    // Pílula de Exceção: módulo ativo é o comum e não se anuncia; só "Em breve" vira pílula. O plano que traz o que falta é dado, em texto.
     const item = (m, extra = '') => `<li class="flex items-center justify-between gap-3 py-2 text-sm text-slate-700 dark:text-neutral-200"><span>${esc(m.nome)}</span>${extra}</li>`;
     const grupo = (titulo, itens) => `<div><h4 class="text-xs font-medium ${APOIO} mb-1">${titulo}</h4><ul class="divide-y divide-slate-100 dark:divide-neutral-900">${itens}</ul></div>`;
     return `
-      <div class="grid lg:grid-cols-3 gap-4 items-start">
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
         ${cartao({
           titulo: 'Plano contratado',
           contexto: esc(p.publico),
-          classe: 'lg:col-span-2',
+          classe: 'xl:col-span-2',
           corpo: `
             ${gradeCampos([
               campoValor('Plano', `<span class="font-semibold">${esc(p.nome)}</span>`),
@@ -187,7 +187,7 @@
             ])}
             <div class="px-4 pb-4 grid sm:grid-cols-2 gap-x-8 gap-y-4">
               ${grupo('Incluído', noPlano.map((m) => item(m, m.fase === 'futuro' ? pilula('info', 'Em breve') : '')).join(''))}
-              ${grupo('Em outros planos', fora.map((m) => item(m, pilula('neutro', Planos.PLANOS.find((x) => x.modulos.includes(m.id))?.nome ?? '—'))).join(''))}
+              ${grupo('Em outros planos', fora.map((m) => item(m, `<span class="text-xs whitespace-nowrap ${APOIO}">${esc(Planos.PLANOS.find((x) => x.modulos.includes(m.id))?.nome ?? '—')}</span>`)).join(''))}
             </div>`,
         })}
         ${cartao({
@@ -195,7 +195,7 @@
           contexto: 'Hipótese comercial em validação, não é tabela de preços.',
           classe: 'overflow-hidden',
           corpo: `
-            <ul class="mt-3 divide-y divide-slate-100 dark:divide-neutral-900 border-t border-slate-100 dark:border-neutral-900">${Planos.PLANOS.map((pl) => `
+            <ul class="mt-4 divide-y divide-slate-100 dark:divide-neutral-900 border-t border-slate-100 dark:border-neutral-900">${Planos.PLANOS.map((pl) => `
               <li class="px-4 py-3 ${pl.id === ass.planoId ? 'bg-petrol-800/5 dark:bg-sky-400/5' : ''}">
                 <div class="flex justify-between gap-2 text-sm"><span class="font-medium ${TITULO}">${esc(pl.nome)}${pl.id === ass.planoId ? ` <span class="text-xs font-normal ${APOIO}">· atual</span>` : ''}</span><span class="font-semibold tabular-nums ${TITULO}">${preco(pl)}</span></div>
                 <p class="text-xs ${APOIO} mt-0.5">${pl.alunosIncluidos ? `${pl.alunosIncluidos} alunos ativos incluídos. ${pl.faixas.map((f) => `${f.de}–${f.ate}: ${moeda(f.porAluno)}/aluno`).join('; ')}; acima, ${pl.acimaDaUltimaFaixa}. Anual com ${pl.descontoAnualPercentual}% de desconto.` : 'Preço e limite de alunos ainda não definidos.'}</p>

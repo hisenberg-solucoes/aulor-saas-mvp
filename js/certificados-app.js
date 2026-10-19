@@ -29,18 +29,18 @@
   function abaProntos() {
     const lista = prontos();
     const podeEmitir = Shell.pode('certificados', 'emitir');
-    if (!lista.length) return `<div class="painel">${vazio('Nenhum certificado pendente', 'Quando uma turma é concluída, os alunos aprovados aparecem aqui.', '<a class="btn-sec" href="turmas.html?situacao=a_concluir">Ver turmas aguardando conclusão</a>')}</div>`;
+    if (!lista.length) return `<div class="painel">${vazio('Nenhum certificado pendente', 'Quando uma turma é concluída, os alunos aprovados aparecem aqui.', `<a class="${BOTAO_LINK}" href="turmas.html?situacao=a_concluir">Ver turmas aguardando conclusão</a>`)}</div>`;
     return `
       <div class="painel overflow-hidden">
-        <div class="overflow-x-auto"><table class="tabela">
-          <thead><tr>${podeEmitir ? '<th class="w-12"><input type="checkbox" class="check align-middle" data-todos aria-label="Selecionar todos" checked></th>' : ''}<th>Aluno</th><th>Curso</th><th class="text-right num">Frequência</th><th class="text-right num">Nota</th><th class="text-right num">Carga</th></tr></thead>
+        <div class="overflow-x-auto"><table class="tabela table-fixed">
+          <thead><tr>${podeEmitir ? '<th class="w-12"><input type="checkbox" class="check align-middle" data-todos aria-label="Selecionar todos" checked></th>' : ''}<th>Aluno</th><th class="w-[300px]">Curso</th><th class="text-right num w-[110px]">Frequência</th><th class="text-right num w-[90px]">Nota</th><th class="text-right num w-[90px]">Carga</th></tr></thead>
           <tbody>${lista.map((m) => {
             const a = Aulor.aluno(m.alunoId);
             return `
             <tr data-href="matricula.html?id=${m.id}" class="${FOCO_LINHA}">
               ${podeEmitir ? `<td class="p-0"><label class="flex h-full items-center px-4 py-2.5 cursor-pointer"><input type="checkbox" class="check" data-sel value="${m.id}" checked aria-label="Selecionar ${esc(a.nome)}"></label></td>` : ''}
               <td>${nomeAluno(`matricula.html?id=${m.id}`, a.nome)}<p class="text-xs ${APOIO}">CPF <span class="font-mono">${cpfFmt(a.cpf)}</span></p></td>
-              <td class="max-w-[18rem]">${cursoTurma(m.turmaId)}</td>
+              <td>${cursoTurma(m.turmaId)}</td>
               <td class="num">${m.frequenciaFinal}%</td>
               <td class="num">${nota(m)}</td>
               <td class="num">${Aulor.curso(Aulor.turma(m.turmaId).cursoId).cargaHoraria} h</td>
@@ -48,27 +48,27 @@
           }).join('')}
           </tbody>
         </table></div>
-        ${podeEmitir ? `<div class="px-4 py-3 border-t border-slate-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3">
-          <p class="text-xs ${APOIO}">Cada certificado recebe um código único${Aulor.temModulo('validacao_publica') ? ' que pode ser conferido na página pública de validação' : ''}.</p>
-          <button type="button" data-emitir class="btn-pri">Emitir selecionados <span data-n-sel class="tabular-nums">(${lista.length})</span></button>
-        </div>` : ''}
-      </div>`;
+        <p class="${RODAPE_TABELA}">${plural(lista.length, 'aluno pronto', 'alunos prontos')} para emitir</p>
+      </div>
+      <p class="text-xs ${APOIO_FUNDO} mt-3">Cada certificado recebe um código único${Aulor.temModulo('validacao_publica') ? ' que pode ser conferido na página pública de validação' : ''}.</p>`;
   }
 
   // Válido é o comum e não se anuncia; cancelado vira pílula neutra e a linha cai a 60%.
   function abaEmitidos() {
     const lista = emitidos();
-    if (!lista.length) return `<div class="painel">${vazio('Nenhum certificado emitido ainda')}</div>`;
+    if (!lista.length) return `<div class="painel">${vazio('Nenhum certificado emitido ainda', 'Os alunos aprovados aparecem em Prontos para emitir quando a turma é concluída.')}</div>`;
     return `
-      <div class="painel overflow-hidden"><div class="overflow-x-auto"><table class="tabela">
-        <thead><tr><th>Certificado</th><th>Curso</th><th class="text-right num">Emissão</th></tr></thead>
+      <div class="painel overflow-hidden"><div class="overflow-x-auto"><table class="tabela table-fixed">
+        <thead><tr><th>Certificado</th><th class="w-[300px]">Curso</th><th class="text-right num w-[160px]">Emissão</th></tr></thead>
         <tbody>${lista.map((c) => `
           <tr data-href="certificado.html?id=${c.id}" class="${FOCO_LINHA} ${c.status === 'valido' ? '' : 'linha-apagada'}">
             <td>${nomeAluno(`certificado.html?id=${c.id}`, c.dados.aluno, c.status === 'valido' ? '' : pilula('neutro', 'Cancelado', c.motivoCancelamento))}<p class="font-mono text-xs ${APOIO}">${esc(c.codigo)}</p></td>
-            <td class="max-w-[20rem]"><span class="block truncate">${esc(c.dados.curso)}</span><span class="block text-xs font-mono ${APOIO}">${esc(c.dados.turma)}</span></td>
-            <td class="num">${dataBr(c.emitidoEm)}<p class="text-xs ${APOIO}">${esc(c.emitidoPor)}</p></td>
+            <td><span class="block truncate" title="${esc(c.dados.curso)}">${esc(c.dados.curso)}</span><span class="block text-xs font-mono ${APOIO}">${esc(c.dados.turma)}</span></td>
+            <td class="num">${dataBr(c.emitidoEm)}<p class="text-xs ${APOIO} truncate">${esc(c.emitidoPor)}</p></td>
           </tr>`).join('')}
-        </tbody></table></div></div>`;
+        </tbody></table></div>
+        <p class="${RODAPE_TABELA}">${plural(lista.length, 'certificado emitido', 'certificados emitidos')}${lista.some((c) => c.status !== 'valido') ? ` · ${plural(lista.filter((c) => c.status !== 'valido').length, 'cancelado')}` : ''}</p>
+      </div>`;
   }
 
   // O motivo vem da mesma regra da emissão: frequência, nota abaixo do mínimo ou parcelas vencidas.
@@ -77,18 +77,20 @@
     if (!lista.length) return `<div class="painel">${vazio('Nenhum aluno bloqueado', 'Quem concluiu sem alcançar a frequência ou a nota mínima aparece aqui, com o motivo.')}</div>`;
     const config = Shell.pode('configuracoes') ? '<a class="link" href="configuracoes.html">Configurações</a>' : 'Configurações';
     return `
-      <div class="painel overflow-hidden"><div class="overflow-x-auto"><table class="tabela">
-        <thead><tr><th>Aluno</th><th>Curso</th><th>Motivo</th></tr></thead>
+      <div class="painel overflow-hidden"><div class="overflow-x-auto"><table class="tabela table-fixed">
+        <thead><tr><th>Aluno</th><th class="w-[300px]">Curso</th><th class="w-[280px]">Motivo</th></tr></thead>
         <tbody>${lista.map((m) => {
           const e = Aulor.elegibilidade(m);
           return `
           <tr data-href="matricula.html?id=${m.id}" class="${FOCO_LINHA}">
             <td>${nomeAluno(`matricula.html?id=${m.id}`, Aulor.aluno(m.alunoId).nome)}<p class="text-xs ${APOIO}">CPF <span class="font-mono">${cpfFmt(Aulor.aluno(m.alunoId).cpf)}</span></p></td>
-            <td class="max-w-[18rem]">${cursoTurma(m.turmaId)}</td>
+            <td>${cursoTurma(m.turmaId)}</td>
             <td>${status(e.tom, e.nome)}<p class="text-xs ${APOIO} ml-3.5">${m.resultado === 'aprovado' ? 'Aprovado; libera quando quitar' : esc(Aulor.RESULTADO[m.resultado]?.nome ?? '')}</p></td>
           </tr>`;
         }).join('')}
-        </tbody></table></div></div>
+        </tbody></table></div>
+        <p class="${RODAPE_TABELA}">${plural(lista.length, 'aluno', 'alunos')}</p>
+      </div>
       <p class="text-xs ${APOIO_FUNDO} mt-3">A frequência mínima e o bloqueio por parcela vencida ficam em ${config}; a nota mínima, no cadastro de cada curso.</p>`;
   }
 
@@ -100,7 +102,7 @@
         ${cabecalhoPagina({
           titulo: `Certificados <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${total}</span>`,
           subtitulo: t ? `Turma <span class="font-mono">${esc(t.codigo)}</span> · <a class="link" href="certificados.html">ver todas as turmas</a>` : `Emitidos para quem concluiu a turma com frequência mínima de ${Aulor.config().academico.frequenciaMinima}% e, quando o curso pede, a nota mínima.`,
-          acoes: Aulor.temModulo('validacao_publica') ? '<a href="validar.html" class="btn-sec" target="_blank" rel="noopener">Página pública de validação</a>' : '',
+          acoes: `${Aulor.temModulo('validacao_publica') ? '<a href="validar.html" class="btn-sec" target="_blank" rel="noopener">Página pública de validação</a>' : ''}${aba === 'prontos' && prontos().length && Shell.pode('certificados', 'emitir') ? `<button type="button" data-emitir class="btn-pri">Emitir selecionados <span data-n-sel class="tabular-nums">(${prontos().length})</span></button>` : ''}`,
         })}
         ${abasHtml(abas(), aba)}
         ${aba === 'prontos' ? abaProntos() : aba === 'emitidos' ? abaEmitidos() : abaBloqueados()}

@@ -1,16 +1,18 @@
 // ============================================================
-// Turma (ficha em cartões): Alunos (frequência e nota final), Aulas e
-// chamadas, e Dados da turma. A lista de alunos vem das matrículas —
-// matricular aqui ou em Matrículas dá no mesmo registro. O professor abre
-// esta ficha no celular para lançar as notas. Aba na URL: ?aba=.
+// Turma (ficha em cartões), nas abas do original: Acompanhamento (resumo,
+// dados e aprovação), Aulas (com a chamada de cada uma) e Alunos (frequência
+// e nota final). A lista de alunos vem das matrículas — matricular aqui ou em
+// Matrículas dá no mesmo registro. O professor abre esta ficha no celular
+// para lançar as notas. Aba na URL: ?aba= (a antiga ?aba=dados abre Acompanhamento).
 // ============================================================
 
 (function () {
   if (!Shell.permitido) return;
   const tela = document.getElementById('tela');
   const id = parametroUrl('id');
-  const ABAS = ['alunos', 'aulas', 'dados'];
-  let aba = ABAS.includes(parametroUrl('aba')) ? parametroUrl('aba') : 'alunos';
+  const ABAS = ['geral', 'aulas', 'alunos'];
+  const pedida = parametroUrl('aba') === 'dados' ? 'geral' : parametroUrl('aba');
+  let aba = ABAS.includes(pedida) ? pedida : 'geral';
   let lancando = false;
   // ?nova=1 vale só para a primeira visita: sai da URL para as abas não carregarem a faixa adiante.
   const nova = !!parametroUrl('nova');
@@ -20,7 +22,7 @@
   // Lança nota quem registra a chamada desta turma: o professor dela ou a coordenação.
   const podeLancarNota = (t) => Shell.podeChamada(t) && !['concluida', 'cancelada'].includes(t.status);
 
-  // Faixa de indicadores do topo da aba Alunos (Regra da Linha de Indicadores do original).
+  // Resumo do topo do Acompanhamento: cada número abre a aba que o explica, como no original.
   function resumo(t, c, ms) {
     const pr = Aulor.progressoTurma(t);
     const cursando = ms.filter((m) => m.status === 'ativa');
@@ -29,12 +31,12 @@
     const abaixo = freqs.filter((f) => f.abaixo).length;
     const ultima = Aulor.aulasDaTurma(t.id).filter((a) => a.status === 'realizada').pop();
     const de = (n) => `<span class="text-sm font-normal ${APOIO}"> de ${n}</span>`;
-    const item = (rotulo, valor, detalhe, atencao = false) => `
-      <div class="p-3 sm:p-4 min-w-0">
-        <p class="text-xs font-medium ${APOIO}">${rotulo}</p>
-        <p class="mt-1 text-2xl font-semibold leading-none tabular-nums text-slate-800 dark:text-neutral-100">${valor}</p>
-        <p class="mt-1.5 text-xs ${atencao ? AVISO : APOIO}">${detalhe}</p>
-      </div>`;
+    const item = (rotulo, valor, detalhe, atencao = false, alvo = 'alunos') => `
+      <a href="turma.html?id=${t.id}&aba=${alvo}" class="block p-3 sm:p-4 min-w-0 hover:bg-slate-50 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-petrol-800/30 dark:focus-visible:ring-sky-400/50">
+        <span class="block text-xs font-medium ${APOIO}">${rotulo}</span>
+        <span class="block mt-1 text-2xl font-semibold leading-none tabular-nums text-slate-800 dark:text-neutral-100">${valor}</span>
+        <span class="block mt-1.5 text-xs ${atencao ? AVISO : APOIO}">${detalhe}</span>
+      </a>`;
     let terceiro;
     if (t.status === 'concluida') {
       const aprovados = ms.filter((m) => m.resultado === 'aprovado').length;
@@ -48,7 +50,7 @@
     }
     return `
       <section aria-label="Resumo da turma" class="painel mb-4 grid grid-cols-3 divide-x divide-slate-200 dark:divide-neutral-800 overflow-hidden">
-        ${item('Aulas com chamada', `${pr.realizadas}${de(pr.total)}`, ultima ? `última em ${dataCurta(ultima.data)}` : 'nenhuma ainda')}
+        ${item('Aulas com chamada', `${pr.realizadas}${de(pr.total)}`, ultima ? `última em ${dataCurta(ultima.data)}` : 'nenhuma ainda', false, 'aulas')}
         ${item('Frequência média', media == null ? '—' : `${media}%`, abaixo ? `${plural(abaixo, 'aluno abaixo', 'alunos abaixo')} do mínimo` : `mínimo ${Aulor.config().academico.frequenciaMinima}%`, abaixo > 0 && t.status !== 'concluida')}
         ${terceiro}
       </section>`;
@@ -76,7 +78,7 @@
     const matricular = Shell.pode('matriculas', 'criar') && ['planejada', 'em_andamento'].includes(s) && !o.lotada
       ? `<a href="matricula-nova.html?turma=${t.id}" class="btn-fantasma">${ICONE.mais}Matricular</a>` : '';
     if (!ms.length) {
-      return cartao({ titulo: 'Alunos', contexto: 'As matrículas feitas para esta turma aparecem aqui.', corpo: vazio('Nenhum aluno matriculado', '', matricular.replace('btn-fantasma', 'btn-pri')) });
+      return cartao({ titulo: 'Alunos matriculados', contexto: 'As matrículas feitas para esta turma aparecem aqui.', acao: matricular, corpo: `<p class="px-4 py-8 text-center text-sm ${APOIO}">Nenhum aluno matriculado nesta turma ainda.</p>` });
     }
     const acao = editando ? '' : `${podeNota ? `<button type="button" data-lancar-notas class="btn-fantasma">${ICONE.editar}Lançar notas</button>` : ''}${matricular}`;
     const linhas = ms.map((m) => {
@@ -93,7 +95,7 @@
           ? `<td><input name="nota-${m.id}" value="${valorNota(m.notaFinal)}" inputmode="decimal" autocomplete="off" placeholder="0 a 10" aria-label="Nota final de ${esc(a.nome)}" class="campo w-20 text-right tabular-nums">${ERRO(`nota-${m.id}`)}</td>`
           : `<td class="num">${m.notaFinal != null && !cancelada ? Aulor.fmtNota(m.notaFinal) : `<span class="${APOIO}">—</span>`}</td>`;
       return `<tr ${link ? `data-href="${link}"` : ''} class="${link ? FOCO_LINHA : ''} ${cancelada ? 'linha-apagada' : ''}">
-        <td><div class="flex items-center gap-3"><span class="hidden sm:block">${avatar(a.nome)}</span><div class="min-w-0">${nome}<p class="text-xs ${APOIO}">Matrícula ${esc(m.codigo)}${Aulor.entradaNaTurma(m) > t.inicio ? ` · entrou em ${dataCurta(Aulor.entradaNaTurma(m))}` : ''}</p></div></div></td>
+        <td>${nome}<p class="text-xs ${APOIO}"><span class="font-mono">${esc(m.codigo)}</span>${Aulor.entradaNaTurma(m) > t.inicio ? ` · entrou em ${dataCurta(Aulor.entradaNaTurma(m))}` : ''}</p></td>
         <td>${cancelada ? `<span class="${APOIO}">—</span>` : `${barraFrequencia(f, { compacta: true })}${f.total ? `<p class="text-xs ${APOIO} tabular-nums">${plural(faltas, 'falta')}${f.justificadas ? ` (${f.justificadas} just.)` : ''}</p>` : ''}`}</td>
         ${nota}
         <td>${situacaoAluno(m, f, c, s)}</td>
@@ -109,7 +111,7 @@
           <tbody>${linhas}</tbody>
         </table>
       </div>`;
-    const rodape = `<p class="px-4 py-2.5 text-xs ${APOIO} border-t border-slate-100 dark:border-neutral-900">Frequência mínima: ${cfg.frequenciaMinima}% das aulas com chamada registrada (o traço na barra). ${cfg.justificadaContaPresenca ? 'Falta justificada conta como presença.' : 'Falta justificada conta como falta.'} ${comNota ? `Nota final de 0 a 10; a mínima é ${Aulor.fmtNota(c.notaMinima)}.` : 'Curso sem nota: aprova pela frequência.'}</p>`;
+    const rodape = `<p class="px-4 py-2.5 border-t border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-xs ${APOIO}">Frequência mínima: ${cfg.frequenciaMinima}% das aulas com chamada registrada (o traço na barra). ${cfg.justificadaContaPresenca ? 'Falta justificada conta como presença.' : 'Falta justificada conta como falta.'} ${comNota ? `Nota final de 0 a 10; a mínima é ${Aulor.fmtNota(c.notaMinima)}.` : 'Curso sem nota: aprova pela frequência.'}</p>`;
     const corpo = editando ? `
       <form id="form-notas" novalidate>
         ${tabela}
@@ -120,7 +122,7 @@
         </div>
       </form>` : `${tabela}${rodape}`;
     return cartao({
-      titulo: `Alunos <span class="ml-1 text-xs font-normal ${APOIO} tabular-nums">${ms.filter((m) => m.status !== 'cancelada').length}</span>`,
+      titulo: `Alunos matriculados <span class="ml-1 text-xs font-normal ${APOIO} tabular-nums">${ms.filter((m) => m.status !== 'cancelada').length}</span>`,
       contexto: editando ? 'Lance a nota final de cada aluno cursando. Quem reprova por frequência não precisa de nota.' : 'Entram pelas matrículas desta turma.',
       acao,
       corpo,
@@ -133,24 +135,32 @@
     const aulas = Aulor.aulasDaTurma(t.id);
     const pr = Aulor.progressoTurma(t);
     const registra = Shell.podeChamada(t) && !['concluida', 'cancelada'].includes(t.status);
+    // Ponto + texto: hoje em petróleo (o "você está aqui"), chamada feita em verde, pendente em cobre.
+    const ponto = (cor, txt, cls = 'text-slate-600 dark:text-neutral-300') => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap ${cls}"><span class="h-2 w-2 shrink-0 rounded-full ${cor}"></span>${txt}</span>`;
+    const traco = '<span class="text-slate-400 dark:text-neutral-600">—</span>';
     const linhas = aulas.map((a) => {
+      const cancelada = a.status === 'cancelada';
       const pendente = Aulor.chamadaPendente(a);
-      const ehHoje = a.data === hoje && a.status === 'prevista';
+      const ehHoje = !cancelada && a.data === hoje;
       const presentes = Object.values(a.presencas).filter((v) => v === 'P').length;
-      const estado = a.status === 'realizada' ? status('ok', `${presentes} de ${Object.keys(a.presencas).length} presentes`)
-        : a.status === 'cancelada' ? status('vazado', 'Cancelada')
-          : pendente ? status('atencao', 'Chamada pendente')
-            : ehHoje ? status('info', 'Hoje') : status('vazado', 'Prevista');
+      const situacao = cancelada ? ponto('bg-red-500', 'Cancelada', 'text-red-700 dark:text-red-400')
+        : ehHoje ? ponto('bg-petrol-800 dark:bg-sky-300', 'Hoje', 'font-medium text-petrol-800 dark:text-sky-300')
+          : a.data < hoje ? ponto('bg-slate-400 dark:bg-neutral-500', 'Realizada')
+            : ponto('bg-slate-200 dark:bg-neutral-700', 'Prevista', APOIO);
+      const chamada = a.status === 'realizada' ? `<span class="inline-flex items-center gap-2" title="${presentes} de ${Object.keys(a.presencas).length} presentes">${ponto('bg-emerald-500', 'Feita')}<span class="text-xs ${APOIO} tabular-nums">${presentes}/${Object.keys(a.presencas).length}</span></span>`
+        : pendente ? ponto('bg-laranja', 'Pendente', AVISO)
+          : ehHoje ? ponto('bg-laranja', 'Aguardando', AVISO) : traco;
       const abre = a.status === 'realizada' || pendente || ehHoje;
       const href = `chamada.html?aula=${a.id}`;
-      const data = `${dataBr(a.data)} <span class="text-xs ${APOIO}">${diaSemana(a.data)}</span>`;
-      const chamar = (pendente || ehHoje) && registra ? `<a href="${href}" class="btn-pri btn-pequeno whitespace-nowrap max-sm:h-11">Fazer chamada</a>` : '';
-      return `<tr ${abre ? `data-href="${href}"` : ''} class="${abre ? FOCO_LINHA : ''} ${a.status === 'cancelada' ? 'linha-apagada' : ''} ${ehHoje ? 'bg-petrol-800/5 dark:bg-sky-950/40' : ''}">
+      const chamar = (pendente || (ehHoje && a.status === 'prevista')) && registra;
+      return `<tr ${abre ? `data-href="${href}"` : ''} class="${abre ? FOCO_LINHA : ''} ${cancelada ? 'linha-apagada' : ''} ${ehHoje ? 'bg-petrol-800/5 dark:bg-sky-950/40' : ''}">
         <td class="num text-xs ${APOIO} hidden sm:table-cell">${a.n}</td>
-        <td class="whitespace-nowrap">${abre ? `<a href="${href}" class="${LINK_REGISTRO} tabular-nums">${dataBr(a.data)}</a> <span class="text-xs ${APOIO}">${diaSemana(a.data)}</span>` : `<span class="tabular-nums ${a.data > hoje ? APOIO : ''}">${data}</span>`}<p class="text-xs ${APOIO} tabular-nums">${a.inicio}–${a.fim}<span class="sm:hidden"> · aula ${a.n}</span></p></td>
-        <td class="hidden md:table-cell max-w-xs"><p class="truncate" title="${esc(a.conteudo || '')}">${a.conteudo ? esc(a.conteudo) : `<span class="${APOIO}">—</span>`}</p></td>
-        <td>${estado}${chamar ? `<div class="mt-1.5 sm:hidden">${chamar}</div>` : ''}</td>
-        <td class="text-right hidden sm:table-cell">${chamar}</td>
+        <td class="whitespace-nowrap">${abre ? `<a href="${href}" class="${LINK_REGISTRO} tabular-nums">${dataBr(a.data)}</a>` : `<span class="tabular-nums text-slate-800 dark:text-neutral-100 ${cancelada ? 'line-through' : ''}">${dataBr(a.data)}</span>`} <span class="text-xs ${APOIO}">${diaSemana(a.data)}</span><p class="sm:hidden text-xs ${APOIO} tabular-nums">${a.inicio}–${a.fim} · aula ${a.n}</p></td>
+        <td class="tabular-nums whitespace-nowrap hidden sm:table-cell">${a.inicio}–${a.fim}</td>
+        <td class="hidden md:table-cell max-w-xs"><p class="truncate" title="${esc(a.conteudo || '')}">${a.conteudo ? `<span class="text-slate-700 dark:text-neutral-200">${esc(a.conteudo)}</span>` : traco}</p></td>
+        <td class="hidden sm:table-cell">${situacao}</td>
+        <td>${chamada}${chamar ? `<div class="mt-1.5 sm:hidden"><a href="${href}" class="btn-pri btn-pequeno whitespace-nowrap max-sm:h-11">Fazer chamada</a></div>` : ''}</td>
+        <td class="text-right hidden sm:table-cell">${chamar ? `<a href="${href}" class="${BOTAO_LINK} whitespace-nowrap">Fazer chamada</a>` : ''}</td>
       </tr>`;
     }).join('');
     return cartao({
@@ -159,7 +169,7 @@
       corpo: `
         <div class="mt-3 overflow-x-auto border-t border-slate-200 dark:border-neutral-800">
           <table class="tabela max-sm:[&_td]:px-2 max-sm:[&_th]:px-2">
-            <thead><tr><th class="num hidden sm:table-cell">Nº</th><th>Data</th><th class="hidden md:table-cell">Conteúdo</th><th>Chamada</th><th class="hidden sm:table-cell"><span class="sr-only">Próximo passo</span></th></tr></thead>
+            <thead><tr><th class="num hidden sm:table-cell">Nº</th><th>Data</th><th class="hidden sm:table-cell">Horário</th><th class="hidden md:table-cell">Conteúdo</th><th class="hidden sm:table-cell">Situação</th><th>Chamada</th><th class="hidden sm:table-cell"><span class="sr-only">Atalho</span></th></tr></thead>
             <tbody>${linhas}</tbody>
           </table>
         </div>`,
@@ -260,6 +270,8 @@
     const encerrada = ['concluida', 'cancelada'].includes(s);
     const o = Aulor.ocupacao(t);
     const ms = Aulor.matriculasDaTurma(t.id);
+    // A aba Alunos só conta o que é com você: quem está abaixo da frequência mínima (contador da aba Presenças do original).
+    const abaixo = encerrada ? 0 : ms.filter((m) => m.status === 'ativa' && Aulor.frequencia(m).abaixo).length;
     const mais = itensMais(t, s);
     const editar = Shell.pode('turmas', 'editar')
       ? `<button type="button" data-editar class="btn-sec" ${encerrada ? `disabled title="Turma ${s === 'concluida' ? 'concluída' : 'cancelada'}: os dados ficam como registro"` : ''}>${ICONE.editar}Editar dados</button>` : '';
@@ -283,8 +295,8 @@
           mais,
         })}
         ${faixas(t, c, s)}
-        ${abasHtml([{ id: 'alunos', nome: 'Alunos', n: ms.length }, { id: 'aulas', nome: 'Aulas e chamadas', n: Aulor.progressoTurma(t).total }, { id: 'dados', nome: 'Dados da turma' }], aba)}
-        ${aba === 'alunos' ? `${resumo(t, c, ms)}${abaAlunos(t, c, s)}` : aba === 'aulas' ? abaAulas(t) : abaDados(t, c, s)}
+        ${abasHtml([{ id: 'geral', nome: 'Acompanhamento' }, { id: 'aulas', nome: 'Aulas', n: Aulor.progressoTurma(t).total }, { id: 'alunos', nome: 'Alunos', n: abaixo, atencao: true }], aba)}
+        ${aba === 'geral' ? `${resumo(t, c, ms)}${abaDados(t, c, s)}` : aba === 'aulas' ? abaAulas(t) : abaAlunos(t, c, s)}
       </div>`;
     ligarLinhasLink(tela);
     tela.querySelectorAll('[data-editar]').forEach((b) => b.addEventListener('click', () => abrirFormTurma({ turma: t, aoSalvar: () => { toast('Turma atualizada'); render(); } })));

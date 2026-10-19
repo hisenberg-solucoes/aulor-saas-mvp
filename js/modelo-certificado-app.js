@@ -209,7 +209,7 @@
           <h3 class="text-sm font-medium ${TITULO}">Prévia${estado.aba === 'frente' ? ' da frente' : estado.aba === 'verso' ? ' do verso' : ''}</h3>
           <p class="text-xs ${APOIO_FUNDO}">Com dados de exemplo · ${esc(orientacao)}, A4</p>
         </div>
-        <button type="button" data-imprimir class="btn-fantasma -mr-2.5" title="Abre a impressão com a frente e o verso, como estão agora">${ICONE.imprimir}Imprimir prévia</button>
+        <button type="button" data-imprimir class="btn-fantasma text-slate-600 dark:text-neutral-400 -mr-2.5" title="Abre a impressão com a frente e o verso, como estão agora">${ICONE.imprimir}Imprimir prévia</button>
       </div>
       <div data-folhas>${folhasPrevia()}</div>`;
   }
@@ -304,7 +304,7 @@
   function render() {
     const m = modelo();
     if (!m) {
-      tela.innerHTML = `<div class="painel max-w-xl mx-auto">${vazio('Modelo não encontrado', 'Ele pode ter sido excluído.', '<a class="btn-sec" href="templates-certificado.html">Voltar para os modelos</a>')}</div>`;
+      tela.innerHTML = `<div class="painel p-10 text-center text-sm ${APOIO}">Modelo não encontrado. <a href="templates-certificado.html" class="link font-medium ml-1">Voltar para a lista</a></div>`;
       return;
     }
     const formulario = { aparencia: formAparencia, frente: formFrente, verso: formVerso }[estado.aba];

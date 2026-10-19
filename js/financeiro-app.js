@@ -60,15 +60,18 @@
   // Do maior atraso para o menor; empate, quem deve mais.
   const emAtraso = () => [...Aulor.inadimplentes()].sort((a, b) => b.maiorAtraso - a.maiorAtraso || b.total - a.total);
 
+  // Período na barra de filtros, como no original: setas coladas ao mês. "Vencidas" vale para todos os meses e trava as setas.
   function seletorMes() {
     const anterior = Aulor.somarMeses(`${estado.mes}-01`, -1, 1).slice(0, 7);
     const proximo = Aulor.somarMeses(`${estado.mes}-01`, 1, 1).slice(0, 7);
-    return `<div class="inline-flex items-center gap-1" role="group" aria-label="Mês de vencimento">
-      <button type="button" data-mes="${anterior}" class="btn-fantasma px-1.5" aria-label="Mês anterior">${ICONE.voltar}</button>
-      <span class="min-w-[9.5rem] text-center text-sm font-semibold ${TITULO}" aria-live="polite">${mesAno(`${estado.mes}-01`)}</span>
-      <button type="button" data-mes="${proximo}" class="btn-fantasma px-1.5" aria-label="Próximo mês">${ICONE.seta}</button>
-      ${estado.mes !== hoje.slice(0, 7) ? `<button type="button" data-mes="${hoje.slice(0, 7)}" class="btn-fantasma">Mês atual</button>` : ''}
-    </div>`;
+    const todos = estado.situacao === 'vencido';
+    const seta = 'btn-sec px-1.5 relative hover:z-10';
+    return `<div class="inline-flex items-stretch" role="group" aria-label="Mês de vencimento">
+      <button type="button" data-mes="${anterior}" data-mes-nav="ant" class="${seta} rounded-r-none" aria-label="Mês anterior" ${todos ? 'disabled' : ''}>${ICONE.voltar}</button>
+      <span class="-ml-px inline-flex items-center gap-1.5 h-9 px-3 border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-sm font-medium text-slate-800 dark:text-neutral-100 whitespace-nowrap" aria-live="polite"><span class="${APOIO}">${ICONE.calendario.replace('h-3.5 w-3.5', 'h-4 w-4')}</span>${todos ? 'Todos os meses' : mesAno(`${estado.mes}-01`)}<span class="text-xs font-normal ${APOIO}">por vencimento</span></span>
+      <button type="button" data-mes="${proximo}" data-mes-nav="prox" class="${seta} -ml-px rounded-l-none" aria-label="Próximo mês" ${todos ? 'disabled' : ''}>${ICONE.seta}</button>
+    </div>
+    ${!todos && estado.mes !== hoje.slice(0, 7) ? `<button type="button" data-mes="${hoje.slice(0, 7)}" data-mes-nav="atual" class="${BOTAO_LINK}">Mês atual</button>` : ''}`;
   }
 
   // Indicadores do mês. "A receber" e "Em atraso" filtram a lista (aria-pressed); os outros só resumem.
@@ -91,28 +94,29 @@
         cartoes.push(cartaoNumero({ rotulo: `Resultado de ${mes}`, valor: comSinal(resultado), tomValor: resultado < 0 ? RUIM : '', ajuda: 'recebido − pago no mês' }));
       }
     }
-    return `<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-${cartoes.length} gap-3 mb-4">${cartoes.join('')}</div>`;
+    return `<div class="grid grid-cols-3 xl:grid-cols-5 gap-3 mb-4">${cartoes.join('')}</div>`;
   }
   const contarAbertas = () => Aulor.lancamentos().filter((l) => l.tipo === 'receber' && l.vencimento.startsWith(estado.mes) && ['a_vencer', 'vencido'].includes(Aulor.situacaoLancamento(l))).length;
 
-  // Quem e o quê na mesma célula; a forma e a data do pagamento ficam embaixo da situação.
+  // Como a linha do original: quem (com o documento) em cima e o quê embaixo; a forma (e a data, se pago) embaixo da situação.
   function linhaLancamento(l) {
     const receber = l.tipo === 'receber';
     const s = Aulor.situacaoLancamento(l);
-    const href = receber && l.matriculaId ? `matricula.html?id=${l.matriculaId}` : receber && l.alunoId ? `aluno.html?id=${l.alunoId}` : '';
-    const quem = receber && l.alunoId
-      ? `<a href="${href}" class="link-registro font-medium ${TITULO} hover:underline underline-offset-2 focus-visible:outline-none">${esc(Aulor.aluno(l.alunoId).nome)}</a>`
-      : `<span class="font-medium ${TITULO}">${esc(l.descricao)}</span>`;
-    const apoio = receber ? esc(l.descricao) : `${esc(l.fornecedor || '—')} · ${esc(l.categoria)}`;
+    const aluno = receber && l.alunoId ? Aulor.aluno(l.alunoId) : null;
+    const href = receber && l.matriculaId ? `matricula.html?id=${l.matriculaId}` : aluno ? `aluno.html?id=${aluno.id}` : '';
+    const nome = aluno ? aluno.nome : l.fornecedor || l.descricao;
+    const quem = href ? `<a href="${href}" class="${LINK_REGISTRO}">${esc(nome)}</a>` : `<span class="font-medium text-slate-800 dark:text-neutral-100">${esc(nome)}</span>`;
+    const doc = aluno?.cpf ? ` <span class="text-xs ${APOIO} tabular-nums">${cpfFmt(aluno.cpf)}</span>` : '';
+    const oque = receber ? esc(l.descricao) : `${l.fornecedor ? `${esc(l.descricao)} ` : ''}<span class="text-xs ${APOIO}">· ${esc(l.categoria)}</span>`;
     const pagoDiferente = s === 'pago' && l.valorPago != null && Math.abs(l.valorPago - l.valor) > 0.005;
-    const detalhe = s === 'pago' ? `${dataBr(l.pagoEm)} · ${esc(nomeForma(l.forma))}` : '';
+    const detalhe = s === 'cancelado' ? '' : s === 'pago' ? `${dataBr(l.pagoEm)} · ${esc(nomeForma(l.forma))}` : esc(nomeForma(l.forma));
     return `
       <tr ${href ? `data-href="${href}"` : ''} class="${href ? FOCO_LINHA : ''} ${s === 'cancelado' ? 'linha-apagada' : ''}">
         <td class="tabular-nums whitespace-nowrap align-top">${dataBr(l.vencimento)}</td>
-        <td class="align-top">${quem}<p class="text-xs ${APOIO}">${apoio}</p></td>
+        <td class="align-top min-w-0"><p class="truncate">${quem}${doc}</p><p class="truncate">${oque}</p></td>
         <td class="num align-top"><span class="font-medium text-slate-800 dark:text-neutral-100">${moeda(l.valor)}</span>${pagoDiferente ? `<p class="text-xs ${AVISO}" title="Valor efetivamente pago">pago ${moeda(l.valorPago)}</p>` : ''}</td>
-        <td class="align-top">${situacaoLancHtml(l)}${detalhe ? `<p class="text-xs ${APOIO} pl-3.5">${detalhe}</p>` : ''}</td>
-        <td class="text-right whitespace-nowrap align-top">${acaoParcela(l)}</td>
+        <td class="align-top">${situacaoLancHtml(l)}${detalhe ? `<p class="text-xs ${APOIO} pl-3.5 truncate">${detalhe}</p>` : ''}</td>
+        <td class="text-right whitespace-nowrap align-top py-2">${acaoParcela(l)}</td>
       </tr>`;
   }
 
@@ -125,7 +129,8 @@
     const vazioTxt = estado.situacao === 'vencido' ? 'Nenhuma conta vencida.' : `Nenhum lançamento com vencimento em ${mesAno(`${estado.mes}-01`).toLowerCase()}${estado.situacao !== 'todas' || estado.q ? ' neste filtro' : ''}.`;
     return `
       <div class="mb-3 flex flex-wrap items-center gap-2">
-        ${campoBusca('busca', estado.q, tipo === 'receber' ? 'Buscar aluno ou curso' : 'Buscar descrição ou fornecedor')}
+        ${campoBusca('busca', estado.q, tipo === 'receber' ? 'Buscar aluno ou curso' : 'Buscar fornecedor ou descrição')}
+        ${seletorMes()}
         ${selectFiltro('f-situacao', SITUACOES(tipo), estado.situacao, 'Situação')}
       </div>
       <p class="mb-3 flex flex-wrap items-baseline gap-x-5 gap-y-1 text-sm ${APOIO_FUNDO}">
@@ -134,8 +139,8 @@
         ${vencido ? `<span>Vencido ${forte(moeda(vencido), RUIM)}</span>` : ''}
       </p>
       <div class="painel overflow-hidden" data-lista>
-        ${lista.length ? `<div class="overflow-x-auto"><table class="tabela">
-          <thead><tr><th>Vencimento</th><th>${tipo === 'receber' ? 'Aluno' : 'Conta'}</th><th class="num">Valor</th><th>Situação</th><th><span class="sr-only">Ações</span></th></tr></thead>
+        ${lista.length ? `<div class="overflow-x-auto"><table class="tabela table-fixed">
+          <thead><tr><th class="w-[7rem]">Vencimento</th><th>${tipo === 'receber' ? 'Aluno' : 'Favorecido'}</th><th class="num w-[9.5rem]">Valor</th><th class="w-[10rem]">Situação</th><th class="w-[8.5rem]"><span class="sr-only">Ações</span></th></tr></thead>
           <tbody>${lista.map(linhaLancamento).join('')}</tbody>
         </table></div>` : vazio('Nada neste filtro', vazioTxt)}
       </div>`;
@@ -155,8 +160,8 @@
         <td class="num align-top">${i.parcelas.length}<p class="text-xs ${APOIO}">desde ${dataBr(desde)}</p></td>
         <td class="num align-top">${plural(i.maiorAtraso, 'dia', 'dias')}</td>
         <td class="num align-top font-medium ${RUIM}">${moeda(i.total)}</td>
-        <td class="text-right whitespace-nowrap align-top">
-          <a class="btn-sec btn-pequeno" target="_blank" rel="noopener" href="https://wa.me/${fone ? `55${fone}` : ''}?text=${encodeURIComponent(lembrete.texto)}" aria-label="Enviar o lembrete por WhatsApp para ${esc(pagador.nome)}">${ICONE.whatsapp}WhatsApp</a>
+        <td class="text-right whitespace-nowrap align-top py-2">
+          <a class="${BOTAO_LINK}" target="_blank" rel="noopener" href="https://wa.me/${fone ? `55${fone}` : ''}?text=${encodeURIComponent(lembrete.texto)}" aria-label="Enviar o lembrete por WhatsApp para ${esc(pagador.nome)}" title="Abre o WhatsApp com o lembrete pronto">${ICONE.whatsapp.replace('h-4 w-4', 'h-3.5 w-3.5')} Enviar lembrete</a>
           <button type="button" data-mais-atraso="${k}" class="btn-fantasma px-1.5" aria-label="Mais ações: ${esc(i.aluno.nome)}" aria-haspopup="menu" aria-expanded="false">${ICONE.reticencias}</button>
         </td>
       </tr>`;
@@ -188,7 +193,7 @@
     const novaContaBtn = estado.aba === 'pagar' && Shell.pode('pagar', 'lancar') ? `<button type="button" data-nova-conta class="btn-pri">${ICONE.mais}Nova conta a pagar</button>` : '';
     tela.innerHTML = `
       <div>
-        ${cabecalhoPagina({ titulo: 'Financeiro', subtitulo: 'Parcelas das matrículas e despesas da escola, mês a mês. Nada é cobrado sozinho nesta versão: o recebimento é registrado aqui.', acoes: seletorMes() })}
+        ${cabecalhoPagina({ titulo: 'Financeiro', subtitulo: 'Parcelas das matrículas e despesas da escola, mês a mês. Nada é cobrado sozinho nesta versão: o recebimento é registrado aqui.' })}
         ${indicadores(inad)}
         ${partes.length > 1 || novaContaBtn ? `<div class="mb-3 flex flex-wrap items-center gap-2">
           ${partes.length > 1 ? segmentado('parte', partes, estado.aba, 'Contas') : ''}
@@ -216,7 +221,7 @@
   }
 
   function ligar(inad) {
-    tela.querySelectorAll('[data-mes]').forEach((b) => b.addEventListener('click', () => mudar(() => { estado.mes = b.dataset.mes; }, `[data-mes="${b.dataset.mes}"]`)));
+    tela.querySelectorAll('[data-mes]').forEach((b) => b.addEventListener('click', () => mudar(() => { estado.mes = b.dataset.mes; }, `[data-mes-nav="${b.dataset.mesNav === 'atual' ? 'prox' : b.dataset.mesNav}"]`)));
     tela.querySelectorAll('[data-parte]').forEach((b) => b.addEventListener('click', () => mudar(() => { estado.aba = b.dataset.parte; estado.q = ''; }, `[data-parte="${b.dataset.parte}"]`)));
     tela.querySelectorAll('[data-cartao]').forEach((b) => b.addEventListener('click', () => mudar(() => {
       const ativo = b.getAttribute('aria-pressed') === 'true';

@@ -22,7 +22,7 @@ function abrirFormAluno({ aluno = null, aoSalvar }) {
   const origens = Aulor.ORIGENS.map((o) => ({ id: o, nome: o }));
   const { form } = modalFormulario({
     id: 'form-aluno',
-    titulo: aluno ? 'Editar dados do aluno' : 'Cadastrar aluno',
+    titulo: aluno ? 'Editar dados do aluno' : 'Novo aluno',
     subtitulo: aluno ? aluno.nome : 'Só o essencial para matricular. Endereço e outros responsáveis podem ser completados depois, na ficha.',
     rotulo: aluno ? 'Salvar' : 'Cadastrar',
     largura: 'xl',
@@ -165,7 +165,9 @@ function situacaoLancHtml(l) {
   const s = Aulor.situacaoLancamento(l);
   const nomes = l.tipo === 'receber' ? NOME_SITUACAO_RECEBER : NOME_SITUACAO_PAGAR;
   const atraso = s === 'vencido' ? ` · ${Aulor.diasAtraso(l)} d` : '';
-  return status(Aulor.SITUACAO_LANCAMENTO[s].tom, nomes[s] + atraso);
+  const html = status(Aulor.SITUACAO_LANCAMENTO[s].tom, nomes[s] + atraso);
+  // Vencida em vermelho 500, como no original: é a dívida que a tela tem de mostrar.
+  return s === 'vencido' ? html.replace('text-slate-600 dark:text-neutral-300', 'font-medium text-red-700 dark:text-red-400') : html;
 }
 
 const nomeForma = (id) => Aulor.FORMAS_PAGAMENTO.find((f) => f.id === id)?.nome ?? '—';
@@ -175,7 +177,7 @@ function acaoParcela(l) {
   const feature = l.tipo === 'receber' ? 'receber' : 'pagar';
   const podeBaixar = Shell.pode(feature, l.tipo === 'receber' ? 'registrar' : 'pagar');
   if (s === 'a_vencer' || s === 'vencido') {
-    return podeBaixar ? `<button type="button" data-baixar="${l.id}" class="btn-sec btn-pequeno" title="${l.tipo === 'receber' ? 'Registrar recebimento' : 'Registrar pagamento'}">${l.tipo === 'receber' ? 'Receber' : 'Pagar'}</button>` : '';
+    return podeBaixar ? `<button type="button" data-baixar="${l.id}" class="btn-fantasma btn-pequeno" title="${l.tipo === 'receber' ? 'Registrar recebimento' : 'Registrar pagamento'}">${l.tipo === 'receber' ? 'Receber' : 'Pagar'}</button>` : '';
   }
   if (s === 'pago' && Shell.pode(feature, l.tipo === 'receber' ? 'estornar' : 'pagar')) {
     return `<button type="button" data-estornar="${l.id}" class="btn-fantasma btn-pequeno hover:text-red-700 dark:hover:text-red-400">Estornar</button>`;

@@ -74,7 +74,7 @@
 
 /* Abas: inativa em apoio; ativa em tinta com sublinhado de 2px no papel marca-tinta. Cobre nunca sublinha aba. */
 .aba {
-  @apply px-0.5 pb-2.5 text-sm border-b-2 border-transparent text-slate-600 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200 transition whitespace-nowrap;
+  @apply px-0.5 pb-2.5 text-[13px] font-medium border-b-2 border-transparent text-slate-600 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200 transition whitespace-nowrap;
 }
 .aba-ativa {
   @apply border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium hover:text-slate-900 dark:hover:text-neutral-100;

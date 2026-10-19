@@ -56,16 +56,17 @@
     return `<span class="font-medium tabular-nums text-red-700 dark:text-red-400" title="${deve.parcelas.length} ${deve.parcelas.length === 1 ? 'parcela vencida' : 'parcelas vencidas'}; a mais antiga há ${deve.maiorAtraso} dias">${moeda(deve.total)}</span><p class="text-xs ${APOIO}">há ${deve.maiorAtraso} ${deve.maiorAtraso === 1 ? 'dia' : 'dias'}</p>`;
   }
 
+  // Célula do registro como no original: avatar, nome (link da ficha) com as exceções ao lado e a linha de apoio.
   function linha({ a, s, ms, deve }, verFin) {
     const idade = Aulor.idade(a.nascimento);
     return `
       <tr data-href="aluno.html?id=${a.id}" class="${FOCO_LINHA}">
-        <td><div class="flex items-center gap-3 min-w-[15rem]">${avatar(a.nome, 'h-9 w-9 text-xs')}<div class="min-w-0">
-          <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5"><a href="aluno.html?id=${a.id}" class="link-registro font-medium ${TITULO} hover:underline underline-offset-2 focus-visible:outline-none">${esc(a.nome)}</a>${Aulor.ehMenor(a) ? pilula('atencao', 'Menor', `${idade} anos`) : ''}</p>
+        <td><div class="flex items-center gap-3">${avatar(a.nome, 'h-9 w-9 text-xs')}<div class="min-w-0">
+          <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5"><a href="aluno.html?id=${a.id}" class="${LINK_REGISTRO} min-w-0 truncate">${esc(a.nome)}</a>${Aulor.ehMenor(a) ? pilula('atencao', 'Menor', `${idade} anos`) : ''}</p>
           <p class="text-xs ${APOIO} truncate"><span class="font-mono">${cpfFmt(a.cpf)}</span>${idade != null ? ` · ${idade} anos` : ''}</p>
         </div></div></td>
-        <td class="max-w-[16rem]"><span class="block truncate">${a.email ? esc(a.email) : `<span class="${APOIO}">sem e-mail</span>`}</span><span class="block text-xs ${APOIO} tabular-nums">${telefoneFmt(a.telefone)}</span></td>
-        <td class="max-w-[14rem]">${cursosDoAluno(s, ms)}</td>
+        <td><span class="block truncate">${a.email ? esc(a.email) : `<span class="${APOIO}">sem e-mail</span>`}</span><span class="block truncate text-xs ${APOIO} tabular-nums">${a.telefone ? telefoneFmt(a.telefone) : 'sem celular'}</span></td>
+        <td>${cursosDoAluno(s, ms)}</td>
         ${verFin ? `<td class="num">${emAtraso(deve)}</td>` : ''}
       </tr>`;
   }
@@ -80,7 +81,7 @@
     const filtrando = filtro.q || filtro.situacao !== 'todos' || filtro.curso !== 'todos';
     const acoes = [
       Shell.pode('matriculas', 'criar') ? '<a href="matricula-nova.html" class="btn-sec">Nova matrícula</a>' : '',
-      Shell.pode('alunos', 'criar') ? `<button type="button" data-novo class="btn-pri">${ICONE.mais}Cadastrar aluno</button>` : '',
+      Shell.pode('alunos', 'criar') ? `<button type="button" data-novo class="btn-pri">${ICONE.mais}Novo aluno</button>` : '',
     ].join('');
     tela.innerHTML = `
       <div>
@@ -90,21 +91,21 @@
           <div class="ml-auto flex flex-wrap items-center gap-2">
             ${selectFiltro('f-situacao', SITUACOES.filter((s) => s.id !== 'vencido' || verFin), filtro.situacao, 'Situação')}
             ${selectFiltro('f-curso', [{ id: 'todos', nome: 'Todos os cursos' }, ...Aulor.cursos().map((c) => ({ id: c.id, nome: c.nome }))], filtro.curso, 'Curso')}
-            ${filtrando ? '<button type="button" data-limpar class="btn-fantasma">Limpar</button>' : ''}
+            ${filtrando ? `<button type="button" data-limpar class="${BOTAO_LINK} ml-1">Limpar</button>` : ''}
           </div>
         </div>
         <div class="painel overflow-hidden">
-          ${lista.length ? `
           <div class="overflow-x-auto">
-            <table class="tabela">
-              <thead><tr>${thOrdem('Aluno', '')}<th>Contato</th><th>Curso</th>${verFin ? thOrdem('Em atraso', 'vencido', 'text-right') : ''}</tr></thead>
-              <tbody>${visiveis.map((x) => linha(x, verFin)).join('')}</tbody>
+            <table class="tabela table-fixed">
+              <thead><tr>${thOrdem('Aluno', '')}<th class="w-[28%]">Contato</th><th class="w-[24%]">Curso</th>${verFin ? thOrdem('Em atraso', 'vencido', 'num w-36') : ''}</tr></thead>
+              <tbody>${lista.length ? visiveis.map((x) => linha(x, verFin)).join('') : `
+                <tr><td colspan="${verFin ? 4 : 3}" class="py-10 text-center text-sm ${APOIO}">${filtrando ? `Nenhum aluno corresponde à busca e aos filtros. <button type="button" data-limpar class="${BOTAO_LINK} ml-1">Limpar filtros</button>` : 'Nenhum aluno cadastrado. Cadastre o primeiro para matricular.'}</td></tr>`}</tbody>
             </table>
           </div>
-          <div class="px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs ${APOIO} border-t border-slate-100 dark:border-neutral-900 tabular-nums">
-            <p>${restantes ? `Mostrando ${visiveis.length} de ${lista.length} alunos` : `${lista.length} de ${total} alunos`}</p>
+          ${lista.length ? `<div class="${RODAPE_TABELA} flex flex-wrap items-center justify-between gap-2">
+            <p>${restantes ? `Mostrando ${visiveis.length} de ${lista.length} alunos` : `${plural(lista.length, 'aluno')}${filtrando ? ` de ${total}` : ''}`}</p>
             ${restantes ? `<button type="button" data-mais class="btn-sec btn-pequeno">Mostrar mais ${Math.min(POR_PAGINA, restantes)}</button>` : ''}
-          </div>` : vazio('Nenhum aluno encontrado', filtrando ? 'Nenhum aluno corresponde à busca e aos filtros.' : 'Cadastre o primeiro aluno para matricular.', filtrando ? '<button type="button" data-limpar class="btn-sec">Limpar filtros</button>' : '')}
+          </div>` : ''}
         </div>
       </div>`;
     ligar();

@@ -32,7 +32,7 @@
     const presentes = Object.values(a.presencas).filter((v) => v === 'P').length;
     const n = feita ? Object.keys(a.presencas).length : Aulor.participantes(a).length;
     const acao = feita
-      ? `<a href="chamada.html?aula=${a.id}" class="btn-sec ${TOQUE}">${ICONE.check}${presentes} de ${n} presentes</a>`
+      ? `<a href="chamada.html?aula=${a.id}" title="Ver a chamada" class="inline-flex items-center gap-2 max-sm:h-11 rounded-sm hover:underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 dark:focus-visible:ring-sky-400/50">${status('ok', 'Chamada feita')}<span class="text-xs ${APOIO} tabular-nums">${presentes}/${n}</span></a>`
       : a.data <= hoje && Shell.podeChamada(t)
         ? `<a href="chamada.html?aula=${a.id}" class="btn-pri ${TOQUE}">Fazer chamada · ${plural(n, 'aluno')}</a>`
         : `<span class="text-xs ${APOIO}">${plural(n, 'aluno')}</span>`;

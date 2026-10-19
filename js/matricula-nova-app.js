@@ -55,7 +55,7 @@
         ${cabecalhoPagina({ titulo: 'Nova matrícula', subtitulo: 'Três passos. As parcelas são lançadas em Contas a receber ao confirmar.', voltar: { href: 'matriculas.html', rotulo: 'Matrículas' } })}
         <div class="grid lg:grid-cols-3 gap-4 items-start">
           <div class="lg:col-span-2 space-y-4">
-            ${secao(1, 'Aluno', 'Quem vai estudar. Responsável e quem paga vêm do cadastro.', htmlAluno(alunoId), Shell.pode('alunos', 'criar') ? `<button type="button" data-novo-aluno class="btn-fantasma">${ICONE.mais}Cadastrar aluno</button>` : '')}
+            ${secao(1, 'Aluno', 'Quem vai estudar. Responsável e quem paga vêm do cadastro.', htmlAluno(alunoId), Shell.pode('alunos', 'criar') ? `<button type="button" data-novo-aluno class="btn-fantasma">${ICONE.mais}Novo aluno</button>` : '')}
             ${secao(2, 'Curso e turma', 'Só turmas planejadas ou em andamento, com vaga.', `
               ${campoCombo('turmaId', opcoesTurmas(), turmaId, { vazio: 'Escolha a turma' })}
               ${ERRO('turmaId')}
@@ -155,7 +155,7 @@
     infoTurma.innerHTML = t ? info([['Professor', esc(Aulor.professor(t.professorId).nome)], ['Período', `${dataBr(t.inicio)} a ${dataBr(t.fim)}`], ['Local', esc(t.local || '—')]]) : '';
 
     // "Quem paga" só é remontado quando o aluno muda (assim a escolha não se perde a cada tecla).
-    // Nessa hora também aplica as preferências da aba "Endereço e pagamento" do aluno.
+    // Nessa hora também aplica as preferências do cartão "Quem paga" do aluno.
     const pagador = form.querySelector('[data-pagador]');
     if (pagador.dataset.montado !== (a?.id ?? '-')) {
       pagador.dataset.montado = a?.id ?? '-';

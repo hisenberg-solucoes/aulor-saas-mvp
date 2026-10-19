@@ -32,20 +32,26 @@
     return r ? status(r.tom, r.nome) : status(st.tom, st.nome);
   }
 
+  // Colunas na ordem das Vendas do original: código (o link), aluno, curso, valor e o que pede ação.
   function linha(m, verFin) {
     const a = Aulor.aluno(m.alunoId);
     const t = Aulor.turma(m.turmaId);
+    const curso = Aulor.curso(t.cursoId).nome;
     const ps = Aulor.parcelasDaMatricula(m.id).filter((l) => l.status !== 'cancelado');
     const pagas = ps.filter((l) => l.status === 'pago').length;
-    const vencidas = ps.filter((l) => Aulor.situacaoLancamento(l) === 'vencido').length;
+    const vencidas = ps.filter((l) => Aulor.situacaoLancamento(l) === 'vencido');
     return `<tr data-href="matricula.html?id=${m.id}" class="${FOCO_LINHA} ${m.status === 'cancelada' ? 'linha-apagada' : ''}">
-      <td><div class="flex items-center gap-3 min-w-[14rem]">${avatar(a.nome, 'h-9 w-9 text-xs')}<div class="min-w-0">
-        <a href="matricula.html?id=${m.id}" class="link-registro font-medium ${TITULO} hover:underline underline-offset-2 focus-visible:outline-none">${esc(a.nome)}</a>
-        <p class="text-xs ${APOIO} tabular-nums">Matrícula ${esc(m.codigo)} · ${dataBr(m.data)}</p>
+      <td><a href="matricula.html?id=${m.id}" class="${LINK_REGISTRO} font-mono">${esc(m.codigo)}</a>
+        <p class="text-xs ${APOIO} truncate">${dataBr(m.data)}${m.criadaPor ? ` · ${esc(m.criadaPor)}` : ''}</p></td>
+      <td><div class="flex items-center gap-2.5">${avatar(a.nome)}<div class="min-w-0">
+        <p class="text-sm font-medium ${TITULO} truncate">${esc(a.nome)}</p>
+        <p class="text-xs ${APOIO} truncate"><span class="font-mono">${cpfFmt(a.cpf)}</span></p>
       </div></div></td>
-      <td class="max-w-[16rem]"><span class="block truncate" title="${esc(Aulor.curso(t.cursoId).nome)}">${esc(Aulor.curso(t.cursoId).nome)}</span><p class="text-xs ${APOIO}">${esc(t.codigo)}${m.trocas?.length ? ' · trocou de turma' : ''}</p></td>
-      <td class="num">${moeda(m.valorFinal)}<p class="text-xs ${APOIO}">${m.parcelas}×${m.desconto ? ` · desc. ${moeda(m.desconto)}` : ''}</p></td>
-      ${verFin ? `<td class="whitespace-nowrap">${ps.length ? `<span class="tabular-nums">${pagas} de ${ps.length} pagas</span>${vencidas ? `<p class="text-xs text-red-700 dark:text-red-400">${vencidas} ${vencidas > 1 ? 'vencidas' : 'vencida'}</p>` : ''}` : `<span class="${APOIO}">—</span>`}</td>` : ''}
+      <td><p class="truncate" title="${esc(curso)}">${esc(curso)}</p><p class="text-xs ${APOIO} truncate">${esc(t.codigo)}${m.trocas?.length ? ' · trocou de turma' : ''}</p></td>
+      <td class="num">${moeda(m.valorFinal)}${m.desconto ? `<p class="text-xs ${APOIO} line-through">${moeda(m.valorCurso)}</p>` : ''}</td>
+      ${verFin ? `<td>${ps.length ? (vencidas.length
+        ? `<p class="font-medium text-red-700 dark:text-red-400 tabular-nums">${plural(vencidas.length, 'parcela vencida', 'parcelas vencidas')} · ${moeda(vencidas.reduce((s, l) => s + l.valor, 0))}</p><p class="text-xs ${APOIO} tabular-nums">${pagas} de ${ps.length} pagas</p>`
+        : `<span class="tabular-nums">${pagas} de ${ps.length} pagas</span>`) : `<span class="${APOIO}">—</span>`}</td>` : ''}
       <td>${situacao(m)}</td>
     </tr>`;
   }
@@ -55,6 +61,7 @@
     const total = Aulor.matriculas().length;
     const verFin = Shell.pode('receber');
     const filtrando = filtro.q || filtro.status !== 'ativa' || filtro.curso !== 'todos' || filtro.periodo !== 'todos';
+    const soma = itens.filter((m) => m.status !== 'cancelada').reduce((s, m) => s + m.valorFinal, 0);
     tela.innerHTML = `
       <div>
         ${cabecalhoPagina({ titulo: `Matrículas <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${total}</span>`, subtitulo: 'Aluno + turma + condições de pagamento. Ao confirmar, as parcelas entram em Contas a receber.', acoes: Shell.pode('matriculas', 'criar') ? `<a href="matricula-nova.html" class="btn-pri">${ICONE.mais}Nova matrícula</a>` : '' })}
@@ -64,14 +71,16 @@
             ${selectFiltro('f-status', STATUS, filtro.status, 'Situação')}
             ${selectFiltro('f-curso', [{ id: 'todos', nome: 'Todos os cursos' }, ...Aulor.cursos().map((c) => ({ id: c.id, nome: c.nome }))], filtro.curso, 'Curso')}
             ${selectFiltro('f-periodo', PERIODOS, filtro.periodo, 'Data da matrícula')}
-            ${filtrando ? '<button type="button" data-limpar class="btn-fantasma">Limpar</button>' : ''}
+            ${filtrando ? `<button type="button" data-limpar class="${BOTAO_LINK} ml-1">Limpar</button>` : ''}
           </div>
         </div>
         <div class="painel overflow-hidden">
-          ${itens.length ? `<div class="overflow-x-auto"><table class="tabela">
-            <thead><tr><th>Aluno</th><th>Curso e turma</th><th class="text-right">Valor</th>${verFin ? '<th>Parcelas</th>' : ''}<th>Situação</th></tr></thead>
-            <tbody>${itens.map((m) => linha(m, verFin)).join('')}</tbody></table></div>
-            <p class="px-4 py-2.5 text-xs ${APOIO} border-t border-slate-100 dark:border-neutral-900 tabular-nums">${itens.length} de ${total} matrículas</p>` : vazio('Nenhuma matrícula encontrada', 'Nenhuma matrícula corresponde à busca e aos filtros.', filtrando ? '<button type="button" data-limpar class="btn-sec">Limpar filtros</button>' : '')}
+          <div class="overflow-x-auto"><table class="tabela table-fixed">
+            <thead><tr><th class="w-[170px]">Matrícula</th><th class="w-[24%]">Aluno</th><th>Curso e turma</th><th class="num w-[120px]">Valor</th>${verFin ? '<th class="w-[15%]">Parcelas</th>' : ''}<th class="w-[120px]">Situação</th></tr></thead>
+            <tbody>${itens.length ? itens.map((m) => linha(m, verFin)).join('') : `
+              <tr><td colspan="${verFin ? 6 : 5}" class="py-10 text-center text-sm ${APOIO}">${total ? `Nenhuma matrícula corresponde à busca e aos filtros.${filtrando ? ` <button type="button" data-limpar class="${BOTAO_LINK} ml-1">Limpar filtros</button>` : ''}` : 'Nenhuma matrícula ainda.'}</td></tr>`}</tbody>
+          </table></div>
+          <div class="${RODAPE_TABELA} flex flex-wrap items-center justify-between gap-2"><span>${plural(itens.length, 'matrícula')}${itens.length !== total ? ` de ${total}` : ''}</span><span>Soma (sem canceladas): <strong class="font-semibold">${moeda(soma)}</strong></span></div>
         </div>
       </div>`;
     ligarLinhasLink(tela);
