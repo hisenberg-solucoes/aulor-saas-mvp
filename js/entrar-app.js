@@ -9,7 +9,8 @@
   const ativos = USUARIOS.filter((u) => u.status === 'ativo');
   const grupos = [
     { nome: 'Equipe da escola', usuarios: ativos.filter((u) => u.vinculos.some((v) => v.tipo === 'colaborador')) },
-    { nome: 'Professores', usuarios: ativos.filter((u) => u.vinculos.some((v) => v.tipo === 'instrutor')) },
+    // Quem é da equipe e também dá aula (um usuário só) aparece uma vez, na equipe.
+    { nome: 'Instrutores', usuarios: ativos.filter((u) => u.vinculos.some((v) => v.tipo === 'instrutor') && !u.vinculos.some((v) => v.tipo === 'colaborador')) },
   ];
   // Só páginas locais do próprio sistema (evita redirecionar para fora ou para javascript:).
   const volta = /^[a-z-]+\.html(\?[\w=&%.-]*)?$/.test(parametroUrl('volta') ?? '') ? parametroUrl('volta') : null;

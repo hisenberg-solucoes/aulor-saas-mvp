@@ -36,7 +36,7 @@
             const eu = u.id === Shell.usuario().id;
             return `<tr class="${u.status === 'inativo' ? 'opacity-60' : ''}">
               <td><div class="flex items-center gap-3 max-w-[18rem]">${avatar(u.nome)}<div class="min-w-0"><p class="font-medium text-slate-900 dark:text-neutral-100">${esc(u.nome)}${eu ? ' <span class="text-xs font-normal text-slate-400">· você</span>' : ''}</p><p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(u.cargo)} · ${esc(u.email)}</p></div></div></td>
-              <td>${tipoDe(u) === 'instrutor' ? pilula('info', 'Professor') : pilula('neutro', 'Equipe')}</td>
+              <td>${tipoDe(u) === 'instrutor' ? pilula('info', 'Instrutor') : pilula('neutro', 'Equipe')}</td>
               <td class="text-sm">${u.perfis.map((id) => { const p = PERFIS.find((x) => x.id === id); return p ? (Shell.pode('perfis-acesso') ? `<a class="link" href="perfil.html?id=${p.id}">${esc(p.nome)}</a>` : esc(p.nome)) : ''; }).join(', ') || '<span class="text-slate-400">nenhum</span>'}</td>
               <td class="num">${extras(u) || '<span class="text-slate-400">—</span>'}</td>
               <td>${status(tom, nome)}${u.status === 'convidado' && Shell.pode('usuarios', 'convidar') ? `<br><button type="button" data-aceite="${u.id}" class="text-xs font-semibold link" title="Na demonstração, simula a pessoa aceitando o convite por e-mail">Simular aceite</button>` : ''}</td>
@@ -90,7 +90,7 @@
 
   function abrirForm(u = null) {
     const tipo = u ? tipoDe(u) : 'colaborador';
-    const semUsuario = Aulor.professores().filter((p) => !USUARIOS.some((x) => x.vinculos.some((v) => v.tipo === 'instrutor' && v.id === p.id)));
+    const semUsuario = Aulor.professores().filter((p) => p.status === 'ativo' && !USUARIOS.some((x) => x.vinculos.some((v) => v.tipo === 'instrutor' && v.id === p.id)));
     const { form } = modalFormulario({
       id: 'form-usuario',
       titulo: u ? `Editar acesso de ${u.nome}` : 'Convidar usuário',
@@ -103,7 +103,7 @@
           <legend class="rotulo">Quem é</legend>
           <div class="grid grid-cols-2 gap-2">
             <label class="rounded-lg border px-3 py-2.5 text-sm cursor-pointer border-slate-300 dark:border-neutral-700 has-[:checked]:border-petrol-800 dark:has-[:checked]:border-sky-400 has-[:checked]:bg-petrol-800/5"><input type="radio" name="tipo" value="colaborador" class="sr-only" checked><b>Equipe da escola</b><span class="block text-xs text-slate-500">Direção, secretaria, financeiro…</span></label>
-            <label class="rounded-lg border px-3 py-2.5 text-sm cursor-pointer border-slate-300 dark:border-neutral-700 has-[:checked]:border-petrol-800 dark:has-[:checked]:border-sky-400 has-[:checked]:bg-petrol-800/5 ${semUsuario.length ? '' : 'opacity-50 pointer-events-none'}"><input type="radio" name="tipo" value="instrutor" class="sr-only"><b>Professor</b><span class="block text-xs text-slate-500">${semUsuario.length ? 'Do cadastro de professores' : 'Todos já têm acesso'}</span></label>
+            <label class="rounded-lg border px-3 py-2.5 text-sm cursor-pointer border-slate-300 dark:border-neutral-700 has-[:checked]:border-petrol-800 dark:has-[:checked]:border-sky-400 has-[:checked]:bg-petrol-800/5 ${semUsuario.length ? '' : 'opacity-50 pointer-events-none'}"><input type="radio" name="tipo" value="instrutor" class="sr-only"><b>Instrutor</b><span class="block text-xs text-slate-500">${semUsuario.length ? 'Do cadastro de instrutores' : 'Todos já têm acesso'}</span></label>
           </div>
         </fieldset>
         <div data-campos-equipe class="grid sm:grid-cols-2 gap-4">
@@ -112,8 +112,8 @@
           ${campo('cargo', 'Cargo', '', { extra: 'placeholder="Secretária, auxiliar…"' })}
         </div>
         <div data-campos-professor class="hidden">
-          <label class="rotulo" for="f-professorId">Professor</label>
-          ${campoCombo('professorId', semUsuario.map((p) => ({ id: p.id, nome: p.nome, descricao: p.email })), '', { vazio: 'Escolha o professor' })}
+          <label class="rotulo" for="f-professorId">Instrutor</label>
+          ${campoCombo('professorId', semUsuario.map((p) => ({ id: p.id, nome: p.nome, descricao: p.contato.email })), '', { vazio: 'Escolha o instrutor' })}
           ${ERRO('professorId')}
         </div>`}
         ${u ? campo('cargo', 'Cargo', u.cargo) : ''}
@@ -141,9 +141,9 @@
         let novo;
         if (t === 'instrutor') {
           const p = Aulor.professor(fd.get('professorId'));
-          if (!p) erros.push({ campo: 'professorId', mensagem: 'Escolha o professor.' });
+          if (!p) erros.push({ campo: 'professorId', mensagem: 'Escolha o instrutor.' });
           if (erros.length) return erros;
-          novo = { nome: p.nome, email: p.email, cargo: 'Professor(a)', vinculos: [{ tipo: 'instrutor', id: p.id }] };
+          novo = { nome: p.nome, email: p.contato.email, cargo: 'Instrutor(a)', vinculos: [{ tipo: 'instrutor', id: p.id }] };
         } else {
           const nome = String(fd.get('nome') ?? '').trim();
           const email = String(fd.get('email') ?? '').trim().toLowerCase();

@@ -10,7 +10,9 @@ O backend (`../Aulor`) tem hoje só o contexto **Platform** implementado: tenant
 - Plano e módulos habilitados por tenant (feature flags lidos do catálogo comercial), configurados manualmente pela equipe Aulor.
 - Auditoria das ações sensíveis: cancelamento de matrícula, estorno, emissão e cancelamento de certificado, mudança de perfil.
 
-**Academics:** cursos (carga, modalidade, módulos opcionais, valor de referência), turmas (agenda → aulas até a carga horária, professor, vagas) e professores.
+**Academics:** cursos (carga, modalidade, módulos opcionais, valor de referência), turmas (agenda → aulas até a carga horária, instrutor, vagas) e instrutores.
+
+**People (Pessoas):** pessoa uma vez só, com os papéis de equipe (colaborador: cargo, admissão, afastamento, desligamento, vínculo com o usuário) e docente (instrutor: remuneração PJ, RPA ou folha, valor hora, contratos assinados no Clicksign, pagamentos com NF ou recibo, antecedentes anuais, LGPD, convite por link). Ao convidar um instrutor cujo e-mail já é de um colaborador, acrescentar o vínculo ao mesmo usuário.
 
 **EnrollmentContracts:** aluno (cadastro rápido, responsável obrigatório para menor, CPF único por escola), matrícula com geração das parcelas, bloqueio de lotação e duplicidade, cancelamento que cancela só as parcelas em aberto.
 
@@ -40,7 +42,7 @@ O backend (`../Aulor`) tem hoje só o contexto **Platform** implementado: tenant
 
 ## Funcionalidades avançadas do Institucional
 
-Contratos corporativos (pacotes de vagas, in company, aprovação de inscritos), portal RH e dossiês, formações com remarcação em cadeia, instrutores PJ e repasses com NF, salas, laboratórios e softwares, compras e estoque, CRM, metas e comissões, consulta SPC, multiunidade, SSO, NFS-e, API e integrações, indicadores especializados. Boa parte já está desenhada no `snorlax-jornada` e pode voltar como módulo.
+Contratos corporativos (pacotes de vagas, in company, aprovação de inscritos), portal RH e dossiês, formações com remarcação em cadeia, salas, laboratórios e softwares, compras e estoque, CRM, metas e comissões, consulta SPC, multiunidade, SSO, NFS-e, API e integrações, indicadores especializados. Boa parte já está desenhada no `snorlax-jornada` e pode voltar como módulo.
 
 ## Riscos e decisões pendentes
 
@@ -54,6 +56,7 @@ Contratos corporativos (pacotes de vagas, in company, aprovação de inscritos),
 | Regra de frequência | Aula sem chamada não conta e falta justificada conta como presença (configurável). Confirmar com coordenações. |
 | Certificado com dívida | O bloqueio é opcional e vem desligado. Há escolas que exigem quitação. |
 | Cancelamento sem multa | O MVP não calcula rescisão. Escolas com contrato rígido podem precisar disso cedo. |
+| Pagamento de instrutor × contas a pagar | Na demo, o pagamento registrado na ficha do instrutor não vira lançamento em Contas a pagar, e a semente lança as aulas do mês à parte. No SaaS, o pagamento do instrutor deve gerar (ou baixar) a conta a pagar. |
 | Provedor de cobrança | Para boleto e Pix, Asaas é o caminho natural; Stripe faz sentido se houver cartão recorrente internacional. |
 | Migração das planilhas | O maior esforço de onboarding. Sem importação, o ciclo de venda trava. |
 | Persistência do protótipo | O localStorage existe só para a demonstração. Não há multi-tenancy nem segurança: o backend usa RLS por tenant (ADR 0002). |

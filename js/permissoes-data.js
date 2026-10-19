@@ -11,8 +11,8 @@
 // ============================================================
 
 const TIPOS_USUARIO = [
-  { id: 'colaborador', nome: 'Equipe', plural: 'Equipe da escola', descricao: 'Direção, secretaria, financeiro e coordenação. Usa o sistema da escola.', portal: 'escola', cadastro: 'usuarios.html?id=', lista: 'Usuários' },
-  { id: 'instrutor', nome: 'Professor', plural: 'Professores', descricao: 'Dá aulas nas turmas. Vê as próprias aulas e registra chamada e diário.', portal: 'escola', cadastro: 'professores.html?professor=', lista: 'Professores' },
+  { id: 'colaborador', nome: 'Equipe', plural: 'Equipe da escola', descricao: 'Direção, secretaria, financeiro e coordenação. Usa o sistema da escola.', portal: 'escola', cadastro: 'colaborador.html?id=', lista: 'Colaboradores' },
+  { id: 'instrutor', nome: 'Instrutor', plural: 'Instrutores', descricao: 'Dá aulas nas turmas. Vê as próprias aulas e registra chamada e diário.', portal: 'escola', cadastro: 'instrutor.html?id=', lista: 'Instrutores' },
 ];
 
 const PORTAIS = [
@@ -40,7 +40,6 @@ const FEATURES = [
 
   { id: 'cursos', modulo: 'pedagogico', nome: 'Cursos', acoes: [VER, ACAO_('criar', 'Criar'), ACAO_('editar', 'Editar')] },
   { id: 'turmas', modulo: 'pedagogico', nome: 'Turmas', acoes: [VER, ACAO_('criar', 'Criar'), ACAO_('editar', 'Editar'), ACAO_('concluir', 'Concluir turma')] },
-  { id: 'professores', modulo: 'pessoas', nome: 'Professores', acoes: [VER, ACAO_('gerenciar', 'Cadastrar e editar')] },
 
   { id: 'frequencia', modulo: 'pedagogico', nome: 'Frequência de todas as turmas', acoes: [VER, ACAO_('registrar', 'Lançar e corrigir chamada')] },
   { id: 'minhas-aulas', modulo: 'pedagogico', nome: 'Minhas aulas (professor)', acoes: [VER, ACAO_('registrar', 'Fazer chamada e diário')] },
@@ -50,6 +49,8 @@ const FEATURES = [
   { id: 'receber', modulo: 'financeiro', nome: 'Contas a receber', acoes: [VER, ACAO_('registrar', 'Registrar recebimento'), ACAO_('estornar', 'Estornar')] },
   { id: 'pagar', modulo: 'financeiro', nome: 'Contas a pagar', acoes: [VER, ACAO_('lancar', 'Lançar conta'), ACAO_('pagar', 'Registrar pagamento')] },
 
+  { id: 'colaboradores', modulo: 'pessoas', nome: 'Colaboradores', acoes: [VER, ACAO_('gerenciar', 'Cadastrar, editar e dar acesso')] },
+  { id: 'instrutores', modulo: 'pessoas', nome: 'Instrutores', acoes: [VER, ACAO_('gerenciar', 'Cadastrar, editar, contratos e pagamentos')] },
   { id: 'usuarios', modulo: 'pessoas', nome: 'Usuários', acoes: [VER, ACAO_('convidar', 'Convidar'), ACAO_('editar', 'Editar'), ACAO_('inativar', 'Inativar')] },
   { id: 'perfis-acesso', modulo: 'configuracoes', nome: 'Perfis de acesso', acoes: [VER, ACAO_('gerenciar', 'Gerenciar')] },
   { id: 'configuracoes', modulo: 'configuracoes', nome: 'Configurações da escola', acoes: [VER, ACAO_('editar', 'Editar')] },
@@ -67,7 +68,7 @@ const PERFIS = [
     id: 'secretaria', nome: 'Secretaria', tipos: ['colaborador'], ativo: true,
     permissoes: {
       painel: ['visualizar'], alunos: ['visualizar', 'criar', 'editar'], matriculas: ['visualizar', 'criar', 'cancelar'],
-      cursos: ['visualizar'], turmas: ['visualizar'], professores: ['visualizar'], frequencia: ['visualizar'],
+      cursos: ['visualizar'], turmas: ['visualizar'], instrutores: ['visualizar'], frequencia: ['visualizar'],
       certificados: ['visualizar', 'emitir'], receber: ['visualizar', 'registrar'],
     },
   },
@@ -82,7 +83,7 @@ const PERFIS = [
     id: 'coordenacao', nome: 'Coordenação pedagógica', tipos: ['colaborador'], ativo: true,
     permissoes: {
       painel: ['visualizar'], alunos: ['visualizar', 'editar'], matriculas: ['visualizar'],
-      cursos: ['visualizar', 'criar', 'editar'], turmas: ['visualizar', 'criar', 'editar', 'concluir'], professores: ['visualizar', 'gerenciar'],
+      cursos: ['visualizar', 'criar', 'editar'], turmas: ['visualizar', 'criar', 'editar', 'concluir'], instrutores: ['visualizar', 'gerenciar'],
       frequencia: ['visualizar', 'registrar'], certificados: ['visualizar', 'emitir', 'cancelar'],
     },
   },
@@ -93,16 +94,17 @@ const PERFIS = [
 ];
 
 // status: ativo | convidado (convite enviado, ainda sem acesso) | inativo.
-// vinculos: colaborador aponta para o próprio usuário; professor aponta para o cadastro do professor (pr*).
+// vinculos: colaborador aponta para o cadastro na equipe (c*); instrutor, para o cadastro do instrutor (pr*).
+// Quem é das duas coisas (Sérgio) tem um usuário só com os dois vínculos.
 const USUARIOS = [
-  { id: 'u1', nome: 'Marina Azevedo', email: 'marina@escolaatlas.com.br', cargo: 'Diretora', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'u1' }], perfis: ['administrador'], extras: {} },
-  { id: 'u2', nome: 'Paula Ribeiro', email: 'paula@escolaatlas.com.br', cargo: 'Secretária', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'u2' }], perfis: ['secretaria'], extras: {} },
-  { id: 'u3', nome: 'Renato Siqueira', email: 'renato@escolaatlas.com.br', cargo: 'Financeiro', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'u3' }], perfis: ['financeiro'], extras: {} },
-  { id: 'u4', nome: 'Camila Duarte', email: 'camila@escolaatlas.com.br', cargo: 'Coordenadora pedagógica', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'u4' }], perfis: ['coordenacao'], extras: { matriculas: ['criar'] } },
+  { id: 'u1', nome: 'Marina Azevedo', email: 'marina@escolaatlas.com.br', cargo: 'Diretora', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'c1' }], perfis: ['administrador'], extras: {} },
+  { id: 'u2', nome: 'Paula Ribeiro', email: 'paula@escolaatlas.com.br', cargo: 'Secretária', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'c2' }], perfis: ['secretaria'], extras: {} },
+  { id: 'u3', nome: 'Renato Siqueira', email: 'renato@escolaatlas.com.br', cargo: 'Financeiro', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'c3' }], perfis: ['financeiro'], extras: {} },
+  { id: 'u4', nome: 'Camila Duarte', email: 'camila@escolaatlas.com.br', cargo: 'Coordenadora pedagógica', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'c4' }], perfis: ['coordenacao'], extras: { matriculas: ['criar'] } },
   { id: 'u5', nome: 'Carlos Mendes', email: 'carlos.mendes@escolaatlas.com.br', cargo: 'Professor', status: 'ativo', vinculos: [{ tipo: 'instrutor', id: 'pr1' }], perfis: ['professor'], extras: {} },
   { id: 'u6', nome: 'Juliana Prado', email: 'juliana.prado@escolaatlas.com.br', cargo: 'Professora', status: 'ativo', vinculos: [{ tipo: 'instrutor', id: 'pr2' }], perfis: ['professor'], extras: {} },
   { id: 'u7', nome: 'Rafael Teixeira', email: 'rafael.teixeira@escolaatlas.com.br', cargo: 'Professor', status: 'ativo', vinculos: [{ tipo: 'instrutor', id: 'pr3' }], perfis: ['professor'], extras: {} },
   { id: 'u8', nome: 'Beatriz Nogueira', email: 'beatriz.nogueira@escolaatlas.com.br', cargo: 'Professora', status: 'ativo', vinculos: [{ tipo: 'instrutor', id: 'pr4' }], perfis: ['professor'], extras: {} },
-  { id: 'u9', nome: 'Sérgio Albuquerque', email: 'sergio.albuquerque@escolaatlas.com.br', cargo: 'Professor', status: 'ativo', vinculos: [{ tipo: 'instrutor', id: 'pr5' }], perfis: ['professor'], extras: {} },
-  { id: 'u10', nome: 'Lucas Fernandes', email: 'lucas@escolaatlas.com.br', cargo: 'Auxiliar administrativo', status: 'convidado', vinculos: [{ tipo: 'colaborador', id: 'u10' }], perfis: ['secretaria'], extras: {} },
+  { id: 'u9', nome: 'Sérgio Albuquerque', email: 'sergio.albuquerque@escolaatlas.com.br', cargo: 'Professor', status: 'ativo', vinculos: [{ tipo: 'instrutor', id: 'pr5' }, { tipo: 'colaborador', id: 'c5' }], perfis: ['professor'], extras: {} },
+  { id: 'u10', nome: 'Lucas Fernandes', email: 'lucas@escolaatlas.com.br', cargo: 'Auxiliar administrativo', status: 'convidado', vinculos: [{ tipo: 'colaborador', id: 'c6' }], perfis: ['secretaria'], extras: {} },
 ];

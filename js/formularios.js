@@ -396,7 +396,7 @@ function abrirFormCurso({ curso = null, aoSalvar }) {
 function abrirFormTurma({ turma = null, cursoId = null, aoSalvar }) {
   const travada = turma && Aulor.turmaTemChamada(turma.id);
   const cursos = Aulor.cursos().filter((c) => c.ativo || c.id === turma?.cursoId).map((c) => ({ id: c.id, nome: c.nome, descricao: `${c.cargaHoraria} h · ${Aulor.MODALIDADES.find((m) => m.id === c.modalidade)?.nome}` }));
-  const professores = Aulor.professores().filter((p) => p.ativo).map((p) => ({ id: p.id, nome: p.nome, descricao: p.especialidade }));
+  const professores = Aulor.professores().filter((p) => p.status === 'ativo').map((p) => ({ id: p.id, nome: p.nome, descricao: p.especialidade }));
   const agenda = turma?.agenda ?? Agenda.vazia();
   const { form } = modalFormulario({
     id: 'form-turma',
@@ -448,43 +448,4 @@ function abrirFormTurma({ turma = null, cursoId = null, aoSalvar }) {
   form.addEventListener('change', previa);
   form.addEventListener('input', previa);
   previa();
-}
-
-// ---------- Professor ----------
-
-function abrirFormProfessor({ professor = null, aoSalvar }) {
-  const temUsuario = professor && USUARIOS.some((u) => u.vinculos.some((v) => v.tipo === 'instrutor' && v.id === professor.id));
-  const podeConvidar = Shell.pode('usuarios', 'convidar');
-  modalFormulario({
-    id: 'form-professor',
-    titulo: professor ? 'Editar professor' : 'Novo professor',
-    subtitulo: professor ? professor.nome : 'Quem dá aulas nas turmas.',
-    rotulo: professor ? 'Salvar' : 'Cadastrar',
-    largura: 'lg',
-    foco: '#f-nome',
-    corpo: `
-      <div class="grid sm:grid-cols-2 gap-4">
-        ${campo('nome', 'Nome completo', professor?.nome, { obrigatorio: true, classe: 'sm:col-span-2' })}
-        ${campo('email', 'E-mail', professor?.email, { tipo: 'email', obrigatorio: true })}
-        ${campo('telefone', 'Celular', professor?.telefone ? telefoneFmt(professor.telefone) : '', { tipo: 'tel' })}
-        ${campo('especialidade', 'Especialidade', professor?.especialidade, { classe: 'sm:col-span-2' })}
-      </div>
-      ${!temUsuario && podeConvidar ? `
-        <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-neutral-800 px-3 py-2.5 text-sm cursor-pointer">
-          <input type="checkbox" name="convidar" value="1" class="check mt-0.5" ${professor ? '' : 'checked'}>
-          <span>Convidar para o Aulor com o perfil <b>Professor</b><span class="block text-xs text-slate-500 dark:text-neutral-400">Ele verá só as próprias turmas para fazer chamada e diário, inclusive pelo celular.</span></span>
-        </label>` : ''}`,
-    aoSalvar: (fd) => {
-      const d = Object.fromEntries(fd.entries());
-      const r = professor ? Aulor.atualizarProfessor(professor.id, d) : Aulor.criarProfessor(d);
-      if (r.erros) return r.erros;
-      if (d.convidar && podeConvidar) {
-        const novo = { id: `u${Math.max(0, ...USUARIOS.map((u) => Number(u.id.slice(1)) || 0)) + 1}`, nome: r.professor.nome, email: r.professor.email, cargo: 'Professor(a)', status: 'convidado', vinculos: [{ tipo: 'instrutor', id: r.professor.id }], perfis: ['professor'], extras: {} };
-        USUARIOS.push(novo);
-        Acessos.salvar();
-      }
-      aoSalvar(r.professor);
-      return [];
-    },
-  });
 }

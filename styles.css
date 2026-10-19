@@ -82,3 +82,41 @@ html.dark {
 @media print {
   [data-sidebar], header, #toast-root, #demo-root, [data-nao-imprimir] { display: none !important; }
 }
+
+/* ---------- Pessoas (telas trazidas do protótipo original) ----------
+   Tokens da direção "Ficha" que os apps de colaboradores e instrutores usam em
+   var(--f-*), e a linha apagada (inativo/desligado) com a pílula nítida. */
+:root {
+  --f-tinta: #071E2C;
+  --f-tinta-2: #4E5B61;
+  --f-tinta-3: #5E6C74;
+  --f-marca-tinta: #0F3D4E;
+  --f-foco: #0F3D4E;
+  --f-cobre: #C47A3A;
+  --f-cobre-tinta: #985824; /* cobre como texto: o oficial dá 3:1 sobre areia */
+}
+
+html.dark {
+  --f-tinta: #F5F0E8;
+  --f-tinta-2: #AAB6BB;
+  --f-tinta-3: #8A989E;
+  --f-marca-tinta: #9CC3D1;
+  --f-foco: #9CC3D1;
+  --f-cobre: #C47A3A;
+  --f-cobre-tinta: #E2A56D;
+}
+
+.linha-apagada > :not(:has(.pilula)),
+.linha-apagada :has(.pilula) > :not(:has(.pilula)):not(.pilula) {
+  opacity: 0.6;
+}
+
+/* Perfil que só visualiza (js/pessoas-pagina.js): somem os botões que alteram dados. */
+body[data-so-leitura] #tela :is(button[id^="btn-"]:not(#btn-limpar-filtros, #btn-foto), #ct-editar, #ct-gerar, #ct-clicksign, #ct-pagamento, #ct-mais,
+  [data-ajustar], [data-assinar], [data-editar-faixa], [data-nf], [data-pagar], [data-remover-declaracao], [data-remover-faixa], [data-remover-pagamento], button:disabled) {
+  display: none !important;
+}
+body[data-so-leitura] #btn-foto {
+  pointer-events: none;
+}
+

@@ -15,7 +15,7 @@
 // ============================================================
 
 const Aulor = (() => {
-  const CHAVE = 'aulor-mvp-dados-v3'; // v3: vários modelos de certificado
+  const CHAVE = 'aulor-mvp-dados-v4'; // v4: colaboradores e instrutores completos (Pessoas)
 
   // ---------- Datas e números ----------
 
@@ -124,7 +124,7 @@ const Aulor = (() => {
     } catch (_) { /* volta para a semente */ }
     db = Semente.gerar(hoje());
     salvar();
-    ['aulor-mvp-dados-v1', 'aulor-mvp-dados-v2'].forEach((k) => localStorage.removeItem(k)); // formatos anteriores
+    ['aulor-mvp-dados-v1', 'aulor-mvp-dados-v2', 'aulor-mvp-dados-v3'].forEach((k) => localStorage.removeItem(k)); // formatos anteriores
     return db;
   }
   function salvar() {
@@ -153,7 +153,8 @@ const Aulor = (() => {
   const alunos = () => D().alunos;
   const cursos = () => D().cursos;
   const turmas = () => D().turmas;
-  const professores = () => D().professores;
+  const professores = () => D().professores; // = instrutores (js/instrutores-motor.js)
+  const colaboradores = () => D().colaboradores;
   const matriculas = () => D().matriculas;
   const lancamentos = () => D().lancamentos;
   const certificados = () => D().certificados;
@@ -604,33 +605,6 @@ const Aulor = (() => {
     if (typeof d.ativo === 'boolean') c.ativo = d.ativo;
     salvar();
     return { curso: c };
-  }
-
-  function validarProfessor(d) {
-    const erros = [];
-    if (texto(d.nome).split(/\s+/).filter(Boolean).length < 2) erros.push({ campo: 'nome', mensagem: 'Informe nome e sobrenome.' });
-    if (!ehEmail(texto(d.email))) erros.push({ campo: 'email', mensagem: 'E-mail válido (usado no acesso do professor).' });
-    const tel = digitos(d.telefone);
-    if (tel && (tel.length < 10 || tel.length > 11)) erros.push({ campo: 'telefone', mensagem: 'Celular com DDD.' });
-    return erros;
-  }
-  const dadosProfessor = (d) => ({ nome: texto(d.nome), email: texto(d.email).toLowerCase(), telefone: digitos(d.telefone), especialidade: texto(d.especialidade) });
-
-  function criarProfessor(d) {
-    const erros = validarProfessor(d);
-    if (erros.length) return { erros };
-    const p = { id: novoId('pr', professores()), ...dadosProfessor(d), ativo: true };
-    professores().push(p);
-    salvar();
-    return { professor: p };
-  }
-  function atualizarProfessor(id, d) {
-    const p = professor(id);
-    const erros = validarProfessor(d);
-    if (erros.length) return { erros };
-    Object.assign(p, dadosProfessor(d));
-    salvar();
-    return { professor: p };
   }
 
   // ---------- Turmas ----------
@@ -1216,7 +1190,7 @@ const Aulor = (() => {
     VARIAVEIS_CERTIFICADO, STATUS_MODELO, OPCOES_MODELO,
     hoje, somarDias, somarMeses, diasEntre, ehData, arred,
     carregar, salvar, restaurar, usar,
-    escola, config, assinatura, alunos, cursos, turmas, professores, matriculas, lancamentos, certificados,
+    escola, config, assinatura, alunos, cursos, turmas, professores, colaboradores, matriculas, lancamentos, certificados,
     aluno, curso, turma, professor, matricula, lancamento, certificado, aula,
     aulasDaTurma, matriculasDaTurma, matriculasDoAluno, parcelasDaMatricula, lancamentosDoAluno, certificadoDaMatricula, turmasDoProfessor,
     idade, gerarDatasAulas, situacaoTurma, ocupacao, RISCO, minimoAlunos, riscoTurma, turmasEmRisco, progressoTurma, participantes, chamadaPendente, chamadasPendentes, aulasDoDia, proximasAulas,
@@ -1224,7 +1198,7 @@ const Aulor = (() => {
     situacaoLancamento, diasAtraso, encargos, gerarParcelas, inadimplentes, estaInadimplente, resumoMes,
     situacaoAluno, alunosAtivos,
     validarAluno, criarAluno, atualizarAluno, salvarResponsavel, bloqueioRemoverResponsavel, removerResponsavel, atualizarEnderecoPagamento,
-    ORIGENS, PAPEIS_RESPONSAVEL, UFS, ehMenor, responsavelFinanceiro, responsavelPrincipal, contatoCobranca, criarCurso, atualizarCurso, criarProfessor, atualizarProfessor,
+    ORIGENS, PAPEIS_RESPONSAVEL, UFS, ehMenor, responsavelFinanceiro, responsavelPrincipal, contatoCobranca, criarCurso, atualizarCurso,
     turmaTemChamada, criarTurma, atualizarTurma,
     validarMatricula, simularMatricula, matricular, cancelarMatricula,
     registrarBaixa, estornar, lancarConta, cancelarLancamento,

@@ -62,6 +62,7 @@ const Semente = (() => {
     { id: 'pr3', nome: 'Rafael Teixeira', email: 'rafael.teixeira@escolaatlas.com.br', telefone: '43991234503', especialidade: 'Desenvolvimento web', valorHora: 55 },
     { id: 'pr4', nome: 'Beatriz Nogueira', email: 'beatriz.nogueira@escolaatlas.com.br', telefone: '43991234504', especialidade: 'Design gráfico', valorHora: 50 },
     { id: 'pr5', nome: 'Sérgio Albuquerque', email: 'sergio.albuquerque@escolaatlas.com.br', telefone: '43991234505', especialidade: 'Administração e rotinas de escritório', valorHora: 45 },
+    { id: 'pr6', nome: 'Henrique Bastos', email: 'henrique.bastos@exemplo.com.br', telefone: '43991234506', especialidade: 'Marketing digital', valorHora: 50 },
   ];
 
   const CURSOS = [
@@ -166,6 +167,158 @@ const Semente = (() => {
     ];
   }
 
+  // ---------- Pessoas: equipe (colaboradores) e instrutores ----------
+  // Mesmo modelo das telas de Pessoas do protótipo original (js/colaboradores-*.js,
+  // js/instrutores-*.js). Cada instrutor mostra um caso: PJ em dia com contrato
+  // assinado e turma ainda sem contrato (Carlos), contrato em assinatura e
+  // antecedentes do ano pendentes (Juliana), sem empresa e contrato em rascunho
+  // (Rafael), RPA com recibo (Beatriz), professor CLT da equipe, de folha (Sérgio),
+  // e um convidado que ainda não preencheu o cadastro pelo link (Henrique).
+
+  const LGPD_VERSAO = '2026-01'; // mesma versão de LGPD_INSTRUTOR (js/instrutores-data.js)
+
+  const DOCENTES = {
+    pr1: { remuneracao: 'pj', apelido: 'Carlos', cpf: '305218447', rg: '8.214.330-1', nascimento: '1984-03-14', bio: 'Analista de BI; ensina Excel do básico aos dashboards desde 2017.', cep: '86020-080', rua: 'Rua Sergipe', numero: '512', bairro: 'Centro', emergencia: 'Lúcia Mendes', empresa: ['C. Mendes Treinamentos ME', '483120570001', 'Sicredi'], desde: -1460, tag: 'TAG-0031' },
+    pr2: { remuneracao: 'pj', apelido: 'Ju', cpf: '418036925', rg: '9.120.447-3', nascimento: '1991-08-22', bio: 'Desenvolvedora Python; leva a lógica de programação para quem nunca programou.', cep: '86050-460', rua: 'Rua das Orquídeas', numero: '88', bairro: 'Gleba Palhano', emergencia: 'Marcos Prado', empresa: ['Juliana Prado Tecnologia Ltda', '520417380001', 'Banco do Brasil'], desde: -820, antecedentesAtrasados: true },
+    pr3: { remuneracao: 'pj', apelido: 'Rafa', cpf: '527149036', rg: '10.338.512-0', nascimento: '1995-11-02', bio: 'Front-end; turmas online de desenvolvimento web.', cep: '86060-210', rua: 'Rua Maranhão', numero: '1420', bairro: 'Vila Nova', emergencia: 'Clara Teixeira', empresa: null, desde: -95, semLgpd: true },
+    pr4: { remuneracao: 'rpa', apelido: 'Bia', cpf: '639250147', rg: '7.905.118-6', nascimento: '1988-05-30', bio: 'Designer gráfica autônoma; Photoshop e Canva para pequenos negócios.', cep: '86039-150', rua: 'Rua Belo Horizonte', numero: '76', bairro: 'Jardim Higienópolis', emergencia: 'Pedro Nogueira', contaPessoal: { banco: 'Nubank', agencia: '0001', conta: '4471820-3', pix: 'beatriz.nogueira@escolaatlas.com.br' }, desde: -400 },
+    pr5: { remuneracao: 'folha', colaboradorId: 'c5', apelido: 'Sérgio', bio: 'Técnico em administração; é da equipe (CLT) e dá as turmas de Assistente Administrativo.', custoHoraReferencia: 38, desde: -2190, tag: 'TAG-0012' },
+    pr6: { remuneracao: 'pj', apelido: 'Henrique', convidado: true, desde: -2 },
+  };
+
+  const EQUIPE = [
+    { id: 'c1', nome: 'Marina Azevedo', cpf: '214587390', nascimento: '1978-09-12', cargo: 'Diretora', departamentoId: 'direcao', anos: 9, usuarioId: 'u1', email: 'marina@escolaatlas.com.br', celular: '43999120034', observacoes: 'Responsável legal pela escola.' },
+    { id: 'c2', nome: 'Paula Ribeiro', cpf: '318745902', nascimento: '1990-02-27', cargo: 'Secretária', departamentoId: 'administrativo', anos: 4, usuarioId: 'u2', email: 'paula@escolaatlas.com.br', celular: '43988745512' },
+    { id: 'c3', nome: 'Renato Siqueira', cpf: '427519863', nascimento: '1986-06-08', cargo: 'Analista financeiro', departamentoId: 'financeiro', anos: 3, usuarioId: 'u3', email: 'renato@escolaatlas.com.br', celular: '43996671120' },
+    { id: 'c4', nome: 'Camila Duarte', cpf: '536028174', nascimento: '1983-12-01', cargo: 'Coordenadora pedagógica', departamentoId: 'pedagogico', anos: 6, usuarioId: 'u4', email: 'camila@escolaatlas.com.br', celular: '43984410098' },
+    { id: 'c5', nome: 'Sérgio Albuquerque', cpf: '645193728', nascimento: '1975-04-19', cargo: 'Instrutor e assistente de coordenação', departamentoId: 'pedagogico', anos: 6, usuarioId: 'u9', email: 'sergio.albuquerque@escolaatlas.com.br', celular: '43991234505', observacoes: 'CLT. Também dá aula (instrutor de folha).' },
+    { id: 'c6', nome: 'Lucas Fernandes', cpf: '754306281', nascimento: '', cargo: 'Auxiliar administrativo', departamentoId: 'administrativo', dias: -12, usuarioId: 'u10', email: 'lucas@escolaatlas.com.br', celular: '' },
+    { id: 'c7', nome: 'Tatiane Moura', cpf: '863417592', nascimento: '1994-07-15', cargo: 'Recepcionista', departamentoId: 'administrativo', anos: 2, email: '', celular: '43995540021', afastamento: { inicio: -60, retorno: 60, motivo: 'maternidade' } },
+    { id: 'c8', nome: 'Bianca Lopes', cpf: '972530418', nascimento: '2004-01-23', cargo: 'Estagiária de marketing', departamentoId: 'marketing', dias: -140, email: 'bianca.lopes@escolaatlas.com.br', celular: '43992234410' },
+    { id: 'c9', nome: 'Diego Barros', cpf: '081624937', nascimento: '1992-10-05', cargo: 'Consultor comercial', departamentoId: 'comercial', anos: 2, email: '', celular: '43991876650', desligamento: { dias: -120, motivo: 'pedido' } },
+  ];
+
+  function pessoas(db, hoje) {
+    const { somarDias, arred } = Aulor;
+    const ate = (d) => (d < hoje ? d : hoje);
+    const ano = Number(hoje.slice(0, 4));
+    const ev = (em, texto) => ({ em, texto });
+    const turma = (id) => db.turmas.find((t) => t.id === id);
+    const curso = (id) => db.cursos.find((c) => c.id === id);
+
+    // ---------- Colaboradores ----------
+    db.colaboradores = EQUIPE.map((e, n) => {
+      const admissao = e.anos ? somarDias(hoje, -365 * e.anos - 40 * n) : somarDias(hoje, e.dias);
+      const historico = [ev(admissao, `Admitido(a) como ${e.cargo.toLowerCase()}`)];
+      const afastamento = e.afastamento ? { inicio: somarDias(hoje, e.afastamento.inicio), previsaoRetorno: somarDias(hoje, e.afastamento.retorno), motivo: e.afastamento.motivo } : null;
+      if (afastamento) historico.push(ev(afastamento.inicio, 'Afastado(a) — licença-maternidade/paternidade'));
+      const desligamento = e.desligamento ? { data: somarDias(hoje, e.desligamento.dias), motivo: e.desligamento.motivo } : null;
+      if (desligamento) historico.push(ev(desligamento.data, 'Desligado(a) — pedido de desligamento'));
+      return {
+        id: e.id, matricula: String(n + 1).padStart(4, '0'), nome: e.nome, nomeSocial: '', cpf: cpfComDv(e.cpf), nascimento: e.nascimento,
+        cargo: e.cargo, departamentoId: e.departamentoId, admissao,
+        status: desligamento ? 'desligado' : afastamento ? 'afastado' : 'ativo', desligamento, afastamento,
+        contato: { email: e.email, celular: e.celular }, acesso: { usuarioId: e.usuarioId ?? null },
+        observacoes: e.observacoes ?? '', historico,
+      };
+    });
+
+    // ---------- Instrutores ----------
+    // Tabela padrão: valor base + degraus por tamanho de turma e por curso longo (como no original).
+    const tabela = (id, base) => [
+      { id: `${id}-vh1`, nome: 'Padrão', valor: base, alunosMin: null, alunosMax: null, horasMin: null, horasMax: null },
+      { id: `${id}-vh2`, nome: 'Turma pequena (até 8 alunos)', valor: Math.round(base * 0.85), alunosMin: null, alunosMax: 8, horasMin: null, horasMax: null },
+      { id: `${id}-vh3`, nome: 'Turma grande (16+ alunos)', valor: Math.round(base * 1.15), alunosMin: 16, alunosMax: null, horasMin: null, horasMax: null },
+      { id: `${id}-vh4`, nome: 'Curso longo (40 h ou mais)', valor: Math.round(base * 0.95), alunosMin: null, alunosMax: null, horasMin: 40, horasMax: null },
+    ];
+    // Mesma regra do motor (Instrutores.valorHoraPara): a faixa mais específica que casa; empate → maior valor.
+    function itemDe(t, valoresHora) {
+      const horas = curso(t.cursoId).cargaHoraria;
+      const alunos = t.capacidade;
+      const casa = (f) => (f.alunosMin == null || alunos >= f.alunosMin) && (f.alunosMax == null || alunos <= f.alunosMax) && (f.horasMin == null || horas >= f.horasMin) && (f.horasMax == null || horas <= f.horasMax);
+      const esp = (f) => [f.alunosMin, f.alunosMax, f.horasMin, f.horasMax].filter((x) => x != null).length;
+      const f = valoresHora.filter(casa).sort((a, b) => esp(b) - esp(a) || b.valor - a.valor)[0];
+      return { id: `it-${t.id}`, turmaId: t.id, cursoId: t.cursoId, horas, alunos, valorHoraId: f.id, valorHora: f.valor, total: horas * f.valor };
+    }
+    const codigos = {};
+    function contrato(id, turmaIds, valoresHora, status, criadoEm, rem) {
+      const a = criadoEm.slice(0, 4);
+      codigos[a] = (codigos[a] ?? 0) + 1;
+      const c = { id, codigo: `CI-${a}-${String(codigos[a]).padStart(3, '0')}`, tipo: 'cursos', formacaoId: null, itens: turmaIds.map((t) => itemDe(turma(t), valoresHora)), status, criadoEm, documento: null, clicksign: null, observacoes: '', historico: [ev(criadoEm, 'Contrato criado')] };
+      if (status === 'rascunho') return c;
+      const gerado = somarDias(criadoEm, 1);
+      c.documento = { versao: 1, geradoEm: gerado };
+      c.historico.push(ev(gerado, 'Documento gerado (v1)'));
+      const enviado = somarDias(criadoEm, 1);
+      c.clicksign = { envelopeId: `cs-${id}`, enviadoEm: enviado, instrutorAssinouEm: ate(somarDias(criadoEm, 2)), escolaAssinouEm: status === 'assinatura' ? null : ate(somarDias(criadoEm, 3)) };
+      c.historico.push(ev(enviado, 'Enviado ao Clicksign'), ev(c.clicksign.instrutorAssinouEm, `Assinado pelo instrutor (Clicksign)${rem === 'rpa' ? ' — RPA' : ''}`));
+      if (c.clicksign.escolaAssinouEm) c.historico.push(ev(c.clicksign.escolaAssinouEm, 'Assinado pela escola (Clicksign)'));
+      return c;
+    }
+    const pagamento = (id, c, itemTurma, tipo, descricao, fracao, previsto, { nf = null, pagoEm = null } = {}) => {
+      const it = c.itens.find((x) => x.turmaId === itemTurma);
+      return { id, contratoId: c.id, itemId: it.id, tipo, descricao, valor: arred(it.total * fracao), previsto, nf, pagoEm };
+    };
+    const nf = (numero, emitidaEm, recibo = false) => ({ numero, emitidaEm, arquivo: `${recibo ? 'recibo' : 'nf'}-${numero}.pdf` });
+
+    db.professores = PROFESSORES.map((p, n) => {
+      const d = DOCENTES[p.id];
+      const desde = somarDias(hoje, d.desde);
+      const vh = d.remuneracao === 'folha' ? [] : tabela(p.id, p.valorHora);
+      const i = {
+        id: p.id, nome: p.nome, apelido: d.apelido, status: 'ativo', remuneracao: d.remuneracao, colaboradorId: d.colaboradorId ?? null, foto: null,
+        nascimento: d.colaboradorId ? '' : (d.nascimento ?? ''), cpf: d.colaboradorId || !d.cpf ? '' : cpfComDv(d.cpf), rg: d.rg ?? '',
+        especialidade: p.especialidade, bio: d.bio ?? '',
+        endereco: d.cep ? { cep: d.cep, logradouro: d.rua, numero: d.numero, complemento: '', bairro: d.bairro, cidade: 'Londrina', uf: 'PR' } : { cep: '', logradouro: '', numero: '', complemento: '', bairro: '', cidade: 'Londrina', uf: 'PR' },
+        contato: { email: p.email, whatsapp: p.telefone, emergencia: { nome: d.emergencia ?? '', telefone: d.emergencia ? `4398${String(8120000 + n * 1111)}` : '' } },
+        empresa: d.empresa ? { cnpj: cnpjComDv(d.empresa[1]), razaoSocial: d.empresa[0], banco: d.empresa[2], agencia: '0730', conta: `${41208 + n * 913}-${n}`, pix: cnpjComDv(d.empresa[1]) } : null,
+        contaPessoal: d.contaPessoal ?? null,
+        custoHoraReferencia: d.custoHoraReferencia ?? null,
+        valoresHora: vh, contratos: [], pagamentos: [],
+        antecedentes: d.convidado ? [] : d.antecedentesAtrasados ? [{ id: `ant-${ano - 1}`, ano: ano - 1, enviadoEm: `${ano - 1}-02-10`, arquivo: `antecedentes-${ano - 1}.pdf` }] : [{ id: `ant-${ano}`, ano, enviadoEm: ate(`${ano}-01-${String(12 + n).padStart(2, '0')}`), arquivo: `antecedentes-${ano}.pdf` }],
+        lgpd: d.convidado || d.semLgpd ? null : { aceitoEm: desde, versao: LGPD_VERSAO },
+        tagEstacionamento: d.tag ? { possui: true, identificacao: d.tag, cedidaEm: desde, devolvidaEm: '' } : { possui: false, identificacao: '', cedidaEm: '', devolvidaEm: '' },
+        cadastro: d.convidado ? { token: `convite-${p.id}-${hoje.replaceAll('-', '')}`, criadoEm: desde, preenchidoEm: '' } : null,
+        observacoes: '', historico: [ev(desde, d.convidado ? 'Convite enviado para completar o cadastro' : 'Cadastro criado')],
+      };
+      return i;
+    });
+
+    const prof = (id) => db.professores.find((p) => p.id === id);
+    const criadoAntes = (ids, dias) => somarDias(ids.map((t) => turma(t).inicio).sort()[0], -dias);
+
+    // Carlos (PJ): turma concluída paga e encerrada; duas turmas em andamento num contrato assinado; tu7 sem contrato.
+    const carlos = prof('pr1');
+    const c1 = contrato('ci-pr1-1', ['tu1'], carlos.valoresHora, 'encerrado', criadoAntes(['tu1'], 12), 'pj');
+    const t1 = turma('tu1');
+    carlos.pagamentos.push(pagamento('pg-pr1-1', c1, 'tu1', 'curso', 'Curso completo', 1, somarDias(t1.fim, 10), { nf: nf('1187', somarDias(t1.fim, 3)), pagoEm: somarDias(t1.fim, 10) }));
+    c1.historico.push(ev(somarDias(t1.fim, 10), 'Pagamento registrado'), ev(somarDias(t1.fim, 11), 'Contrato encerrado'));
+    const c2 = contrato('ci-pr1-2', ['tu2', 'tu8'], carlos.valoresHora, 'assinado', criadoAntes(['tu2', 'tu8'], 9), 'pj');
+    const t2 = turma('tu2');
+    carlos.pagamentos.push(pagamento('pg-pr1-2', c2, 'tu2', 'curso', 'Curso completo', 1, somarDias(hoje, 3), { nf: nf('1203', ate(somarDias(t2.fim, 2))) }));
+    carlos.pagamentos.push(pagamento('pg-pr1-3', c2, 'tu8', 'parcial', 'Primeira metade das aulas', 0.5, somarDias(hoje, 12)));
+    carlos.contratos.push(c1, c2);
+
+    // Juliana (PJ): contrato enviado ao Clicksign, falta a escola assinar; antecedentes do ano não chegaram.
+    const juliana = prof('pr2');
+    juliana.contratos.push(contrato('ci-pr2-1', ['tu3'], juliana.valoresHora, 'assinatura', ate(somarDias(hoje, -4)), 'pj'));
+
+    // Rafael (PJ, sem empresa ainda): rascunho para a turma online que começa em breve.
+    const rafael = prof('pr3');
+    rafael.contratos.push(contrato('ci-pr3-1', ['tu6'], rafael.valoresHora, 'rascunho', somarDias(hoje, -1), 'pj'));
+
+    // Beatriz (RPA): contrato assinado, primeira parte com recibo, aguardando o pagamento.
+    const beatriz = prof('pr4');
+    const c5 = contrato('ci-pr4-1', ['tu4'], beatriz.valoresHora, 'assinado', criadoAntes(['tu4'], 6), 'rpa');
+    beatriz.pagamentos.push(pagamento('pg-pr4-1', c5, 'tu4', 'parcial', 'Primeira metade das aulas', 0.5, somarDias(hoje, 5), { nf: nf('RPA-0042', ate(somarDias(hoje, -1)), true) }));
+    beatriz.contratos.push(c5);
+
+    db.professores.forEach((i) => {
+      i.contratos.forEach((c) => i.historico.push(ev(c.criadoEm, `Contrato ${c.codigo} criado`)));
+      i.historico.sort((a, b) => a.em.localeCompare(b.em));
+    });
+  }
+
   function gerar(hoje) {
     const rnd = prng(20261009);
     const r = (min, max) => min + Math.floor(rnd() * (max - min + 1));
@@ -187,7 +340,8 @@ const Semente = (() => {
       },
       assinatura: { planoId: 'gestao', condicoes: {} },
       modelosCertificado: modelosCertificado(hoje),
-      professores: PROFESSORES.map((p) => ({ ...p, ativo: true })),
+      professores: PROFESSORES.map((p) => ({ id: p.id, nome: p.nome })), // registro completo em pessoas()
+      colaboradores: [],
       cursos: CURSOS.map((c) => ({ modeloCertificadoId: null, ...c, modulos: c.modulos.map((m) => ({ ...m })), ativo: true })),
       turmas: [], aulas: [], alunos: [], matriculas: [], lancamentos: [], certificados: [],
     };
@@ -437,7 +591,7 @@ const Semente = (() => {
       FIXAS.forEach((f) => novoLanc({ tipo: 'pagar', descricao: f.descricao, categoria: f.categoria, fornecedor: f.fornecedor, valor: arred(f.valor()), vencimento: `${mes.slice(0, 8)}${String(f.dia).padStart(2, '0')}`, status: 'aberto', forma: 'boleto', criadoEm: somarDias(mes, -10), criadoPor: 'Renato Siqueira' }));
       // Professores: horas de aula do mês anterior × valor-hora, pagas no dia 5.
       const anterior = somarMeses(mes, -1, 1).slice(0, 7);
-      db.professores.forEach((p) => {
+      PROFESSORES.filter((p) => DOCENTES[p.id].remuneracao !== 'folha').forEach((p) => { // folha: a aula já está no salário
         const h = db.aulas.filter((a) => a.data.startsWith(anterior) && db.turmas.find((t) => t.id === a.turmaId).professorId === p.id)
           .reduce((soma, a) => soma + duracao(a), 0);
         if (h > 0) novoLanc({ tipo: 'pagar', descricao: `Aulas de ${p.nome} (${String(h).replace('.', ',')} h)`, categoria: 'Professores', fornecedor: p.nome, valor: arred(h * p.valorHora), vencimento: `${mes.slice(0, 8)}05`, status: 'aberto', forma: 'pix', criadoEm: mes, criadoPor: 'Renato Siqueira' });
@@ -478,6 +632,7 @@ const Semente = (() => {
 
     db.lancamentos = lanc;
     complementarAlunos(db, hoje);
+    pessoas(db, hoje);
     return db;
   }
 

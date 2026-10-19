@@ -21,10 +21,10 @@ Abra `http://localhost:8770/` e escolha com quem entrar. Não há build nem depe
 ## Testes
 
 ```bash
-node --test tests/aulor.test.mjs
+node --test tests/*.mjs
 ```
 
-Os testes cobrem as regras do motor (parcelas, matrícula → financeiro → turma, chamada, conclusão, certificado, planos e permissões) e a coerência da semente em várias datas.
+Os testes cobrem as regras do motor (parcelas, matrícula → financeiro → turma, chamada, conclusão, certificado, planos e permissões), Pessoas (remuneração PJ/RPA/folha, quem é da equipe e dá aula, acesso do colaborador, cadastro pelo link) e a coerência da semente em várias datas.
 
 ## Estrutura
 
@@ -39,7 +39,10 @@ Os testes cobrem as regras do motor (parcelas, matrícula → financeiro → tur
 | `js/base.js`, `js/ui-form.js`, `js/formularios.js` | Componentes de tela e formulários compartilhados |
 | `js/certificado.js` | Render e impressão do certificado a partir de um modelo (CSS do original) |
 | `js/modelos-certificado-ui.js` | Peças comuns da lista e do editor de modelos de certificado |
+| `js/colaboradores-*.js`, `js/instrutores-*.js`, `js/calendario-instrutor-ui.js`, `js/cadastro-instrutor-*.js`, `js/cadastro-publico-ui.js`, `js/menu-mais.js` | Pessoas, trazidas do original como estão: colaboradores (equipe e acesso) e instrutores (dados, calendário, empresa e valor hora, contratos, pagamentos, documentos e o cadastro pelo link) |
+| `js/pessoas-mvp.js` | Liga os motores de Pessoas à base única: o instrutor é o registro de `professores`, as turmas chegam por `Cursos` e o calendário lê as aulas do MVP |
+| `js/pessoas-ui.js`, `js/pessoas-pagina.js` | Helpers de tela do original e a marcação que as telas de Pessoas esperam (drawer, modo só leitura, cabeçalho do cadastro público) |
 | `js/*-app.js` | Uma por página |
 | `_tools/gerar_paginas.py` | Gera os `.html` (mesmo esqueleto; o layout vem do `shell.js`). Para criar uma tela, acrescente-a em `PAGINAS` e em `Shell.MENU` |
 
-Os dados ficam no `localStorage` deste navegador (`aulor-mvp-dados-v3` e `aulor-mvp-acessos-v1`). Em **Demonstração › Restaurar dados iniciais**, a escola é gerada de novo. Isso existe só para demonstrar: não é isolamento entre escolas nem segurança.
+Os dados ficam no `localStorage` deste navegador (`aulor-mvp-dados-v4` e `aulor-mvp-acessos-v2`). Em **Demonstração › Restaurar dados iniciais**, a escola é gerada de novo. Isso existe só para demonstrar: não é isolamento entre escolas nem segurança.

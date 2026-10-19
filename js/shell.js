@@ -15,8 +15,9 @@
 
 // Usuários e perfis salvos (mesma chave lida por js/permissoes-app.js).
 const Acessos = (() => {
-  const CHAVE = 'aulor-mvp-acessos-v1';
+  const CHAVE = 'aulor-mvp-acessos-v2'; // v2: colaboradores e instrutores (Pessoas)
   function carregar() {
+    localStorage.removeItem('aulor-mvp-acessos-v1'); // formato anterior
     const bruto = localStorage.getItem(CHAVE);
     if (!bruto) return;
     try {
@@ -50,7 +51,8 @@ const Shell = (() => {
     risco: 'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z',
     alertas: 'M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0',
     cobrancas: 'M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185zM9.75 9h.008v.008H9.75V9zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 4.5h.008v.008h-.008V13.5zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z',
-    professores: 'M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z',
+    instrutores: 'M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z',
+    colaboradores: 'M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z',
     usuarios: 'M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z',
     template: 'M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z',
     seta: 'M19.5 8.25l-7.5 7.5-7.5-7.5',
@@ -62,7 +64,7 @@ const Shell = (() => {
 
   // feature (permissão) → módulo do plano comercial.
   const MODULO_DA_FEATURE = {
-    painel: 'painel', alunos: 'cadastros', cursos: 'cadastros', turmas: 'cadastros', professores: 'cadastros',
+    painel: 'painel', alunos: 'cadastros', cursos: 'cadastros', turmas: 'cadastros', colaboradores: 'cadastros', instrutores: 'cadastros',
     matriculas: 'matriculas', receber: 'receber', pagar: 'pagar', frequencia: 'frequencia', 'minhas-aulas': 'frequencia',
     certificados: 'certificados', usuarios: 'acessos', 'perfis-acesso': 'acessos', configuracoes: 'painel',
   };
@@ -90,7 +92,8 @@ const Shell = (() => {
     { grupo: 'pedagogico', href: 'templates-certificado.html', nome: 'Modelos de certificado', icone: 'template', features: ['configuracoes'] },
     { grupo: 'financeiro', href: 'financeiro.html', nome: 'Financeiro', icone: 'financeiro', features: ['receber', 'pagar'] },
     { grupo: 'financeiro', href: 'cobrancas.html', nome: 'Cobranças', icone: 'cobrancas', features: ['receber'] },
-    { grupo: 'pessoas', href: 'professores.html', nome: 'Professores', icone: 'professores', features: ['professores'] },
+    { grupo: 'pessoas', href: 'colaboradores.html', nome: 'Colaboradores', icone: 'colaboradores', features: ['colaboradores'] },
+    { grupo: 'pessoas', href: 'instrutores.html', nome: 'Instrutores', icone: 'instrutores', features: ['instrutores'] },
     { grupo: 'pessoas', href: 'usuarios.html', nome: 'Usuários', icone: 'usuarios', features: ['usuarios'] },
     { grupo: 'configuracoes', href: 'perfis.html', nome: 'Perfis de acesso', icone: 'acessos', features: ['perfis-acesso'] },
     { grupo: 'configuracoes', href: 'configuracoes.html', nome: 'Escola e regras', icone: 'configuracoes', features: ['configuracoes'] },
@@ -99,6 +102,7 @@ const Shell = (() => {
     'aluno.html': 'alunos.html', 'curso.html': 'cursos.html', 'turma.html': 'turmas.html',
     'matricula.html': 'matriculas.html', 'matricula-nova.html': 'matriculas.html', 'chamada.html': 'aulas.html',
     'certificado.html': 'certificados.html', 'modelo-certificado.html': 'templates-certificado.html', 'perfil.html': 'perfis.html',
+    'colaborador.html': 'colaboradores.html', 'instrutor.html': 'instrutores.html',
   };
 
   // ---------- Sessão (demonstração: escolher o usuário, sem senha) ----------

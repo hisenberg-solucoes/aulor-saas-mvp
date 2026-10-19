@@ -20,6 +20,7 @@ Protótipo navegável para escolas de cursos livres (tecnologia, profissionaliza
 | `permissoes-motor.js`, `permissoes-app.js` | Perfis, matrizes, permissões adicionais e "validar acesso". Recebeu a regra de perfil protegido e um modo só leitura |
 | `templates-certificado-motor.js` (CSS, frente/verso, impressão A4) | `js/certificado.js` |
 | Regras de `gerarParcelas`, cálculo de frequência, chamada com todos presentes por padrão, código de validação | `js/aulor.js` |
+| Telas de Colaboradores e Instrutores (lista, ficha em cartões, calendário do instrutor, empresa e valor hora, contratos com Clicksign simulado, pagamentos com NF ou recibo, documentos, cadastro pelo link) e o modelo de pessoas e papéis (PJ, RPA ou folha; quem é da equipe e dá aula) | As mesmas telas e motores, sem reescrever. `js/pessoas-mvp.js` liga tudo à base única (19/10/2026) |
 
 ## 2. Simplificado
 
@@ -37,11 +38,11 @@ Protótipo navegável para escolas de cursos livres (tecnologia, profissionaliza
 
 ## 3. Fica para depois
 
-**Ficaram de fora do menu do original** (voltam como módulo quando fizer sentido): Diretoria (metas, resultados, faturamento por curso, receitas × despesas), empresas e contratos, ocorrências, responsáveis, SPC, formações, áreas, avaliações e questionários, dossiês, salas e feriados, aniversariantes, pagamentos de instrutores, compras, plano de contas, chamados.
+**Ficaram de fora do menu do original** (voltam como módulo quando fizer sentido): Diretoria (metas, resultados, faturamento por curso, receitas × despesas), empresas e contratos, ocorrências, responsáveis, SPC, formações, áreas, avaliações e questionários, dossiês, salas e feriados, aniversariantes, a fila geral de pagamentos de instrutores (os pagamentos estão na ficha de cada instrutor), compras, plano de contas, chamados.
 
 **Desejável após os primeiros clientes:** cobrança automática por boleto/Pix via provedor, portal do aluno, lembretes por e-mail/WhatsApp, contrato em PDF com assinatura eletrônica, relatórios exportáveis, cancelamento e reposição de aula, feriados, transferência e trancamento, notas e avaliações, QR code no certificado.
 
-**Plano Institucional:** contratos corporativos (pacotes de vagas, in company), portal RH, dossiês, instrutores PJ e repasses, salas, laboratórios e softwares, compras e estoque, CRM, metas e comissões, consulta SPC, multiunidade, SSO, NFS-e, formações com remarcação em cadeia, indicadores especializados.
+**Plano Institucional:** contratos corporativos (pacotes de vagas, in company), portal RH, dossiês, salas, laboratórios e softwares, compras e estoque, CRM, metas e comissões, consulta SPC, multiunidade, SSO, NFS-e, formações com remarcação em cadeia, indicadores especializados.
 
 ## 4. Escopo recomendado para a primeira versão comercial
 
@@ -59,7 +60,7 @@ O menu mantém a divisão por módulos do protótipo original. Cada perfil vê s
 | Pedagógico › Alertas de frequência | Quem não alcança mais o mínimo, quem está abaixo e quem está perto, com mensagem pronta para contatar |
 | Pedagógico › Certificados e Modelos de certificado | Prontos para emitir, emissão em lote, impressão/PDF, cancelamento, validação pública; vários modelos (aparência, frente e verso) com prévia ao vivo, padrão da escola e escolha por curso |
 | Financeiro › Financeiro e Cobranças | A receber e a pagar por mês, baixa manual com multa e juros sugeridos, estorno; inadimplentes com lembrete pronto |
-| Pessoas › Professores e Usuários | Professores com acesso opcional ao Aulor; convite, perfis, permissões adicionais e inativação de usuários. O Administrador é protegido |
+| Pessoas › Colaboradores, Instrutores e Usuários | As telas do original como estão. **Colaboradores**: equipe com cargo, admissão, afastamento, desligamento e o usuário de acesso (criar, vincular, perfis, bloquear). **Instrutores**: papel docente da pessoa, com remuneração PJ, RPA ou folha; dados, calendário das aulas, empresa e tabela de valor hora, contratos (rascunho → documento → Clicksign → assinado), pagamentos com NF ou recibo, antecedentes e LGPD, convite com link para o próprio instrutor preencher. Quem é da equipe e dá aula é uma pessoa só. **Usuários**: convite, perfis, permissões adicionais e inativação. O Administrador é protegido |
 | Configurações › Perfis de acesso e Escola e regras | Matriz de permissões; dados da escola, frequência mínima, preferências financeiras e plano contratado |
 
 **Planos (hipótese):** os planos ficam em `js/planos.js`, com módulos por plano, alunos incluídos, faixas e condições especiais por cliente. O **Essencial** traz o núcleo acadêmico e de contas a receber. O **Gestão** acrescenta contas a pagar com resultado do mês e a validação pública de certificados. O **Institucional** usa a hipótese de R$ 2.500/mês com 300 alunos incluídos, R$ 6 por aluno de 301 a 500, R$ 5 de 501 a 1.000 e 17% de desconto no anual. Essencial e Gestão ficam **sem preço** de propósito. Perfis e permissões entram em todos os planos.
@@ -75,3 +76,4 @@ O menu mantém a divisão por módulos do protótipo original. Cada perfil vê s
 7. **A conclusão da turma é um passo explícito.** Ela fecha o resultado de cada aluno (aprovado ou reprovado por frequência), e o certificado só existe depois dela. Bloquear o certificado por parcela vencida é opcional.
 8. **Cobrança manual nesta versão.** Cada lançamento já tem o campo `cobranca` reservado para o identificador do provedor, e as telas dizem claramente que nada é cobrado de verdade.
 9. **A semente é gerada a partir da data de hoje**, para a demonstração nunca ficar velha. "Restaurar" volta ao estado inicial. A persistência local é só para demonstrar: não há isolamento entre escolas nem segurança.
+10. **Pessoas trazidas como estão (19/10/2026).** Colaboradores e Instrutores entram com as telas e os motores do original, em todos os planos. O instrutor é o registro de `professores` da base (as turmas continuam em `professorId`); o rótulo da seção é *Instrutores*, e turma, perfil e Minhas aulas continuam dizendo professor. Quem só visualiza vê a ficha sem os botões de edição.

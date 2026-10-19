@@ -1,6 +1,6 @@
 // ============================================================
 // Cursos: o catálogo da escola. Turmas e professores têm telas próprias
-// (turmas.html, professores.html), como no protótipo original.
+// (turmas.html, instrutores.html), como no protótipo original.
 // ============================================================
 
 (function () {

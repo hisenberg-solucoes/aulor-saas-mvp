@@ -27,7 +27,6 @@ PAGINAS = [
   ('modelo-certificado', 'Modelo de certificado', 'configuracoes', ['certificado', 'modelos-certificado-ui'], 'modelo-certificado-app', ''),
   ('financeiro', 'Financeiro', 'receber,pagar', [], 'financeiro-app', ''),
   ('cobrancas', 'Cobranças', 'receber', [], 'cobrancas-app', ''),
-  ('professores', 'Professores', 'professores', [], 'professores-app', ''),
   ('usuarios', 'Usuários', 'usuarios', [], 'usuarios-app', ''),
   ('configuracoes', 'Escola e regras', 'configuracoes', [], 'configuracoes-app', ''),
 ]
@@ -61,6 +60,20 @@ for arq, titulo, acesso, extras, app, attrs in PAGINAS:
     gravar(arq, pagina(titulo, acesso, extras, app, attrs))
 gravar('entrar', pagina('Entrar', '', [], 'entrar-app', sem_layout=True))
 gravar('validar', pagina('Validar certificado', '', [], 'validar-app', sem_layout=True))
+# Pessoas: telas de colaboradores e instrutores trazidas do protótipo original (helpers próprios em
+# pessoas-ui.js, sem base.js/ui-form.js). pessoas-mvp.js liga os motores originais à base do MVP.
+PESSOAS = ['pessoas-ui', 'pessoas-mvp', 'colaboradores-data', 'colaboradores-motor', 'instrutores-data', 'instrutores-motor', 'menu-mais']
+for arq, titulo, acesso, modo, extras, app in [
+  ('colaboradores', 'Colaboradores', 'colaboradores', 'lista', [], 'colaboradores-app'),
+  ('colaborador', 'Colaborador', 'colaboradores', 'detalhe', [], 'colaboradores-app'),
+  ('instrutores', 'Instrutores', 'instrutores', 'lista', [], 'instrutores-app'),
+  ('instrutor', 'Instrutor', 'instrutores', 'detalhe', ['calendario-instrutor-ui'], 'instrutores-app'),
+]:
+  gravar(arq, pagina(titulo, acesso, PESSOAS + extras + ['pessoas-pagina'], app, f'data-modo="{modo}"', ui=False))
+# Cadastro público do instrutor (link com token): não carrega colaboradores, para não revelar quem é da equipe.
+PUBLICO = ['pessoas-ui', 'instrutores-data', 'instrutores-motor', 'cadastro-publico-ui', 'cadastro-instrutor-ui', 'pessoas-pagina']
+gravar('cadastro-instrutor', pagina('Cadastro do instrutor', '', PUBLICO, 'cadastro-instrutor-app', ui=False, sem_layout=True))
+gravar('cadastro-instrutor-steps', pagina('Cadastro do instrutor', '', PUBLICO, 'cadastro-instrutor-steps-app', ui=False, sem_layout=True))
 # Perfis: app de permissões reaproveitado do protótipo original (helpers próprios, sem base.js/ui-form.js).
 for arq, titulo, modo in [('perfis', 'Perfis de acesso', 'lista'), ('perfil', 'Perfil de acesso', 'detalhe')]:
     gravar(arq, pagina(titulo, 'perfis-acesso', ['perfis-pagina'], 'permissoes-app', f'data-modo="{modo}"', ui=False))

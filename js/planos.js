@@ -19,6 +19,7 @@ const Planos = (() => {
     { id: 'frequencia', nome: 'Aulas, chamada e diário', fase: 'mvp' },
     { id: 'certificados', nome: 'Certificados com código de validação', fase: 'mvp' },
     { id: 'acessos', nome: 'Usuários, perfis e permissões', fase: 'mvp' },
+    { id: 'instrutores_pj', nome: 'Instrutores PJ e RPA: valor hora, contratos e pagamentos', fase: 'mvp' },
     { id: 'pagar', nome: 'Contas a pagar e resultado do mês', fase: 'mvp' },
     { id: 'validacao_publica', nome: 'Página pública de validação de certificados', fase: 'mvp' },
     { id: 'cobranca_integrada', nome: 'Cobrança automática (boleto/Pix) via provedor', fase: 'futuro' },
@@ -28,7 +29,6 @@ const Planos = (() => {
     { id: 'assinatura_eletronica', nome: 'Contrato com assinatura eletrônica', fase: 'futuro' },
     { id: 'contratos_corporativos', nome: 'Contratos corporativos (in company, pacotes de vagas)', fase: 'institucional' },
     { id: 'multiunidade', nome: 'Múltiplas unidades', fase: 'institucional' },
-    { id: 'instrutores_pj', nome: 'Gestão de instrutores PJ e repasses', fase: 'institucional' },
     { id: 'infraestrutura', nome: 'Salas, laboratórios e softwares', fase: 'institucional' },
     { id: 'compras', nome: 'Compras e estoque', fase: 'institucional' },
     { id: 'crm', nome: 'CRM, metas e comissionamento', fase: 'institucional' },
@@ -36,7 +36,7 @@ const Planos = (() => {
     { id: 'sso', nome: 'SSO corporativo', fase: 'institucional' },
   ];
 
-  const ESSENCIAL = ['painel', 'cadastros', 'matriculas', 'receber', 'frequencia', 'certificados', 'acessos'];
+  const ESSENCIAL = ['painel', 'cadastros', 'matriculas', 'receber', 'frequencia', 'certificados', 'acessos', 'instrutores_pj'];
   const GESTAO = [...ESSENCIAL, 'pagar', 'validacao_publica', 'cobranca_integrada', 'portal_aluno', 'relatorios', 'comunicacao'];
   const INSTITUCIONAL = MODULOS.map((m) => m.id);
 

@@ -21,6 +21,7 @@
   --color-neutral-925: #111111;
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Plus Jakarta Sans', ui-sans-serif, sans-serif;
+  --font-registro: 'Source Serif 4', Georgia, serif; /* nome no cabeçalho das fichas de Pessoas */
 }
 
 /* Em camada "components": utilitários na classe (ex.: text-red-700) sobrescrevem estes padrões. */
@@ -104,7 +105,7 @@
   };
   link({ rel: 'preconnect', href: 'https://fonts.googleapis.com' });
   link({ rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' });
-  link({ rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap' });
+  link({ rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap' });
   link({ rel: 'stylesheet', href: 'styles.css' });
   link({ rel: 'icon', type: 'image/svg+xml', href: 'img/aulor-favicon.svg' });
 })();
