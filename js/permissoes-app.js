@@ -1,12 +1,15 @@
 // ============================================================
 // UI de gestão do permissionamento. Toda operação passa pelo
 // motor (Permissoes.*) — a UI apenas reflete o resultado.
+// Visual: Ficha em cartões (DESIGN.md do original), com as classes claras
+// e o par dark: lado a lado nas constantes abaixo.
 // Reaproveitado do protótipo original. Ajustes do Aulor MVP: chave de
-// armazenamento compartilhada com o shell (Acessos.CHAVE), Administrador
+// armazenamento compartilhada com o shell (Acessos.CHAVE), tipos de usuário
+// (equipe e professor, com o vínculo ao cadastro de origem), Administrador
 // protegido e modo só leitura sem a permissão "Perfis de acesso › Gerenciar".
 // ============================================================
 
-const STORAGE_KEY = 'aulor-mvp-acessos-v1';
+const STORAGE_KEY = Acessos.CHAVE; // a mesma de js/shell.js
 const SOMENTE_LEITURA = typeof Shell !== 'undefined' && !Shell.pode('perfis-acesso', 'gerenciar');
 
 // Barra mudanças que o perfil logado não pode fazer ou que tocariam no perfil protegido.
@@ -82,7 +85,128 @@ function esc(texto) {
   }[c]));
 }
 
-const CORES_AVATAR = ['bg-sky-600', 'bg-emerald-600', 'bg-violet-600', 'bg-rose-500', 'bg-amber-500', 'bg-teal-600'];
+const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+
+// Traços dos ícones (Heroicons outline).
+const D = {
+  mais: 'M12 4.5v15m7.5-7.5h-15',
+  busca: 'M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z',
+  baixo: 'M19.5 8.25l-7.5 7.5-7.5-7.5',
+  cima: 'M4.5 15.75l7.5-7.5 7.5 7.5',
+  direita: 'M8.25 4.5l7.5 7.5-7.5 7.5',
+  check: 'M4.5 12.75l6 6 9-13.5',
+  fechar: 'M6 18L18 6M6 6l12 12',
+  expandir: 'M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9',
+  recolher: 'M4.5 15.75l7.5-7.5 7.5 7.5',
+  copiar: 'M16.5 8.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v8.25A2.25 2.25 0 006 16.5h2.25m8.25-8.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-7.5A2.25 2.25 0 018.25 18v-7.5a2.25 2.25 0 012.25-2.25h6z',
+  tela: 'M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25',
+  acao: 'M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59',
+  usuarios: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z',
+  publico: 'M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3zM6 6h.008v.008H6V6z',
+};
+
+function icone(d, classe = 'h-4 w-4', traco = 1.75) {
+  return `<svg class="${classe} shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="${traco}" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="${d}" /></svg>`;
+}
+
+const BOTAO_PRI = 'inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-petrol-800 hover:bg-petrol-900 text-white dark:bg-areia dark:hover:bg-white dark:text-petrol-800 shadow-sm transition';
+const BOTAO_SEC = 'inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium whitespace-nowrap border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition disabled:opacity-40 disabled:pointer-events-none';
+const BOTAO_PERIGO = 'inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-red-600 hover:bg-red-700 text-white shadow-sm transition';
+const BOTAO_CANCELAR = 'inline-flex items-center h-9 px-3.5 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
+const BOTAO_FANTASMA = 'inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium whitespace-nowrap text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition disabled:opacity-40 disabled:pointer-events-none';
+const BOTAO_FANTASMA_FUNDO = BOTAO_FANTASMA.replace('text-slate-500', 'text-slate-600'); // fantasma direto sobre o fundo (6,93:1)
+const BOTAO_ICONE = 'inline-grid place-items-center h-8 w-8 rounded-md text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
+const CAMPO = 'h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-500 dark:placeholder:text-neutral-400 transition focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20 dark:focus:ring-sky-400/20 aria-[invalid=true]:border-red-500';
+const SELECT_FILTRO = 'h-9 max-w-full rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-2.5 text-sm text-slate-700 dark:text-neutral-200 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400';
+const CARTAO = 'bg-white dark:bg-neutral-950 rounded-xl border border-slate-200/80 dark:border-neutral-800 shadow-[0_1px_2px_rgb(7_30_44/0.05)]';
+const POPOVER = 'absolute top-full mt-1 rounded-[10px] border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-[0_12px_32px_-12px_rgba(0,0,0,.28)] p-1.5';
+const ITEM_POPOVER = 'w-full flex items-center gap-2 px-2 rounded-md text-left text-sm transition hover:bg-slate-100 dark:hover:bg-neutral-900';
+const BARRA = 'flex-none mb-4 flex flex-wrap items-center gap-2';
+const LINK = 'font-medium text-petrol-800 dark:text-sky-300 hover:underline underline-offset-2';
+const APOIO = 'text-slate-500 dark:text-neutral-400'; // rótulo, subtítulo e vazio (4,76:1 no cartão)
+const APOIO_FUNDO = 'text-slate-600 dark:text-neutral-400'; // o mesmo papel direto sobre o fundo (6,93:1; o slate-500 dá 4,36:1)
+const TITULO = 'text-slate-900 dark:text-neutral-100';
+const VALOR = 'text-slate-800 dark:text-neutral-100';
+const COBRE_TINTA = 'text-[color:var(--f-cobre-tinta)]'; // "é com você": cobre como texto, nos dois modos
+const THEAD = 'text-xs font-medium text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900';
+const LINHA_HOVER = 'hover:bg-slate-50 dark:hover:bg-neutral-900';
+const PILULA = {
+  neutra: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  extra: 'bg-petrol-800/10 text-petrol-900 dark:bg-sky-950/60 dark:text-sky-200',
+};
+// Faixa neutra: o registro suspenso ou travado que muda o que a tela mostra.
+const FAIXA_NEUTRA = 'mb-4 flex items-center gap-3 rounded-lg px-4 py-3 text-sm bg-slate-200/70 dark:bg-neutral-900 text-slate-700 dark:text-neutral-300';
+// Chips de ação: liberada em seleção petróleo com ✓ (Chips do DESIGN), livre em contorno.
+const CHIP = 'inline-flex items-center gap-1 h-7 px-2.5 rounded-md border text-[12.5px] font-medium transition';
+const CHIP_LIGADO = 'bg-petrol-800/10 border-petrol-800/40 text-petrol-900 hover:border-petrol-800 dark:bg-sky-950/60 dark:border-sky-400/40 dark:text-sky-200 dark:hover:border-sky-400';
+const CHIP_LIVRE = 'bg-white border-slate-300 text-slate-600 hover:border-petrol-800 hover:text-petrol-800 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-sky-400 dark:hover:text-sky-300';
+const CHECK = icone(D.check, 'h-3.5 w-3.5 text-petrol-800 dark:text-sky-300', 2.5);
+// Tag (tipo de usuário): etiqueta com texto etiqueta-tinta; pendência em cobre a 15% com texto cobre-tinta.
+const TAG = 'inline-flex items-center h-6 px-1.5 rounded text-xs font-medium whitespace-nowrap';
+const TAG_TIPO = `${TAG} bg-[color:var(--f-etiqueta)] text-[color:var(--f-etiqueta-tinta)]`;
+const TAG_PENDENTE = `${TAG} bg-laranja/15 ${COBRE_TINTA}`;
+
+function pilula(classe, texto, titulo = '') {
+  return `<span ${titulo ? `title="${esc(titulo)}"` : ''} class="pilula inline-flex items-center whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs font-medium ${classe}">${esc(texto)}</span>`;
+}
+
+const PILULA_INATIVO = pilula(PILULA.neutra, 'Inativo', 'Perfil inativo: não concede nada até ser reativado');
+const PILULA_PROTEGIDO = pilula(PILULA.neutra, 'Protegido', 'Tem acesso a tudo e não pode ser editado, inativado nem excluído');
+
+function campoBusca(id, valor, placeholder, largura = 'w-72') {
+  return `
+    <div class="relative ${largura}">
+      ${icone(D.busca, 'h-4 w-4 text-slate-400 dark:text-neutral-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none', 2)}
+      <input id="${id}" type="search" value="${esc(valor)}" placeholder="${esc(placeholder)}" autocomplete="off" aria-label="${esc(placeholder)}" class="${CAMPO} w-full pl-8">
+    </div>`;
+}
+
+// Controle segmentado (portais, filtros), igual às partes de aba de Turmas: trilho em etiqueta, ativo em elevado.
+function segmentado(opcoes, ativo, atributo, rotulo) {
+  return `
+    <div class="inline-flex shrink-0 rounded-lg bg-[color:var(--f-etiqueta)] p-0.5" role="group" aria-label="${esc(rotulo)}">
+      ${opcoes.map((o) => `
+        <button type="button" ${atributo}="${o.id}" aria-pressed="${o.id === ativo}"
+          class="inline-flex items-center gap-1 h-7 px-2.5 rounded-md text-[12.5px] font-medium whitespace-nowrap transition
+            ${o.id === ativo ? 'bg-[color:var(--f-elevado)] text-[color:var(--f-tinta)] shadow-[0_1px_2px_rgb(7_30_44/0.08)]' : 'text-[color:var(--f-tinta-2)] hover:text-[color:var(--f-tinta)]'}">
+          ${esc(o.rotulo)}${o.contagem === undefined ? '' : `<span class="ml-0.5 text-xs tabular-nums text-[color:var(--f-tinta-2)]">${o.contagem}</span>`}
+        </button>`).join('')}
+    </div>`;
+}
+
+// Abas sublinhadas em marca-tinta, como em todas as fichas em cartões.
+function abasHtml(abas, ativa, atributo, rotulo) {
+  return `
+    <div role="tablist" aria-label="${esc(rotulo)}" class="flex-none mb-4 shadow-[inset_0_-1px_0] shadow-slate-200 dark:shadow-neutral-800 flex items-center gap-4">
+      ${abas.map((aba) => `
+        <button type="button" role="tab" ${atributo}="${aba.id}" aria-selected="${aba.id === ativa}"
+          class="px-0.5 pb-2.5 text-sm border-b-2 transition whitespace-nowrap ${aba.id === ativa ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-600 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">
+          ${aba.rotulo}${aba.contagem === undefined ? '' : `<span class="ml-1 text-xs text-slate-600 dark:text-neutral-400 tabular-nums">${aba.contagem}</span>`}
+        </button>`).join('')}
+    </div>`;
+}
+
+// Cabeçalho de cartão: título, frase de contexto e ações fantasma à direita; sem divisória.
+function cabecalhoCartao(titulo, subtitulo, acoesHtml = '') {
+  return `
+    <div class="px-4 pt-4 flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <h3 class="font-display text-[15px] leading-[22px] font-semibold ${TITULO}">${titulo}</h3>
+        ${subtitulo ? `<p class="mt-0.5 text-xs ${APOIO}">${subtitulo}</p>` : ''}
+      </div>
+      ${acoesHtml ? `<div class="-mt-1 -mr-1.5 flex shrink-0 items-center gap-1">${acoesHtml}</div>` : ''}
+    </div>`;
+}
+
+// Cartão de estado vazio (filtro sem resultado, nada selecionado).
+function cartaoVazio(html) {
+  return `<div class="${CARTAO} px-4 py-10 text-center text-sm ${APOIO}">${html}</div>`;
+}
+
+const CORES_AVATAR = [
+  'bg-petrol-800/10 text-petrol-800 dark:bg-sky-950/60 dark:text-sky-300',
+  'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-300',
+];
 
 function corAvatar(id) {
   let hash = 0;
@@ -95,40 +219,35 @@ function iniciais(nome) {
   return ((partes[0]?.[0] || '') + (partes[1]?.[0] || '')).toUpperCase();
 }
 
-function avatarHtml(usuario, tamanho = 'h-7 w-7 text-[10px]') {
-  return `<span class="${tamanho} ${corAvatar(usuario.id)} rounded-full grid place-items-center text-white font-semibold ring-2 ring-white dark:ring-neutral-950" title="${esc(usuario.nome)}">${iniciais(usuario.nome)}</span>`;
+function avatarHtml(usuario, tamanho = 'h-6 w-6 text-[10px]') {
+  return `<span class="${tamanho} ${corAvatar(usuario.id)} shrink-0 rounded-full grid place-items-center font-semibold" title="${esc(usuario.nome)}" aria-hidden="true">${iniciais(usuario.nome)}</span>`;
 }
 
 function membrosDoPerfil(perfilId) {
   return USUARIOS.filter((u) => u.perfis.includes(perfilId));
 }
 
-// ---------- Tipos de usuário (colaborador / professor / aluno) ----------
+// Cobre = "é com você": usuário que existe mas não acessa nada.
+const TAG_SEM_PERFIL = `<span class="shrink-0 rounded px-1.5 text-[11.5px] leading-5 font-semibold ${COBRE_TINTA} bg-laranja/15">sem perfil</span>`;
 
-const COR_TIPO = {
-  colaborador: 'bg-petrol-800/10 text-petrol-800 border-petrol-800/20 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
-  instrutor: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800',
-  aluno: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
-};
+// ---------- Tipos de usuário (equipe / professor) ----------
 
-function chipTipoHtml(tipo, extra = '') {
-  return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${COR_TIPO[tipo.id] || 'bg-slate-100 text-slate-600 border-slate-200'} ${extra}">${esc(tipo.nome)}</span>`;
-}
-
-// Chips dos tipos do usuário; cada um abre o cadastro de origem.
+// Tags dos tipos do usuário; cada uma abre o cadastro de origem (vínculo).
 function tiposUsuarioHtml(usuario, { link = true } = {}) {
   const vinculos = usuario.vinculos || [];
-  if (!vinculos.length) {
-    return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800" title="Usuário sem cadastro de origem">Sem vínculo</span>';
-  }
+  if (!vinculos.length) return `<span class="${TAG_PENDENTE}" title="Usuário sem cadastro de origem">sem vínculo</span>`;
   return vinculos.map((v) => {
     const tipo = Permissoes.getTipo(v.tipo);
     if (!tipo) return '';
-    const chip = chipTipoHtml(tipo, link ? 'hover:underline underline-offset-2' : '');
     return link
-      ? `<a href="${tipo.cadastro}${encodeURIComponent(v.id)}" title="Abrir cadastro em ${esc(tipo.lista)}" class="inline-flex">${chip}</a>`
-      : chip;
-  }).join(' ');
+      ? `<a href="${tipo.cadastro}${encodeURIComponent(v.id)}" title="Abrir cadastro em ${esc(tipo.lista)}" class="${TAG_TIPO} hover:underline underline-offset-2">${esc(tipo.nome)}</a>`
+      : `<span class="${TAG_TIPO}">${esc(tipo.nome)}</span>`;
+  }).join('');
+}
+
+// Os mesmos tipos em texto, para a segunda linha da matriz.
+function tiposUsuarioTexto(usuario) {
+  return (usuario.vinculos || []).map((v) => Permissoes.getTipo(v.tipo)?.nome).filter(Boolean).join(' · ');
 }
 
 function tiposPerfilTexto(perfil) {
@@ -136,19 +255,18 @@ function tiposPerfilTexto(perfil) {
   return tipos.length ? tipos.map((t) => t.plural).join(' · ') : 'Ninguém (sem tipo definido)';
 }
 
-// Cartões-checkbox "para quem é o perfil" (modal de criação/edição).
+// Cartões-checkbox "para quem é o perfil" (modal de criação/edição); marcado em seleção petróleo.
 function htmlCartoesTipos(selecionados = []) {
   return `
     <div class="grid gap-2 mt-1.5" data-cartoes-tipos>
       ${TIPOS_USUARIO.map((t) => `
-        <label class="flex items-start gap-3 px-3.5 py-3 rounded-xl border cursor-pointer transition
-          has-[:checked]:border-petrol-800 has-[:checked]:bg-petrol-800/5 dark:has-[:checked]:border-sky-400 dark:has-[:checked]:bg-sky-950/40
-          border-slate-200 dark:border-neutral-800 hover:border-slate-300 dark:hover:border-neutral-700">
-          <input type="checkbox" name="tipo" value="${t.id}" ${selecionados.includes(t.id) ? 'checked' : ''}
-            class="mt-0.5 h-4 w-4 rounded border-slate-300 text-petrol-800 focus:ring-petrol-800/30 dark:border-neutral-600 dark:bg-neutral-900">
+        <label class="flex items-start gap-3 px-3.5 py-3 rounded-lg border cursor-pointer transition
+          border-slate-200 dark:border-neutral-800 hover:border-slate-300 dark:hover:border-neutral-700
+          has-[:checked]:border-petrol-800/40 has-[:checked]:bg-petrol-800/10 dark:has-[:checked]:border-sky-400/40 dark:has-[:checked]:bg-sky-950/60">
+          <input type="checkbox" name="tipo" value="${t.id}" ${selecionados.includes(t.id) ? 'checked' : ''} class="check mt-0.5">
           <span class="min-w-0">
-            <span class="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(t.plural)} ${chipTipoHtml(t)}</span>
-            <span class="block text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(t.descricao)}</span>
+            <span class="block text-sm font-medium ${VALOR}">${esc(t.plural)}</span>
+            <span class="block text-xs ${APOIO} mt-0.5">${esc(t.descricao)}</span>
           </span>
         </label>`).join('')}
     </div>`;
@@ -161,7 +279,7 @@ function tiposMarcados(root) {
 // <select> de tipo usado como filtro nas listas de usuários.
 function selectTipoHtml(id, valor, tiposDisponiveis = TIPOS_USUARIO) {
   return `
-    <select id="${id}" class="border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-neutral-950 dark:text-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400">
+    <select id="${id}" aria-label="Filtrar por tipo de usuário" class="${SELECT_FILTRO}">
       <option value="todos" ${valor === 'todos' ? 'selected' : ''}>Todos os tipos</option>
       ${tiposDisponiveis.map((t) => `<option value="${t.id}" ${valor === t.id ? 'selected' : ''}>${esc(t.plural)}</option>`).join('')}
     </select>`;
@@ -181,23 +299,30 @@ function usuarioTemTipo(usuario, tipoId) {
 
 // ---------- Toasts ----------
 
+// Contraste máximo do modo (ficha-inverso): azul profundo com areia no claro, o contrário no escuro.
 function toast(mensagem, tipo = 'ok') {
-  const cores = { ok: 'bg-emerald-600', alerta: 'bg-slate-700 dark:bg-neutral-700', erro: 'bg-rose-600' };
+  const ponto = { ok: 'bg-[color:var(--f-bom)]', alerta: 'bg-[color:var(--f-aviso)]', erro: 'bg-[color:var(--f-ruim)]' };
   const item = document.createElement('div');
-  item.className = `toast-anim ${cores[tipo]} text-white text-sm px-4 py-2.5 rounded-lg shadow-lg max-w-xs`;
-  item.textContent = mensagem;
+  item.className = 'toast-anim ficha-inverso flex items-center gap-2.5 max-w-sm rounded-lg bg-[color:var(--f-papel)] text-[color:var(--f-tinta)] text-sm px-3.5 py-2.5 shadow-[0_8px_24px_-8px_rgba(0,0,0,.35)]';
+  item.innerHTML = `<span class="h-2 w-2 shrink-0 rounded-full ${ponto[tipo]}"></span><span></span>`;
+  item.lastChild.textContent = mensagem;
   document.getElementById('toast-root').appendChild(item);
   setTimeout(() => item.remove(), 3500);
 }
 
 // ---------- Modal ----------
 
-function abrirModal(conteudoHtml, { largura = 'max-w-md', semPadding = false } = {}) {
+let focoAntesDoModal = null;
+
+// O conteúdo traz as próprias seções (cabeçalho, corpo, rodapé), como os modais de contratos e turmas.
+function abrirModal(conteudoHtml, { largura = 'max-w-md', rotulo = '' } = {}) {
   const root = document.getElementById('modal-root');
+  if (!root.innerHTML) focoAntesDoModal = document.activeElement;
   root.innerHTML = `
-    <div class="fixed inset-0 z-40 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-petrol-950/60" data-fechar-modal></div>
-      <div class="modal-anim relative bg-white dark:bg-neutral-950 rounded-xl shadow-xl w-full ${largura} ${semPadding ? 'flex flex-col max-h-[90vh] overflow-hidden' : 'p-6'}">${conteudoHtml}</div>
+    <div class="fixed inset-0 z-40 flex items-start justify-center p-4 pt-[12vh]">
+      <div class="absolute inset-0 bg-slate-900/50 dark:bg-black/70" data-fechar-modal></div>
+      <div role="dialog" aria-modal="true" aria-label="${esc(rotulo)}"
+        class="modal-anim relative w-full ${largura} flex flex-col max-h-[76vh] overflow-hidden bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-[0_24px_60px_-20px_rgba(0,0,0,.4)] text-sm ${VALOR}">${conteudoHtml}</div>
     </div>`;
   root.querySelector('[data-fechar-modal]').addEventListener('click', fecharModal);
   root.querySelector('input, button')?.focus();
@@ -205,7 +330,11 @@ function abrirModal(conteudoHtml, { largura = 'max-w-md', semPadding = false } =
 
 function fecharModal() {
   estado.usuarioExtrasId = null;
-  document.getElementById('modal-root').innerHTML = '';
+  const root = document.getElementById('modal-root');
+  if (!root.innerHTML) return;
+  root.innerHTML = '';
+  if (focoAntesDoModal?.isConnected) focoAntesDoModal.focus();
+  focoAntesDoModal = null;
 }
 
 const POPOVERS = [
@@ -231,15 +360,22 @@ document.addEventListener('click', (e) => {
   });
 });
 
+function cabecalhoModal(titulo, subtitulo) {
+  return `
+    <h3 class="font-display text-base font-semibold ${TITULO}">${titulo}</h3>
+    ${subtitulo ? `<p class="mt-1 ${APOIO}">${subtitulo}</p>` : ''}`;
+}
+
+const MODAL_TOPO = 'px-5 py-4 border-b border-slate-200 dark:border-neutral-800';
+const MODAL_RODAPE = 'px-5 py-3 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-end gap-2';
+
 function confirmar({ titulo, mensagem, rotulo, aoConfirmar, tom = 'perigo' }) {
-  const corBotao = tom === 'perigo' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-petrol-800 hover:bg-petrol-900';
   abrirModal(`
-    <h3 class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100">${esc(titulo)}</h3>
-    <p class="text-sm text-slate-600 dark:text-neutral-400 mt-2">${esc(mensagem)}</p>
-    <div class="mt-6 flex justify-end gap-2">
-      <button data-cancelar class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-neutral-400 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-900 transition">Cancelar</button>
-      <button data-confirmar class="px-4 py-2 text-sm font-semibold text-white ${corBotao} rounded-lg transition">${esc(rotulo)}</button>
-    </div>`);
+    <div class="px-5 pt-5 pb-4">${cabecalhoModal(esc(titulo), esc(mensagem))}</div>
+    <div class="${MODAL_RODAPE}">
+      <button type="button" data-cancelar class="${BOTAO_CANCELAR}">Voltar</button>
+      <button type="button" data-confirmar class="${tom === 'perigo' ? BOTAO_PERIGO : BOTAO_PRI}">${esc(rotulo)}</button>
+    </div>`, { rotulo: titulo });
   const root = document.getElementById('modal-root');
   root.querySelector('[data-cancelar]').addEventListener('click', fecharModal);
   root.querySelector('[data-confirmar]').addEventListener('click', () => {
@@ -248,36 +384,34 @@ function confirmar({ titulo, mensagem, rotulo, aoConfirmar, tom = 'perigo' }) {
   });
 }
 
-function abrirModalNovoPerfil() {
-  if (bloqueado()) return;
+// Modal de um campo de nome (criar e duplicar perfil); `extraHtml` entra abaixo do campo.
+function abrirModalNome({ titulo, subtitulo, rotuloCampo, valor = '', placeholder = '', extraHtml = '', rotuloBotao, aoSalvar }) {
   abrirModal(`
-    <h3 class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100">Novo perfil de acesso</h3>
-    <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">O perfil é criado sem nenhuma permissão — ative as ações em seguida.</p>
-    <label class="block mt-4 text-sm font-medium text-slate-700 dark:text-neutral-200">
-      Nome do perfil
-      <input id="input-novo-perfil" type="text" placeholder="Ex.: Secretaria acadêmica" autocomplete="off"
-        class="mt-1.5 w-full border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
-    </label>
-    <div class="mt-4">
-      <p class="text-sm font-medium text-slate-700 dark:text-neutral-200">Para quem é este perfil</p>
-      <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Só usuários desses tipos poderão receber o perfil.</p>
-      ${htmlCartoesTipos()}
+    <div class="px-5 pt-5 pb-4 overflow-y-auto">
+      ${cabecalhoModal(titulo, subtitulo)}
+      <label class="block mt-4">
+        <span class="block text-xs font-medium ${APOIO} mb-1">${esc(rotuloCampo)}</span>
+        <input data-campo-nome type="text" value="${esc(valor)}" placeholder="${esc(placeholder)}" autocomplete="off"
+          aria-describedby="erro-modal-nome" class="${CAMPO} w-full">
+      </label>
+      ${extraHtml}
+      <p id="erro-modal-nome" class="hidden mt-1.5 text-xs text-red-700 dark:text-red-400" role="alert"></p>
     </div>
-    <p id="erro-novo-perfil" class="hidden mt-2 text-sm text-rose-600 dark:text-rose-400"></p>
-    <div class="mt-6 flex justify-end gap-2">
-      <button data-cancelar class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-neutral-400 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-900 transition">Cancelar</button>
-      <button data-criar class="px-4 py-2 text-sm font-semibold text-white bg-petrol-800 hover:bg-petrol-900 rounded-lg transition">Criar perfil</button>
-    </div>`);
+    <div class="${MODAL_RODAPE}">
+      <button type="button" data-cancelar class="${BOTAO_CANCELAR}">Cancelar</button>
+      <button type="button" data-salvar class="${BOTAO_PRI}">${esc(rotuloBotao)}</button>
+    </div>`, { rotulo: titulo });
 
   const root = document.getElementById('modal-root');
-  const input = root.querySelector('#input-novo-perfil');
-  const erro = root.querySelector('#erro-novo-perfil');
+  const input = root.querySelector('[data-campo-nome]');
+  const erro = root.querySelector('#erro-modal-nome');
 
-  const criar = () => {
-    const resultado = Permissoes.criarPerfil(input.value, tiposMarcados(root));
+  const enviar = () => {
+    const resultado = aoSalvar(input.value, root);
     if (resultado.erro) {
       erro.textContent = resultado.erro;
       erro.classList.remove('hidden');
+      input.setAttribute('aria-invalid', 'true');
       input.focus();
       return;
     }
@@ -287,67 +421,57 @@ function abrirModalNovoPerfil() {
   };
 
   root.querySelector('[data-cancelar]').addEventListener('click', fecharModal);
-  root.querySelector('[data-criar]').addEventListener('click', criar);
+  root.querySelector('[data-salvar]').addEventListener('click', enviar);
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') criar();
-  });
-  input.focus();
-}
-
-function abrirModalDuplicarPerfil(perfilOrigem) {
-  if (bloqueado()) return;
-  abrirModal(`
-    <h3 class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100">Duplicar perfil "${esc(perfilOrigem.nome)}"</h3>
-    <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">Todas as permissões e o público (${esc(tiposPerfilTexto(perfilOrigem).toLowerCase())}) serão copiados. Os usuários vinculados <strong>não</strong> são copiados.</p>
-    <label class="block mt-4 text-sm font-medium text-slate-700 dark:text-neutral-200">
-      Nome do novo perfil
-      <input id="input-duplicar-perfil" type="text" value="Cópia de ${esc(perfilOrigem.nome)}" autocomplete="off"
-        class="mt-1.5 w-full border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
-    </label>
-    <p id="erro-duplicar-perfil" class="hidden mt-2 text-sm text-rose-600 dark:text-rose-400"></p>
-    <div class="mt-6 flex justify-end gap-2">
-      <button data-cancelar class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-neutral-400 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-900 transition">Cancelar</button>
-      <button data-duplicar class="px-4 py-2 text-sm font-semibold text-white bg-petrol-800 hover:bg-petrol-900 rounded-lg transition">Duplicar perfil</button>
-    </div>`);
-
-  const root = document.getElementById('modal-root');
-  const input = root.querySelector('#input-duplicar-perfil');
-  const erro = root.querySelector('#erro-duplicar-perfil');
-
-  const duplicar = () => {
-    const resultado = Permissoes.duplicarPerfil(perfilOrigem.id, input.value);
-    if (resultado.erro) {
-      erro.textContent = resultado.erro;
-      erro.classList.remove('hidden');
-      input.focus();
-      return;
-    }
-    salvar();
-    fecharModal();
-    location.href = urlDetalhe(resultado.perfil.id);
-  };
-
-  root.querySelector('[data-cancelar]').addEventListener('click', fecharModal);
-  root.querySelector('[data-duplicar]').addEventListener('click', duplicar);
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') duplicar();
+    if (e.key === 'Enter') enviar();
   });
   input.focus();
   input.select();
 }
 
+function abrirModalNovoPerfil() {
+  if (bloqueado()) return;
+  abrirModalNome({
+    titulo: 'Novo perfil de acesso',
+    subtitulo: 'O perfil é criado sem nenhuma permissão — ative as ações em seguida.',
+    rotuloCampo: 'Nome do perfil',
+    placeholder: 'Ex.: Secretaria acadêmica',
+    extraHtml: `
+      <div class="mt-4">
+        <p class="text-xs font-medium ${APOIO}">Para quem é este perfil</p>
+        <p class="text-xs ${APOIO} mt-0.5">Só usuários desses tipos poderão receber o perfil.</p>
+        ${htmlCartoesTipos()}
+      </div>`,
+    rotuloBotao: 'Criar perfil',
+    aoSalvar: (nome, root) => Permissoes.criarPerfil(nome, tiposMarcados(root)),
+  });
+}
+
+function abrirModalDuplicarPerfil(perfilOrigem) {
+  if (bloqueado()) return;
+  abrirModalNome({
+    titulo: `Duplicar perfil "${esc(perfilOrigem.nome)}"`,
+    subtitulo: `Todas as permissões e o público (${esc(tiposPerfilTexto(perfilOrigem).toLowerCase())}) serão copiados. Os usuários vinculados <strong class="font-medium ${VALOR}">não</strong> são copiados.`,
+    rotuloCampo: 'Nome do novo perfil',
+    valor: `Cópia de ${perfilOrigem.nome}`,
+    rotuloBotao: 'Duplicar perfil',
+    aoSalvar: (nome) => Permissoes.duplicarPerfil(perfilOrigem.id, nome),
+  });
+}
+
 function abrirModalTiposPerfil(perfil) {
   if (bloqueado(perfil.id)) return;
   abrirModal(`
-    <h3 class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100">Para quem é o perfil "${esc(perfil.nome)}"</h3>
-    <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">Usuários de um tipo que for desmarcado saem do perfil.</p>
-    ${htmlCartoesTipos(perfil.tipos || [])}
-    <p id="aviso-tipos-perfil" class="hidden mt-3 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm px-3.5 py-2.5"></p>
-    <p id="erro-tipos-perfil" class="hidden mt-2 text-sm text-rose-600 dark:text-rose-400"></p>
-    <div class="mt-6 flex justify-end gap-2">
-      <button data-cancelar class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-neutral-400 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-900 transition">Cancelar</button>
-      <button data-salvar class="px-4 py-2 text-sm font-semibold text-white bg-petrol-800 hover:bg-petrol-900 rounded-lg transition">Salvar</button>
-    </div>`);
+    <div class="px-5 pt-5 pb-4 overflow-y-auto">
+      ${cabecalhoModal(`Para quem é o perfil "${esc(perfil.nome)}"`, 'Usuários de um tipo que for desmarcado saem do perfil.')}
+      ${htmlCartoesTipos(perfil.tipos || [])}
+      <p id="aviso-tipos-perfil" class="hidden mt-3 rounded-lg px-3.5 py-2.5 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200"></p>
+      <p id="erro-tipos-perfil" class="hidden mt-1.5 text-xs text-red-700 dark:text-red-400" role="alert"></p>
+    </div>
+    <div class="${MODAL_RODAPE}">
+      <button type="button" data-cancelar class="${BOTAO_CANCELAR}">Cancelar</button>
+      <button type="button" data-salvar class="${BOTAO_PRI}">Salvar</button>
+    </div>`, { rotulo: `Para quem é o perfil ${perfil.nome}` });
 
   const root = document.getElementById('modal-root');
   const aviso = root.querySelector('#aviso-tipos-perfil');
@@ -372,48 +496,136 @@ function abrirModalTiposPerfil(perfil) {
     }
     salvar();
     fecharModal();
-    toast(`Perfil "${perfil.nome}" agora é para ${tiposPerfilTexto(perfil).toLowerCase()}${resultado.removidos ? ` · ${resultado.removidos} usuário(s) removido(s)` : ''}`, resultado.removidos ? 'alerta' : 'ok');
+    toast(`Perfil "${perfil.nome}" agora é para ${tiposPerfilTexto(perfil).toLowerCase()}${resultado.removidos ? ` · ${plural(resultado.removidos, 'usuário removido', 'usuários removidos')}` : ''}`, resultado.removidos ? 'alerta' : 'ok');
     renderTudo();
   });
 }
 
+// ---------- Menu "Mais" do cabeçalho (o mesmo de js/menu-mais.js do original) ----------
+
+// Esc, Tab ou clique fora fecham; setas andam. Item desabilitado continua focável para o motivo (`detalhe`) ser lido.
+let menuAberto = null;
+function fecharMenu() {
+  if (!menuAberto) return;
+  const { el, gatilho, fora, tecla } = menuAberto;
+  menuAberto = null;
+  el.remove();
+  gatilho.setAttribute('aria-expanded', 'false');
+  document.removeEventListener('mousedown', fora, true);
+  document.removeEventListener('keydown', tecla, true);
+  window.removeEventListener('scroll', fecharMenu, true);
+  window.removeEventListener('resize', fecharMenu);
+}
+function abrirMenu(gatilho, itens) {
+  if (menuAberto?.gatilho === gatilho) { fecharMenu(); return; }
+  fecharMenu();
+  const el = document.createElement('div');
+  el.setAttribute('role', 'menu');
+  el.className = 'fixed z-50 w-64 rounded-[10px] border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.28)] p-1.5';
+  el.innerHTML = itens.map((it, i) => (it === 'sep' ? '<div role="separator" class="my-1 border-t border-slate-100 dark:border-neutral-900"></div>' : `
+    <button type="button" role="menuitem" data-i="${i}" ${it.desabilitado ? 'aria-disabled="true"' : ''}
+      class="block w-full text-left px-2.5 py-1.5 rounded-md text-sm transition focus:outline-none ${it.desabilitado ? 'cursor-not-allowed text-slate-400 dark:text-neutral-500 focus:bg-slate-100 dark:focus:bg-neutral-900' : it.perigo ? 'text-red-700 dark:text-red-400 hover:bg-red-50 focus:bg-red-50 dark:hover:bg-red-950/40 dark:focus:bg-red-950/40' : 'text-slate-700 dark:text-neutral-200 hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-neutral-900 dark:focus:bg-neutral-900'}">
+      ${esc(it.nome)}${it.detalhe ? `<span class="block text-xs text-slate-500 dark:text-neutral-400">${esc(it.detalhe)}</span>` : ''}
+    </button>`)).join('');
+  // Posição e largura inline: o Tailwind do CDN só gera classe nova depois que ela entra no DOM, e a medida abaixo vem antes.
+  el.style.position = 'fixed';
+  el.style.width = '16rem';
+  document.body.appendChild(el);
+  const r = gatilho.getBoundingClientRect();
+  el.style.left = `${Math.max(8, Math.min(r.right - el.offsetWidth, window.innerWidth - el.offsetWidth - 8))}px`;
+  el.style.top = `${r.bottom + el.offsetHeight + 8 > window.innerHeight && r.top > el.offsetHeight ? r.top - el.offsetHeight - 4 : r.bottom + 4}px`;
+  const botoes = [...el.querySelectorAll('[data-i]')];
+  // O foco volta ao gatilho antes da ação: o modal que ela abrir devolve o foco para ele ao fechar.
+  botoes.forEach((b) => b.addEventListener('click', () => { const it = itens[Number(b.dataset.i)]; if (it.desabilitado) return; fecharMenu(); gatilho.focus(); it.acao(); }));
+  const fora = (e) => { if (!el.contains(e.target) && !gatilho.contains(e.target)) fecharMenu(); };
+  const tecla = (e) => {
+    if (e.key === 'Escape') { e.stopPropagation(); fecharMenu(); gatilho.focus(); }
+    else if (e.key === 'Tab') { e.preventDefault(); fecharMenu(); gatilho.focus(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); const i = botoes.indexOf(document.activeElement); botoes[(i + (e.key === 'ArrowDown' ? 1 : -1) + botoes.length) % botoes.length].focus(); }
+  };
+  document.addEventListener('mousedown', fora, true);
+  document.addEventListener('keydown', tecla, true);
+  window.addEventListener('scroll', fecharMenu, true);
+  window.addEventListener('resize', fecharMenu);
+  gatilho.setAttribute('aria-expanded', 'true');
+  menuAberto = { el, gatilho, fora, tecla };
+  botoes[0]?.focus({ preventScroll: true });
+}
+
 // ---------- Componentes ----------
 
-function switchHtml(ligado, atributos, titulo) {
+// Interruptor: ligado em marca com bolinha sobre-marca (petróleo/areia; areia/petróleo no escuro),
+// desligado em branco com contorno e bolinha na cor de rótulo.
+function switchHtml(ligado, atributos, titulo, tamanho = 'normal') {
+  const [trilho, botao, desloca] = tamanho === 'mini'
+    ? ['h-4 w-[26px]', 'h-3 w-3', 'translate-x-2.5']
+    : ['h-5 w-9', 'h-4 w-4', 'translate-x-4'];
   return `
-    <button type="button" role="switch" aria-checked="${ligado}" ${atributos} title="${esc(titulo)}"
-      class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 ${ligado ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}">
-      <span class="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white dark:bg-neutral-950 shadow transition-transform ${ligado ? 'translate-x-5' : ''}"></span>
+    <button type="button" role="switch" aria-checked="${ligado}" ${atributos} title="${esc(titulo)}" aria-label="${esc(titulo)}"
+      class="relative inline-flex ${trilho} shrink-0 rounded-full align-middle transition-colors ${ligado ? 'bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white' : 'bg-white dark:bg-neutral-950 ring-1 ring-inset ring-slate-300 dark:ring-neutral-700 hover:ring-slate-500 dark:hover:ring-neutral-500'}">
+      <span class="absolute top-0.5 left-0.5 ${botao} rounded-full transition-transform ${ligado ? `${desloca} bg-areia dark:bg-petrol-800` : 'bg-slate-500 dark:bg-neutral-400'}"></span>
     </button>`;
 }
 
-function badgeStatusHtml(ativo) {
-  return ativo
-    ? '<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">Ativo</span>'
-    : '<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700">Inativo</span>';
+function miniSwitchHtml(ligado, atributos, titulo = '') {
+  return switchHtml(ligado, atributos, titulo, 'mini');
 }
 
-// ---------- Seletor do perfil atual (dropdown no cabeçalho do card) ----------
+// ---------- Resumo e alternador de visões (perfis.html) ----------
+
+function renderResumo() {
+  const el = document.getElementById('resumo-perfis');
+  if (!el) return;
+  const ativos = PERFIS.filter((p) => p.ativo).length;
+  const semPerfil = USUARIOS.filter((u) => !u.perfis.length).length;
+  const link = (visao, texto, cor = 'text-slate-700 dark:text-neutral-200') => `<button type="button" data-ir-visao="${visao}" class="font-medium hover:underline underline-offset-2 ${cor}">${texto}</button>`;
+  el.innerHTML = `
+    <span>${link('perfis', plural(PERFIS.length, 'perfil', 'perfis'))}${PERFIS.length ? `, ${ativos === PERFIS.length ? (ativos === 1 ? 'ativo' : 'todos ativos') : `${ativos} ${ativos === 1 ? 'ativo' : 'ativos'}`}` : ''}</span>
+    <span>${link('matriz-usuarios', plural(USUARIOS.length, 'usuário', 'usuários'))}</span>
+    ${semPerfil ? `<span>${link('matriz-usuarios', `${semPerfil} sem perfil`, COBRE_TINTA)} não ${semPerfil === 1 ? 'acessa' : 'acessam'} nada</span>` : ''}`;
+}
+
+const VISOES = [
+  { id: 'perfis', rotulo: 'Perfis' },
+  { id: 'matriz-permissoes', rotulo: 'Permissões × perfis' },
+  { id: 'matriz-usuarios', rotulo: 'Usuários × perfis' },
+  { id: 'validacao', rotulo: 'Validar acesso' },
+];
+
+function renderTrocaVisao() {
+  const container = document.getElementById('troca-visao');
+  const abas = VISOES.map((v) => (v.id === 'perfis' ? { ...v, contagem: PERFIS.length } : v));
+  container.innerHTML = abasHtml(abas, estado.visao, 'data-visao', 'Visões');
+  container.querySelectorAll('[data-visao]').forEach((el) => {
+    el.addEventListener('click', () => irParaVisao(el.dataset.visao));
+  });
+}
+
+function irParaVisao(visao) {
+  estado.visao = visao;
+  if (estado.visao !== 'validacao') estado.usuarioInspecionadoId = null; // validação sempre abre sem usuário
+  renderTudo();
+}
+
+// ---------- Seletor do perfil atual (popover na trilha do detalhe) ----------
 
 function htmlListaPerfilPopover() {
   const termo = estado.buscaPerfilLista.trim().toLowerCase();
   const perfis = PERFIS.filter((p) => !termo || p.nome.toLowerCase().includes(termo));
   if (!perfis.length) {
-    return '<p class="text-xs text-slate-400 px-2 py-3 text-center">Nenhum perfil encontrado.</p>';
+    return `<p class="text-xs ${APOIO} px-2 py-3 text-center">Nenhum perfil encontrado.</p>`;
   }
   return perfis.map((perfil) => {
     const membros = membrosDoPerfil(perfil.id).length;
     const selecionado = perfil.id === estado.perfilSelecionadoId;
     return `
-      <button type="button" data-escolher-perfil="${perfil.id}"
-        class="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left transition hover:bg-slate-50 dark:hover:bg-neutral-900 ${selecionado ? 'bg-slate-50 dark:bg-neutral-900' : ''}">
-        <span class="h-2 w-2 rounded-full shrink-0 ${perfil.ativo ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}"></span>
+      <button type="button" data-escolher-perfil="${perfil.id}" class="${ITEM_POPOVER} py-1.5 ${selecionado ? 'bg-slate-100 dark:bg-neutral-900' : ''}">
         <span class="flex-1 min-w-0">
-          <span class="block text-sm truncate ${perfil.ativo ? 'text-slate-800 dark:text-neutral-100' : 'text-slate-400'}">${esc(perfil.nome)}${perfil.ativo ? '' : ' (inativo)'}</span>
-          <span class="block text-[11px] text-slate-400 truncate">${esc(tiposPerfilTexto(perfil))}</span>
+          <span class="block truncate ${perfil.ativo ? VALOR : APOIO}">${esc(perfil.nome)}${perfil.ativo ? '' : ' (inativo)'}</span>
+          <span class="block text-xs truncate ${APOIO}">${esc(tiposPerfilTexto(perfil))}</span>
         </span>
-        <span class="text-[11px] text-slate-400 shrink-0">${membros} usuário(s)</span>
-        ${selecionado ? '<svg class="h-4 w-4 text-petrol-800 dark:text-sky-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>' : ''}
+        <span class="text-xs ${APOIO} shrink-0 tabular-nums">${plural(membros, 'usuário', 'usuários')}</span>
+        ${selecionado ? CHECK : '<span class="w-3.5"></span>'}
       </button>`;
   }).join('');
 }
@@ -442,103 +654,167 @@ function renderListaPerfis() {
 
   // Nenhum perfil cadastrado: convite direto para criar o primeiro.
   if (!PERFIS.length) {
-    container.innerHTML = `
-      <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm p-8 md:p-12">
-        <div class="max-w-md mx-auto text-center">
-          <div class="h-12 w-12 mx-auto rounded-full bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300 grid place-items-center">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
-          </div>
-          <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-neutral-100 mt-4">Nenhum perfil de acesso ainda</h3>
-          <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">Os perfis definem o que cada grupo de usuários pode ver e fazer no sistema. Comece criando o primeiro.</p>
-          <button type="button" data-criar-primeiro
-            class="mt-5 inline-flex items-center gap-2 bg-laranja hover:bg-laranja-escuro text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-laranja/50">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-            Criar primeiro perfil
-          </button>
-        </div>
-      </div>`;
-    container.querySelector('[data-criar-primeiro]').addEventListener('click', abrirModalNovoPerfil);
+    container.innerHTML = cartaoVazio(`
+      <p class="font-display text-[15px] font-semibold ${TITULO}">Nenhum perfil de acesso ainda</p>
+      <p class="mt-1 max-w-md mx-auto">Os perfis definem o que cada grupo de usuários pode ver e fazer no sistema. Comece criando o primeiro.</p>
+      ${SOMENTE_LEITURA ? '' : `<button type="button" data-criar-primeiro class="${BOTAO_PRI} mt-4">${icone(D.mais, 'h-4 w-4', 2)} Criar primeiro perfil</button>`}`);
+    container.querySelector('[data-criar-primeiro]')?.addEventListener('click', abrirModalNovoPerfil);
     return;
   }
 
-  const opcoesTipo = [{ id: 'todos', nome: 'Todos os tipos' }, ...TIPOS_USUARIO.map((t) => ({ id: t.id, nome: t.plural }))];
-  const opcoesStatus = [{ id: 'todos', nome: 'Ativos e inativos' }, { id: 'ativos', nome: 'Somente ativos' }, { id: 'inativos', nome: 'Somente inativos' }];
-  const select = (id, valor, opcoes) => `
-    <select id="${id}" class="border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-neutral-950 dark:text-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400">
-      ${opcoes.map((o) => `<option value="${o.id}" ${o.id === valor ? 'selected' : ''}>${esc(o.nome)}</option>`).join('')}
-    </select>`;
+  const ativos = PERFIS.filter((p) => p.ativo).length;
+  const opcoesStatus = [
+    { id: 'todos', rotulo: 'Todos', contagem: PERFIS.length },
+    { id: 'ativos', rotulo: 'Ativos', contagem: ativos },
+    { id: 'inativos', rotulo: 'Inativos', contagem: PERFIS.length - ativos },
+  ];
 
   container.innerHTML = `
-    <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm">
-      <div class="p-4 border-b border-slate-100 dark:border-neutral-900 flex flex-col sm:flex-row sm:items-center gap-2">
-        <div class="relative flex-1 max-w-md">
-          <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-          <input id="busca-lista" type="text" value="${esc(estado.buscaLista)}" placeholder="Buscar perfil pelo nome…" autocomplete="off"
-            class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
-        </div>
-        ${select('tipo-lista', estado.tipoLista, opcoesTipo)}
-        ${select('status-lista', estado.statusLista, opcoesStatus)}
-      </div>
-      <div id="tabela-perfis" class="overflow-auto max-h-[70vh]">${htmlTabelaPerfis()}</div>
-    </div>`;
+    <div class="${BARRA}">
+      ${campoBusca('busca-lista', estado.buscaLista, 'Buscar perfil pelo nome…')}
+      ${selectTipoHtml('tipo-lista', estado.tipoLista)}
+      ${segmentado(opcoesStatus, estado.statusLista, 'data-status-lista', 'Status')}
+    </div>
+    <div id="tabela-perfis"></div>`;
 
-  const atualizar = () => { container.querySelector('#tabela-perfis').innerHTML = htmlTabelaPerfis(); };
+  const atualizar = () => {
+    container.querySelector('#tabela-perfis').innerHTML = htmlTabelaPerfis(perfisFiltrados());
+  };
   const busca = container.querySelector('#busca-lista');
   busca.addEventListener('input', () => { estado.buscaLista = busca.value; atualizar(); });
   const tipo = container.querySelector('#tipo-lista');
   tipo.addEventListener('change', () => { estado.tipoLista = tipo.value; atualizar(); });
-  const status = container.querySelector('#status-lista');
-  status.addEventListener('change', () => { estado.statusLista = status.value; atualizar(); });
+  container.querySelectorAll('[data-status-lista]').forEach((el) => {
+    el.addEventListener('click', () => { estado.statusLista = el.dataset.statusLista; renderListaPerfis(); });
+  });
 
   container.querySelector('#tabela-perfis').addEventListener('click', (e) => {
+    if (e.target.closest('[data-limpar-filtros]')) {
+      estado.buscaLista = '';
+      estado.tipoLista = 'todos';
+      estado.statusLista = 'todos';
+      renderListaPerfis();
+      return;
+    }
+    // O nome é o link (teclado, ⌘-clique); o resto da linha abre o mesmo perfil, a não ser que a pessoa esteja selecionando texto.
+    if (e.target.closest('a, button') || getSelection().toString()) return;
     const linha = e.target.closest('[data-abrir]');
     if (linha) location.href = urlDetalhe(linha.dataset.abrir);
   });
+
+  atualizar();
 }
 
-function htmlTabelaPerfis() {
-  const perfis = perfisFiltrados();
-  if (!perfis.length) {
-    return `<p class="text-sm text-slate-400 py-10 text-center">Nenhum perfil encontrado com esse filtro.</p>`;
-  }
-  const th = (texto, extra = '') => `<th class="sticky top-0 z-10 bg-slate-50 dark:bg-neutral-900 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 px-4 py-2.5 border-b border-slate-200 dark:border-neutral-800 whitespace-nowrap ${extra}">${texto}</th>`;
+// Até três avatares dos membros e a contagem.
+function htmlPilhaMembros(membros) {
+  if (!membros.length) return `<span class="${APOIO}">Ninguém</span>`;
   return `
-    <table class="min-w-full text-sm">
-      <thead>
-        <tr>
-          ${th('Perfil', 'left-0 z-20')}
-          ${th('Para')}
-          ${th('Usuários', 'text-right')}
-          ${th('Telas liberadas', 'text-right')}
-          ${th('Ações liberadas', 'text-right')}
-          ${th('Status')}
-        </tr>
-      </thead>
-      <tbody>
-        ${perfis.map((p) => {
-          const membros = membrosDoPerfil(p.id).length;
-          const { telas, acoes } = contagemPermissoes(p);
-          return `
-            <tr data-abrir="${p.id}" class="cursor-pointer odd:bg-white even:bg-slate-50/60 dark:odd:bg-neutral-950 dark:even:bg-neutral-900/40 hover:bg-petrol-800/5 dark:hover:bg-sky-400/10 transition">
-              <td class="sticky left-0 z-10 bg-inherit px-4 py-3 border-b border-slate-100 dark:border-neutral-900">
-                <a href="${urlDetalhe(p.id)}" class="font-medium ${p.ativo ? 'text-slate-800 dark:text-neutral-100' : 'text-slate-400'} hover:text-petrol-800 dark:hover:text-sky-300">${esc(p.nome)}</a>
-              </td>
-              <td class="px-4 py-3 border-b border-slate-100 dark:border-neutral-900 text-slate-600 dark:text-neutral-300 whitespace-nowrap">${esc(tiposPerfilTexto(p))}</td>
-              <td class="px-4 py-3 border-b border-slate-100 dark:border-neutral-900 text-right tabular-nums">${membros}</td>
-              <td class="px-4 py-3 border-b border-slate-100 dark:border-neutral-900 text-right tabular-nums">${telas} <span class="text-slate-400">/ ${FEATURES.length}</span></td>
-              <td class="px-4 py-3 border-b border-slate-100 dark:border-neutral-900 text-right tabular-nums">${acoes}</td>
-              <td class="px-4 py-3 border-b border-slate-100 dark:border-neutral-900 whitespace-nowrap">
-                <span class="inline-flex items-center gap-1.5 ${p.ativo ? 'text-slate-700 dark:text-neutral-200' : 'text-slate-400'}">
-                  <span class="h-2 w-2 rounded-full ${p.ativo ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}"></span>${p.ativo ? 'Ativo' : 'Inativo'}
-                </span>
-              </td>
-            </tr>`;
-        }).join('')}
-      </tbody>
-    </table>`;
+    <span class="inline-flex items-center gap-2">
+      <span class="flex -space-x-1">${membros.slice(0, 3).map((u) => avatarHtml(u, 'h-6 w-6 text-[10px] ring-2 ring-white dark:ring-neutral-950')).join('')}</span>
+      <span class="tabular-nums">${membros.length}</span>
+    </span>`;
+}
+
+function htmlCobertura(n, total) {
+  const pct = total ? Math.round((n / total) * 100) : 0;
+  return `
+    <span class="inline-flex items-center gap-2.5 tabular-nums whitespace-nowrap">
+      <span>${n} <span class="${APOIO}">de ${total}</span></span>
+      <span class="h-1.5 w-14 rounded-full bg-[color:var(--f-etiqueta)] overflow-hidden" aria-hidden="true"><span class="block h-full rounded-full bg-petrol-950 dark:bg-areia" style="width:${pct}%"></span></span>
+    </span>`;
+}
+
+// Tabela de borda a borda dentro do cartão; ativo é o comum e não aparece, inativo vira pílula e a linha apaga (menos a pílula).
+function htmlTabelaPerfis(perfis) {
+  const filtrando = perfis.length !== PERFIS.length;
+  const th = 'px-4 py-2.5';
+  const td = 'px-4 py-2.5 text-sm text-slate-600 dark:text-neutral-300';
+  return `
+    <div class="${CARTAO} overflow-hidden">
+      <table class="w-full text-left">
+        <thead class="${THEAD} border-b border-slate-200 dark:border-neutral-800">
+          <tr>
+            <th scope="col" class="${th}">Perfil</th>
+            <th scope="col" class="${th} w-[170px]" title="Tipos de usuário que podem receber o perfil">Para</th>
+            <th scope="col" class="${th} w-[140px]">Usuários</th>
+            <th scope="col" class="${th} w-[170px]" title="Telas com a ação Visualizar liberada">Telas liberadas</th>
+            <th scope="col" class="${th} w-[130px] text-right">Ações liberadas</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-neutral-900">
+          ${perfis.length ? perfis.map((p) => {
+            const { telas, acoes } = contagemPermissoes(p);
+            return `
+              <tr data-abrir="${p.id}" class="cursor-pointer transition ${LINHA_HOVER} ${p.ativo ? '' : 'linha-apagada'}">
+                <td class="${th}">
+                  <span class="flex items-center gap-2 min-w-0">
+                    <a href="${urlDetalhe(p.id)}" class="truncate text-sm font-medium ${VALOR} hover:underline underline-offset-2">${esc(p.nome)}</a>
+                    ${p.protegido ? PILULA_PROTEGIDO : ''}
+                    ${p.ativo ? '' : PILULA_INATIVO}
+                  </span>
+                </td>
+                <td class="${td} ${(p.tipos || []).length ? '' : COBRE_TINTA}">${esc(tiposPerfilTexto(p))}</td>
+                <td class="${td}">${htmlPilhaMembros(membrosDoPerfil(p.id))}</td>
+                <td class="${td}">${htmlCobertura(telas, FEATURES.length)}</td>
+                <td class="${td} text-right tabular-nums">${acoes}</td>
+              </tr>`;
+          }).join('') : `
+            <tr><td colspan="5" class="px-4 py-10 text-center text-sm ${APOIO}">
+              Nenhum perfil encontrado com esse filtro. <button type="button" data-limpar-filtros class="${LINK} ml-1">Limpar filtros</button>
+            </td></tr>`}
+        </tbody>
+      </table>
+      <div class="px-4 py-2.5 border-t border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-sm text-slate-700 dark:text-neutral-200 tabular-nums">
+        ${filtrando ? `${perfis.length} de ${plural(PERFIS.length, 'perfil', 'perfis')}` : plural(PERFIS.length, 'perfil', 'perfis')}
+      </div>
+    </div>`;
 }
 
 // ---------- Detalhe do perfil ----------
+
+function navPerfilHtml(perfil, d, rotulo) {
+  const classe = 'inline-grid place-items-center h-7 w-7 rounded-md border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-500 dark:text-neutral-400';
+  return perfil
+    ? `<a href="${urlDetalhe(perfil.id)}" class="${classe} transition hover:border-petrol-800 hover:text-petrol-800 dark:hover:border-sky-400 dark:hover:text-sky-300" title="${rotulo}: ${esc(perfil.nome)}" aria-label="${rotulo}">${icone(d, 'h-3.5 w-3.5', 2)}</a>`
+    : `<span class="${classe} opacity-40" aria-hidden="true">${icone(d, 'h-3.5 w-3.5', 2)}</span>`;
+}
+
+// Chip do cabeçalho: dado de consulta rápida, sem caixa nem fundo.
+function chipHtml(d, conteudo, titulo = '') {
+  return `<span ${titulo ? `title="${esc(titulo)}"` : ''} class="inline-flex items-center gap-1.5 text-[13px] text-slate-600 dark:text-neutral-300">${icone(d, 'h-3.5 w-3.5 text-slate-400 dark:text-neutral-500')}<span>${conteudo}</span></span>`;
+}
+
+function alternarAtivo(perfil) {
+  if (bloqueado(perfil.id)) return;
+  Permissoes.alternarPerfilAtivo(perfil.id);
+  salvar();
+  toast(`Perfil "${perfil.nome}" ${perfil.ativo ? 'reativado' : 'inativado'}`, perfil.ativo ? 'ok' : 'alerta');
+  renderTudo();
+}
+
+function confirmarExclusaoPerfil(perfil, membros) {
+  if (bloqueado(perfil.id)) return;
+  confirmar({
+    titulo: `Excluir o perfil "${perfil.nome}"?`,
+    mensagem: membros.length
+      ? `${membros.length === 1 ? '1 usuário perderá' : `${membros.length} usuários perderão`} as permissões concedidas por este perfil. Esta ação não pode ser desfeita.`
+      : 'Nenhum usuário está vinculado a este perfil. Esta ação não pode ser desfeita.',
+    rotulo: 'Excluir perfil',
+    aoConfirmar: () => {
+      Permissoes.excluirPerfil(perfil.id);
+      salvar();
+      location.href = URL_LISTA;
+    },
+  });
+}
+
+function irParaAbaDetalhe(id) {
+  estado.aba = id;
+  const url = new URL(location.href);
+  if (id === 'permissoes') url.searchParams.delete('aba'); else url.searchParams.set('aba', id);
+  history.replaceState(null, '', url);
+  renderDetalhe();
+}
 
 function renderDetalhe() {
   const container = document.getElementById('detalhe-perfil');
@@ -550,95 +826,99 @@ function renderDetalhe() {
   }
 
   const membros = membrosDoPerfil(perfil.id);
-  const telasLiberadas = FEATURES.filter((f) => (perfil.permissoes[f.id] || []).includes('visualizar')).length;
+  const { telas: telasLiberadas, acoes: totalAcoes } = contagemPermissoes(perfil);
+  const tipos = Permissoes.tiposDoPerfil(perfil);
+  const indice = PERFIS.indexOf(perfil);
+  const sep = '<span aria-hidden="true">/</span>';
+  const linkTrilha = 'hover:text-petrol-800 dark:hover:text-sky-300 transition';
 
-  const abas = [
-    { id: 'permissoes', rotulo: 'Permissões' },
-    { id: 'usuarios', rotulo: `Usuários (${membros.length})` },
+  // Uma ação à vista (Duplicar); público, inativar e excluir no "Mais", com o efeito de cada um na segunda linha.
+  // O que não pode acontecer fica travado com o motivo escrito (e ainda passa por bloqueado()).
+  const travado = SOMENTE_LEITURA ? 'Seu perfil só consulta os perfis de acesso' : perfil.protegido ? 'O Administrador é protegido' : '';
+  const itensMais = [
+    { nome: 'Alterar para quem é', detalhe: travado || `Hoje: ${tiposPerfilTexto(perfil).toLowerCase()}`, desabilitado: !!travado, acao: () => abrirModalTiposPerfil(perfil) },
+    'sep',
+    perfil.ativo
+      ? { nome: 'Inativar perfil', detalhe: travado || 'Suspende as permissões sem perder a configuração', desabilitado: !!travado, acao: () => alternarAtivo(perfil) }
+      : { nome: 'Reativar perfil', detalhe: travado || 'As permissões voltam a valer para os usuários', desabilitado: !!travado, acao: () => alternarAtivo(perfil) },
+    'sep',
+    { nome: 'Excluir perfil', perigo: !travado, detalhe: travado || (membros.length ? `${plural(membros.length, 'usuário perde', 'usuários perdem')} estas permissões` : 'Nenhum usuário vinculado'), desabilitado: !!travado, acao: () => confirmarExclusaoPerfil(perfil, membros) },
   ];
 
   container.innerHTML = `
-    <nav aria-label="Breadcrumb" class="mb-3 flex items-center gap-1.5 text-sm text-slate-500 dark:text-neutral-400">
-      <a href="${URL_LISTA}" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Perfis de acesso</a>
-      <span class="text-slate-300 dark:text-neutral-700">/</span>
-      <span class="font-medium text-slate-800 dark:text-neutral-100 truncate max-w-xs" aria-current="page">${esc(perfil.nome)}</span>
+    <nav aria-label="Trilha" class="mb-3 flex items-center gap-1.5 text-sm ${APOIO_FUNDO}">
+      <a href="${Shell.primeiraPagina()}" class="${linkTrilha}">Início</a>
+      ${sep}
+      <a href="${URL_LISTA}" class="${linkTrilha}">Perfis de acesso</a>
+      ${sep}
+      <div class="relative min-w-0" id="seletor-perfil-atual">
+        <button type="button" id="btn-perfil-atual" title="Trocar de perfil" aria-haspopup="true" aria-expanded="false" aria-current="page"
+          class="inline-flex items-center gap-1 max-w-xs h-7 -mx-1.5 px-1.5 rounded-md font-medium text-slate-800 dark:text-neutral-100 transition hover:bg-white dark:hover:bg-neutral-900">
+          <span class="truncate">${esc(perfil.nome)}</span>${icone(D.baixo, 'h-3.5 w-3.5 text-slate-400 dark:text-neutral-500', 2)}
+        </button>
+        <div id="popover-perfil" class="hidden ${POPOVER} left-0 w-80 z-40">
+          <input id="busca-perfil-lista" type="search" value="${esc(estado.buscaPerfilLista)}" placeholder="Buscar perfil…" autocomplete="off" aria-label="Buscar perfil"
+            class="${CAMPO} w-full">
+          <div id="lista-perfil-popover" class="max-h-64 overflow-y-auto mt-1.5">${htmlListaPerfilPopover()}</div>
+        </div>
+      </div>
+      <span class="flex-1"></span>
+      <span class="tabular-nums">${indice + 1} de ${PERFIS.length}</span>
+      <span class="flex gap-1">
+        ${navPerfilHtml(PERFIS[indice - 1], D.cima, 'Perfil anterior')}
+        ${navPerfilHtml(PERFIS[indice + 1], D.baixo, 'Próximo perfil')}
+      </span>
     </nav>
-    <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm">
-      <div class="p-5 flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 dark:border-neutral-900">
-        <div>
-          <div class="relative inline-flex items-center gap-3" id="seletor-perfil-atual">
-            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Perfil</p>
-            <button type="button" id="btn-perfil-atual" title="Trocar de perfil"
-              class="group flex items-center gap-2.5 rounded-lg -mx-1.5 px-1.5 py-0.5 hover:bg-slate-50 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40">
-              <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-neutral-100">${esc(perfil.nome)}</h3>
-              ${badgeStatusHtml(perfil.ativo)}
-              <svg class="h-4 w-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-neutral-200 transition" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
-            </button>
-            <div id="popover-perfil" class="hidden absolute left-0 top-full mt-1.5 w-80 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-40 p-3">
-              <input id="busca-perfil-lista" type="text" value="${esc(estado.buscaPerfilLista)}" placeholder="Buscar perfil…" autocomplete="off"
-                class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
-              <div id="lista-perfil-popover" class="max-h-64 overflow-y-auto mt-2">${htmlListaPerfilPopover()}</div>
-            </div>
-          </div>
-          <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">${telasLiberadas} de ${FEATURES.length} telas liberadas · ${membros.length === 1 ? '1 usuário' : `${membros.length} usuários`}</p>
-          <div class="mt-2 flex flex-wrap items-center gap-1.5">
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mr-1">Para</span>
-            ${Permissoes.tiposDoPerfil(perfil).map((t) => chipTipoHtml(t)).join('') || '<span class="text-xs text-amber-700 dark:text-amber-300">ninguém — defina o público</span>'}
-            <button type="button" data-editar-tipos title="Alterar para quem é o perfil"
-              class="ml-0.5 p-1 rounded-md text-slate-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40">
-              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
-            </button>
+
+    <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+      <div class="min-w-0 flex-1 basis-80 flex items-start gap-3">
+        <div class="h-12 w-12 shrink-0 rounded-xl bg-petrol-800/10 dark:bg-sky-950/60 text-petrol-800 dark:text-sky-300 grid place-items-center font-display font-semibold" aria-hidden="true">${esc(iniciais(perfil.nome))}</div>
+        <div class="min-w-0 flex-1">
+          <h2 class="font-registro text-[26px] leading-[1.15] font-semibold tracking-[-0.01em] ${TITULO}">${esc(perfil.nome)}</h2>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
+            ${chipHtml(D.tela, `<span class="tabular-nums">${telasLiberadas} de ${FEATURES.length}</span> telas liberadas`, 'Telas com a ação Visualizar liberada')}
+            ${chipHtml(D.acao, `<span class="tabular-nums">${plural(totalAcoes, 'ação liberada', 'ações liberadas')}</span>`)}
+            ${chipHtml(D.usuarios, `<span class="tabular-nums">${plural(membros.length, 'usuário', 'usuários')}</span>`)}
+            ${chipHtml(D.publico, tipos.length ? `Para ${esc(tiposPerfilTexto(perfil).toLowerCase())}` : `<span class="${COBRE_TINTA}">Para ninguém — defina o público</span>`, 'Só usuários desses tipos podem receber o perfil')}
           </div>
         </div>
-        <div class="flex items-center gap-4">
-          <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-neutral-400">
-            ${perfil.ativo ? 'Ativo' : 'Inativo'}
-            ${switchHtml(perfil.ativo, 'data-toggle-ativo', perfil.ativo ? 'Inativar perfil (suspende as permissões sem perder a configuração)' : 'Reativar perfil')}
-          </label>
-          <button type="button" data-duplicar title="Duplicar perfil (copia as permissões, sem os usuários)"
-            class="p-2 rounded-lg text-slate-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 8.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v8.25A2.25 2.25 0 006 16.5h2.25m8.25-8.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-7.5A2.25 2.25 0 018.25 18v-7.5a2.25 2.25 0 012.25-2.25h6z" /></svg>
-          </button>
-          <button type="button" data-excluir title="Excluir perfil"
-            class="p-2 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
-          </button>
-        </div>
       </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button type="button" id="btn-duplicar" title="Copia as permissões e o público para um perfil novo, sem os usuários" class="${BOTAO_SEC}">${icone(D.copiar)} Duplicar</button>
+        <button type="button" id="btn-mais" class="${BOTAO_SEC}" aria-haspopup="menu" aria-expanded="false">Mais ${icone(D.baixo, 'h-3.5 w-3.5', 2)}</button>
+      </div>
+    </div>
 
-      <div class="px-5 flex gap-1 border-b border-slate-100 dark:border-neutral-900">
-        ${abas.map((aba) => `
-          <button type="button" data-aba="${aba.id}"
-            class="px-3 py-2.5 text-sm font-medium border-b-2 -mb-px transition focus:outline-none
-              ${estado.aba === aba.id
-                ? 'border-laranja text-slate-900 dark:text-neutral-100'
-                : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-200'}">
-            ${aba.rotulo}
-          </button>`).join('')}
-      </div>
+    ${perfil.protegido ? `
+      <div class="${FAIXA_NEUTRA}">
+        <p class="min-w-0 flex-1"><span class="font-medium">Perfil protegido</span> — o Administrador sempre tem acesso a todas as telas, inclusive as que forem criadas depois. Não pode ser editado, inativado nem excluído; duplique-o para criar uma variação.</p>
+      </div>` : ''}
+    ${SOMENTE_LEITURA ? `
+      <div class="${FAIXA_NEUTRA}">
+        <p class="min-w-0 flex-1"><span class="font-medium">Somente consulta</span> — seu perfil não gerencia perfis de acesso.</p>
+      </div>` : ''}
+    ${perfil.ativo ? '' : `
+      <div class="${FAIXA_NEUTRA}">
+        <p class="min-w-0 flex-1"><span class="font-medium">Perfil inativo</span> — as permissões abaixo estão suspensas e voltam a valer quando o perfil for reativado.</p>
+        ${SOMENTE_LEITURA ? '' : '<button type="button" data-reativar class="shrink-0 font-medium hover:underline underline-offset-2">Reativar perfil</button>'}
+      </div>`}
 
-      <div class="p-5">
-        ${perfil.protegido ? `
-          <div class="mb-4 rounded-lg bg-petrol-800/5 dark:bg-sky-950/40 border border-petrol-800/15 dark:border-sky-900 text-slate-700 dark:text-neutral-200 text-sm px-4 py-2.5">
-            Perfil protegido: o Administrador sempre tem acesso a todas as telas, inclusive as que forem criadas depois. Não pode ser editado, inativado nem excluído — duplique-o para criar uma variação.
-          </div>` : ''}
-        ${SOMENTE_LEITURA ? '<div class="mb-4 rounded-lg bg-slate-100 dark:bg-neutral-900 text-sm px-4 py-2.5">Somente consulta: seu perfil não gerencia perfis de acesso.</div>' : ''}
-        ${perfil.ativo ? '' : `
-          <div class="mb-4 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm px-4 py-2.5">
-            Perfil inativo — as permissões abaixo estão suspensas e voltam a valer quando o perfil for reativado.
-          </div>`}
-        ${estado.aba === 'permissoes' ? htmlAbaPermissoes() : htmlAbaUsuarios(perfil, membros)}
-      </div>
-    </div>`;
+    ${abasHtml([
+      { id: 'permissoes', rotulo: 'Permissões' },
+      { id: 'usuarios', rotulo: 'Usuários', contagem: membros.length },
+    ], estado.aba, 'data-aba', 'Seções do perfil')}
+
+    ${estado.aba === 'permissoes' ? htmlAbaPermissoes() : htmlAbaUsuarios(perfil, membros)}`;
 
   // --- eventos do detalhe ---
 
   const popoverPerfil = container.querySelector('#popover-perfil');
-  container.querySelector('#btn-perfil-atual').addEventListener('click', () => {
+  const botaoPerfil = container.querySelector('#btn-perfil-atual');
+  botaoPerfil.addEventListener('click', () => {
     popoverPerfil.classList.toggle('hidden');
-    if (!popoverPerfil.classList.contains('hidden')) {
-      popoverPerfil.querySelector('#busca-perfil-lista').focus();
-    }
+    const aberto = !popoverPerfil.classList.contains('hidden');
+    botaoPerfil.setAttribute('aria-expanded', String(aberto));
+    if (aberto) popoverPerfil.querySelector('#busca-perfil-lista').focus();
   });
 
   const buscaPerfilLista = container.querySelector('#busca-perfil-lista');
@@ -653,43 +933,12 @@ function renderDetalhe() {
     if (opcao.dataset.escolherPerfil !== perfil.id) location.href = urlDetalhe(opcao.dataset.escolherPerfil);
   });
 
-  container.querySelector('[data-toggle-ativo]').addEventListener('click', () => {
-    if (bloqueado(perfil.id)) return;
-    Permissoes.alternarPerfilAtivo(perfil.id);
-    salvar();
-    toast(`Perfil "${perfil.nome}" ${perfil.ativo ? 'reativado' : 'inativado'}`, perfil.ativo ? 'ok' : 'alerta');
-    renderTudo();
-  });
-
-  container.querySelector('[data-duplicar]').addEventListener('click', () => {
-    abrirModalDuplicarPerfil(perfil);
-  });
-
-  container.querySelector('[data-editar-tipos]').addEventListener('click', () => {
-    abrirModalTiposPerfil(perfil);
-  });
-
-  container.querySelector('[data-excluir]').addEventListener('click', () => {
-    if (bloqueado(perfil.id)) return;
-    confirmar({
-      titulo: `Excluir o perfil "${perfil.nome}"?`,
-      mensagem: membros.length
-        ? `${membros.length === 1 ? '1 usuário perderá' : `${membros.length} usuários perderão`} as permissões concedidas por este perfil. Esta ação não pode ser desfeita.`
-        : 'Nenhum usuário está vinculado a este perfil. Esta ação não pode ser desfeita.',
-      rotulo: 'Excluir perfil',
-      aoConfirmar: () => {
-        Permissoes.excluirPerfil(perfil.id);
-        salvar();
-        location.href = URL_LISTA;
-      },
-    });
-  });
+  container.querySelector('#btn-duplicar').addEventListener('click', () => abrirModalDuplicarPerfil(perfil));
+  container.querySelector('#btn-mais').addEventListener('click', (e) => abrirMenu(e.currentTarget, itensMais));
+  container.querySelector('[data-reativar]')?.addEventListener('click', () => alternarAtivo(perfil));
 
   container.querySelectorAll('[data-aba]').forEach((el) => {
-    el.addEventListener('click', () => {
-      estado.aba = el.dataset.aba;
-      renderDetalhe();
-    });
+    el.addEventListener('click', () => irParaAbaDetalhe(el.dataset.aba));
   });
 
   if (estado.aba === 'permissoes') {
@@ -733,6 +982,7 @@ function renderDetalhe() {
       document.getElementById('lista-usuarios-perfil').innerHTML = htmlListaUsuarios(perfil);
       wireListaUsuarios(perfil);
     });
+
     container.querySelectorAll('[data-filtro-usuarios]').forEach((el) => {
       el.addEventListener('click', () => {
         estado.filtroUsuarios = el.dataset.filtroUsuarios;
@@ -764,46 +1014,29 @@ function wireListaUsuarios(perfil) {
   });
 }
 
-// ---------- Aba Permissões (módulos em acordeão) ----------
+// ---------- Aba Permissões (módulos em cartões recolhíveis) ----------
 
 function htmlAbaPermissoes() {
   const perfil = Permissoes.getPerfil(estado.perfilSelecionadoId);
+  const todosAbertos = Permissoes.modulosDoPortal(estado.portalAtivo).every((m) => estado.modulosAbertos.has(m.id));
+  const portais = PORTAIS.map((portal) => ({
+    id: portal.id,
+    rotulo: portal.nome,
+    contagem: Permissoes.contagemAcoes(perfil, Permissoes.featuresDoPortal(portal.id)).ativas,
+  }));
   return `
-    <div class="mb-4 flex gap-6 border-b border-slate-200 dark:border-neutral-800">
-      ${PORTAIS.map((portal) => {
-        const { ativas } = Permissoes.contagemAcoes(perfil, Permissoes.featuresDoPortal(portal.id));
-        const selecionado = estado.portalAtivo === portal.id;
-        return `
-          <button type="button" data-portal="${portal.id}"
-            class="flex items-center gap-2 py-2.5 text-sm font-medium border-b-2 -mb-px transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40
-              ${selecionado
-                ? 'border-petrol-800 dark:border-sky-400 text-slate-900 dark:text-neutral-100'
-                : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-200'}">
-            ${esc(portal.nome)}
-            <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${ativas ? 'bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300' : 'bg-slate-200 text-slate-500 dark:bg-neutral-800 dark:text-neutral-300'}">${ativas}</span>
-          </button>`;
-      }).join('')}
+    <div class="${BARRA}">
+      ${portais.length > 1 ? segmentado(portais, estado.portalAtivo, 'data-portal', 'Portal') : ''}
+      ${campoBusca('busca-permissoes', estado.busca, 'Buscar tela ou ação — ex.: estornar, certificado, aula…', 'flex-1 min-w-56 max-w-md')}
+      <button type="button" id="btn-expandir-modulos" data-expandir="${!todosAbertos}" class="${BOTAO_FANTASMA_FUNDO} ml-auto">
+        ${icone(todosAbertos ? D.recolher : D.expandir, 'h-4 w-4', 2)}
+        ${todosAbertos ? 'Minimizar todos' : 'Expandir todos'}
+      </button>
     </div>
-    <div class="flex items-center gap-2 mb-4">
-      <div class="relative flex-1">
-        <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-        <input id="busca-permissoes" type="text" value="${esc(estado.busca)}" placeholder="Buscar tela ou ação — ex.: estornar, certificado, aula…" autocomplete="off"
-          class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
-      </div>
-      ${(() => {
-        const modulosDoPortal = Permissoes.modulosDoPortal(estado.portalAtivo);
-        const todosAbertos = modulosDoPortal.every((m) => estado.modulosAbertos.has(m.id));
-        return `
-          <button type="button" id="btn-expandir-modulos" data-expandir="${!todosAbertos}"
-            class="shrink-0 inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-neutral-400 border border-slate-300 dark:border-neutral-700 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 px-3 py-2.5 rounded-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="${todosAbertos ? 'M4.5 15.75l7.5-7.5 7.5 7.5' : 'M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9'}" /></svg>
-            ${todosAbertos ? 'Minimizar todos' : 'Expandir todos'}
-          </button>`;
-      })()}
-    </div>
-    <div id="container-modulos">${htmlModulos(perfil)}</div>`;
+    <div id="container-modulos" class="space-y-4">${htmlModulos(perfil)}</div>`;
 }
 
+// Um cartão por módulo: o cabeçalho recolhe o cartão; Liberar tudo e Limpar são as ações fantasma dele.
 function htmlModulos(perfil) {
   const termo = estado.busca.trim().toLowerCase();
   const buscando = termo.length > 0;
@@ -820,48 +1053,53 @@ function htmlModulos(perfil) {
 
     const aberto = buscando || estado.modulosAbertos.has(modulo.id);
     const { ativas, total } = Permissoes.contagemAcoes(perfil, todasDoModulo);
+    const resumo = ativas === total ? `todas as ${total} ações liberadas` : `${ativas} de ${total} ações liberadas`;
 
     return `
-      <div class="border border-slate-200 dark:border-neutral-800 rounded-lg mb-3 overflow-hidden">
-        <div class="flex items-center gap-1 bg-slate-50 dark:bg-neutral-900 pr-2">
+      <section class="${CARTAO}">
+        <div class="px-4 ${aberto ? 'pt-3 pb-1' : 'py-3'} flex items-center gap-3">
           <button type="button" data-toggle-modulo="${modulo.id}" aria-expanded="${aberto}"
-            class="flex-1 flex items-center gap-2.5 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-petrol-800/40">
-            <svg class="h-4 w-4 text-slate-400 transition-transform ${aberto ? 'rotate-90' : ''}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
-            <span class="text-sm font-semibold text-slate-800 dark:text-neutral-100">${esc(modulo.nome)}</span>
-            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${ativas ? 'bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300' : 'bg-slate-200 text-slate-500 dark:bg-neutral-800 dark:text-neutral-300'}">${ativas}/${total} ações</span>
+            class="flex-1 min-w-0 flex items-start gap-2 -ml-1.5 px-1.5 py-1 rounded-md text-left">
+            ${icone(D.direita, `h-4 w-4 mt-[3px] text-slate-400 dark:text-neutral-500 transition-transform ${aberto ? 'rotate-90' : ''}`, 2)}
+            <span class="min-w-0">
+              <span class="block font-display text-[15px] leading-[22px] font-semibold ${TITULO}">${esc(modulo.nome)}</span>
+              <span class="block text-xs tabular-nums ${APOIO}">${resumo}</span>
+            </span>
           </button>
-          <button type="button" data-modulo-tudo="${modulo.id}" title="Liberar todas as ações do módulo"
-            class="text-xs font-medium text-petrol-800 dark:text-sky-300 hover:bg-petrol-800/10 dark:hover:bg-petrol-700/40 px-2.5 py-1.5 rounded-md transition">Liberar tudo</button>
-          <button type="button" data-modulo-nenhum="${modulo.id}" title="Remover todas as ações do módulo"
-            class="text-xs font-medium text-slate-500 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-800 px-2.5 py-1.5 rounded-md transition">Limpar</button>
+          <div class="-mr-1.5 flex shrink-0 items-center gap-1">
+            <button type="button" data-modulo-tudo="${modulo.id}" title="Liberar todas as ações do módulo" class="${BOTAO_FANTASMA}">Liberar tudo</button>
+            <button type="button" data-modulo-nenhum="${modulo.id}" title="Remover todas as ações do módulo" class="${BOTAO_FANTASMA}">Limpar</button>
+          </div>
         </div>
-        ${aberto ? `<div class="px-4">${features.map((f) => htmlLinhaFeature(perfil, f)).join('')}</div>` : ''}
-      </div>`;
+        ${aberto ? `<div class="divide-y divide-slate-100 dark:divide-neutral-900">${features.map((f) => htmlLinhaFeature(perfil, f)).join('')}</div>` : ''}
+      </section>`;
   }).filter(Boolean);
 
-  return secoes.join('') ||
-    `<p class="text-sm text-slate-400 py-8 text-center">Nenhuma tela ou ação encontrada para "${esc(estado.busca)}".</p>`;
+  return secoes.join('') || cartaoVazio(`Nenhuma tela ou ação encontrada para "${esc(estado.busca)}".`);
 }
 
+// Ações sem Visualizar não servem para nada: o aviso em cobre pede a ação que falta.
 function htmlLinhaFeature(perfil, feature) {
   const ativas = perfil.permissoes[feature.id] || [];
   const acessoTela = ativas.includes('visualizar');
+  const situacao = acessoTela
+    ? `<span class="inline-flex items-center gap-1.5 ${APOIO}"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>tela liberada</span>`
+    : ativas.length
+      ? `<span class="${COBRE_TINTA}">sem acesso à tela — ative "Visualizar"</span>`
+      : `<span class="inline-flex items-center gap-1.5 ${APOIO}"><span class="h-1.5 w-1.5 rounded-full ring-1 ring-inset ring-slate-400 dark:ring-neutral-500"></span>sem acesso à tela</span>`;
   return `
-    <div class="py-3.5 flex flex-col sm:flex-row sm:items-center gap-2 border-b border-slate-100 dark:border-neutral-900 last:border-0">
-      <div class="w-52 shrink-0">
-        <p class="text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(feature.nome)}</p>
-        <p class="text-xs mt-0.5 ${acessoTela ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}">${acessoTela ? 'tela liberada' : 'sem acesso à tela'}</p>
+    <div class="grid grid-cols-[15rem_minmax(0,1fr)] items-center gap-x-6 gap-y-2 px-4 py-3">
+      <div class="min-w-0">
+        <p class="text-sm font-medium ${VALOR}">${esc(feature.nome)}</p>
+        <p class="text-xs mt-0.5">${situacao}</p>
       </div>
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-1.5">
         ${feature.acoes.map((acao) => {
           const ligada = ativas.includes(acao.id);
           return `
             <button type="button" data-feature="${feature.id}" data-acao="${acao.id}" aria-pressed="${ligada}"
-              class="px-3 py-1.5 rounded-full text-xs font-medium border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40
-                ${ligada
-                  ? 'bg-petrol-800 border-petrol-800 text-white dark:bg-petrol-700 dark:border-petrol-700'
-                  : 'bg-white border-slate-300 text-slate-500 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300'}">
-              ${ligada ? '✓ ' : ''}${esc(acao.nome)}
+              class="${CHIP} ${ligada ? CHIP_LIGADO : CHIP_LIVRE}">
+              ${ligada ? icone(D.check, 'h-3 w-3', 2.5) : ''}${esc(acao.nome)}
             </button>`;
         }).join('')}
       </div>
@@ -941,36 +1179,25 @@ function wireModulos(perfil) {
 
 // ---------- Aba Usuários ----------
 
+// Só aparecem os usuários dos tipos a que o perfil se destina (os outros não podem recebê-lo).
 function htmlAbaUsuarios(perfil, membros) {
   const compativeis = Permissoes.usuariosCompativeis(perfil.id);
   const tiposPerfil = Permissoes.tiposDoPerfil(perfil);
   const foraDoPublico = USUARIOS.length - compativeis.length;
   if (!TIPOS_USUARIO.some((t) => t.id === estado.tipoUsuarios) || !tiposPerfil.some((t) => t.id === estado.tipoUsuarios)) estado.tipoUsuarios = 'todos';
   const filtros = [
-    { id: 'todos', rotulo: `Todos (${compativeis.length})` },
-    { id: 'incluidos', rotulo: `No perfil (${membros.length})` },
-    { id: 'fora', rotulo: `Fora do perfil (${compativeis.length - membros.length})` },
+    { id: 'todos', rotulo: 'Todos', contagem: compativeis.length },
+    { id: 'incluidos', rotulo: 'No perfil', contagem: membros.length },
+    { id: 'fora', rotulo: 'Fora do perfil', contagem: compativeis.length - membros.length },
   ];
   return `
-    <p class="text-sm text-slate-500 dark:text-neutral-400 mb-3">
-      Use o interruptor para incluir ou remover cada usuário deste perfil.
-      ${tiposPerfil.length ? `Perfil para <strong class="font-medium text-slate-700 dark:text-neutral-200">${esc(tiposPerfil.map((t) => t.plural.toLowerCase()).join(' e '))}</strong>${foraDoPublico ? ` — ${foraDoPublico} usuário(s) de outros tipos não aparecem aqui.` : '.'}` : ''}
-    </p>
-    <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-      <div class="relative flex-1">
-        <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-        <input id="busca-usuarios" type="text" value="${esc(estado.buscaUsuarios)}" placeholder="Buscar usuário pelo nome…" autocomplete="off"
-          class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
-      </div>
+    <div class="${BARRA}">
+      ${campoBusca('busca-usuarios', estado.buscaUsuarios, 'Buscar usuário pelo nome…', 'w-64')}
       ${tiposPerfil.length > 1 ? selectTipoHtml('tipo-usuarios', estado.tipoUsuarios, tiposPerfil) : ''}
-      <div class="inline-flex rounded-lg border border-slate-200 dark:border-neutral-800 bg-slate-100 dark:bg-neutral-900 p-0.5 gap-0.5 shrink-0">
-        ${filtros.map((f) => `
-          <button type="button" data-filtro-usuarios="${f.id}"
-            class="px-2.5 py-1.5 rounded-md text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40
-              ${estado.filtroUsuarios === f.id ? 'bg-white dark:bg-neutral-950 text-slate-900 dark:text-neutral-100 shadow-sm' : 'text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-200'}">
-            ${f.rotulo}
-          </button>`).join('')}
-      </div>
+      ${segmentado(filtros, estado.filtroUsuarios, 'data-filtro-usuarios', 'Filtrar usuários')}
+      <span class="ml-auto text-sm ${APOIO_FUNDO}">${tiposPerfil.length
+        ? `Perfil para <span class="font-medium text-slate-700 dark:text-neutral-200">${esc(tiposPerfil.map((t) => t.plural.toLowerCase()).join(' e '))}</span>${foraDoPublico ? ` · ${plural(foraDoPublico, 'usuário de outro tipo não aparece', 'usuários de outros tipos não aparecem')}` : ''}`
+        : `<span class="${COBRE_TINTA}">Defina para quem é o perfil para incluir usuários</span>`}</span>
     </div>
     <div id="lista-usuarios-perfil">${htmlListaUsuarios(perfil)}</div>`;
 }
@@ -985,12 +1212,10 @@ function htmlListaUsuarios(perfil) {
     return !termo || usuario.nome.toLowerCase().includes(termo);
   });
 
-  if (!filtrados.length) {
-    return '<p class="text-sm text-slate-400 py-6 text-center">Nenhum usuário encontrado com esse filtro.</p>';
-  }
+  if (!filtrados.length) return cartaoVazio('Nenhum usuário encontrado com esse filtro.');
 
   return `
-    <ul>
+    <ul class="${CARTAO} overflow-hidden divide-y divide-slate-100 dark:divide-neutral-900">
       ${filtrados.map((usuario) => {
         const incluido = usuario.perfis.includes(perfil.id);
         const outros = usuario.perfis
@@ -998,73 +1223,29 @@ function htmlListaUsuarios(perfil) {
           .map((id) => Permissoes.getPerfil(id)?.nome)
           .filter(Boolean);
         return `
-          <li class="flex items-center justify-between gap-4 py-3 border-b border-slate-100 dark:border-neutral-900 last:border-0">
-            <div class="flex items-center gap-3 min-w-0">
-              ${avatarHtml(usuario, 'h-9 w-9 text-xs')}
-              <div class="min-w-0">
-                <p class="text-sm font-medium text-slate-800 dark:text-neutral-100 truncate flex items-center gap-2">${esc(usuario.nome)} ${tiposUsuarioHtml(usuario)}</p>
-                <p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${outros.length ? `Também em: ${esc(outros.join(', '))}` : 'Sem outros perfis'}</p>
-              </div>
+          <li class="group flex items-center gap-3 px-4 h-14 transition-colors ${LINHA_HOVER}">
+            ${avatarHtml(usuario, 'h-8 w-8 text-[11px]')}
+            <div class="min-w-0 flex-1">
+              <p class="flex items-center gap-2 min-w-0 text-sm font-medium ${VALOR}"><span class="truncate">${esc(usuario.nome)}</span>${tiposUsuarioHtml(usuario)}</p>
+              <p class="text-xs ${APOIO} truncate">${outros.length ? `Também em: ${esc(outros.join(', '))}` : 'Sem outros perfis'}</p>
             </div>
-            <div class="flex items-center gap-3 shrink-0">
-              ${botaoExtrasHtml(usuario)}
-              ${switchHtml(incluido, `data-usuario="${usuario.id}"`, incluido ? `Remover ${usuario.nome} do perfil` : `Incluir ${usuario.nome} no perfil`)}
-            </div>
+            ${botaoExtrasHtml(usuario)}
+            ${switchHtml(incluido, `data-usuario="${usuario.id}"`, incluido ? `Remover ${usuario.nome} do perfil` : `Incluir ${usuario.nome} no perfil`)}
           </li>`;
       }).join('')}
     </ul>`;
 }
 
-// ---------- Alternador de visões ----------
-
-const VISOES = [
-  { id: 'perfis', rotulo: 'Perfis' },
-  { id: 'matriz-permissoes', rotulo: 'Permissões × perfis' },
-  { id: 'matriz-usuarios', rotulo: 'Usuários × perfis' },
-  { id: 'validacao', rotulo: 'Validar acesso' },
-];
-
-function renderTrocaVisao() {
-  const container = document.getElementById('troca-visao');
-  container.innerHTML = `
-    <nav class="flex gap-6 -mb-px">
-      ${VISOES.map((visao) => `
-        <button type="button" data-visao="${visao.id}"
-          class="pb-2.5 text-sm font-medium border-b-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40
-            ${estado.visao === visao.id
-              ? 'border-laranja text-slate-900 dark:text-neutral-100'
-              : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-200'}">
-          ${visao.rotulo}
-        </button>`).join('')}
-    </nav>`;
-  container.querySelectorAll('[data-visao]').forEach((el) => {
-    el.addEventListener('click', () => {
-      estado.visao = el.dataset.visao;
-      if (estado.visao !== 'validacao') estado.usuarioInspecionadoId = null; // validação sempre abre sem usuário
-      renderTudo();
-    });
-  });
-}
-
-// Botão que abre o modal de permissões extras do usuário.
-function botaoExtrasHtml(usuario) {
+// Botão que abre o modal de permissões extras do usuário. Sem extras,
+// só aparece ao passar o mouse na linha (ou com foco do teclado); na matriz,
+// sobreposto à direita da célula para não encurtar o nome.
+function botaoExtrasHtml(usuario, { sobreposto = false } = {}) {
   const total = Permissoes.totalExtras(usuario);
-  return `
-    <button type="button" data-abrir-extras="${usuario.id}" title="Permissões extras de ${esc(usuario.nome)}"
-      class="ml-auto shrink-0 text-[11px] font-semibold px-2 py-1 rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-laranja/50
-        ${total ? 'bg-laranja/10 text-laranja-escuro dark:text-laranja hover:bg-laranja/20' : 'text-slate-400 hover:text-laranja-escuro dark:hover:text-laranja hover:bg-laranja/10'}">
-      ${total ? `+${total} extras` : '+ extras'}
-    </button>`;
-}
-
-// ---------- Componente: switch compacto das matrizes ----------
-
-function miniSwitchHtml(ligado, atributos, titulo = '') {
-  return `
-    <button type="button" role="switch" aria-checked="${ligado}" ${atributos} title="${esc(titulo)}"
-      class="relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 ${ligado ? 'bg-emerald-500' : 'bg-slate-200 hover:bg-slate-300 dark:bg-neutral-700 dark:hover:bg-neutral-500'}">
-      <span class="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white dark:bg-neutral-950 shadow transition-transform ${ligado ? 'translate-x-4' : ''}"></span>
-    </button>`;
+  return total
+    ? `<button type="button" data-abrir-extras="${usuario.id}" title="Permissões extras de ${esc(usuario.nome)}"
+        class="ml-auto shrink-0 inline-flex items-center h-6 px-2 rounded-md text-xs font-medium tabular-nums transition ${PILULA.extra} hover:bg-petrol-800/15 dark:hover:bg-sky-950">+${plural(total, 'extra', 'extras')}</button>`
+    : `<button type="button" data-abrir-extras="${usuario.id}" title="Conceder permissões extras a ${esc(usuario.nome)}"
+        class="${sobreposto ? 'absolute right-2 top-1/2 -translate-y-1/2 bg-slate-100 dark:bg-neutral-900' : ''} shrink-0 inline-flex items-center h-6 px-2 rounded-md text-xs font-medium ${APOIO} opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100 hover:text-petrol-800 dark:hover:text-sky-300">+ extras</button>`;
 }
 
 // Re-renderiza o miolo da matriz preservando a posição de rolagem.
@@ -1114,19 +1295,18 @@ function aplicarStickyMatriz() {
 function htmlSeletorColunas() {
   return `
     <div class="relative shrink-0" id="seletor-colunas">
-      <button type="button" id="btn-colunas"
-        class="inline-flex items-center gap-2 border border-slate-300 dark:border-neutral-700 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 text-slate-600 dark:text-neutral-400 text-sm font-medium px-3 py-2 rounded-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">
+      <button type="button" id="btn-colunas" aria-haspopup="true" class="${BOTAO_SEC}">
         Perfis exibidos
-        <span id="contagem-colunas" class="text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-200">${perfisExibidos().length}/${PERFIS.length}</span>
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+        <span id="contagem-colunas" class="tabular-nums font-normal ${APOIO}">${perfisExibidos().length} de ${PERFIS.length}</span>
+        ${icone(D.baixo, 'h-3.5 w-3.5', 2)}
       </button>
-      <div id="popover-colunas" class="hidden absolute right-0 top-full mt-1.5 w-72 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-40 p-3">
-        <input id="busca-colunas" type="text" value="${esc(estado.buscaColunas)}" placeholder="Buscar perfil…" autocomplete="off"
-          class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
-        <div id="lista-colunas" class="max-h-60 overflow-y-auto mt-2">${htmlListaColunas()}</div>
-        <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-neutral-900 text-xs font-medium">
-          <button type="button" data-colunas-todos class="text-petrol-800 dark:text-sky-300 hover:bg-petrol-800/10 dark:hover:bg-petrol-700/40 px-2 py-1 rounded transition">Marcar todos</button>
-          <button type="button" data-colunas-nenhum class="text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900 px-2 py-1 rounded transition">Desmarcar todos</button>
+      <div id="popover-colunas" class="hidden ${POPOVER} right-0 w-72 z-40">
+        <input id="busca-colunas" type="search" value="${esc(estado.buscaColunas)}" placeholder="Buscar perfil…" autocomplete="off" aria-label="Buscar perfil"
+          class="${CAMPO} w-full">
+        <div id="lista-colunas" class="max-h-60 overflow-y-auto mt-1.5">${htmlListaColunas()}</div>
+        <div class="flex items-center justify-between mt-1.5 pt-1.5 border-t border-slate-200 dark:border-neutral-800">
+          <button type="button" data-colunas-todos class="${BOTAO_FANTASMA}">Marcar todos</button>
+          <button type="button" data-colunas-nenhum class="${BOTAO_FANTASMA}">Desmarcar todos</button>
         </div>
       </div>
     </div>`;
@@ -1136,15 +1316,14 @@ function htmlListaColunas() {
   const termo = estado.buscaColunas.trim().toLowerCase();
   const perfis = PERFIS.filter((p) => !termo || p.nome.toLowerCase().includes(termo));
   if (!perfis.length) {
-    return '<p class="text-xs text-slate-400 px-2 py-3 text-center">Nenhum perfil encontrado.</p>';
+    return `<p class="text-xs ${APOIO} px-2 py-3 text-center">Nenhum perfil encontrado.</p>`;
   }
   return perfis.map((perfil) => {
     const marcado = !estado.perfisVisiveis || estado.perfisVisiveis.has(perfil.id);
     return `
-      <label class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-900 cursor-pointer">
-        <input type="checkbox" data-coluna-perfil="${perfil.id}" ${marcado ? 'checked' : ''} class="h-4 w-4 accent-[#0F3D4E] dark:accent-sky-400">
-        <span class="h-1.5 w-1.5 rounded-full shrink-0 ${perfil.ativo ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}"></span>
-        <span class="text-sm truncate ${perfil.ativo ? 'text-slate-700 dark:text-neutral-200' : 'text-slate-400'}">${esc(perfil.nome)}</span>
+      <label class="${ITEM_POPOVER} gap-2.5 h-8 cursor-pointer">
+        <input type="checkbox" data-coluna-perfil="${perfil.id}" ${marcado ? 'checked' : ''} class="h-3.5 w-3.5 accent-petrol-800 dark:accent-sky-400">
+        <span class="truncate ${perfil.ativo ? VALOR : APOIO}">${esc(perfil.nome)}${perfil.ativo ? '' : ' (inativo)'}</span>
       </label>`;
   }).join('');
 }
@@ -1162,7 +1341,7 @@ function wireSeletorColunas(aoMudar) {
   });
 
   const atualizar = () => {
-    raiz.querySelector('#contagem-colunas').textContent = `${perfisExibidos().length}/${PERFIS.length}`;
+    raiz.querySelector('#contagem-colunas').textContent = `${perfisExibidos().length} de ${PERFIS.length}`;
     aoMudar();
   };
 
@@ -1188,25 +1367,39 @@ function wireSeletorColunas(aoMudar) {
   });
 }
 
+// Matrizes: tabela de borda a borda num cartão que rola por dentro, com cabeçalho e primeira coluna congelados.
+const MATRIZ_TH = 'sticky top-0 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800';
+const MATRIZ_TD = 'border-b border-slate-100 dark:border-neutral-900';
+const MATRIZ_FIXA = 'sticky left-0 bg-white dark:bg-neutral-950 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 transition-colors';
+const MATRIZ_CELULA = `px-2 text-center border-l ${MATRIZ_TD} transition-colors group-hover:bg-slate-50 dark:group-hover:bg-neutral-900`;
+
+// Cabeçalho de coluna das matrizes: nome do perfil (link para o detalhe), um dado e, se houver, o público.
+function thPerfilHtml(perfil, detalhe, z = 'z-20', publico = '') {
+  return `
+    <th scope="col" class="${MATRIZ_TH} ${z} px-2 pt-2.5 pb-2 border-l text-center align-bottom min-w-[100px] font-normal">
+      <a href="${urlDetalhe(perfil.id)}" class="text-[12.5px] font-medium leading-tight ${perfil.ativo ? VALOR : APOIO} hover:underline underline-offset-2">${esc(perfil.nome)}</a>
+      <span class="block mt-0.5 text-[11.5px] ${APOIO} tabular-nums">${perfil.ativo ? detalhe : 'inativo'}</span>
+      ${publico ? `<span class="block text-[11.5px] leading-tight ${APOIO}">${esc(publico)}</span>` : ''}
+    </th>`;
+}
+
+const SEM_COLUNAS = cartaoVazio('Nenhum perfil selecionado — escolha as colunas em "Perfis exibidos".');
+
 // ---------- Matriz: Usuários × Perfis ----------
 
 function renderMatrizUsuarios() {
   if (estado.tipoMatrizUsuarios === 'aluno') estado.tipoMatrizUsuarios = 'todos';
   const container = document.getElementById('visao-matriz');
   container.innerHTML = `
-    <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm">
-      <div class="p-4 border-b border-slate-100 dark:border-neutral-900 flex flex-col sm:flex-row sm:items-center gap-3">
-        <div class="relative flex-1 max-w-md">
-          <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-          <input id="busca-matriz-usuarios" type="text" value="${esc(estado.buscaMatrizUsuarios)}" placeholder="Buscar usuário pelo nome…" autocomplete="off"
-            class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
-        </div>
-        ${selectTipoHtml('tipo-matriz-usuarios', estado.tipoMatrizUsuarios, TIPOS_MATRIZ)}
-        <div class="sm:ml-auto">${htmlSeletorColunas()}</div>
-      </div>
-      <p class="px-4 pt-3 text-xs text-slate-400">Alunos não aparecem aqui — a matriz é só da equipe (colaboradores) e dos professores.</p>
-      <div id="tabela-matriz">${htmlTabelaMatrizUsuarios()}</div>
-    </div>`;
+    <div class="${BARRA}">
+      ${campoBusca('busca-matriz-usuarios', estado.buscaMatrizUsuarios, 'Buscar usuário pelo nome…')}
+      ${selectTipoHtml('tipo-matriz-usuarios', estado.tipoMatrizUsuarios, TIPOS_MATRIZ)}
+      <span class="text-sm ${APOIO_FUNDO}" title="Alunos não aparecem aqui: a matriz é só da equipe e dos professores">Só equipe e professores.</span>
+      <div class="ml-auto">${htmlSeletorColunas()}</div>
+    </div>
+    <div id="tabela-matriz" class="flex-1 min-h-0 flex flex-col">${htmlTabelaMatrizUsuarios()}</div>`;
+
+  aplicarStickyMatriz();
 
   const inputBusca = container.querySelector('#busca-matriz-usuarios');
   inputBusca.addEventListener('input', () => {
@@ -1246,6 +1439,7 @@ function renderMatrizUsuarios() {
     salvar();
     toast(`${usuario.nome} ${resultado.incluido ? 'incluído(a) no' : 'removido(a) do'} perfil "${perfil.nome}"`, resultado.incluido ? 'ok' : 'alerta');
     atualizarTabelaMatriz(htmlTabelaMatrizUsuarios());
+    renderResumo();
   });
 }
 
@@ -1255,58 +1449,51 @@ function htmlTabelaMatrizUsuarios() {
   const usuarios = USUARIOS.filter((u) => !somenteAluno(u) && usuarioTemTipo(u, estado.tipoMatrizUsuarios) && (!termo || u.nome.toLowerCase().includes(termo)));
   const colunas = perfisExibidos();
 
-  if (!colunas.length) {
-    return '<p class="text-sm text-slate-400 py-10 text-center">Nenhum perfil selecionado — escolha as colunas em "Perfis exibidos".</p>';
-  }
-  if (!usuarios.length) {
-    return '<p class="text-sm text-slate-400 py-10 text-center">Nenhum usuário encontrado.</p>';
-  }
+  if (!colunas.length) return SEM_COLUNAS;
+  if (!usuarios.length) return cartaoVazio('Nenhum usuário encontrado.');
 
   return `
-    <div id="scroll-matriz" class="overflow-auto max-h-[65vh]">
-      <table class="min-w-full text-sm border-separate border-spacing-0">
+    <div id="scroll-matriz" class="${CARTAO} flex-1 min-h-0 overflow-auto">
+      <table class="min-w-full border-separate border-spacing-0 text-sm">
         <thead>
           <tr>
-            <th class="sticky top-0 left-0 z-30 bg-slate-50 dark:bg-neutral-900 text-left px-4 py-3 border-b border-slate-200 dark:border-neutral-800 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 min-w-[220px]">Usuário</th>
-            ${colunas.map((perfil) => {
-              const membros = membrosDoPerfil(perfil.id).length;
-              return `
-                <th class="sticky top-0 z-20 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800 px-3 py-2.5 text-center min-w-[130px]">
-                  <span class="flex items-center justify-center gap-1.5 text-xs font-semibold ${perfil.ativo ? 'text-slate-700 dark:text-neutral-200' : 'text-slate-400'}">
-                    <span class="h-1.5 w-1.5 rounded-full ${perfil.ativo ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}"></span>${esc(perfil.nome)}
-                  </span>
-                  <span class="block text-[10px] font-normal text-slate-400 mt-0.5">${perfil.ativo ? `${membros} usuário(s)` : 'inativo'} · ${esc(tiposPerfilTexto(perfil))}</span>
-                </th>`;
-            }).join('')}
+            <th scope="col" class="${MATRIZ_TH} left-0 z-30 pl-4 pr-3 pb-2 text-left align-bottom text-xs font-medium ${APOIO} min-w-[256px]">Usuário</th>
+            ${colunas.map((perfil) => thPerfilHtml(perfil, plural(membrosDoPerfil(perfil.id).length, 'usuário', 'usuários'), 'z-20', tiposPerfilTexto(perfil))).join('')}
           </tr>
         </thead>
         <tbody>
-          ${usuarios.map((usuario) => `
+          ${usuarios.map((usuario) => {
+            const tiposTexto = tiposUsuarioTexto(usuario);
+            return `
             <tr class="group">
-              <td class="sticky left-0 z-10 bg-white dark:bg-neutral-950 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 px-4 py-2 border-b border-slate-100 dark:border-neutral-900">
-                <div class="flex items-center gap-2.5 min-w-0">
+              <td class="${MATRIZ_FIXA} ${MATRIZ_TD} z-10 h-12 pl-4 pr-2">
+                <div class="relative flex items-center gap-1.5 min-w-0">
                   <button type="button" data-validar-usuario="${usuario.id}" title="Ver o acesso consolidado de ${esc(usuario.nome)}"
-                    class="group flex items-center gap-2.5 min-w-0 rounded-lg -ml-1.5 pl-1.5 pr-2 py-0.5 text-left hover:bg-petrol-800/5 dark:hover:bg-white/5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40">
-                    ${avatarHtml(usuario, 'h-7 w-7 text-[10px]')}
-                    <span class="text-sm font-medium text-slate-800 dark:text-neutral-100 truncate group-hover:text-petrol-800 dark:group-hover:text-sky-300 group-hover:underline decoration-petrol-800/40 dark:decoration-sky-300/40 underline-offset-2">${esc(usuario.nome)}</span>
+                    class="group/nome flex items-center gap-2 min-w-0 rounded-md text-left">
+                    ${avatarHtml(usuario, 'h-6 w-6 text-[10px]')}
+                    <span class="min-w-0">
+                      <span class="block font-medium ${VALOR} truncate group-hover/nome:underline underline-offset-2">${esc(usuario.nome)}</span>
+                      <span class="block text-xs truncate ${tiposTexto ? APOIO : COBRE_TINTA}">${tiposTexto ? esc(tiposTexto) : 'sem vínculo'}</span>
+                    </span>
                   </button>
-                  ${tiposUsuarioHtml(usuario, { link: false })}
-                  ${botaoExtrasHtml(usuario)}
+                  ${usuario.perfis.length ? '' : TAG_SEM_PERFIL}
+                  ${botaoExtrasHtml(usuario, { sobreposto: true })}
                 </div>
               </td>
               ${colunas.map((perfil) => {
-                const incluido = usuario.perfis.includes(perfil.id);
                 if (!Permissoes.perfilAplicaA(perfil, usuario)) {
                   return `
-                  <td class="text-center border-b border-slate-100 dark:border-neutral-900 px-3 py-2 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 text-slate-300 dark:text-neutral-700 select-none"
+                  <td class="h-12 ${MATRIZ_CELULA} text-slate-400 dark:text-neutral-600 select-none"
                     title="Perfil para ${esc(tiposPerfilTexto(perfil).toLowerCase())} — não se aplica a ${esc(usuario.nome)}">—</td>`;
                 }
+                const incluido = usuario.perfis.includes(perfil.id);
                 return `
-                  <td class="text-center border-b border-slate-100 dark:border-neutral-900 px-3 py-2 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 ${perfil.ativo ? '' : 'opacity-50'}">
+                  <td class="h-12 ${MATRIZ_CELULA} ${perfil.ativo ? '' : 'opacity-50'}">
                     ${miniSwitchHtml(incluido, `data-mu-usuario="${usuario.id}" data-mu-perfil="${perfil.id}"`, `${incluido ? 'Remover' : 'Incluir'} ${usuario.nome} — ${perfil.nome}`)}
                   </td>`;
               }).join('')}
-            </tr>`).join('')}
+            </tr>`;
+          }).join('')}
         </tbody>
       </table>
     </div>`;
@@ -1317,27 +1504,12 @@ function htmlTabelaMatrizUsuarios() {
 function renderMatrizPermissoes() {
   const container = document.getElementById('visao-matriz');
   container.innerHTML = `
-    <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm">
-      <div class="px-4 border-b border-slate-100 dark:border-neutral-900 flex gap-6">
-        ${PORTAIS.map((portal) => `
-          <button type="button" data-portal-matriz="${portal.id}"
-            class="py-3 text-sm font-medium border-b-2 -mb-px transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40
-              ${estado.portalAtivo === portal.id
-                ? 'border-petrol-800 dark:border-sky-400 text-slate-900 dark:text-neutral-100'
-                : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-200'}">
-            ${esc(portal.nome)}
-          </button>`).join('')}
-      </div>
-      <div class="p-4 border-b border-slate-100 dark:border-neutral-900 flex flex-col lg:flex-row lg:items-center gap-3">
-        <div class="relative flex-1 max-w-md">
-          <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-          <input id="busca-matriz" type="text" value="${esc(estado.buscaMatriz)}" placeholder="Buscar tela ou ação…" autocomplete="off"
-            class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
-        </div>
-        <div class="lg:ml-auto">${htmlSeletorColunas()}</div>
-      </div>
-      <div id="tabela-matriz">${htmlTabelaMatrizPermissoes()}</div>
-    </div>`;
+    <div class="${BARRA}">
+      ${PORTAIS.length > 1 ? segmentado(PORTAIS.map((p) => ({ id: p.id, rotulo: p.nome })), estado.portalAtivo, 'data-portal-matriz', 'Portal') : ''}
+      ${campoBusca('busca-matriz', estado.buscaMatriz, 'Buscar tela ou ação…')}
+      <div class="ml-auto">${htmlSeletorColunas()}</div>
+    </div>
+    <div id="tabela-matriz" class="flex-1 min-h-0 flex flex-col">${htmlTabelaMatrizPermissoes()}</div>`;
 
   aplicarStickyMatriz();
   wireSeletorColunas(() => atualizarTabelaMatriz(htmlTabelaMatrizPermissoes()));
@@ -1371,9 +1543,7 @@ function htmlTabelaMatrizPermissoes() {
   const colunas = perfisExibidos();
   const totalColunas = colunas.length + 1;
 
-  if (!colunas.length) {
-    return '<p class="text-sm text-slate-400 py-10 text-center">Nenhum perfil selecionado — escolha as colunas em "Perfis exibidos".</p>';
-  }
+  if (!colunas.length) return SEM_COLUNAS;
 
   const linhas = modulos.map((modulo) => {
     const features = Permissoes.featuresDoModulo(modulo.id)
@@ -1390,45 +1560,34 @@ function htmlTabelaMatrizPermissoes() {
 
     return `
       <tr>
-        <td colspan="${totalColunas}" data-sticky-modulo class="sticky left-0 z-20 bg-slate-100 dark:bg-neutral-900 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-300 border-b border-slate-200 dark:border-neutral-800">${esc(modulo.nome)}</td>
+        <td colspan="${totalColunas}" data-sticky-modulo class="sticky left-0 z-20 h-9 pl-4 bg-slate-100 dark:bg-neutral-900 font-semibold ${TITULO} border-b border-slate-200 dark:border-neutral-800">${esc(modulo.nome)}</td>
       </tr>
       ${features.map(({ feature, acoes }) => `
         <tr>
-          <td colspan="${totalColunas}" data-sticky-feature class="sticky left-0 z-[15] bg-slate-50 dark:bg-neutral-925 px-4 py-1.5 text-xs font-semibold text-slate-700 dark:text-neutral-200 border-b border-slate-100 dark:border-neutral-900">${esc(feature.nome)}</td>
+          <td colspan="${totalColunas}" data-sticky-feature class="sticky left-0 z-[15] h-9 pl-4 bg-white dark:bg-neutral-950 font-medium ${VALOR} ${MATRIZ_TD}">${esc(feature.nome)}</td>
         </tr>
         ${acoes.map((acao) => `
           <tr class="group">
-            <td class="sticky left-0 z-10 bg-white dark:bg-neutral-950 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 pl-8 pr-4 py-2 border-b border-slate-100 dark:border-neutral-900 text-sm text-slate-600 dark:text-neutral-400 min-w-[240px]">${esc(acao.nome)}</td>
+            <td class="${MATRIZ_FIXA} ${MATRIZ_TD} z-10 h-9 pl-8 pr-3 text-slate-600 dark:text-neutral-300 min-w-[256px]">${esc(acao.nome)}</td>
             ${colunas.map((perfil) => {
               const ligada = (perfil.permissoes[feature.id] || []).includes(acao.id);
               return `
-                <td class="text-center border-b border-slate-100 dark:border-neutral-900 px-3 py-2 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 ${perfil.ativo ? '' : 'opacity-50'}">
+                <td class="h-9 ${MATRIZ_CELULA} ${perfil.ativo ? '' : 'opacity-50'}">
                   ${miniSwitchHtml(ligada, `data-mx-perfil="${perfil.id}" data-mx-feature="${feature.id}" data-mx-acao="${acao.id}"`, `${perfil.nome} — ${feature.nome} · ${acao.nome}`)}
                 </td>`;
             }).join('')}
           </tr>`).join('')}`).join('')}`;
   }).filter(Boolean);
 
-  if (!linhas.length) {
-    return `<p class="text-sm text-slate-400 py-10 text-center">Nenhuma tela ou ação encontrada para "${esc(estado.buscaMatriz)}".</p>`;
-  }
+  if (!linhas.length) return cartaoVazio(`Nenhuma tela ou ação encontrada para "${esc(estado.buscaMatriz)}".`);
 
   return `
-    <div id="scroll-matriz" class="overflow-auto max-h-[65vh]">
-      <table class="min-w-full text-sm border-separate border-spacing-0">
+    <div id="scroll-matriz" class="${CARTAO} flex-1 min-h-0 overflow-auto">
+      <table class="min-w-full border-separate border-spacing-0 text-sm">
         <thead>
           <tr>
-            <th class="sticky top-0 left-0 z-40 bg-slate-50 dark:bg-neutral-900 text-left px-4 py-3 border-b border-slate-200 dark:border-neutral-800 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 min-w-[240px]">Tela / Ação</th>
-            ${colunas.map((perfil) => {
-              const { ativas } = Permissoes.contagemAcoes(perfil, Permissoes.featuresDoPortal(estado.portalAtivo));
-              return `
-                <th class="sticky top-0 z-30 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800 px-3 py-2.5 text-center min-w-[130px]">
-                  <span class="flex items-center justify-center gap-1.5 text-xs font-semibold ${perfil.ativo ? 'text-slate-700 dark:text-neutral-200' : 'text-slate-400'}">
-                    <span class="h-1.5 w-1.5 rounded-full ${perfil.ativo ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'}"></span>${esc(perfil.nome)}
-                  </span>
-                  <span class="block text-[10px] font-normal text-slate-400 mt-0.5">${perfil.ativo ? `${ativas} ações neste portal` : 'inativo'}</span>
-                </th>`;
-            }).join('')}
+            <th scope="col" class="${MATRIZ_TH} left-0 z-40 pl-4 pr-3 pb-2 text-left align-bottom text-xs font-medium ${APOIO} min-w-[256px]">Tela / Ação</th>
+            ${colunas.map((perfil) => thPerfilHtml(perfil, plural(Permissoes.contagemAcoes(perfil, Permissoes.featuresDoPortal(estado.portalAtivo)).ativas, 'ação', 'ações'), 'z-30')).join('')}
           </tr>
         </thead>
         <tbody>${linhas.join('')}</tbody>
@@ -1455,38 +1614,33 @@ function abrirValidacao(usuarioId = null) {
 function renderValidacao() {
   const root = document.getElementById('visao-matriz');
   root.innerHTML = `
-    <div class="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-neutral-800 shadow-sm">
-      <div class="p-5 border-b border-slate-100 dark:border-neutral-900">
-        <h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Validação de acesso</h3>
-        <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">Resultado consolidado — união dos perfis ativos do usuário mais as permissões extras.</p>
-      </div>
-      <div class="px-5 pt-4 flex items-center gap-2">
-        <div class="relative flex-1 max-w-xl" id="seletor-usuario-validacao">
-          <button type="button" id="btn-usuario-validacao"
-            class="w-full flex items-center gap-2.5 border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-neutral-950 text-left hover:border-petrol-800 dark:hover:border-sky-400 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">
-            <span id="rotulo-usuario-validacao" class="flex-1 flex items-center gap-2.5 min-w-0 text-slate-400">Selecione um usuário…</span>
-            <svg class="h-4 w-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
-          </button>
-          <div id="popover-usuario-validacao" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-50 p-2">
-            <input id="busca-usuario-validacao" type="text" placeholder="Buscar usuário pelo nome…" autocomplete="off"
-              class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
-            <div id="lista-usuario-validacao" class="max-h-64 overflow-y-auto mt-2">${htmlListaUsuariosValidacao()}</div>
-          </div>
-        </div>
-        <button type="button" id="btn-extras-validacao" title="Conceder permissões além dos perfis deste usuário"
-          class="shrink-0 text-xs font-semibold px-3 py-2 rounded-lg bg-laranja/10 text-laranja-escuro dark:text-laranja hover:bg-laranja/20 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-laranja/50">
-          Permissões extras
+    <div class="${BARRA}">
+      <div class="relative w-80" id="seletor-usuario-validacao">
+        <button type="button" id="btn-usuario-validacao" aria-haspopup="true" aria-expanded="false"
+          class="${CAMPO} w-full flex items-center gap-2 text-left">
+          <span id="rotulo-usuario-validacao" class="flex-1 flex items-center gap-2 min-w-0 ${APOIO}">Selecione um usuário…</span>
+          ${icone(D.baixo, 'h-3.5 w-3.5 text-slate-400 dark:text-neutral-500', 2)}
         </button>
+        <div id="popover-usuario-validacao" class="hidden ${POPOVER} left-0 right-0 z-50">
+          <input id="busca-usuario-validacao" type="search" placeholder="Buscar usuário pelo nome…" autocomplete="off" aria-label="Buscar usuário"
+            class="${CAMPO} w-full">
+          <div id="lista-usuario-validacao" class="max-h-72 overflow-y-auto mt-1.5">${htmlListaUsuariosValidacao()}</div>
+        </div>
       </div>
-      <div id="validacao-conteudo" class="px-5 py-4"></div>
-    </div>`;
+      <button type="button" id="btn-extras-validacao" title="Conceder permissões além dos perfis deste usuário" class="${BOTAO_SEC}">
+        Permissões extras
+      </button>
+      <span class="ml-auto text-sm ${APOIO_FUNDO}">União dos perfis ativos mais as permissões extras.</span>
+    </div>
+    <div id="validacao-conteudo"></div>`;
 
   const popoverUsuario = root.querySelector('#popover-usuario-validacao');
-  root.querySelector('#btn-usuario-validacao').addEventListener('click', () => {
+  const botaoUsuario = root.querySelector('#btn-usuario-validacao');
+  botaoUsuario.addEventListener('click', () => {
     popoverUsuario.classList.toggle('hidden');
-    if (!popoverUsuario.classList.contains('hidden')) {
-      popoverUsuario.querySelector('#busca-usuario-validacao').focus();
-    }
+    const aberto = !popoverUsuario.classList.contains('hidden');
+    botaoUsuario.setAttribute('aria-expanded', String(aberto));
+    if (aberto) popoverUsuario.querySelector('#busca-usuario-validacao').focus();
   });
 
   const buscaUsuario = root.querySelector('#busca-usuario-validacao');
@@ -1502,6 +1656,7 @@ function renderValidacao() {
     estado.buscaUsuarioValidacao = '';
     buscaUsuario.value = '';
     popoverUsuario.classList.add('hidden');
+    botaoUsuario.setAttribute('aria-expanded', 'false');
     root.querySelector('#lista-usuario-validacao').innerHTML = htmlListaUsuariosValidacao();
     renderConteudoValidacao();
   });
@@ -1516,22 +1671,31 @@ function htmlListaUsuariosValidacao() {
   const termo = estado.buscaUsuarioValidacao.trim().toLowerCase();
   const usuarios = USUARIOS.filter((u) => !termo || u.nome.toLowerCase().includes(termo));
   if (!usuarios.length) {
-    return '<p class="text-xs text-slate-400 px-2 py-3 text-center">Nenhum usuário encontrado.</p>';
+    return `<p class="text-xs ${APOIO} px-2 py-3 text-center">Nenhum usuário encontrado.</p>`;
   }
   return usuarios.map((usuario) => {
     const selecionado = usuario.id === estado.usuarioInspecionadoId;
     const perfis = usuario.perfis.map((id) => Permissoes.getPerfil(id)?.nome).filter(Boolean);
     return `
       <button type="button" data-usuario-validacao="${usuario.id}"
-        class="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left transition hover:bg-slate-50 dark:hover:bg-neutral-900 ${selecionado ? 'bg-slate-50 dark:bg-neutral-900' : ''}">
-        ${avatarHtml(usuario, 'h-7 w-7 text-[10px]')}
+        class="${ITEM_POPOVER} gap-2.5 py-1.5 ${selecionado ? 'bg-slate-100 dark:bg-neutral-900' : ''}">
+        ${avatarHtml(usuario, 'h-6 w-6 text-[10px]')}
         <span class="flex-1 min-w-0">
-          <span class="flex items-center gap-2 text-sm text-slate-800 dark:text-neutral-100 truncate">${esc(usuario.nome)} ${tiposUsuarioHtml(usuario, { link: false })}</span>
-          <span class="block text-xs text-slate-400 truncate">${perfis.length ? esc(perfis.join(', ')) : 'Sem perfis'}</span>
+          <span class="flex items-center gap-1.5 min-w-0 ${VALOR}"><span class="truncate">${esc(usuario.nome)}</span>${tiposUsuarioHtml(usuario, { link: false })}</span>
+          <span class="block text-xs truncate ${perfis.length ? APOIO : COBRE_TINTA}">${perfis.length ? esc(perfis.join(', ')) : 'sem perfil'}</span>
         </span>
-        ${selecionado ? '<svg class="h-4 w-4 text-petrol-800 dark:text-sky-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>' : ''}
+        ${selecionado ? CHECK : ''}
       </button>`;
   }).join('');
+}
+
+// Faixa de portal (congelada no modal de extras) e rótulo de módulo, usado também nos cartões da validação.
+function faixaPortalHtml(portal) {
+  return `<h4 class="sticky top-0 z-10 flex items-center h-9 px-5 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800 text-sm font-semibold ${TITULO}">${esc(portal.nome)}</h4>`;
+}
+
+function rotuloModuloHtml(modulo, recuo = 'px-5') {
+  return `<p class="${recuo} pt-3 pb-1 text-xs font-medium ${APOIO}">${esc(modulo.nome)}</p>`;
 }
 
 // ---------- Permissões extras por usuário (modal centralizado) ----------
@@ -1543,35 +1707,27 @@ function abrirModalExtras(usuarioId) {
 
   const usuario = Permissoes.getUsuario(usuarioId);
   const nomesPerfis = usuario.perfis.map((id) => Permissoes.getPerfil(id)?.nome).filter(Boolean);
+  const amostra = (classe, texto) => `<span class="inline-flex items-center gap-1.5"><span class="h-3 w-3 rounded-[3px] ${classe}"></span>${texto}</span>`;
 
   abrirModal(`
-        <div class="p-5 border-b border-slate-100 dark:border-neutral-900 flex items-start justify-between gap-4">
-          <div class="flex items-center gap-3">
-            ${avatarHtml(usuario, 'h-10 w-10 text-sm')}
-            <div>
-              <h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2 flex-wrap">Permissões extras · ${esc(usuario.nome)} ${tiposUsuarioHtml(usuario)}</h3>
-              <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">Perfis: ${nomesPerfis.length ? esc(nomesPerfis.join(', ')) : 'nenhum'}</p>
-            </div>
-          </div>
-          <button type="button" data-fechar-modal-extras title="Fechar"
-            class="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        </div>
-        <div class="px-5 pt-4 space-y-3">
-          <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-neutral-400">
-            <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-emerald-100 border border-emerald-300 dark:bg-emerald-950 dark:border-emerald-600"></span>herdada dos perfis (gerencie no perfil)</span>
-            <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-laranja"></span>extra deste usuário</span>
-            <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-white dark:bg-neutral-900 border border-slate-300 dark:border-neutral-500"></span>clique para conceder</span>
-          </div>
-          <div class="relative">
-            <svg class="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-            <input id="busca-extras" type="text" placeholder="Buscar tela ou ação…" autocomplete="off"
-              class="w-full border border-slate-300 dark:border-neutral-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 focus:border-petrol-800 dark:focus:border-sky-400 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-500">
-          </div>
-        </div>
-        <div id="conteudo-extras" class="flex-1 min-h-0 overflow-y-auto px-5 py-4">${htmlConteudoExtras(usuario)}</div>`,
-  { largura: 'max-w-2xl', semPadding: true });
+    <div class="flex items-start gap-3 ${MODAL_TOPO}">
+      ${avatarHtml(usuario, 'h-9 w-9 text-xs')}
+      <div class="min-w-0 flex-1">
+        <h3 class="flex flex-wrap items-center gap-x-2 gap-y-1 font-display text-base font-semibold ${TITULO}">Permissões extras · ${esc(usuario.nome)} ${tiposUsuarioHtml(usuario)}</h3>
+        <p class="mt-0.5 ${APOIO}">Perfis: ${nomesPerfis.length ? esc(nomesPerfis.join(', ')) : `<span class="font-medium ${COBRE_TINTA}">nenhum</span>`}</p>
+      </div>
+      <button type="button" data-fechar-modal-extras title="Fechar" aria-label="Fechar" class="${BOTAO_ICONE} -mr-2 -mt-1">${icone(D.fechar)}</button>
+    </div>
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3 border-b border-slate-200 dark:border-neutral-800">
+      ${campoBusca('busca-extras', '', 'Buscar tela ou ação…', 'w-56')}
+      <span class="ml-auto flex flex-wrap gap-x-3 gap-y-1 text-xs ${APOIO}">
+        ${amostra('bg-slate-100 border border-slate-200 dark:bg-neutral-900 dark:border-neutral-700', 'dos perfis')}
+        ${amostra('bg-petrol-800/10 border border-petrol-800/40 dark:bg-sky-950/60 dark:border-sky-400/40', 'extra deste usuário')}
+        ${amostra('border border-slate-300 dark:border-neutral-700', 'clique para conceder')}
+      </span>
+    </div>
+    <div id="conteudo-extras" class="flex-1 min-h-0 overflow-y-auto pb-3">${htmlConteudoExtras(usuario)}</div>`,
+  { largura: 'max-w-2xl', rotulo: `Permissões extras de ${usuario.nome}` });
 
   const root = document.getElementById('modal-root');
   root.querySelector('[data-fechar-modal-extras]').addEventListener('click', fecharModal);
@@ -1581,6 +1737,7 @@ function abrirModalExtras(usuarioId) {
     estado.buscaExtras = inputBusca.value;
     document.getElementById('conteudo-extras').innerHTML = htmlConteudoExtras(usuario);
   });
+  inputBusca.focus();
 
   root.querySelector('#conteudo-extras').addEventListener('click', (e) => {
     const botao = e.target.closest('[data-ex-acao]');
@@ -1616,47 +1773,39 @@ function htmlConteudoExtras(usuario) {
       if (!features.length) return '';
 
       return `
-        <div class="pt-3">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 pb-1">${esc(modulo.nome)}</p>
-          ${features.map(({ feature, acoes }) => `
-            <div class="py-2.5 border-t border-slate-100 dark:border-neutral-900">
-              <p class="text-sm font-medium text-slate-800 dark:text-neutral-100 mb-1.5">
-                ${esc(feature.nome)}
-                ${Permissoes.pode(usuario, feature.id, 'visualizar') ? '' : '<span class="ml-1.5 text-[11px] font-normal text-amber-600 dark:text-amber-400">sem acesso à tela — conceda "Visualizar"</span>'}
-              </p>
-              <div class="flex flex-wrap gap-1.5">
-                ${acoes.map((acao) => {
-                  const doPerfil = Permissoes.concedidaPorPerfis(usuario, feature.id, acao.id);
-                  const extra = Permissoes.concedidaPorExtra(usuario, feature.id, acao.id);
-                  if (doPerfil) {
-                    return `<span class="px-2.5 py-1 rounded-full text-xs bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 cursor-default"
-                      title="Concedida pelos perfis do usuário — para remover, ajuste o perfil">✓ ${esc(acao.nome)}</span>`;
-                  }
-                  if (extra) {
-                    return `<button type="button" data-ex-feature="${feature.id}" data-ex-acao="${acao.id}"
-                      class="px-2.5 py-1 rounded-full text-xs font-medium bg-laranja border border-laranja text-white transition hover:bg-laranja-escuro focus:outline-none focus-visible:ring-2 focus-visible:ring-laranja/50"
-                      title="Permissão extra — clique para remover">✓ ${esc(acao.nome)}</button>`;
-                  }
-                  return `<button type="button" data-ex-feature="${feature.id}" data-ex-acao="${acao.id}"
-                    class="px-2.5 py-1 rounded-full text-xs font-medium bg-white border border-slate-300 text-slate-500 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-300 transition hover:border-laranja hover:text-laranja-escuro dark:hover:text-laranja focus:outline-none focus-visible:ring-2 focus-visible:ring-laranja/50"
-                    title="Clique para conceder como permissão extra">${esc(acao.nome)}</button>`;
-                }).join('')}
-              </div>
-            </div>`).join('')}
-        </div>`;
+        ${rotuloModuloHtml(modulo)}
+        ${features.map(({ feature, acoes }) => `
+          <div class="px-5 py-3 border-b border-slate-100 dark:border-neutral-900">
+            <p class="text-sm font-medium ${VALOR} mb-1.5">
+              ${esc(feature.nome)}
+              ${Permissoes.pode(usuario, feature.id, 'visualizar') ? '' : `<span class="ml-1.5 text-xs font-normal ${COBRE_TINTA}">sem acesso à tela — conceda "Visualizar"</span>`}
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              ${acoes.map((acao) => {
+                if (Permissoes.concedidaPorPerfis(usuario, feature.id, acao.id)) {
+                  return `<span class="${CHIP} border-transparent ${PILULA.neutra} cursor-default"
+                    title="Concedida pelos perfis do usuário — para remover, ajuste o perfil">${icone(D.check, 'h-3 w-3', 2.5)}${esc(acao.nome)}</span>`;
+                }
+                if (Permissoes.concedidaPorExtra(usuario, feature.id, acao.id)) {
+                  return `<button type="button" data-ex-feature="${feature.id}" data-ex-acao="${acao.id}" aria-pressed="true"
+                    class="${CHIP} ${CHIP_LIGADO}"
+                    title="Permissão extra — clique para remover">${icone(D.check, 'h-3 w-3', 2.5)}${esc(acao.nome)}</button>`;
+                }
+                return `<button type="button" data-ex-feature="${feature.id}" data-ex-acao="${acao.id}" aria-pressed="false"
+                  class="${CHIP} ${CHIP_LIVRE}"
+                  title="Clique para conceder como permissão extra">${esc(acao.nome)}</button>`;
+              }).join('')}
+            </div>
+          </div>`).join('')}`;
     }).filter(Boolean);
 
     if (!modulosHtml.length) return '';
 
-    return `
-      <div class="pt-5 first:pt-0">
-        <p class="font-display text-sm font-semibold text-petrol-800 dark:text-sky-300 border-b-2 border-laranja/60 inline-block pb-0.5">${esc(portal.nome)}</p>
-        ${modulosHtml.join('')}
-      </div>`;
+    return `<section>${faixaPortalHtml(portal)}${modulosHtml.join('')}</section>`;
   }).filter(Boolean);
 
   return secoes.join('') ||
-    `<p class="text-sm text-slate-400 py-8 text-center">Nenhuma tela ou ação encontrada para "${esc(estado.buscaExtras)}".</p>`;
+    `<p class="px-5 py-10 text-center ${APOIO}">Nenhuma tela ou ação encontrada para "${esc(estado.buscaExtras)}".</p>`;
 }
 
 function renderConteudoValidacao() {
@@ -1667,42 +1816,38 @@ function renderConteudoValidacao() {
   // Atualiza o rótulo do combobox de usuário.
   const rotulo = document.getElementById('rotulo-usuario-validacao');
   if (rotulo) {
-    rotulo.className = `flex-1 flex items-center gap-2.5 min-w-0 ${usuario ? 'text-slate-800 dark:text-neutral-100' : 'text-slate-400'}`;
+    rotulo.className = `flex-1 flex items-center gap-2 min-w-0 ${usuario ? VALOR : APOIO}`;
     rotulo.innerHTML = usuario
-      ? `${avatarHtml(usuario, 'h-6 w-6 text-[10px]')}<span class="truncate text-sm font-medium">${esc(usuario.nome)}</span>`
+      ? `${avatarHtml(usuario, 'h-5 w-5 text-[9px]')}<span class="truncate font-medium">${esc(usuario.nome)}</span>`
       : 'Selecione um usuário…';
   }
 
   // Botão "Permissões extras" só faz sentido com um usuário escolhido.
   const botaoExtras = document.getElementById('btn-extras-validacao');
-  if (botaoExtras) {
-    botaoExtras.disabled = !usuario;
-    botaoExtras.classList.toggle('opacity-40', !usuario);
-    botaoExtras.classList.toggle('cursor-not-allowed', !usuario);
-  }
+  if (botaoExtras) botaoExtras.disabled = !usuario;
 
   if (!usuario) {
-    container.innerHTML = `
-      <div class="text-center pt-10">
-        <div class="h-11 w-11 mx-auto rounded-full bg-slate-100 text-slate-400 dark:bg-neutral-900 grid place-items-center">
-          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-        </div>
-        <p class="font-display font-semibold text-slate-800 dark:text-neutral-100 mt-3">Selecione um usuário</p>
-        <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1 max-w-xs mx-auto">Escolha um usuário acima para ver o acesso consolidado dele — a união dos perfis ativos mais as permissões extras.</p>
-      </div>
-      <div class="pb-6"></div>`;
+    container.innerHTML = cartaoVazio(`
+      <p class="font-display text-[15px] font-semibold ${TITULO}">Selecione um usuário</p>
+      <p class="mt-1 max-w-md mx-auto">Escolha um usuário acima para ver o acesso consolidado dele — a união dos perfis ativos mais as permissões extras.</p>`);
     return;
   }
 
-  const nomesPerfis = usuario.perfis
+  const perfisHtml = usuario.perfis
     .map((id) => {
       const perfil = Permissoes.getPerfil(id);
-      return perfil ? `${perfil.nome}${perfil.ativo ? '' : ' (inativo)'}` : null;
+      return perfil
+        ? `<a href="${urlDetalhe(perfil.id)}" class="${LINK}">${esc(perfil.nome)}</a>${perfil.ativo ? '' : ` <span class="${APOIO}">(inativo)</span>`}`
+        : null;
     })
     .filter(Boolean);
+  const extras = Permissoes.totalExtras(usuario);
 
+  let telas = 0;
   const semAcesso = [];
+  // Um cartão por portal: módulos como rótulo, telas em linhas com as ações liberadas em pílulas.
   const secoes = PORTAIS.map((portal) => {
+    let telasPortal = 0;
     const modulosComAcesso = Permissoes.modulosDoPortal(portal.id).map((modulo) => {
       const acessiveis = Permissoes.featuresDoModulo(modulo.id)
         .map((feature) => ({
@@ -1715,39 +1860,50 @@ function renderConteudoValidacao() {
         semAcesso.push(modulo.nome);
         return '';
       }
+      telasPortal += acessiveis.length;
 
       return `
-        <div class="pt-3">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 pb-1">${esc(modulo.nome)}</p>
+        ${rotuloModuloHtml(modulo, 'px-4')}
+        <div class="divide-y divide-slate-100 dark:divide-neutral-900">
           ${acessiveis.map(({ feature, liberadas }) => `
-            <div class="flex flex-col sm:flex-row sm:items-center gap-2 py-2.5 border-t border-slate-100 dark:border-neutral-900">
-              <div class="w-52 shrink-0 flex items-center gap-2">
-                <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-                <span class="text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(feature.nome)}</span>
-              </div>
+            <div class="grid grid-cols-[15rem_minmax(0,1fr)] items-center gap-x-6 gap-y-1.5 px-4 py-2.5">
+              <span class="truncate text-sm font-medium ${VALOR}">${esc(feature.nome)}</span>
               <div class="flex flex-wrap gap-1.5">
                 ${liberadas.map((acao) => `
-                  <span class="px-2.5 py-1 rounded-full text-xs border ${acao.somenteExtra ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800' : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'}"
-                    title="Concedida por: ${esc(acao.origens.join(', '))}">${esc(acao.nome)}${acao.somenteExtra ? ' ★' : ''}</span>`).join('')}
+                  <span class="inline-flex items-center h-6 px-2 rounded-md text-xs font-medium ${acao.somenteExtra ? PILULA.extra : PILULA.neutra}"
+                    title="Concedida por: ${esc(acao.origens.join(', '))}">${esc(acao.nome)}${acao.somenteExtra ? '<span class="ml-1 font-normal opacity-75">· extra</span>' : ''}</span>`).join('')}
               </div>
             </div>`).join('')}
         </div>`;
     }).filter(Boolean);
 
     if (!modulosComAcesso.length) return '';
+    telas += telasPortal;
 
     return `
-      <div class="pt-5 first:pt-2">
-        <p class="font-display text-sm font-semibold text-petrol-800 dark:text-sky-300 border-b-2 border-laranja/60 inline-block pb-0.5">${esc(portal.nome)}</p>
+      <section class="${CARTAO} pb-2">
+        ${cabecalhoCartao(esc(portal.nome), plural(telasPortal, 'tela liberada', 'telas liberadas'))}
         ${modulosComAcesso.join('')}
-      </div>`;
+      </section>`;
   }).filter(Boolean);
 
   container.innerHTML = `
-    <div class="flex flex-wrap items-center gap-1.5 pb-2">${tiposUsuarioHtml(usuario)}</div>
-    <p class="text-sm text-slate-500 dark:text-neutral-400 pb-1">Perfis de ${esc(usuario.nome.split(' ')[0])}: ${nomesPerfis.length ? esc(nomesPerfis.join(', ')) : '<em>nenhum</em>'}</p>
-    ${secoes.join('') || '<p class="text-sm text-slate-400 py-6 text-center">Este usuário não tem acesso a nenhuma tela.</p>'}
-    ${secoes.length && semAcesso.length ? `<p class="text-xs text-slate-400 pt-4 border-t border-slate-100 dark:border-neutral-900 mt-4">Sem acesso: ${esc(semAcesso.join(', '))}</p>` : ''}`;
+    <div class="mb-4 flex items-center gap-3">
+      ${avatarHtml(usuario, 'h-10 w-10 text-[13px]')}
+      <div class="min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <h3 class="font-registro text-[22px] leading-tight font-semibold tracking-[-0.01em] ${TITULO}">${esc(usuario.nome)}</h3>
+          ${tiposUsuarioHtml(usuario)}
+        </div>
+        <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-slate-600 dark:text-neutral-300">
+          <span>Perfis: ${perfisHtml.length ? perfisHtml.join(', ') : `<span class="font-medium ${COBRE_TINTA}">nenhum</span>`}</span>
+          ${extras ? `<span class="tabular-nums">${plural(extras, 'permissão extra', 'permissões extras')}</span>` : ''}
+          <span class="tabular-nums">${plural(telas, 'tela liberada', 'telas liberadas')}</span>
+        </p>
+      </div>
+    </div>
+    ${secoes.length ? `<div class="space-y-4">${secoes.join('')}</div>` : cartaoVazio('Este usuário não tem acesso a nenhuma tela.')}
+    ${secoes.length && semAcesso.length ? `<p class="mt-4 text-sm ${APOIO_FUNDO}">Sem acesso: ${esc(semAcesso.join(', '))}</p>` : ''}`;
 }
 
 // ---------- Bootstrap ----------
@@ -1758,13 +1914,18 @@ function renderTudo() {
     return;
   }
 
+  renderResumo();
   renderTrocaVisao();
 
-  const visaoPerfis = document.getElementById('visao-perfis');
-  const visaoMatriz = document.getElementById('visao-matriz');
   const mostrarPerfis = estado.visao === 'perfis';
-  visaoPerfis.classList.toggle('hidden', !mostrarPerfis);
-  visaoMatriz.classList.toggle('hidden', mostrarPerfis);
+  const visaoMatriz = document.getElementById('visao-matriz');
+  document.getElementById('visao-perfis').hidden = !mostrarPerfis;
+  visaoMatriz.hidden = mostrarPerfis;
+  // As matrizes ocupam a altura restante e rolam dentro do cartão (cabeçalho e primeira coluna congelados);
+  // a validação cresce com o conteúdo e rola com a página.
+  const matriz = estado.visao.startsWith('matriz');
+  visaoMatriz.className = matriz ? 'flex-1 min-h-[420px] flex flex-col' : '';
+  visaoMatriz.parentElement.classList.toggle('min-h-0', matriz); // coluna de perfis-pagina.js: só trava a altura nas matrizes
 
   if (mostrarPerfis) {
     renderListaPerfis();
@@ -1792,6 +1953,11 @@ function iniciar() {
     const aba = parametroUrl('aba');
     if (VISOES.some((v) => v.id === aba)) estado.visao = aba;
     if (estado.visao === 'validacao') estado.usuarioInspecionadoId = parametroUrl('usuario') || null;
+
+    document.getElementById('resumo-perfis')?.addEventListener('click', (e) => {
+      const link = e.target.closest('[data-ir-visao]');
+      if (link) irParaVisao(link.dataset.irVisao);
+    });
   }
 
   document.getElementById('btn-novo-perfil')?.addEventListener('click', abrirModalNovoPerfil);

@@ -1,7 +1,9 @@
 // ============================================================
 // Visão geral: como a escola está e o que precisa de atenção hoje.
 // Tudo é calculado na hora a partir dos registros (nada fixo na tela) e
-// filtrado pelas permissões de quem está logado.
+// filtrado pelas permissões de quem está logado. Segue a seção Painéis do
+// DESIGN.md do original: linha de indicadores sobre o fundo, tinta nos
+// dados, cobre só como ponto de pendência e vermelho só em número com sinal.
 // ============================================================
 
 (function () {
@@ -13,17 +15,23 @@
   const pode = Shell.pode;
   const verFin = pode('receber');
   const verAcad = pode('turmas') || pode('frequencia');
+  const COBRE = 'bg-[color:var(--f-cobre)]';
+  const pontoPendencia = `<span class="h-2 w-2 shrink-0 rounded-full ${COBRE}" aria-hidden="true"></span>`;
 
   const saudacao = () => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; };
 
-  function indicador(rotulo, valor, detalhe, href, extra = '', tom = '') {
+  // Regra da Linha de Indicadores: células lado a lado sobre o fundo, divisórias de 1px, sem fundo nem sombra.
+  // A célula inteira leva à lista que explica o número; pendência é ponto cobre antes do rótulo, valor em tinta.
+  function celula({ rotulo, valor, contexto, href = '', extra = '', pendente = false }, i) {
+    const borda = ['border-slate-200 dark:border-neutral-800', i % 2 ? 'border-l' : '', i >= 2 ? 'border-t xl:border-t-0' : '', i && i % 2 === 0 ? 'xl:border-l' : ''].join(' ');
+    const tag = href ? 'a' : 'div';
     return `
-      <a href="${href}" class="block p-4 bg-white dark:bg-neutral-950 hover:bg-slate-50 dark:hover:bg-neutral-900 transition">
-        <p class="text-xs font-medium text-slate-500 dark:text-neutral-400">${esc(rotulo)}</p>
-        <p class="mt-1 font-display text-2xl font-semibold tabular-nums ${tom || 'text-slate-900 dark:text-neutral-100'}">${valor}</p>
+      <${tag} ${href ? `href="${href}"` : ''} class="${borda} block min-w-0 px-4 py-3 ${href ? 'transition hover:bg-white dark:hover:bg-neutral-950 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--f-foco)]' : ''}">
+        <p class="text-xs font-medium ${APOIO_FUNDO} flex items-center gap-1.5">${pendente ? pontoPendencia : ''}${esc(rotulo)}</p>
+        <p class="mt-1 text-2xl leading-7 font-semibold tracking-[-0.02em] ${TITULO}">${valor}</p>
         ${extra}
-        <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">${detalhe}</p>
-      </a>`;
+        <p class="mt-1 text-xs text-slate-700 dark:text-neutral-300">${contexto}</p>
+      </${tag}>`;
   }
 
   function indicadores() {
@@ -32,20 +40,20 @@
     const turmas = Aulor.turmas();
     const andamento = turmas.filter((t) => ['em_andamento', 'a_concluir'].includes(Aulor.situacaoTurma(t))).length;
     const aIniciar = turmas.filter((t) => Aulor.situacaoTurma(t) === 'planejada').length;
-    const blocos = [indicador('Alunos ativos', numero(ativos), `${recentes} matrículas nos últimos 30 dias`, 'alunos.html?situacao=ativo')];
+    const celulas = [{ rotulo: 'Alunos ativos', valor: numero(ativos), contexto: `${plural(recentes, 'matrícula', 'matrículas')} nos últimos 30 dias`, href: pode('alunos') ? 'alunos.html?situacao=ativo' : '' }];
     if (verFin) {
       const r = Aulor.resumoMes(mes);
       const inad = Aulor.inadimplentes();
-      const p = r.receberPrevisto ? Math.min(100, Math.round((r.recebido / r.receberPrevisto) * 100)) : 0;
-      blocos.push(indicador(`Recebido em ${nomeMes}`, moeda(r.recebido), `de ${moeda(r.receberPrevisto)} previstos para o mês`, 'financeiro.html',
-        `<div class="mt-2 h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden"><div class="h-full bg-emerald-500" style="width:${p}%"></div></div>`));
-      blocos.push(indicador('Em atraso', moeda(r.vencido), `${inad.length} ${inad.length === 1 ? 'aluno' : 'alunos'} com parcela vencida`, 'cobrancas.html', '', r.vencido ? 'text-red-700 dark:text-red-400' : ''));
+      const atraso = inad.reduce((s, i) => s + i.total, 0);
+      const p = r.receberPrevisto ? Math.round((r.recebido / r.receberPrevisto) * 100) : 0;
+      celulas.push({ rotulo: `Recebido em ${nomeMes}`, valor: moeda(r.recebido), contexto: `de ${moeda(r.receberPrevisto)} previstos para o mês`, href: 'financeiro.html', extra: `<span class="mt-2 flex" title="${p}% do previsto">${medidor(p, { largura: 'w-full' })}</span>` });
+      celulas.push({ rotulo: 'Em atraso', valor: moeda(atraso), contexto: inad.length ? `${plural(inad.length, 'aluno', 'alunos')} com parcela vencida` : 'ninguém em atraso', href: 'financeiro.html?aba=atraso', pendente: atraso > 0 });
     }
-    blocos.push(indicador('Turmas em andamento', numero(andamento), `${aIniciar} ${aIniciar === 1 ? 'começa' : 'começam'} nas próximas semanas`, 'turmas.html'));
-    return `<div class="grid grid-cols-2 ${blocos.length === 4 ? 'lg:grid-cols-4' : ''} gap-px bg-slate-200 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-800 rounded-xl overflow-hidden">${blocos.join('')}</div>`;
+    celulas.push({ rotulo: 'Turmas em andamento', valor: numero(andamento), contexto: `${numero(aIniciar)} ${aIniciar === 1 ? 'começa' : 'começam'} nas próximas semanas`, href: pode('turmas') ? 'turmas.html' : '' });
+    return `<section aria-label="Indicadores" class="mb-6 grid grid-cols-2 xl:grid-cols-${celulas.length}">${celulas.map(celula).join('')}</section>`;
   }
 
-  // Fila "precisa de atenção": cada item leva para onde a pessoa resolve.
+  // Fila "Precisa de atenção": cada item leva para onde a pessoa resolve. Urgente primeiro.
   function pendencias() {
     const itens = [];
     if (verAcad) {
@@ -69,10 +77,10 @@
       const inad = Aulor.inadimplentes();
       if (inad.length) {
         const total = inad.reduce((s, i) => s + i.total, 0);
-        itens.push({ tom: 'perigo', titulo: `${inad.length} ${inad.length === 1 ? 'aluno' : 'alunos'} com parcelas vencidas`, detalhe: `${moeda(total)} em atraso · maior atraso de ${Math.max(...inad.map((i) => i.maiorAtraso))} dias`, href: 'cobrancas.html', acao: 'Cobrar' });
+        itens.push({ tom: 'perigo', titulo: `${inad.length} ${inad.length === 1 ? 'aluno' : 'alunos'} com parcelas vencidas`, detalhe: `${moeda(total)} em atraso · maior atraso de ${Math.max(...inad.map((i) => i.maiorAtraso))} dias`, href: 'financeiro.html?aba=atraso', acao: 'Cobrar' });
       }
       const semana = Aulor.lancamentos().filter((l) => l.tipo === 'receber' && Aulor.situacaoLancamento(l) === 'a_vencer' && Aulor.diasEntre(hoje, l.vencimento) <= 7);
-      if (semana.length) itens.push({ tom: 'info', titulo: `${semana.length} parcelas vencem nos próximos 7 dias`, detalhe: `${moeda(semana.reduce((s, l) => s + l.valor, 0))} a receber`, href: 'financeiro.html?situacao=a_vencer', acao: 'Ver' });
+      if (semana.length) itens.push({ tom: 'info', titulo: `${semana.length} parcelas vencem nos próximos 7 dias`, detalhe: `${moeda(semana.reduce((s, l) => s + l.valor, 0))} a receber`, href: 'financeiro.html?aba=receber&situacao=a_vencer', acao: 'Ver' });
     }
     if (pode('pagar')) {
       const vencidas = Aulor.lancamentos().filter((l) => l.tipo === 'pagar' && Aulor.situacaoLancamento(l) === 'vencido');
@@ -88,71 +96,72 @@
     }
     const ordem = { perigo: 0, atencao: 1, info: 2 };
     itens.sort((a, b) => ordem[a.tom] - ordem[b.tom]);
-    return `
-      <section class="painel">
-        <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
-          <h2 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Precisa de atenção</h2>
-          <span class="text-xs text-slate-500 dark:text-neutral-400">${itens.length ? `${itens.length} ${itens.length === 1 ? 'item' : 'itens'}` : ''}</span>
-        </div>
-        ${itens.length ? `<ul class="divide-y divide-slate-100 dark:divide-neutral-900">${itens.map((i) => `
+    // Painel não pinta ponto de vermelho (Regra do Azul e do Vermelho): o que é com você é cobre; o próximo passo, neutro.
+    const ponto = (tom) => (tom === 'info' ? '<span class="h-2 w-2 shrink-0 rounded-full bg-slate-400 dark:bg-neutral-500" aria-hidden="true"></span>' : pontoPendencia);
+    return cartao({
+      titulo: 'Precisa de atenção',
+      contexto: itens.length ? `${plural(itens.length, 'item', 'itens')}, o mais urgente primeiro` : '',
+      classe: 'overflow-hidden',
+      corpo: itens.length ? `<ul class="mt-2 divide-y divide-slate-100 dark:divide-neutral-900 border-t border-slate-100 dark:border-neutral-900">${itens.map((i) => `
           <li>
-            <a href="${i.href}" class="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition group">
-              <span class="h-2 w-2 rounded-full shrink-0 ${TOM[i.tom].ponto}"></span>
+            <a href="${i.href}" class="group flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-neutral-900 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--f-foco)]">
+              ${ponto(i.tom)}
               <span class="flex-1 min-w-0">
                 <span class="block text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(i.titulo)}</span>
-                <span class="block text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(i.detalhe)}</span>
+                <span class="block text-xs ${APOIO} truncate">${esc(i.detalhe)}</span>
               </span>
-              <span class="text-xs font-semibold text-petrol-800 dark:text-sky-300 shrink-0 group-hover:underline">${esc(i.acao)}</span>
+              <span class="text-xs font-semibold text-petrol-800 dark:text-sky-300 shrink-0 group-hover:underline underline-offset-2">${esc(i.acao)}</span>
             </a>
-          </li>`).join('')}</ul>` : vazio('Tudo em dia', 'Nenhuma pendência para hoje.')}
-      </section>`;
+          </li>`).join('')}</ul>` : vazio('Tudo em dia', 'Nenhuma pendência para hoje.'),
+    });
   }
 
   function aulasDeHoje() {
     if (!verAcad) return '';
     const aulas = Aulor.aulasDoDia(hoje);
-    return `
-      <section class="painel">
-        <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
-          <h2 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Aulas de hoje</h2>
-          <a href="aulas.html" class="text-xs font-semibold link">Agenda</a>
-        </div>
-        ${aulas.length ? `<ul class="divide-y divide-slate-100 dark:divide-neutral-900">${aulas.map((a) => {
-          const t = Aulor.turma(a.turmaId);
-          const feita = a.status === 'realizada';
-          return `<li><a href="chamada.html?aula=${a.id}" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition">
-            <span class="text-sm font-semibold tabular-nums text-slate-900 dark:text-neutral-100 w-12">${a.inicio}</span>
+    const agora = new Date().toTimeString().slice(0, 5);
+    // Só a exceção se anuncia: chamada feita, ou a aula já começou e a chamada ainda não foi feita.
+    const situacao = (a) => (a.status === 'realizada' ? status('ok', 'Chamada feita')
+      : a.inicio <= agora ? `<span class="inline-flex items-center gap-1.5 text-sm whitespace-nowrap ${AVISO}">${pontoPendencia}Chamada a fazer</span>` : '');
+    return cartao({
+      titulo: 'Aulas de hoje',
+      contexto: aulas.length ? plural(aulas.length, 'aula', 'aulas') : 'Nenhuma aula hoje',
+      acao: '<a href="aulas.html" class="btn-fantasma">Agenda</a>',
+      classe: 'overflow-hidden',
+      corpo: aulas.length ? `<ul class="mt-2 divide-y divide-slate-100 dark:divide-neutral-900 border-t border-slate-100 dark:border-neutral-900">${aulas.map((a) => {
+        const t = Aulor.turma(a.turmaId);
+        return `<li><a href="chamada.html?aula=${a.id}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-neutral-900 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--f-foco)]">
+            <span class="text-sm font-semibold tabular-nums ${TITULO} w-12 shrink-0">${a.inicio}</span>
             <span class="flex-1 min-w-0">
               <span class="block text-sm text-slate-800 dark:text-neutral-100 truncate">${esc(Aulor.curso(t.cursoId).nome)}</span>
-              <span class="block text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(t.codigo)} · ${esc(Aulor.professor(t.professorId).nome)} · ${esc(t.local)}</span>
+              <span class="block text-xs ${APOIO} truncate">${esc(t.codigo)} · ${esc(Aulor.professor(t.professorId).nome)} · ${esc(t.local)}</span>
             </span>
-            ${feita ? status('ok', 'Chamada feita') : status('neutro', 'A fazer')}
+            ${situacao(a)}
           </a></li>`;
-        }).join('')}</ul>` : '<p class="px-5 py-6 text-sm text-slate-500 dark:text-neutral-400">Nenhuma aula hoje.</p>'}
-      </section>`;
+      }).join('')}</ul>` : '<div class="pb-4"></div>',
+    });
   }
 
   function matriculasRecentes() {
     if (!pode('matriculas')) return '';
     const lista = [...Aulor.matriculas()].sort((a, b) => b.data.localeCompare(a.data) || b.codigo.localeCompare(a.codigo)).slice(0, 5);
-    return `
-      <section class="painel">
-        <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
-          <h2 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Matrículas recentes</h2>
-          <a href="matriculas.html" class="text-xs font-semibold link">Todas</a>
-        </div>
-        <ul class="divide-y divide-slate-100 dark:divide-neutral-900">${lista.map((m) => {
-          const t = Aulor.turma(m.turmaId);
-          return `<li><a href="matricula.html?id=${m.id}" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition">
+    return cartao({
+      titulo: 'Matrículas recentes',
+      contexto: 'As cinco últimas',
+      acao: '<a href="matriculas.html" class="btn-fantasma">Todas</a>',
+      classe: 'overflow-hidden',
+      corpo: `<ul class="mt-2 divide-y divide-slate-100 dark:divide-neutral-900 border-t border-slate-100 dark:border-neutral-900">${lista.map((m) => {
+        const t = Aulor.turma(m.turmaId);
+        return `<li><a href="matricula.html?id=${m.id}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-neutral-900 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--f-foco)]">
             ${avatar(Aulor.aluno(m.alunoId).nome)}
             <span class="flex-1 min-w-0">
               <span class="block text-sm text-slate-800 dark:text-neutral-100 truncate">${esc(Aulor.aluno(m.alunoId).nome)}</span>
-              <span class="block text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(Aulor.curso(t.cursoId).nome)} · ${t.codigo}</span>
+              <span class="block text-xs ${APOIO} truncate">${esc(Aulor.curso(t.cursoId).nome)} · ${esc(t.codigo)}</span>
             </span>
-            <span class="text-xs text-slate-500 dark:text-neutral-400 shrink-0">${quando(m.data)}</span>
+            <span class="text-xs ${APOIO} shrink-0">${quando(m.data)}</span>
           </a></li>`;
-        }).join('')}</ul>
-      </section>`;
+      }).join('')}</ul>`,
+    });
   }
 
   const acoes = [
@@ -160,13 +169,14 @@
     pode('alunos', 'criar') ? '<a href="alunos.html?novo=1" class="btn-sec">Cadastrar aluno</a>' : '',
   ].join('');
 
+  const lateral = aulasDeHoje() + matriculasRecentes();
   tela.innerHTML = `
-    <div class="max-w-6xl mx-auto space-y-5">
+    <div class="max-w-6xl mx-auto">
       ${cabecalhoPagina({ titulo: `${saudacao()}, ${esc(Shell.nome().split(' ')[0])}`, subtitulo: `${dataLonga(hoje)} · ${esc(Aulor.escola().nome)}`, acoes })}
       ${indicadores()}
-      <div class="grid lg:grid-cols-3 gap-5 items-start">
-        <div class="lg:col-span-2">${pendencias()}</div>
-        <div class="space-y-5">${aulasDeHoje()}${matriculasRecentes()}</div>
+      <div class="grid grid-cols-1 ${lateral ? 'xl:grid-cols-3' : ''} gap-4 items-start">
+        <div class="${lateral ? 'xl:col-span-2' : ''}">${pendencias()}</div>
+        ${lateral ? `<div class="space-y-4">${lateral}</div>` : ''}
       </div>
     </div>`;
 })();

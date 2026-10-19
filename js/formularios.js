@@ -9,9 +9,9 @@
 function campo(nome, rotulo, valor = '', { tipo = 'text', obrigatorio = false, extra = '', dica = '', classe = '' } = {}) {
   return `
     <div class="${classe}">
-      <label for="f-${nome}" class="rotulo">${rotulo}${obrigatorio ? ' <span class="text-red-600">*</span>' : ''}</label>
+      <label for="f-${nome}" class="rotulo">${rotulo}${obrigatorio ? ' <span class="text-red-600 dark:text-red-400">*</span>' : ''}</label>
       <input id="f-${nome}" name="${nome}" type="${tipo}" value="${esc(valor ?? '')}" class="campo" ${extra}>
-      ${dica ? `<p class="text-xs text-slate-400 mt-1">${dica}</p>` : ''}
+      ${dica ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">${dica}</p>` : ''}
       ${ERRO(nome)}
     </div>`;
 }
@@ -91,7 +91,7 @@ function abrirFormResponsavel({ aluno, responsavel = null, aoSalvar }) {
         ${campo('email', 'E-mail', r.email, { tipo: 'email' })}
       </div>
       <fieldset>
-        <legend class="rotulo">Papéis <span class="text-red-600">*</span></legend>
+        <legend class="rotulo">Papéis <span class="text-red-600 dark:text-red-400">*</span></legend>
         <div class="space-y-2 pt-1">
           ${Aulor.PAPEIS_RESPONSAVEL.map((p) => `
           <label class="flex items-start gap-3 text-sm cursor-pointer">
@@ -133,7 +133,7 @@ function abrirFormEnderecoPagamento({ aluno, aoSalvar }) {
       </div>
       <div class="pt-4 border-t border-slate-200 dark:border-neutral-800 grid sm:grid-cols-2 gap-4">
         <fieldset class="sm:col-span-2">
-          <legend class="rotulo">Quem paga <span class="text-red-600">*</span></legend>
+          <legend class="rotulo">Quem paga <span class="text-red-600 dark:text-red-400">*</span></legend>
           <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm pt-1">
             <label class="flex items-center gap-2"><input type="radio" name="pagador" value="aluno" ${c.pagador !== 'responsavel' ? 'checked' : ''}>O próprio aluno</label>
             <label class="flex items-center gap-2 ${fin ? '' : 'opacity-50'}"><input type="radio" name="pagador" value="responsavel" ${c.pagador === 'responsavel' ? 'checked' : ''} ${fin ? '' : 'disabled'}>${fin ? `${esc(fin.nome)} (responsável financeiro)` : 'Responsável financeiro (cadastre na aba Responsáveis)'}</label>
@@ -178,13 +178,13 @@ function acaoParcela(l) {
     return podeBaixar ? `<button type="button" data-baixar="${l.id}" class="btn-sec btn-pequeno" title="${l.tipo === 'receber' ? 'Registrar recebimento' : 'Registrar pagamento'}">${l.tipo === 'receber' ? 'Receber' : 'Pagar'}</button>` : '';
   }
   if (s === 'pago' && Shell.pode(feature, l.tipo === 'receber' ? 'estornar' : 'pagar')) {
-    return `<button type="button" data-estornar="${l.id}" class="text-xs font-medium text-slate-500 hover:text-red-700 dark:text-neutral-400 dark:hover:text-red-400">Estornar</button>`;
+    return `<button type="button" data-estornar="${l.id}" class="btn-fantasma btn-pequeno hover:text-red-700 dark:hover:text-red-400">Estornar</button>`;
   }
   return '';
 }
 
 function tabelaParcelas(lista, { mostrarAluno = false, mostrarCurso = false } = {}) {
-  if (!lista.length) return '<p class="px-5 py-6 text-sm text-slate-500 dark:text-neutral-400">Nenhuma parcela.</p>';
+  if (!lista.length) return '<p class="px-4 py-6 text-sm text-slate-500 dark:text-neutral-400">Nenhuma parcela.</p>';
   return `
     <div class="overflow-x-auto">
       <table class="tabela">
@@ -248,9 +248,9 @@ function abrirBaixa(id, aoMudar) {
         <div><dt class="text-xs text-slate-500 dark:text-neutral-400">Valor original</dt><dd class="font-medium tabular-nums">${moeda(l.valor)}</dd></div>
       </dl>
       ${temEncargos ? `
-        <label class="flex items-start gap-3 rounded-lg border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 px-3 py-2.5 text-sm cursor-pointer">
+        <label class="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 px-3 py-2.5 text-sm cursor-pointer">
           <input type="checkbox" class="check mt-0.5" data-encargos checked>
-          <span>Cobrar multa (${moeda(enc.multa)}) e juros de ${enc.dias} dias (${moeda(enc.juros)}) <span class="block text-xs text-slate-500 dark:text-neutral-400">Pela regra da escola em Configurações › Financeiro.</span></span>
+          <span>Cobrar multa (${moeda(enc.multa)}) e juros de ${enc.dias} dias (${moeda(enc.juros)}) <span class="block text-xs opacity-80">Pela regra da escola em Configurações › Financeiro.</span></span>
         </label>` : ''}
       <div class="grid grid-cols-2 gap-4">
         ${campo('data', receber ? 'Recebido em' : 'Pago em', hoje, { tipo: 'date', obrigatorio: true, extra: `max="${hoje}"` })}
@@ -284,18 +284,27 @@ function lembreteCobranca(item) {
   return { texto, telefone: destinatario.telefone };
 }
 
+// ---------- Medidor (DESIGN.md do original) ----------
+// Trilho em etiqueta, preenchimento na tinta dos dados; vira o cobre do pendente quando cruza um limite
+// que pede ação. O esperado (mínimo) é um traço de 2px na tinta de referência, com papel em volta.
+const MEDIDOR_DADO = 'bg-petrol-950 dark:bg-areia';
+const MEDIDOR_PENDENTE = 'bg-[#985824] dark:bg-laranja';
+function medidor(percentual, { referencia = null, pendente = false, largura = 'w-20' } = {}) {
+  return `
+    <span class="relative ${largura} h-1.5 shrink-0 rounded-full bg-[color:var(--f-etiqueta)]">
+      <span class="absolute inset-y-0 left-0 rounded-full ${pendente ? MEDIDOR_PENDENTE : MEDIDOR_DADO}" style="width:${Math.min(100, Math.max(0, percentual))}%"></span>
+      ${referencia != null ? `<span class="absolute -inset-y-0.5 w-0.5 bg-[color:var(--f-tinta-3)] shadow-[0_0_0_2px] shadow-white dark:shadow-neutral-950" style="left:calc(${referencia}% - 1px)"></span>` : ''}
+    </span>`;
+}
+
 // ---------- Frequência ----------
 
 function barraFrequencia(f, { compacta = false } = {}) {
-  if (f.percentual == null) return '<span class="text-xs text-slate-400">Sem chamadas</span>';
-  const cor = f.abaixo ? 'bg-red-500' : f.percentual < f.minimo + 10 ? 'bg-amber-500' : 'bg-emerald-500';
+  if (f.percentual == null) return '<span class="text-xs text-slate-500 dark:text-neutral-400">Sem chamadas</span>';
   const texto = f.abaixo ? 'text-red-700 dark:text-red-400' : 'text-slate-700 dark:text-neutral-200';
   return `
     <span class="inline-flex items-center gap-2" title="${f.validas} de ${f.total} aulas · mínimo ${f.minimo}%${f.semChance ? ' · não alcança mais o mínimo' : ''}">
-      <span class="relative ${compacta ? 'w-14' : 'w-20'} h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden">
-        <span class="absolute inset-y-0 left-0 ${cor}" style="width:${f.percentual}%"></span>
-        <span class="absolute inset-y-0 w-px bg-slate-500/60" style="left:${f.minimo}%"></span>
-      </span>
+      ${medidor(f.percentual, { referencia: f.minimo, pendente: f.abaixo, largura: compacta ? 'w-14' : 'w-20' })}
       <span class="text-sm font-medium tabular-nums ${texto}">${f.percentual}%</span>
     </span>`;
 }
@@ -308,7 +317,8 @@ function ocupacaoHtml(t, { minimo = false } = {}) {
   const o = Aulor.ocupacao(t);
   const p = Math.round((o.ocupadas / o.capacidade) * 100);
   const m = minimo ? Math.round((Aulor.minimoAlunos(t) / o.capacidade) * 100) : null;
-  return `<span class="inline-flex items-center gap-2"><span class="relative w-16 h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden"><span class="block h-full ${o.lotada ? 'bg-laranja' : 'bg-petrol-700 dark:bg-sky-400'}" style="width:${p}%"></span>${m != null ? `<span class="absolute top-0 h-full w-0.5 bg-slate-500" style="left:${m}%"></span>` : ''}</span><span class="text-sm tabular-nums">${o.ocupadas}/${o.capacidade}</span></span>`;
+  const abaixo = minimo && o.ocupadas < Aulor.minimoAlunos(t);
+  return `<span class="inline-flex items-center gap-2" title="${o.ocupadas} de ${o.capacidade} vagas${minimo ? ` · mínimo para abrir: ${Aulor.minimoAlunos(t)}` : ''}">${medidor(p, { referencia: m, pendente: abaixo, largura: 'w-16' })}<span class="text-sm tabular-nums">${o.ocupadas}/${o.capacidade}</span></span>`;
 }
 
 // ---------- Curso ----------
@@ -318,7 +328,7 @@ function linhaModulo(m = {}, i = 0) {
     <div data-modulo class="flex items-center gap-2">
       <input type="text" name="modNome" value="${esc(m.nome ?? '')}" placeholder="Módulo ${i + 1}" class="campo flex-1" aria-label="Nome do módulo">
       <input type="number" name="modHoras" value="${esc(m.cargaHoraria ?? '')}" min="0" step="0.5" placeholder="h" class="campo w-20" aria-label="Horas do módulo">
-      <button type="button" data-remover-modulo class="p-2 rounded-md text-slate-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40" aria-label="Remover módulo">${UI_ICONE.fechar}</button>
+      <button type="button" data-remover-modulo class="btn-fantasma px-2 hover:text-red-700 dark:hover:text-red-400" aria-label="Remover módulo">${UI_ICONE.fechar}</button>
     </div>`;
 }
 
@@ -337,14 +347,15 @@ function abrirFormCurso({ curso = null, aoSalvar }) {
         ${campo('codigo', 'Sigla', curso?.codigo, { obrigatorio: true, extra: 'maxlength="10" style="text-transform:uppercase" placeholder="EXC"', dica: 'Prefixo do código das turmas.' })}
         ${campo('area', 'Área', curso?.area, { extra: 'list="areas-curso" placeholder="Informática, Idiomas…"' })}
         <div>
-          <label class="rotulo" for="f-modalidade">Modalidade <span class="text-red-600">*</span></label>
+          <label class="rotulo" for="f-modalidade">Modalidade <span class="text-red-600 dark:text-red-400">*</span></label>
           ${campoCombo('modalidade', Aulor.MODALIDADES, curso?.modalidade ?? 'presencial')}
           ${ERRO('modalidade')}
         </div>
         ${campo('cargaHoraria', 'Carga horária (h)', curso?.cargaHoraria, { tipo: 'number', obrigatorio: true, extra: 'min="1" step="0.5"' })}
         ${campo('valor', 'Valor de referência (R$)', curso?.valor, { tipo: 'number', extra: 'min="0" step="0.01"', dica: 'Sugerido na matrícula; pode ser negociado.' })}
         ${campo('parcelasSugeridas', 'Parcelas sugeridas', curso?.parcelasSugeridas ?? 1, { tipo: 'number', extra: `min="1" max="${Aulor.config().financeiro.parcelasMaximas}"` })}
-        <div>
+        ${campo('notaMinima', 'Nota mínima (0 a 10)', curso?.notaMinima != null ? String(curso.notaMinima).replace('.', ',') : '', { extra: 'inputmode="decimal" placeholder="Sem nota"', dica: 'Vazio: aprova só pela frequência. Com nota, o professor lança a nota final de cada aluno.' })}
+        <div class="sm:col-span-2">
           <label class="rotulo" for="f-modeloCertificadoId">Modelo do certificado</label>
           ${campoCombo('modeloCertificadoId', Aulor.modelosCertificado().filter((m) => !m.padrao && (m.status === 'ativo' || m.id === curso?.modeloCertificadoId)).map((m) => ({ id: m.id, nome: m.nome, descricao: m.status === 'ativo' ? m.descricao : `${Aulor.STATUS_MODELO[m.status].nome}: emite com o padrão` })), curso?.modeloCertificadoId ?? '', { opcional: true, vazio: 'Padrão da escola' })}
           ${ERRO('modeloCertificadoId')}
@@ -357,7 +368,7 @@ function abrirFormCurso({ curso = null, aoSalvar }) {
       </div>
       <div>
         <div class="flex items-center justify-between mb-1">
-          <p class="rotulo mb-0">Módulos <span class="normal-case font-normal tracking-normal text-slate-400">— opcional</span></p>
+          <p class="rotulo mb-0">Módulos <span class="font-normal">— opcional</span></p>
           <button type="button" data-add-modulo class="text-xs font-medium link">+ Adicionar módulo</button>
         </div>
         <div data-modulos class="space-y-2">${(curso?.modulos ?? []).map(linhaModulo).join('')}</div>
@@ -407,12 +418,12 @@ function abrirFormTurma({ turma = null, cursoId = null, aoSalvar }) {
     corpo: `
       <div class="grid sm:grid-cols-2 gap-4">
         <div>
-          <label class="rotulo" for="f-cursoId">Curso <span class="text-red-600">*</span></label>
+          <label class="rotulo" for="f-cursoId">Curso <span class="text-red-600 dark:text-red-400">*</span></label>
           ${turma ? `<p class="campo bg-slate-50 dark:bg-neutral-900">${esc(Aulor.curso(turma.cursoId).nome)}</p><input type="hidden" name="cursoId" value="${turma.cursoId}">` : campoCombo('cursoId', cursos, cursoId ?? '', { vazio: 'Escolha o curso' })}
           ${ERRO('cursoId')}
         </div>
         <div>
-          <label class="rotulo" for="f-professorId">Professor <span class="text-red-600">*</span></label>
+          <label class="rotulo" for="f-professorId">Professor <span class="text-red-600 dark:text-red-400">*</span></label>
           ${campoCombo('professorId', professores, turma?.professorId ?? '', { vazio: 'Escolha o professor' })}
           ${ERRO('professorId')}
         </div>

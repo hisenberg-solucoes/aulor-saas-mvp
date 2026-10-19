@@ -25,44 +25,60 @@
     }).sort((a, b) => b.data.localeCompare(a.data) || b.codigo.localeCompare(a.codigo));
   }
 
+  // Concluída diz o resultado; as outras fases, o nome da situação.
+  function situacao(m) {
+    const r = m.status === 'concluida' ? Aulor.RESULTADO[m.resultado] : null;
+    const st = Aulor.STATUS_MATRICULA[m.status];
+    return r ? status(r.tom, r.nome) : status(st.tom, st.nome);
+  }
+
+  function linha(m, verFin) {
+    const a = Aulor.aluno(m.alunoId);
+    const t = Aulor.turma(m.turmaId);
+    const ps = Aulor.parcelasDaMatricula(m.id).filter((l) => l.status !== 'cancelado');
+    const pagas = ps.filter((l) => l.status === 'pago').length;
+    const vencidas = ps.filter((l) => Aulor.situacaoLancamento(l) === 'vencido').length;
+    return `<tr data-href="matricula.html?id=${m.id}" class="${FOCO_LINHA} ${m.status === 'cancelada' ? 'linha-apagada' : ''}">
+      <td><div class="flex items-center gap-3 min-w-[14rem]">${avatar(a.nome, 'h-9 w-9 text-xs')}<div class="min-w-0">
+        <a href="matricula.html?id=${m.id}" class="link-registro font-medium ${TITULO} hover:underline underline-offset-2 focus-visible:outline-none">${esc(a.nome)}</a>
+        <p class="text-xs ${APOIO} tabular-nums">Matrícula ${esc(m.codigo)} · ${dataBr(m.data)}</p>
+      </div></div></td>
+      <td class="max-w-[16rem]"><span class="block truncate" title="${esc(Aulor.curso(t.cursoId).nome)}">${esc(Aulor.curso(t.cursoId).nome)}</span><p class="text-xs ${APOIO}">${esc(t.codigo)}${m.trocas?.length ? ' · trocou de turma' : ''}</p></td>
+      <td class="num">${moeda(m.valorFinal)}<p class="text-xs ${APOIO}">${m.parcelas}×${m.desconto ? ` · desc. ${moeda(m.desconto)}` : ''}</p></td>
+      ${verFin ? `<td class="whitespace-nowrap">${ps.length ? `<span class="tabular-nums">${pagas} de ${ps.length} pagas</span>${vencidas ? `<p class="text-xs text-red-700 dark:text-red-400">${vencidas} ${vencidas > 1 ? 'vencidas' : 'vencida'}</p>` : ''}` : `<span class="${APOIO}">—</span>`}</td>` : ''}
+      <td>${situacao(m)}</td>
+    </tr>`;
+  }
+
   function render() {
     const itens = lista();
+    const total = Aulor.matriculas().length;
     const verFin = Shell.pode('receber');
+    const filtrando = filtro.q || filtro.status !== 'ativa' || filtro.curso !== 'todos' || filtro.periodo !== 'todos';
     tela.innerHTML = `
       <div class="max-w-6xl mx-auto">
-        ${cabecalhoPagina({ titulo: 'Matrículas', subtitulo: 'Aluno + turma + condições de pagamento. Ao confirmar, as parcelas entram em Contas a receber.', acoes: Shell.pode('matriculas', 'criar') ? `<a href="matricula-nova.html" class="btn-pri">${ICONE.mais}Nova matrícula</a>` : '' })}
-        <div class="flex flex-wrap gap-2 mb-4">
+        ${cabecalhoPagina({ titulo: `Matrículas <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${total}</span>`, subtitulo: 'Aluno + turma + condições de pagamento. Ao confirmar, as parcelas entram em Contas a receber.', acoes: Shell.pode('matriculas', 'criar') ? `<a href="matricula-nova.html" class="btn-pri">${ICONE.mais}Nova matrícula</a>` : '' })}
+        <div class="flex flex-wrap items-center gap-2 mb-4">
           ${campoBusca('busca', filtro.q, 'Buscar por aluno, código ou turma')}
-          ${selectFiltro('f-status', STATUS, filtro.status, 'Situação')}
-          ${selectFiltro('f-curso', [{ id: 'todos', nome: 'Todos os cursos' }, ...Aulor.cursos().map((c) => ({ id: c.id, nome: c.nome }))], filtro.curso, 'Curso')}
-          ${selectFiltro('f-periodo', PERIODOS, filtro.periodo, 'Data da matrícula')}
+          <div class="ml-auto flex flex-wrap items-center gap-2">
+            ${selectFiltro('f-status', STATUS, filtro.status, 'Situação')}
+            ${selectFiltro('f-curso', [{ id: 'todos', nome: 'Todos os cursos' }, ...Aulor.cursos().map((c) => ({ id: c.id, nome: c.nome }))], filtro.curso, 'Curso')}
+            ${selectFiltro('f-periodo', PERIODOS, filtro.periodo, 'Data da matrícula')}
+            ${filtrando ? '<button type="button" data-limpar class="btn-fantasma">Limpar</button>' : ''}
+          </div>
         </div>
         <div class="painel overflow-hidden">
           ${itens.length ? `<div class="overflow-x-auto"><table class="tabela">
-            <thead><tr><th>Matrícula</th><th>Aluno</th><th>Curso e turma</th><th class="num">Valor</th>${verFin ? '<th>Parcelas</th>' : ''}<th>Situação</th></tr></thead>
-            <tbody>${itens.map((m) => {
-              const a = Aulor.aluno(m.alunoId);
-              const t = Aulor.turma(m.turmaId);
-              const ps = Aulor.parcelasDaMatricula(m.id).filter((l) => l.status !== 'cancelado');
-              const pagas = ps.filter((l) => l.status === 'pago').length;
-              const vencidas = ps.filter((l) => Aulor.situacaoLancamento(l) === 'vencido').length;
-              const st = Aulor.STATUS_MATRICULA[m.status];
-              return `<tr data-href="matricula.html?id=${m.id}">
-                <td class="whitespace-nowrap"><a href="matricula.html?id=${m.id}" class="font-medium text-slate-900 dark:text-neutral-100 hover:underline tabular-nums">${m.codigo}</a><p class="text-xs text-slate-500 dark:text-neutral-400">${dataBr(m.data)}</p></td>
-                <td><div class="flex items-center gap-3 min-w-[12rem]">${avatar(a.nome)}<span>${esc(a.nome)}</span></div></td>
-                <td>${esc(Aulor.curso(t.cursoId).nome)}<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(t.codigo)}</p></td>
-                <td class="num">${moeda(m.valorFinal)}<p class="text-xs text-slate-400">${m.parcelas}× ${m.desconto ? `· desc. ${moeda(m.desconto)}` : ''}</p></td>
-                ${verFin ? `<td class="whitespace-nowrap text-sm">${ps.length ? `<span class="tabular-nums">${pagas}/${ps.length} pagas</span>${vencidas ? `<p class="text-xs text-red-700 dark:text-red-400">${vencidas} vencida${vencidas > 1 ? 's' : ''}</p>` : ''}` : '<span class="text-slate-400">—</span>'}</td>` : ''}
-                <td>${status(m.status === 'concluida' && m.resultado !== 'aprovado' ? 'perigo' : st.tom, m.status === 'concluida' ? (m.resultado === 'aprovado' ? 'Concluída · aprovado' : 'Concluída · reprovado') : st.nome)}</td>
-              </tr>`;
-            }).join('')}</tbody></table></div>
-            <p class="px-4 py-2.5 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-100 dark:border-neutral-900">${itens.length} matrículas</p>` : vazio('Nenhuma matrícula encontrada', 'Ajuste a busca ou os filtros.')}
+            <thead><tr><th>Aluno</th><th>Curso e turma</th><th class="text-right">Valor</th>${verFin ? '<th>Parcelas</th>' : ''}<th>Situação</th></tr></thead>
+            <tbody>${itens.map((m) => linha(m, verFin)).join('')}</tbody></table></div>
+            <p class="px-4 py-2.5 text-xs ${APOIO} border-t border-slate-100 dark:border-neutral-900 tabular-nums">${itens.length} de ${total} matrículas</p>` : vazio('Nenhuma matrícula encontrada', 'Nenhuma matrícula corresponde à busca e aos filtros.', filtrando ? '<button type="button" data-limpar class="btn-sec">Limpar filtros</button>' : '')}
         </div>
       </div>`;
     ligarLinhasLink(tela);
     const busca = tela.querySelector('#busca');
     busca.addEventListener('input', () => { filtro.q = busca.value; const pos = busca.selectionStart; render(); const n = tela.querySelector('#busca'); n.focus(); n.setSelectionRange(pos, pos); });
-    [['f-status', 'status'], ['f-curso', 'curso'], ['f-periodo', 'periodo']].forEach(([el, k]) => tela.querySelector(`#${el}`).addEventListener('change', (e) => { filtro[k] = e.target.value; render(); }));
+    [['f-status', 'status'], ['f-curso', 'curso'], ['f-periodo', 'periodo']].forEach(([el, k]) => tela.querySelector(`#${el}`).addEventListener('change', (e) => { filtro[k] = e.target.value; render(); tela.querySelector(`#${el}`).focus(); }));
+    tela.querySelectorAll('[data-limpar]').forEach((b) => b.addEventListener('click', () => { Object.assign(filtro, { q: '', status: 'ativa', curso: 'todos', periodo: 'todos' }); render(); tela.querySelector('#busca').focus(); }));
   }
 
   render();

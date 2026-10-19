@@ -1,8 +1,14 @@
 # Gera os HTML do Aulor MVP (todas as páginas têm o mesmo esqueleto; o
 # layout vem de js/shell.js). Uso, na raiz do projeto:
 #   python3 _tools/gerar_paginas.py
-import os
+import glob, hashlib, os
 raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# ?v= muda quando qualquer JS ou o CSS muda: o navegador não mistura arquivos de versões diferentes
+# (o servidor local e o GitHub Pages deixam o navegador guardar os .js em cache).
+_h = hashlib.sha1()
+for f in sorted(glob.glob(os.path.join(raiz, 'js', '*.js')) + [os.path.join(raiz, 'styles.css')]):
+    _h.update(open(f, 'rb').read())
+V = _h.hexdigest()[:8]
 BASE = ['documento', 'agenda', 'planos', 'permissoes-data', 'permissoes-motor', 'aulor', 'semente', 'shell']
 UI = ['base', 'ui-form', 'formularios']
 PAGINAS = [
@@ -26,7 +32,6 @@ PAGINAS = [
   ('templates-certificado', 'Modelos de certificado', 'configuracoes', ['certificado', 'modelos-certificado-ui'], 'modelos-certificado-app', ''),
   ('modelo-certificado', 'Modelo de certificado', 'configuracoes', ['certificado', 'modelos-certificado-ui'], 'modelo-certificado-app', ''),
   ('financeiro', 'Financeiro', 'receber,pagar', [], 'financeiro-app', ''),
-  ('cobrancas', 'Cobranças', 'receber', [], 'cobrancas-app', ''),
   ('professores', 'Professores', 'professores', [], 'professores-app', ''),
   ('usuarios', 'Usuários', 'usuarios', [], 'usuarios-app', ''),
   ('configuracoes', 'Escola e regras', 'configuracoes', [], 'configuracoes-app', ''),
@@ -35,16 +40,16 @@ PAGINAS = [
 def pagina(titulo, acesso, extras, app, attrs_extra='', ui=True, sem_layout=False):
     scripts = BASE + (UI if ui else []) + extras + [app]
     attrs = f'data-titulo="{titulo}"' + (f' data-acesso="{acesso}"' if acesso else '') + (f' {attrs_extra}' if attrs_extra else '') + (' data-sem-layout' if sem_layout else '')
-    linhas = '\n'.join(f'  <script src="js/{s}.js"></script>' for s in scripts)
+    linhas = '\n'.join(f'  <script src="js/{s}.js?v={V}"></script>' for s in scripts)
     return f'''<!DOCTYPE html>
 <html lang="pt-BR" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aulor · {titulo}</title>
-  <script src="js/tema.js"></script>
-  <script src="js/estilo.js"></script>
-  <script src="js/tooltip.js" defer></script>
+  <script src="js/tema.js?v={V}"></script>
+  <script src="js/estilo.js?v={V}"></script>
+  <script src="js/tooltip.js?v={V}" defer></script>
   <!-- Tailwind v4 (browser build) — em produção, usar o build via PostCSS/Vite -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>

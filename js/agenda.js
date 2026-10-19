@@ -143,9 +143,9 @@ const Agenda = (() => {
       </div>
       ${ERRO(`ag-dias-${i}`)}
       <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-neutral-300">
-        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">das</span>
+        <span class="text-xs font-medium text-slate-500 dark:text-neutral-400">das</span>
         <input type="time" name="ag-inicio-${i}" value="${p.inicio ?? ''}" step="300" class="campo w-32">
-        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">às</span>
+        <span class="text-xs font-medium text-slate-500 dark:text-neutral-400">às</span>
         <input type="time" name="ag-fim-${i}" value="${p.fim ?? ''}" step="300" class="campo w-32">
       </div>
       ${ERRO(`ag-horario-${i}`)}
@@ -165,7 +165,7 @@ const Agenda = (() => {
           <button type="button" data-add-periodo class="inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline">+ Adicionar período</button>
         </div>
         <div data-periodos class="space-y-2">${agenda.periodos.map(linhaPeriodo).join('')}</div>
-        <p data-periodos-vazio class="text-xs text-slate-400 ${agenda.periodos.length ? 'hidden' : ''}">Nenhum período. Ex.: Seg/Qua/Sex das 18:15 às 22:15; ou Sáb das 8:00 às 12:00 e das 13:00 às 19:00.</p>
+        <p data-periodos-vazio class="text-xs text-slate-500 dark:text-neutral-400 ${agenda.periodos.length ? 'hidden' : ''}">Nenhum período. Ex.: Seg/Qua/Sex das 18:15 às 22:15; ou Sáb das 8:00 às 12:00 e das 13:00 às 19:00.</p>
         ${ERRO('ag-periodos')}
         <p data-agenda-resumo class="text-xs text-slate-500 dark:text-neutral-400 mt-2"></p>
       </div>

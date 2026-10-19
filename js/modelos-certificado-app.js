@@ -1,79 +1,105 @@
 // ============================================================
-// Modelos de certificado (templates-certificado.html): cada modelo com a
-// miniatura real da frente, situação, aparência e quantos cursos o usam.
-// O curso escolhe o modelo no cadastro; sem escolha, vale o padrão da escola.
-// O editor de cada modelo fica em modelo-certificado.html?id=.
+// Modelos de certificado (templates-certificado.html), na direção Ficha em
+// cartões: busca e situação sobre o fundo, tabela no cartão com a miniatura
+// da frente no lugar do avatar e o padrão primeiro. Sem ações na linha: ela
+// abre o editor (modelo-certificado.html?id=), onde moram padrão, duplicar e
+// excluir. O curso escolhe o modelo no cadastro; sem escolha, vale o padrão.
 // ============================================================
 
 (function () {
   if (!Shell.permitido) return;
   const tela = document.getElementById('tela');
   const podeEditar = Shell.pode('configuracoes', 'editar');
+  const filtro = { q: '', status: '' };
 
   // Padrão primeiro; depois ativos, rascunhos e inativos, em ordem alfabética.
   const ORDEM = { ativo: 0, rascunho: 1, inativo: 2 };
   const ordenados = () => [...Aulor.modelosCertificado()].sort((a, b) => (b.padrao - a.padrao) || (ORDEM[a.status] - ORDEM[b.status]) || a.nome.localeCompare(b.nome, 'pt-BR'));
-
-  const meta = (rotulo, valor) => `<div class="min-w-0"><dt class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400">${rotulo}</dt><dd class="mt-1 text-sm text-slate-700 dark:text-neutral-200">${valor}</dd></div>`;
+  const visiveis = () => {
+    const termo = normalizarTexto(filtro.q);
+    return ordenados().filter((m) => (!filtro.status || m.status === filtro.status) && (!termo || normalizarTexto(`${m.nome} ${m.descricao}`).includes(termo)));
+  };
 
   function linha(m) {
     const emitidos = Aulor.emitidosComModelo(m.id).length;
-    const acoes = podeEditar ? `
-      <div class="col-span-2 sm:col-span-1 sm:col-start-3 sm:row-start-1 sm:row-span-2 flex flex-wrap sm:flex-col items-center sm:items-end gap-2 sm:self-start">
-        <a href="${urlModelo(m.id)}" class="btn-sec btn-pequeno">${ICONE.editar}Editar</a>
-        <div class="flex items-center gap-1">
-          ${m.status === 'ativo' && !m.padrao ? `<button type="button" data-padrao="${m.id}" class="btn-fantasma btn-pequeno">Tornar padrão</button>` : ''}
-          <button type="button" data-duplicar="${m.id}" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-neutral-800 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30" title="Duplicar" aria-label="Duplicar ${esc(m.nome)}">${ICONE.copiar}</button>
-          ${m.padrao
-            ? `<span class="p-2 text-slate-300 dark:text-neutral-700 cursor-not-allowed" title="O padrão da escola não pode ser excluído">${ICONE_MODELO.lixeira}</span>`
-            : `<button type="button" data-excluir="${m.id}" class="p-2 rounded-lg text-slate-500 hover:text-red-700 hover:bg-red-50 dark:text-neutral-400 dark:hover:text-red-400 dark:hover:bg-red-950/40 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600/30" title="Excluir" aria-label="Excluir ${esc(m.nome)}">${ICONE_MODELO.lixeira}</button>`}
-        </div>
-      </div>` : '';
     return `
-      <li class="grid grid-cols-[7.5rem_minmax(0,1fr)] sm:grid-cols-[12rem_minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 gap-y-3 px-4 sm:px-5 py-5 ${m.status === 'inativo' ? 'bg-slate-50/60 dark:bg-neutral-900/30' : ''}">
-        <a href="${urlModelo(m.id)}" class="block sm:row-span-2 rounded-lg transition hover:ring-2 hover:ring-petrol-800/25 dark:hover:ring-sky-400/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 ${m.status === 'inativo' ? 'opacity-60' : ''}" tabindex="-1" aria-hidden="true">${miniaturaModelo(m)}</a>
-        <div class="min-w-0 self-center sm:self-end">
-          <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-            <a href="${urlModelo(m.id)}" class="font-display font-semibold text-slate-900 dark:text-neutral-100 hover:underline underline-offset-2">${esc(m.nome)}</a>
-            ${m.padrao ? seloPadrao() : ''}
+      <tr data-href="${urlModelo(m.id)}" class="${FOCO_LINHA} ${m.status === 'inativo' ? 'linha-apagada' : ''}">
+        <td>
+          <div class="flex items-center gap-3 min-w-0">
+            ${Certificado.miniatura(m)}
+            <div class="min-w-0">
+              <p class="flex flex-wrap items-center gap-x-2 gap-y-0.5"><a href="${urlModelo(m.id)}" class="link-registro font-medium ${TITULO} hover:underline underline-offset-2 focus-visible:outline-none">${esc(m.nome)}</a>${pilulasModelo(m)}</p>
+              <p class="text-xs ${APOIO} truncate" title="${esc(m.descricao)}">${esc(m.descricao || aparenciaTexto(m))}</p>
+            </div>
           </div>
-          ${m.descricao ? `<p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5 line-clamp-2">${esc(m.descricao)}</p>` : ''}
-        </div>
-        <dl class="col-span-2 sm:col-span-1 sm:col-start-2 self-start grid grid-cols-2 lg:grid-cols-[auto_auto_auto_auto] gap-x-6 lg:gap-x-8 gap-y-3 lg:justify-start">
-            ${meta('Situação', statusModelo(m))}
-            ${meta('Aparência', aparenciaResumo(m))}
-            ${meta('Usado em', usoDoModelo(m))}
-            ${meta('Emitidos', `<span class="tabular-nums">${emitidos || '<span class="text-slate-500 dark:text-neutral-400">nenhum</span>'}</span> <span class="text-xs text-slate-500 dark:text-neutral-400">· atualizado em ${dataBr(m.atualizadoEm)}</span>`)}
-        </dl>
-        ${acoes}
-      </li>`;
+        </td>
+        <td>${usoDoModelo(m)}</td>
+        <td class="num">${emitidos || `<span class="${APOIO}">—</span>`}</td>
+        <td class="num">${dataBr(m.atualizadoEm)}</td>
+      </tr>`;
+  }
+
+  function tabela() {
+    const todos = Aulor.modelosCertificado().length;
+    const lista = visiveis();
+    const filtrando = filtro.q || filtro.status;
+    return `
+      <div class="painel overflow-hidden">
+        ${lista.length ? `<div class="overflow-x-auto"><table class="tabela">
+          <thead><tr><th>Modelo</th><th class="w-[16rem]">Usado por</th><th class="text-right num w-28">Emitidos</th><th class="text-right num w-28">Atualizado</th></tr></thead>
+          <tbody>${lista.map(linha).join('')}</tbody>
+        </table></div>` : vazio('Nenhum modelo com esse filtro', '', '<button type="button" data-limpar class="btn-sec">Limpar filtros</button>')}
+        <p class="px-4 py-2.5 text-xs ${APOIO} border-t border-slate-100 dark:border-neutral-900 tabular-nums">${plural(lista.length, 'modelo', 'modelos')}${filtrando ? ` de ${todos}` : ''}${podeEditar ? '' : ' · somente leitura: seu perfil não edita as configurações'}</p>
+      </div>`;
+  }
+
+  function atualizarTabela() {
+    tela.querySelector('[data-tabela]').innerHTML = tabela();
+    ligarLinhasLink(tela.querySelector('[data-tabela]'));
   }
 
   function render() {
-    const lista = ordenados();
-    const ativos = lista.filter((m) => m.status === 'ativo').length;
+    const todos = Aulor.modelosCertificado();
+    const conta = (s) => todos.filter((m) => m.status === s).length;
+    const opcoes = [
+      { id: '', nome: 'Todos', n: todos.length },
+      { id: 'ativo', nome: 'Ativos', n: conta('ativo') },
+      { id: 'rascunho', nome: 'Rascunhos', n: conta('rascunho') },
+      { id: 'inativo', nome: 'Inativos', n: conta('inativo') },
+    ];
     tela.innerHTML = `
       <div class="max-w-6xl mx-auto">
         ${cabecalhoPagina({
-          titulo: 'Modelos de certificado',
-          subtitulo: 'O curso escolhe o modelo no próprio cadastro; sem escolha, emite com o padrão da escola. Cada certificado emitido guarda o modelo da emissão, então editar aqui não muda os já emitidos.',
-          acoes: podeEditar ? `<button type="button" data-novo class="btn-pri">${ICONE.mais}Novo modelo</button>` : '',
+          titulo: `Modelos de certificado <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${todos.length}</span>`,
+          subtitulo: 'Frente e verso do certificado que a escola emite. O <a class="link" href="cursos.html">curso</a> escolhe o modelo no próprio cadastro; sem escolha, emite com o padrão da escola. Editar um modelo não muda os certificados já emitidos.',
         })}
-        <section class="painel overflow-hidden">
-          <ul class="divide-y divide-slate-200 dark:divide-neutral-800">${lista.map(linha).join('')}</ul>
-          <p class="px-5 py-2.5 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-200 dark:border-neutral-800 tabular-nums">${plural(lista.length, 'modelo', 'modelos')} · ${plural(ativos, 'ativo', 'ativos')}${podeEditar ? '' : ' · somente leitura: seu perfil não edita as configurações'}</p>
-        </section>
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          ${campoBusca('busca', filtro.q, 'Buscar por nome ou descrição')}
+          ${segmentado('status', opcoes, filtro.status, 'Situação')}
+          ${podeEditar ? `<button type="button" data-novo class="btn-pri ml-auto">${ICONE.mais}Novo modelo</button>` : ''}
+        </div>
+        <div data-tabela>${tabela()}</div>
       </div>`;
-    tela.querySelector('[data-novo]')?.addEventListener('click', abrirNovoModelo);
-    tela.querySelectorAll('[data-padrao]').forEach((b) => b.addEventListener('click', () => confirmarPadrao(Aulor.modeloCertificado(b.dataset.padrao), render)));
-    tela.querySelectorAll('[data-excluir]').forEach((b) => b.addEventListener('click', () => confirmarExclusaoModelo(Aulor.modeloCertificado(b.dataset.excluir), render)));
-    tela.querySelectorAll('[data-duplicar]').forEach((b) => b.addEventListener('click', () => {
-      const r = Aulor.duplicarModelo(b.dataset.duplicar);
-      if (r.erros) { toast(r.erros[0].mensagem, 'erro'); return; }
-      toast(`Cópia criada como rascunho: "${r.modelo.nome}"`);
-      render();
-    }));
+    ligarLinhasLink(tela);
   }
+
+  // Delegado no #tela: a tabela é redesenhada a cada letra sem perder o foco da busca.
+  tela.addEventListener('input', (e) => {
+    if (e.target.id !== 'busca') return;
+    filtro.q = e.target.value;
+    atualizarTabela();
+  });
+  tela.addEventListener('click', (e) => {
+    const s = e.target.closest('[data-status]');
+    if (s) {
+      filtro.status = s.dataset.status;
+      render();
+      tela.querySelector(`[data-status="${filtro.status}"]`)?.focus();
+      return;
+    }
+    if (e.target.closest('[data-novo]')) { abrirNovoModelo(); return; }
+    if (e.target.closest('[data-limpar]')) { filtro.q = ''; filtro.status = ''; render(); tela.querySelector('#busca').focus(); }
+  });
 
   render();
   if (parametroUrl('novo') && podeEditar) abrirNovoModelo();
