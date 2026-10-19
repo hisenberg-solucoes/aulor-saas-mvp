@@ -207,5 +207,12 @@ const Certificado = (() => {
     window.print();
   }
 
-  return { VARIAVEIS, FONTES, substituir, dadosDe, dadosExemplo, folhas, imprimir, urlValidacao };
+  // Frente do certificado no lugar do avatar: 40px de altura na lista, 48px na ficha. A folha escala por
+  // unidades de container (cqw), então cabe em qualquer largura. Sem `dados`, usa o exemplo.
+  function miniatura(modelo, { dados = dadosExemplo(), altura = 40 } = {}) {
+    const largura = Math.round(altura * (modelo.aparencia.orientacao === 'retrato' ? 210 / 297 : 297 / 210));
+    return `<span aria-hidden="true" class="block shrink-0 pointer-events-none select-none [&_.cert-folha]:rounded-[3px] [&_.cert-folha]:shadow-[0_0_0_1px_rgba(15,23,42,.12)]" style="width:${largura}px">${folhas(dados, { modelo, lados: ['frente'] })}</span>`;
+  }
+
+  return { VARIAVEIS, FONTES, substituir, dadosDe, dadosExemplo, folhas, miniatura, imprimir, urlValidacao };
 })();

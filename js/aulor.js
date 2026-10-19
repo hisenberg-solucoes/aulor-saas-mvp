@@ -15,7 +15,7 @@
 // ============================================================
 
 const Aulor = (() => {
-  const CHAVE = 'aulor-mvp-dados-v5'; // v5: pagamento de instrutor vira conta a pagar
+  const CHAVE = 'aulor-mvp-dados-v5'; // v5: Pessoas (colaboradores e instrutores), pagamento de instrutor como conta a pagar
 
   // ---------- Datas e números ----------
 
@@ -83,6 +83,11 @@ const Aulor = (() => {
     cancelada: { nome: 'Cancelada', tom: 'neutro' },
   };
   const PRESENCA = { P: 'Presente', F: 'Falta', J: 'Falta justificada' };
+  const RESULTADO = {
+    aprovado: { nome: 'Aprovado', tom: 'ok' },
+    reprovado_frequencia: { nome: 'Reprovado por frequência', tom: 'perigo' },
+    reprovado_nota: { nome: 'Reprovado por nota', tom: 'perigo' },
+  };
 
   // Modelos de certificado: textos aceitam {{variável}} e **negrito**.
   const VARIAVEIS_CERTIFICADO = [
@@ -247,8 +252,10 @@ const Aulor = (() => {
     return { total: aulas.length, realizadas, percentual: aulas.length ? Math.round((realizadas / aulas.length) * 100) : 0 };
   }
 
-  // Quem deve estar na chamada desta aula: matrículas não canceladas feitas até a data da aula.
-  const participantes = (a) => matriculasDaTurma(a.turmaId).filter((m) => m.data <= a.data);
+  // Desde quando o aluno está na turma atual: a data da matrícula ou a da última troca de turma.
+  const entradaNaTurma = (m) => m.entradaTurma ?? m.data;
+  // Quem deve estar na chamada desta aula: matrículas não canceladas que já estavam na turma na data da aula.
+  const participantes = (a) => matriculasDaTurma(a.turmaId).filter((m) => entradaNaTurma(m) <= a.data);
 
   const chamadaPendente = (a, ref = hoje()) => a.status === 'prevista' && a.data < ref;
 
@@ -268,10 +275,11 @@ const Aulor = (() => {
   // ---------- Frequência ----------
 
   // Percentual = presenças (+ justificadas, se a escola configurar) ÷ aulas com chamada registrada
-  // desde a data da matrícula. Aula sem chamada não conta (aparece como pendência à parte).
+  // desde a entrada na turma atual. Aula sem chamada não conta (aparece como pendência à parte).
+  // shortcut: depois de uma troca de turma, só a turma nova conta; somar as duas se as escolas pedirem.
   function frequencia(m) {
     const cfg = config().academico;
-    const doAluno = aulasDaTurma(m.turmaId).filter((a) => a.data >= m.data && a.status !== 'cancelada');
+    const doAluno = aulasDaTurma(m.turmaId).filter((a) => a.data >= entradaNaTurma(m) && a.status !== 'cancelada');
     const realizadas = doAluno.filter((a) => a.status === 'realizada');
     let presentes = 0;
     let justificadas = 0;
@@ -563,6 +571,7 @@ const Aulor = (() => {
     if (d.modeloCertificadoId && !modeloCertificado(d.modeloCertificadoId)) erros.push({ campo: 'modeloCertificadoId', mensagem: 'Modelo de certificado não encontrado.' });
     const valor = Number(d.valor);
     if (!(valor >= 0)) erros.push({ campo: 'valor', mensagem: 'Valor de referência inválido.' });
+    if (texto(d.notaMinima) && lerNota(d.notaMinima) == null) erros.push({ campo: 'notaMinima', mensagem: 'Nota de 0 a 10 (ex.: 7 ou 6,5). Deixe vazio se o curso não tem nota.' });
     const modulos = (d.modulos ?? []).filter((m) => texto(m.nome) || Number(m.cargaHoraria));
     if (modulos.some((m) => !texto(m.nome) || !(Number(m.cargaHoraria) > 0))) erros.push({ campo: 'modulos', mensagem: 'Cada módulo precisa de nome e horas.' });
     else if (modulos.length) {
@@ -584,6 +593,7 @@ const Aulor = (() => {
       parcelasSugeridas: Math.max(1, Math.min(config().financeiro.parcelasMaximas, Number(d.parcelasSugeridas) || 1)),
       modulos: (d.modulos ?? []).filter((m) => texto(m.nome)).map((m) => ({ nome: texto(m.nome), cargaHoraria: Number(m.cargaHoraria) })),
       modeloCertificadoId: d.modeloCertificadoId || null,
+      notaMinima: lerNota(d.notaMinima), // null: o curso não tem nota e aprova só por frequência
     };
   }
 
@@ -605,6 +615,35 @@ const Aulor = (() => {
     if (typeof d.ativo === 'boolean') c.ativo = d.ativo;
     salvar();
     return { curso: c };
+  }
+
+  // ---------- Nota final ----------
+  // De 0 a 10, com uma casa decimal; aceita vírgula. Vazio ou inválido → null.
+  function lerNota(v) {
+    const t = texto(v).replace(',', '.');
+    if (!t) return null;
+    const n = Number(t);
+    return Number.isFinite(n) && n >= 0 && n <= 10 ? Math.round(n * 10) / 10 : null;
+  }
+  const temNota = (c) => c?.notaMinima != null;
+
+  // Grava as notas finais das matrículas em curso da turma (o professor lança na turma, pelo portal; a
+  // coordenação, na conclusão). `notas`: { matriculaId: '8,5' }. Vazio apaga a nota.
+  function lancarNotas(turmaId, notas, usuario = '') {
+    const t = turma(turmaId);
+    if (!t || ['concluida', 'cancelada'].includes(t.status)) return { erros: [{ campo: 'notas', mensagem: 'Turma encerrada: as notas não podem mais ser alteradas.' }] };
+    if (!temNota(curso(t.cursoId))) return { erros: [{ campo: 'notas', mensagem: 'Este curso não tem nota. Defina a nota mínima no cadastro do curso.' }] };
+    const ativas = matriculasDaTurma(turmaId).filter((m) => m.status === 'ativa');
+    const erros = ativas.filter((m) => texto(notas?.[m.id]) && lerNota(notas[m.id]) == null)
+      .map((m) => ({ campo: `nota-${m.id}`, mensagem: 'De 0 a 10.' }));
+    if (erros.length) return { erros };
+    ativas.forEach((m) => {
+      if (!(m.id in (notas ?? {}))) return;
+      m.notaFinal = lerNota(notas[m.id]);
+      m.notaPor = usuario;
+    });
+    salvar();
+    return { lancadas: ativas.filter((m) => m.notaFinal != null).length, total: ativas.length };
   }
 
   // ---------- Turmas ----------
@@ -769,6 +808,7 @@ const Aulor = (() => {
       status: 'ativa',
       resultado: null,
       frequenciaFinal: null,
+      notaFinal: null,
       concluidaEm: null,
       canceladaEm: null,
       motivoCancelamento: '',
@@ -812,6 +852,34 @@ const Aulor = (() => {
     });
     salvar();
     return { matricula: m, canceladas };
+  }
+
+  // Turmas do mesmo curso que podem receber esta matrícula (troca de horário, de professor…).
+  function turmasParaTroca(m) {
+    const atual = turma(m.turmaId);
+    return turmas().filter((t) => t.id !== atual.id && t.cursoId === atual.cursoId && ['planejada', 'em_andamento'].includes(situacaoTurma(t)));
+  }
+
+  // Troca de turma: a matrícula muda de turma com as mesmas parcelas. As presenças da turma antiga
+  // ficam no histórico dela, e a frequência passa a contar a partir de hoje na turma nova.
+  function trocarTurma(matriculaId, turmaId, usuario = '') {
+    const m = matricula(matriculaId);
+    if (!m || m.status !== 'ativa') return { erros: [{ campo: 'turmaId', mensagem: 'Só matrículas em curso podem trocar de turma.' }] };
+    const de = turma(m.turmaId);
+    const para = turma(turmaId);
+    if (!para) return { erros: [{ campo: 'turmaId', mensagem: 'Escolha a turma nova.' }] };
+    if (para.id === de.id) return { erros: [{ campo: 'turmaId', mensagem: 'O aluno já está nesta turma.' }] };
+    if (para.cursoId !== de.cursoId) return { erros: [{ campo: 'turmaId', mensagem: 'A troca é entre turmas do mesmo curso. Para outro curso, cancele e faça uma matrícula nova.' }] };
+    const s = situacaoTurma(para);
+    if (!['planejada', 'em_andamento'].includes(s)) return { erros: [{ campo: 'turmaId', mensagem: `Turma ${SITUACAO_TURMA[s].nome.toLowerCase()}: não recebe alunos.` }] };
+    if (ocupacao(para).lotada) return { erros: [{ campo: 'turmaId', mensagem: `Turma lotada (${para.capacidade} vagas).` }] };
+    if (matriculas().some((x) => x.id !== m.id && x.alunoId === m.alunoId && x.turmaId === para.id && x.status === 'ativa')) return { erros: [{ campo: 'turmaId', mensagem: 'O aluno já tem matrícula nesta turma.' }] };
+    m.trocas = [...(m.trocas ?? []), { de: de.id, para: para.id, data: hoje(), por: usuario }];
+    m.turmaId = para.id;
+    m.entradaTurma = hoje();
+    m.notaFinal = null; // a nota é da turma
+    salvar();
+    return { matricula: m, de, para };
   }
 
   // ---------- Recebimentos e contas ----------
@@ -925,20 +993,39 @@ const Aulor = (() => {
     const aulas = aulasDaTurma(turmaId);
     const pendentes = aulas.filter((a) => chamadaPendente(a));
     const futuras = aulas.filter((a) => a.status === 'prevista' && a.data >= hoje());
+    const c = curso(t.cursoId);
+    const notaMinima = temNota(c) ? c.notaMinima : null;
     const alunosT = matriculasDaTurma(turmaId).filter((m) => m.status === 'ativa').map((m) => {
       const f = frequencia(m);
-      return { m, aluno: aluno(m.alunoId), f, resultado: f.percentual != null && f.percentual >= f.minimo ? 'aprovado' : 'reprovado_frequencia' };
+      const nota = m.notaFinal ?? null;
+      const resultado = !(f.percentual != null && f.percentual >= f.minimo) ? 'reprovado_frequencia'
+        : notaMinima == null ? 'aprovado'
+          : nota == null ? 'sem_nota'
+            : nota >= notaMinima ? 'aprovado' : 'reprovado_nota';
+      return { m, aluno: aluno(m.alunoId), f, nota, resultado };
     });
-    return { turma: t, pendentes, futuras, alunos: alunosT, aprovados: alunosT.filter((x) => x.resultado === 'aprovado').length };
+    return {
+      turma: t, pendentes, futuras, alunos: alunosT, notaMinima,
+      semNota: alunosT.filter((x) => x.resultado === 'sem_nota').length,
+      aprovados: alunosT.filter((x) => x.resultado === 'aprovado').length,
+    };
   }
 
-  // Encerra a turma: cada matrícula em curso vira concluída, aprovada ou reprovada por frequência.
-  function concluirTurma(turmaId, usuario = '') {
+  // Encerra a turma: cada matrícula em curso vira concluída, aprovada ou reprovada (por frequência ou
+  // por nota). `notas` (opcional) grava as notas finais antes, na mesma ação.
+  function concluirTurma(turmaId, usuario = '', notas = null) {
     const t = turma(turmaId);
     if (!t || ['concluida', 'cancelada'].includes(t.status)) return { erros: [{ campo: 'turma', mensagem: 'Turma já encerrada.' }] };
-    const p = previaConclusao(turmaId);
+    let p = previaConclusao(turmaId);
     if (p.pendentes.length) return { erros: [{ campo: 'turma', mensagem: `Há ${p.pendentes.length} chamada(s) pendente(s). Registre antes de concluir.` }] };
     if (p.futuras.length) return { erros: [{ campo: 'turma', mensagem: `Ainda há ${p.futuras.length} aula(s) prevista(s). A turma só pode ser concluída depois da última aula.` }] };
+    if (notas && p.notaMinima != null) {
+      const r = lancarNotas(turmaId, notas, usuario);
+      if (r.erros) return r;
+      p = previaConclusao(turmaId);
+    }
+    // Quem já reprovou por frequência não precisa de nota.
+    if (p.semNota) return { erros: [{ campo: 'notas', mensagem: `Falta a nota final de ${p.semNota} aluno(s) com frequência suficiente.` }] };
     p.alunos.forEach(({ m, f, resultado }) => {
       m.status = 'concluida';
       m.resultado = resultado;
@@ -960,12 +1047,14 @@ const Aulor = (() => {
     if (m.status === 'cancelada') return { id: 'bloqueado', nome: 'Matrícula cancelada', tom: 'neutro' };
     if (m.status === 'ativa') return { id: 'aguardando', nome: 'Aguardando conclusão da turma', tom: 'info' };
     if (m.resultado === 'reprovado_frequencia') return { id: 'bloqueado', nome: `Frequência ${m.frequenciaFinal ?? 0}% (mínimo ${config().academico.frequenciaMinima}%)`, tom: 'perigo' };
+    if (m.resultado === 'reprovado_nota') return { id: 'bloqueado', nome: `Nota ${fmtNota(m.notaFinal)} (mínimo ${fmtNota(curso(turma(m.turmaId).cursoId)?.notaMinima)})`, tom: 'perigo' };
     if (config().financeiro.bloquearCertificadoInadimplente && parcelasDaMatricula(m.id).some((l) => situacaoLancamento(l) === 'vencido')) {
       return { id: 'bloqueado', nome: 'Parcelas vencidas em aberto', tom: 'atencao' };
     }
     return { id: 'elegivel', nome: 'Pronto para emitir', tom: 'atencao' };
   }
 
+  const fmtNota = (n) => (n == null ? '—' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: n % 1 ? 1 : 0, maximumFractionDigits: 1 }));
   const prontosParaEmitir = () => matriculas().filter((m) => m.status === 'concluida' && elegibilidade(m).id === 'elegivel');
 
   // Código curto e estável: sigla da escola + ano + hash (djb2) da matrícula e da emissão.
@@ -1207,7 +1296,7 @@ const Aulor = (() => {
   const temModulo = (moduloId) => Planos.tem(assinatura(), moduloId);
 
   return {
-    CHAVE, MODALIDADES, FORMAS_PAGAMENTO, CATEGORIAS, SITUACAO_TURMA, SITUACAO_LANCAMENTO, STATUS_MATRICULA, PRESENCA,
+    CHAVE, MODALIDADES, FORMAS_PAGAMENTO, CATEGORIAS, SITUACAO_TURMA, SITUACAO_LANCAMENTO, STATUS_MATRICULA, PRESENCA, RESULTADO,
     VARIAVEIS_CERTIFICADO, STATUS_MODELO, OPCOES_MODELO,
     hoje, somarDias, somarMeses, diasEntre, ehData, arred,
     carregar, salvar, restaurar, usar,
@@ -1215,13 +1304,13 @@ const Aulor = (() => {
     aluno, curso, turma, professor, matricula, lancamento, certificado, aula,
     aulasDaTurma, matriculasDaTurma, matriculasDoAluno, parcelasDaMatricula, lancamentosDoAluno, certificadoDaMatricula, turmasDoProfessor,
     idade, gerarDatasAulas, situacaoTurma, ocupacao, RISCO, minimoAlunos, riscoTurma, turmasEmRisco, progressoTurma, participantes, chamadaPendente, chamadasPendentes, aulasDoDia, proximasAulas,
-    frequencia, alunosEmRisco,
+    entradaNaTurma, frequencia, alunosEmRisco, lerNota, temNota, fmtNota, lancarNotas,
     situacaoLancamento, diasAtraso, encargos, gerarParcelas, inadimplentes, estaInadimplente, resumoMes,
     situacaoAluno, alunosAtivos,
     validarAluno, criarAluno, atualizarAluno, salvarResponsavel, bloqueioRemoverResponsavel, removerResponsavel, atualizarEnderecoPagamento,
     ORIGENS, PAPEIS_RESPONSAVEL, UFS, ehMenor, responsavelFinanceiro, responsavelPrincipal, contatoCobranca, criarCurso, atualizarCurso,
     turmaTemChamada, criarTurma, atualizarTurma,
-    validarMatricula, simularMatricula, matricular, cancelarMatricula,
+    validarMatricula, simularMatricula, matricular, cancelarMatricula, turmasParaTroca, trocarTurma,
     registrarBaixa, estornar, lancarConta, cancelarLancamento, contaDoPagamentoInstrutor, formaDoInstrutor, sincronizarPagamentosInstrutores,
     registrarChamada, previaConclusao, concluirTurma,
     elegibilidade, prontosParaEmitir, emitirCertificado, emitirLote, cancelarCertificado, certificadoPorCodigo,

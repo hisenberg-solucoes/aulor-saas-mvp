@@ -10,15 +10,15 @@ O backend (`../Aulor`) tem hoje só o contexto **Platform** implementado: tenant
 - Plano e módulos habilitados por tenant (feature flags lidos do catálogo comercial), configurados manualmente pela equipe Aulor.
 - Auditoria das ações sensíveis: cancelamento de matrícula, estorno, emissão e cancelamento de certificado, mudança de perfil.
 
-**Academics:** cursos (carga, modalidade, módulos opcionais, valor de referência), turmas (agenda → aulas até a carga horária, instrutor, vagas) e instrutores.
+**Academics:** cursos (carga, modalidade, módulos opcionais, valor de referência, nota mínima opcional), turmas (agenda → aulas até a carga horária, instrutor, vagas) e instrutores.
 
 **People (Pessoas):** pessoa uma vez só, com os papéis de equipe (colaborador: cargo, admissão, afastamento, desligamento, vínculo com o usuário) e docente (instrutor: remuneração PJ, RPA ou folha, valor hora, contratos assinados no Clicksign, pagamentos com NF ou recibo, antecedentes anuais, LGPD, convite por link). Ao convidar um instrutor cujo e-mail já é de um colaborador, acrescentar o vínculo ao mesmo usuário.
 
-**EnrollmentContracts:** aluno (cadastro rápido, responsável obrigatório para menor, CPF único por escola), matrícula com geração das parcelas, bloqueio de lotação e duplicidade, cancelamento que cancela só as parcelas em aberto.
+**EnrollmentContracts:** aluno (cadastro rápido, responsável obrigatório para menor, CPF único por escola), matrícula com geração das parcelas, bloqueio de lotação e duplicidade, troca de turma do mesmo curso sem mexer nas parcelas, cancelamento que cancela só as parcelas em aberto.
 
 **Finance:** contas a receber e a pagar, baixa manual, estorno, inadimplência, multa e juros configuráveis, resumo do mês. Campo de cobrança externa reservado no lançamento.
 
-**Classroom:** chamada (todos presentes por padrão), diário, frequência, pendências de chamada, conclusão da turma com resultado por aluno.
+**Classroom:** chamada (todos presentes por padrão), diário, frequência, pendências de chamada, nota final por aluno (quando o curso tem nota), conclusão da turma com resultado por aluno (aprovado, reprovado por frequência ou por nota).
 
 **Certificados:** modelos por curso com um padrão da escola (cópia do modelo guardada na emissão), PDF gerado no servidor, código único, página pública de validação com CPF mascarado, cancelamento.
 
@@ -33,8 +33,9 @@ O backend (`../Aulor`) tem hoje só o contexto **Platform** implementado: tenant
 - Lembretes por WhatsApp/e-mail (cobrança, falta seguida, início de turma).
 - Portal do aluno: parcelas, frequência, certificados.
 - Contrato de matrícula em PDF e assinatura eletrônica.
-- Cancelamento e reposição de aula, feriados, transferência de turma, trancamento.
-- Notas e avaliações simples; QR code; logo, fundo e assinatura em imagem nos modelos de certificado.
+- Cancelamento e reposição de aula, feriados, trancamento e rematrícula no próximo nível (idiomas).
+- Taxa de matrícula separada das parcelas.
+- Avaliações por modalidade (fim de módulo, semanal) além da nota final; QR code; logo, fundo e assinatura em imagem nos modelos de certificado.
 - Relatórios exportáveis: recebimentos, inadimplência, frequência, matrículas por período.
 - Contas a pagar recorrentes; categorias editáveis.
 - Responsável como cadastro próprio, compartilhado entre irmãos (no MVP ele fica dentro do aluno); busca de endereço pelo CEP.
@@ -53,7 +54,7 @@ Contratos corporativos (pacotes de vagas, in company, aprovação de inscritos),
 | Condição do cliente-piloto | Mais alunos incluídos cabem como `condicoes.alunosIncluidos` do cliente (`Planos.efetivo`), sem mudar o produto. Os processos específicos dele continuam fora do padrão. |
 | "Aluno ativo" para cobrança | Definir: matrícula em curso hoje, ou qualquer matrícula no mês? Muda a fatura. |
 | Divisão Essencial × Gestão | Hoje a diferença é contas a pagar e a validação pública. Validar com escolas se isso justifica dois planos. |
-| Regra de frequência | Aula sem chamada não conta e falta justificada conta como presença (configurável). Confirmar com coordenações. |
+| Regra de frequência | Aula sem chamada não conta e falta justificada conta como presença (configurável). Depois de uma troca de turma, só a turma nova conta. Confirmar com coordenações. |
 | Certificado com dívida | O bloqueio é opcional e vem desligado. Há escolas que exigem quitação. |
 | Cancelamento sem multa | O MVP não calcula rescisão. Escolas com contrato rígido podem precisar disso cedo. |
 | Pagamento de instrutor × contas a pagar | Resolvido na demo: programar o pagamento na ficha do instrutor cria a conta a pagar (Professores, em nome da empresa no PJ ou da pessoa no RPA, vencimento no previsto); pagar na ficha dá a baixa e remover a programação cancela a conta. Em Contas a pagar essa conta não tem Pagar nem Estornar: a ficha é a fonte (exige NF/recibo). Falta decidir se o perfil Financeiro, que hoje não vê Instrutores, ganha acesso para pagar instrutores. |

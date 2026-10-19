@@ -36,13 +36,13 @@ const FEATURES = [
   { id: 'painel', modulo: 'visao', nome: 'Painel da escola', acoes: [VER] },
 
   { id: 'alunos', modulo: 'comercial', nome: 'Alunos', acoes: [VER, ACAO_('criar', 'Cadastrar'), ACAO_('editar', 'Editar')] },
-  { id: 'matriculas', modulo: 'comercial', nome: 'Matrículas', acoes: [VER, ACAO_('criar', 'Matricular'), ACAO_('cancelar', 'Cancelar matrícula')] },
+  { id: 'matriculas', modulo: 'comercial', nome: 'Vendas', acoes: [VER, ACAO_('criar', 'Vender'), ACAO_('trocar', 'Trocar de turma'), ACAO_('cancelar', 'Cancelar venda')] },
 
   { id: 'cursos', modulo: 'pedagogico', nome: 'Cursos', acoes: [VER, ACAO_('criar', 'Criar'), ACAO_('editar', 'Editar')] },
   { id: 'turmas', modulo: 'pedagogico', nome: 'Turmas', acoes: [VER, ACAO_('criar', 'Criar'), ACAO_('editar', 'Editar'), ACAO_('concluir', 'Concluir turma')] },
 
-  { id: 'frequencia', modulo: 'pedagogico', nome: 'Frequência de todas as turmas', acoes: [VER, ACAO_('registrar', 'Lançar e corrigir chamada')] },
-  { id: 'minhas-aulas', modulo: 'pedagogico', nome: 'Minhas aulas (professor)', acoes: [VER, ACAO_('registrar', 'Fazer chamada e diário')] },
+  { id: 'frequencia', modulo: 'pedagogico', nome: 'Frequência de todas as turmas', acoes: [VER, ACAO_('registrar', 'Lançar e corrigir chamada e notas')] },
+  { id: 'minhas-aulas', modulo: 'pedagogico', nome: 'Portal do Professor', acoes: [VER, ACAO_('registrar', 'Fazer chamada, diário e nota final')] },
 
   { id: 'certificados', modulo: 'pedagogico', nome: 'Certificados', acoes: [VER, ACAO_('emitir', 'Emitir'), ACAO_('cancelar', 'Cancelar certificado')] },
 
@@ -67,7 +67,7 @@ const PERFIS = [
   {
     id: 'secretaria', nome: 'Secretaria', tipos: ['colaborador'], ativo: true,
     permissoes: {
-      painel: ['visualizar'], alunos: ['visualizar', 'criar', 'editar'], matriculas: ['visualizar', 'criar', 'cancelar'],
+      painel: ['visualizar'], alunos: ['visualizar', 'criar', 'editar'], matriculas: ['visualizar', 'criar', 'trocar', 'cancelar'],
       cursos: ['visualizar'], turmas: ['visualizar'], instrutores: ['visualizar'], frequencia: ['visualizar'],
       certificados: ['visualizar', 'emitir'], receber: ['visualizar', 'registrar'],
     },
@@ -82,7 +82,7 @@ const PERFIS = [
   {
     id: 'coordenacao', nome: 'Coordenação pedagógica', tipos: ['colaborador'], ativo: true,
     permissoes: {
-      painel: ['visualizar'], alunos: ['visualizar', 'editar'], matriculas: ['visualizar'],
+      painel: ['visualizar'], alunos: ['visualizar', 'editar'], matriculas: ['visualizar', 'trocar'],
       cursos: ['visualizar', 'criar', 'editar'], turmas: ['visualizar', 'criar', 'editar', 'concluir'], instrutores: ['visualizar', 'gerenciar'],
       frequencia: ['visualizar', 'registrar'], certificados: ['visualizar', 'emitir', 'cancelar'],
     },

@@ -21,6 +21,8 @@ function contexto(hoje) {
 }
 
 const soma = (xs) => Math.round(xs.reduce((s, x) => s + x, 0) * 100) / 100;
+// Mesma nota para todas as matrículas em curso da turma (o curso cu1 da semente tem nota mínima 7).
+const notasDe = (Aulor, turmaId, nota) => Object.fromEntries(Aulor.matriculasDaTurma(turmaId).filter((m) => m.status === 'ativa').map((m) => [m.id, nota]));
 
 test('parcelas: centavos na 1ª e vencimento limitado ao fim do mês', () => {
   const { Aulor } = contexto('2026-10-09');
@@ -90,12 +92,21 @@ test('chamada, conclusão e certificado respeitam a frequência mínima', () => 
   assert.equal(Aulor.chamadasPendentes().length, 0);
 
   assert.ok(Aulor.concluirTurma('tu3').erros, 'turma com aulas futuras não conclui');
+  assert.equal(Aulor.concluirTurma('tu2', 'Camila').erros?.[0]?.campo, 'notas', 'curso com nota exige as notas');
+  const notas = notasDe(Aulor, 'tu2', '8,5');
+  const comFrequencia = Aulor.previaConclusao('tu2').alunos.filter((x) => x.resultado !== 'reprovado_frequencia');
+  notas[comFrequencia[0].m.id] = '6';
+  assert.ok(Aulor.concluirTurma('tu2', 'Camila', { ...notas, [comFrequencia[1].m.id]: '11' }).erros, 'nota fora de 0 a 10');
   const previa = Aulor.previaConclusao('tu2');
-  const r = Aulor.concluirTurma('tu2', 'Camila');
+  const r = Aulor.concluirTurma('tu2', 'Camila', notas);
   assert.ok(!r.erros, JSON.stringify(r.erros));
-  assert.ok(r.reprovados >= 1 && r.aprovados >= 1);
+  assert.ok(r.reprovados >= 2 && r.aprovados >= 1);
   const reprovado = previa.alunos.find((x) => x.resultado === 'reprovado_frequencia').m;
-  const aprovado = previa.alunos.find((x) => x.resultado === 'aprovado').m;
+  const aprovado = Aulor.matricula(comFrequencia[1].m.id);
+  const porNota = Aulor.matricula(comFrequencia[0].m.id);
+  assert.equal(aprovado.notaFinal, 8.5);
+  assert.equal(porNota.resultado, 'reprovado_nota');
+  assert.equal(Aulor.elegibilidade(porNota).id, 'bloqueado');
   assert.equal(Aulor.elegibilidade(reprovado).id, 'bloqueado');
   assert.ok(Aulor.emitirCertificado(reprovado.id).erros);
   assert.equal(Aulor.elegibilidade(aprovado).id, 'elegivel');
@@ -135,7 +146,7 @@ test('modelos de certificado: padrão, escolha do curso e cópia na emissão', (
 
   // Emitido guarda a cópia: editar o modelo depois não muda o certificado.
   Aulor.chamadasPendentes().forEach((a) => Aulor.registrarChamada(a.id, { presencas: Object.fromEntries(Aulor.participantes(a).map((x) => [x.id, 'P'])) }));
-  assert.ok(!Aulor.concluirTurma('tu2', 'Camila').erros);
+  assert.ok(!Aulor.concluirTurma('tu2', 'Camila', notasDe(Aulor, 'tu2', '9')).erros);
   const m = Aulor.matriculasDaTurma('tu2').find((x) => Aulor.elegibilidade(x).id === 'elegivel');
   Aulor.curso(Aulor.turma('tu2').cursoId).modeloCertificadoId = modelo.id;
   const { certificado } = Aulor.emitirCertificado(m.id, 'Paula');
@@ -245,4 +256,44 @@ test('semente: todo menor tem responsável legal e o modelo antigo sumiu', () =>
     assert.ok(a.responsaveis.filter((r) => r.papeis.includes('financeiro')).length <= 1);
     if (a.cobranca.pagador === 'responsavel') assert.ok(Aulor.responsavelFinanceiro(a));
   });
+});
+
+test('nota final: curso sem nota aprova por frequência; lançamento valida 0 a 10', () => {
+  const { Aulor } = contexto('2026-10-09');
+  assert.ok(Aulor.lancarNotas('tu3', {}).erros, 'curso sem nota mínima não recebe nota');
+  const [m1, m2] = Aulor.matriculasDaTurma('tu2').filter((m) => m.status === 'ativa');
+  assert.equal(Aulor.lancarNotas('tu2', { [m1.id]: 'dez' }).erros[0].campo, `nota-${m1.id}`);
+  const r = Aulor.lancarNotas('tu2', { [m1.id]: '7,25', [m2.id]: '' }, 'Carlos');
+  assert.ok(!r.erros);
+  assert.equal(m1.notaFinal, 7.3);
+  assert.equal(m2.notaFinal, null);
+  assert.ok(Aulor.criarCurso({ nome: 'Inglês 1', codigo: 'ING1', cargaHoraria: 40, modalidade: 'presencial', valor: 900, notaMinima: '12' }).erros);
+  assert.equal(Aulor.criarCurso({ nome: 'Inglês 1', codigo: 'ING1', cargaHoraria: 40, modalidade: 'presencial', valor: 900, notaMinima: '6,5' }).curso.notaMinima, 6.5);
+  assert.equal(Aulor.criarCurso({ nome: 'Espanhol 1', codigo: 'ESP1', cargaHoraria: 40, modalidade: 'presencial', valor: 900, notaMinima: '' }).curso.notaMinima, null);
+  Aulor.curso('cu1').notaMinima = null;
+  assert.ok(Aulor.previaConclusao('tu2').alunos.every((x) => x.resultado !== 'sem_nota'), 'sem nota mínima, só a frequência decide');
+});
+
+test('trocar de turma: mesmo curso, mesmas parcelas, frequência conta na turma nova', () => {
+  const { Aulor } = contexto('2026-10-09');
+  const agenda = { formato: 'presencial', recorrencia: 'semanal', periodos: [{ dias: ['seg', 'qua'], inicio: '19:00', fim: '21:00' }] };
+  const nova = Aulor.criarTurma({ cursoId: 'cu1', professorId: 'pr1', capacidade: 2, inicio: '2026-10-12', local: 'Sala 2', agenda }).turma;
+  const [m, outra, terceira] = Aulor.matriculasDaTurma('tu8').filter((x) => x.status === 'ativa');
+  const parcelas = JSON.stringify(Aulor.parcelasDaMatricula(m.id));
+  assert.ok(Aulor.frequencia(m).total > 0);
+  assert.deepEqual(Array.from(Aulor.turmasParaTroca(m), (t) => t.id), [nova.id]);
+  assert.ok(Aulor.trocarTurma(m.id, 'tu7').erros, 'outro curso não');
+  assert.ok(Aulor.trocarTurma(m.id, 'tu8').erros, 'mesma turma não');
+  const r = Aulor.trocarTurma(m.id, nova.id, 'Paula');
+  assert.ok(!r.erros, JSON.stringify(r.erros));
+  assert.equal(m.turmaId, nova.id);
+  assert.equal(m.trocas[0].de, 'tu8');
+  assert.equal(JSON.stringify(Aulor.parcelasDaMatricula(m.id)), parcelas, 'parcelas intactas');
+  assert.equal(Aulor.frequencia(m).total, 0, 'só conta a turma nova, a partir da troca');
+  assert.ok(!Aulor.matriculasDaTurma('tu8').some((x) => x.id === m.id));
+  assert.ok(Aulor.participantes(Aulor.aulasDaTurma(nova.id)[0]).some((x) => x.id === m.id));
+  assert.ok(!Aulor.trocarTurma(outra.id, nova.id).erros);
+  assert.match(Aulor.trocarTurma(terceira.id, nova.id).erros[0].mensagem, /lotada/);
+  Aulor.cancelarMatricula(outra.id, 'Mudou de cidade');
+  assert.ok(Aulor.trocarTurma(outra.id, 'tu8').erros, 'cancelada não troca');
 });

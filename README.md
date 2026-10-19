@@ -18,6 +18,8 @@ python3 -m http.server 8770
 
 Abra `http://localhost:8770/` e escolha com quem entrar. Não há build nem dependências: HTML estático, Tailwind v4 pelo CDN e JavaScript sem framework, no mesmo padrão do original.
 
+O visual é a direção "Ficha em cartões" do protótipo original: cartões brancos sobre o fundo neutro frio, shell em azul profundo nos dois modos, petróleo na ação e cobre só no que espera por você, Atkinson Hyperlegible Next na interface e Source Serif 4 só no nome do registro aberto.
+
 ## Testes
 
 ```bash
@@ -35,14 +37,15 @@ Os testes cobrem as regras do motor (parcelas, matrícula → financeiro → tur
 | `js/planos.js` | Catálogo comercial: módulos por plano, alunos incluídos, faixas (hipótese) |
 | `js/permissoes-data.js` | Catálogo de permissões `tela.ação` e perfis padrão |
 | `js/permissoes-motor.js`, `js/permissoes-app.js` | Motor e telas de perfis, reaproveitados do original |
-| `js/shell.js` | Menu por módulos (os mesmos grupos do original), cabeçalho, sessão de demonstração e controle de acesso (permissão + plano) |
-| `js/base.js`, `js/ui-form.js`, `js/formularios.js` | Componentes de tela e formulários compartilhados |
+| `js/estilo.js`, `styles.css` | Tokens e classes de componente (cartão, botões, campo, abas, tabela); papéis `--f-*` e o shell, nos dois modos |
+| `js/shell.js` | Menu por módulos (os mesmos grupos do original), barra de contexto, sessão de demonstração e controle de acesso (permissão + plano) |
+| `js/base.js`, `js/ui-form.js`, `js/formularios.js` | Peças de tela (trilha, cabeçalho da ficha, cartão, faixa, pílula, indicador, menu "Mais"), modais e formulários compartilhados |
 | `js/certificado.js` | Render e impressão do certificado a partir de um modelo (CSS do original) |
 | `js/modelos-certificado-ui.js` | Peças comuns da lista e do editor de modelos de certificado |
 | `js/colaboradores-*.js`, `js/instrutores-*.js`, `js/calendario-instrutor-ui.js`, `js/cadastro-instrutor-*.js`, `js/cadastro-publico-ui.js`, `js/menu-mais.js` | Pessoas, trazidas do original como estão: colaboradores (equipe e acesso) e instrutores (dados, calendário, empresa e valor hora, contratos, pagamentos, documentos e o cadastro pelo link) |
 | `js/pessoas-mvp.js` | Liga os motores de Pessoas à base única: o instrutor é o registro de `professores`, as turmas chegam por `Cursos` e o calendário lê as aulas do MVP |
 | `js/pessoas-ui.js`, `js/pessoas-pagina.js` | Helpers de tela do original e a marcação que as telas de Pessoas esperam (drawer, modo só leitura, cabeçalho do cadastro público) |
 | `js/*-app.js` | Uma por página |
-| `_tools/gerar_paginas.py` | Gera os `.html` (mesmo esqueleto; o layout vem do `shell.js`). Para criar uma tela, acrescente-a em `PAGINAS` e em `Shell.MENU` |
+| `_tools/gerar_paginas.py` | Gera os `.html` (mesmo esqueleto; o layout vem do `shell.js`). Para criar uma tela, acrescente-a em `PAGINAS` e em `Shell.MENU`. Rode de novo depois de mudar qualquer JS ou o CSS: o `?v=` dos scripts muda e o navegador não mistura versões |
 
 Os dados ficam no `localStorage` deste navegador (`aulor-mvp-dados-v4` e `aulor-mvp-acessos-v2`). Em **Demonstração › Restaurar dados iniciais**, a escola é gerada de novo. Isso existe só para demonstrar: não é isolamento entre escolas nem segurança.

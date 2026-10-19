@@ -35,21 +35,40 @@
       .sort((x, y) => (filtro.ordem === 'vencido' ? (y.deve?.total ?? 0) - (x.deve?.total ?? 0) : 0) || x.a.nome.localeCompare(y.a.nome, 'pt-BR'));
   }
 
-  function cursosDoAluno(ms) {
-    const ativas = ms.filter((m) => m.status === 'ativa');
-    const lista = (ativas.length ? ativas : ms.filter((m) => m.status === 'concluida')).map((m) => Aulor.curso(Aulor.turma(m.turmaId).cursoId).nome);
-    return lista.length ? esc(lista.join(', ')) : '<span class="text-slate-400">—</span>';
+  // Curso em andamento é o comum: só o nome. O resto (concluiu, sem curso, sem matrícula) vai em apoio ou ponto.
+  function cursosDoAluno(s, ms) {
+    const nomes = (st) => ms.filter((m) => m.status === st).map((m) => Aulor.curso(Aulor.turma(m.turmaId).cursoId).nome).join(', ');
+    if (s.id === 'ativo') return `<span class="block truncate" title="${esc(nomes('ativa'))}">${esc(nomes('ativa'))}</span>`;
+    if (s.id === 'concluiu') return `<span class="block truncate ${APOIO}" title="${esc(nomes('concluida'))}">Concluiu ${esc(nomes('concluida'))}</span>`;
+    if (s.id === 'sem_matricula') return status('atencao', 'Sem matrícula');
+    return `<span class="${APOIO}">${esc(s.nome)}</span>`;
   }
 
-  // Cabeçalho que ordena a lista: Aluno (A–Z) ou Financeiro (maior valor vencido primeiro).
-  function thOrdem(rotulo, ordem) {
+  // Cabeçalho que ordena a lista: Aluno (A–Z) ou Em atraso (maior valor vencido primeiro).
+  function thOrdem(rotulo, ordem, classe = '') {
     const ativo = filtro.ordem === ordem;
-    return `<th ${ativo ? `aria-sort="${ordem ? 'descending' : 'ascending'}"` : ''}><button type="button" data-ordem="${ordem}" class="inline-flex items-center gap-1 uppercase tracking-wider hover:text-slate-900 dark:hover:text-neutral-100 [&_svg]:h-3 [&_svg]:w-3 ${ativo ? 'text-slate-900 dark:text-neutral-100' : ''}" title="${ordem ? 'Maior valor vencido primeiro' : 'Ordem alfabética'}">${rotulo}${ativo ? (ordem ? ICONE.baixo : ICONE.cima) : ''}</button></th>`;
+    return `<th class="${classe}" ${ativo ? `aria-sort="${ordem ? 'descending' : 'ascending'}"` : ''}><button type="button" data-ordem="${ordem}" class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-neutral-100 [&_svg]:h-3 [&_svg]:w-3 ${ativo ? 'text-slate-900 dark:text-neutral-100' : ''}" title="${ordem ? 'Maior valor vencido primeiro' : 'Ordem alfabética'}">${rotulo}${ativo ? (ordem ? ICONE.baixo : ICONE.cima) : ''}</button></th>`;
   }
 
-  function financeiro(deve, ms) {
-    if (deve) return status('perigo', `${moeda(deve.total)} · há ${deve.maiorAtraso} ${deve.maiorAtraso === 1 ? 'dia' : 'dias'}`, `${deve.parcelas.length} ${deve.parcelas.length === 1 ? 'parcela vencida' : 'parcelas vencidas'}; a mais antiga há ${deve.maiorAtraso} dias`);
-    return ms.length ? status('ok', 'Em dia') : '<span class="text-slate-400">—</span>';
+  // Só a dívida aparece; "em dia" é o comum e não se anuncia.
+  function emAtraso(deve) {
+    if (!deve) return `<span class="${APOIO}">—</span>`;
+    return `<span class="font-medium tabular-nums text-red-700 dark:text-red-400" title="${deve.parcelas.length} ${deve.parcelas.length === 1 ? 'parcela vencida' : 'parcelas vencidas'}; a mais antiga há ${deve.maiorAtraso} dias">${moeda(deve.total)}</span><p class="text-xs ${APOIO}">há ${deve.maiorAtraso} ${deve.maiorAtraso === 1 ? 'dia' : 'dias'}</p>`;
+  }
+
+  // Célula do registro como no original: avatar, nome (link da ficha) com as exceções ao lado e a linha de apoio.
+  function linha({ a, s, ms, deve }, verFin) {
+    const idade = Aulor.idade(a.nascimento);
+    return `
+      <tr data-href="aluno.html?id=${a.id}" class="${FOCO_LINHA}">
+        <td><div class="flex items-center gap-3">${avatar(a.nome, 'h-9 w-9 text-xs')}<div class="min-w-0">
+          <p class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5"><a href="aluno.html?id=${a.id}" class="${LINK_REGISTRO} min-w-0 truncate">${esc(a.nome)}</a>${Aulor.ehMenor(a) ? pilula('atencao', 'Menor', `${idade} anos`) : ''}</p>
+          <p class="text-xs ${APOIO} truncate"><span class="font-mono">${cpfFmt(a.cpf)}</span>${idade != null ? ` · ${idade} anos` : ''}</p>
+        </div></div></td>
+        <td><span class="block truncate">${a.email ? esc(a.email) : `<span class="${APOIO}">sem e-mail</span>`}</span><span class="block truncate text-xs ${APOIO} tabular-nums">${a.telefone ? telefoneFmt(a.telefone) : 'sem celular'}</span></td>
+        <td>${cursosDoAluno(s, ms)}</td>
+        ${verFin ? `<td class="num">${emAtraso(deve)}</td>` : ''}
+      </tr>`;
   }
 
   function render() {
@@ -59,38 +78,34 @@
     const total = Aulor.alunos().length;
     const ativos = Aulor.alunosAtivos().length;
     const verFin = Shell.pode('receber');
+    const filtrando = filtro.q || filtro.situacao !== 'todos' || filtro.curso !== 'todos';
     const acoes = [
-      Shell.pode('matriculas', 'criar') ? '<a href="matricula-nova.html" class="btn-sec">Nova matrícula</a>' : '',
-      Shell.pode('alunos', 'criar') ? `<button type="button" data-novo class="btn-pri">${ICONE.mais}Cadastrar aluno</button>` : '',
+      Shell.pode('matriculas', 'criar') ? '<a href="matricula-nova.html" class="btn-sec">Nova venda</a>' : '',
+      Shell.pode('alunos', 'criar') ? `<button type="button" data-novo class="btn-pri">${ICONE.mais}Novo aluno</button>` : '',
     ].join('');
     tela.innerHTML = `
-      <div class="max-w-6xl mx-auto">
-        ${cabecalhoPagina({ titulo: 'Alunos', subtitulo: `${total} cadastrados · ${ativos} com curso em andamento`, acoes })}
-        <div class="flex flex-wrap gap-2 mb-4">
+      <div>
+        ${cabecalhoPagina({ titulo: `Alunos <span class="ml-1 text-base font-normal tabular-nums ${APOIO_FUNDO}">${total}</span>`, subtitulo: `Quem se matricula na escola: dados do contrato, responsáveis, matrículas e parcelas. ${ativos} com curso em andamento.`, acoes })}
+        <div class="flex flex-wrap items-center gap-2 mb-4">
           ${campoBusca('busca', filtro.q, 'Buscar por nome, CPF, e-mail ou celular')}
-          ${selectFiltro('f-situacao', SITUACOES.filter((s) => s.id !== 'vencido' || verFin), filtro.situacao, 'Situação')}
-          ${selectFiltro('f-curso', [{ id: 'todos', nome: 'Todos os cursos' }, ...Aulor.cursos().map((c) => ({ id: c.id, nome: c.nome }))], filtro.curso, 'Curso')}
+          <div class="ml-auto flex flex-wrap items-center gap-2">
+            ${selectFiltro('f-situacao', SITUACOES.filter((s) => s.id !== 'vencido' || verFin), filtro.situacao, 'Situação')}
+            ${selectFiltro('f-curso', [{ id: 'todos', nome: 'Todos os cursos' }, ...Aulor.cursos().map((c) => ({ id: c.id, nome: c.nome }))], filtro.curso, 'Curso')}
+            ${filtrando ? `<button type="button" data-limpar class="${BOTAO_LINK} ml-1">Limpar</button>` : ''}
+          </div>
         </div>
         <div class="painel overflow-hidden">
-          ${lista.length ? `
           <div class="overflow-x-auto">
-            <table class="tabela max-sm:block">
-              <thead class="max-sm:hidden"><tr>${thOrdem('Aluno', '')}<th>Celular</th><th>Curso</th><th>Situação</th>${verFin ? thOrdem('Financeiro', 'vencido') : ''}</tr></thead>
-              <tbody class="max-sm:block">${visiveis.map(({ a, s, ms, deve }) => `
-                <tr data-href="aluno.html?id=${a.id}" class="max-sm:flex max-sm:flex-wrap max-sm:items-center max-sm:gap-x-4 max-sm:gap-y-1 max-sm:pl-15 max-sm:pr-4 max-sm:py-3 max-sm:border-b max-sm:border-slate-100 dark:max-sm:border-neutral-900 max-sm:last:border-b-0 max-sm:[&>td]:p-0 max-sm:[&>td]:border-0">
-                  <td class="max-sm:w-full max-sm:-ml-11"><div class="flex items-center gap-3 sm:min-w-[14rem] sm:max-w-[18rem]">${avatar(a.nome)}<div class="min-w-0"><a href="aluno.html?id=${a.id}" class="font-medium text-slate-900 dark:text-neutral-100 hover:underline">${esc(a.nome)}</a><p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(a.email || 'sem e-mail')}${Aulor.ehMenor(a) ? ' · menor de idade' : ''}</p></div></div></td>
-                  <td class="whitespace-nowrap tabular-nums">${telefoneFmt(a.telefone)}</td>
-                  <td class="max-w-[11rem] truncate max-sm:max-w-full" title="${esc(ms.filter((m) => m.status !== 'cancelada').map((m) => Aulor.curso(Aulor.turma(m.turmaId).cursoId).nome).join(', '))}">${cursosDoAluno(ms)}</td>
-                  <td>${status(s.tom, s.nome)}</td>
-                  ${verFin ? `<td>${financeiro(deve, ms)}</td>` : ''}
-                </tr>`).join('')}
-              </tbody>
+            <table class="tabela table-fixed">
+              <thead><tr>${thOrdem('Aluno', '')}<th class="w-[28%]">Contato</th><th class="w-[24%]">Curso</th>${verFin ? thOrdem('Em atraso', 'vencido', 'num w-36') : ''}</tr></thead>
+              <tbody>${lista.length ? visiveis.map((x) => linha(x, verFin)).join('') : `
+                <tr><td colspan="${verFin ? 4 : 3}" class="py-10 text-center text-sm ${APOIO}">${filtrando ? `Nenhum aluno corresponde à busca e aos filtros. <button type="button" data-limpar class="${BOTAO_LINK} ml-1">Limpar filtros</button>` : 'Nenhum aluno cadastrado. Cadastre o primeiro para matricular.'}</td></tr>`}</tbody>
             </table>
           </div>
-          <div class="px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-100 dark:border-neutral-900">
-            <p>${restantes ? `Mostrando ${visiveis.length} de ${lista.length} alunos` : `${lista.length} de ${total} alunos`}</p>
+          ${lista.length ? `<div class="${RODAPE_TABELA} flex flex-wrap items-center justify-between gap-2">
+            <p>${restantes ? `Mostrando ${visiveis.length} de ${lista.length} alunos` : `${plural(lista.length, 'aluno')}${filtrando ? ` de ${total}` : ''}`}</p>
             ${restantes ? `<button type="button" data-mais class="btn-sec btn-pequeno">Mostrar mais ${Math.min(POR_PAGINA, restantes)}</button>` : ''}
-          </div>` : vazio('Nenhum aluno encontrado', 'Ajuste a busca ou os filtros.')}
+          </div>` : ''}
         </div>
       </div>`;
     ligar();
@@ -127,8 +142,15 @@
       const primeiroNovo = limite;
       limite += POR_PAGINA;
       render();
-      tela.querySelectorAll('tbody tr')[primeiroNovo]?.querySelector('a')?.focus();
+      tela.querySelectorAll('tbody tr')[primeiroNovo]?.querySelector('.link-registro')?.focus();
     });
+    tela.querySelectorAll('[data-limpar]').forEach((b) => b.addEventListener('click', () => {
+      Object.assign(filtro, { q: '', situacao: 'todos', curso: 'todos' });
+      limite = POR_PAGINA;
+      atualizarUrl();
+      render();
+      tela.querySelector('#busca').focus();
+    }));
     tela.querySelector('[data-novo]')?.addEventListener('click', novo);
   }
 
