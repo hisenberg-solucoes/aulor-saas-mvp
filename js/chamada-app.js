@@ -27,7 +27,7 @@
   function render() {
     const a = Aulor.aula(aulaId);
     const t = a && Aulor.turma(a.turmaId);
-    if (!a || !Shell.podeVerTurma(t)) { tela.innerHTML = vazio('Aula não encontrada', '', '<a class="btn-sec" href="aulas.html">Voltar</a>'); return; }
+    if (!a || !Shell.podeVerTurma(t)) { tela.innerHTML = vazio('Aula não encontrada', '', `<a class="btn-sec" href="${Shell.primeiraPagina()}">Voltar</a>`); return; }
     const c = Aulor.curso(t.cursoId);
     const hoje = Aulor.hoje();
     const lista = a.status === 'realizada' ? Aulor.matriculasDaTurma(t.id, { incluirCanceladas: true }).filter((m) => a.presencas[m.id]) : Aulor.participantes(a);
@@ -41,7 +41,7 @@
       : futura ? `A chamada abre no dia da aula (${quando(a.data)}). Até lá, confira a lista e a frequência de cada aluno.`
         : encerrada ? 'Turma concluída: a chamada não pode mais ser alterada.'
           : !Shell.podeChamada(t) ? 'Seu perfil pode ver, mas não registrar esta chamada.' : '';
-    const volta = Shell.pode('turmas') && !Shell.ehSoProfessor() ? { rotulo: 'Turmas', href: 'turmas.html' } : { rotulo: Shell.ehSoProfessor() ? 'Minhas aulas' : 'Aulas e chamadas', href: 'aulas.html' };
+    const volta = Shell.ehSoProfessor() ? { rotulo: 'Minhas turmas', href: 'minhas-turmas.html' } : Shell.pode('turmas') ? { rotulo: 'Turmas', href: 'turmas.html' } : { rotulo: 'Aulas e chamadas', href: 'aulas.html' };
 
     tela.innerHTML = `
       <form id="form-chamada" novalidate>

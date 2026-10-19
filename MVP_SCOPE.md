@@ -45,7 +45,7 @@ Configurar a escola → cadastrar curso e turma → matricular (aluno e respons�
 | Colaborador com matrícula, admissão, departamento e afastamento | Usuário: convite, perfis, permissões adicionais e inativação |
 | Vários modelos de certificado (curso e formação) | Vários modelos de curso, um padrão da escola e escolha por curso; sem formação nem upload de imagens |
 | "Meu dia" por perfil com números fixos | Visão geral calculada a partir dos registros e filtrada pelas permissões |
-| Três portais (admin, professor, aluno) | Um sistema só. O professor entra com o perfil Professor e vê apenas "Minhas aulas", que funciona no celular |
+| Três portais (admin, professor, aluno) | Um sistema só, com o **Portal do Professor** dentro dele: quem entra com o perfil Professor vê um menu próprio (Início, Minhas turmas, Minhas aulas). A turma e a chamada são as mesmas telas do admin, limitadas às turmas dele. Sem portal do aluno |
 
 ## 3. Fica para depois
 
@@ -73,7 +73,8 @@ O menu mantém a divisão por módulos do protótipo original. Cada perfil vê s
 | Comercial › Turmas em risco | Turmas a iniciar abaixo do mínimo de alunos (crítico, alerta, atenção), valor em jogo e atalho para matricular. Mesma regra do original |
 | Pedagógico › Cursos | Carga, modalidade, nota mínima (opcional), valor de referência, parcelas sugeridas, modelo de certificado e módulos |
 | Pedagógico › Turmas | Contagem por situação (clicável como filtro), busca, filtros por curso, professor e situação; aviso de turmas em risco; ficha com alunos, aulas, grade de presença e **conclusão com nota final por aluno** |
-| Pedagógico › Aulas e chamadas | Aulas de hoje, chamadas pendentes e próximos 7 dias. Para o professor vira "Minhas aulas", com chamada, diário e nota final no celular |
+| Pedagógico › Aulas e chamadas | Aulas de hoje, chamadas pendentes e próximos 7 dias. No Portal do Professor vira "Minhas aulas", só com as turmas dele |
+| Portal do Professor | **Início**: aula de hoje com "Fazer a chamada", pendências deduzidas (chamada sem registro, diário em branco, notas finais a lançar), alunos abaixo da frequência mínima, turmas, próximas aulas e últimas chamadas. **Minhas turmas**: busca e situação. Chamada e diário no celular; nota final na aba Alunos da turma. Fora: calendário mensal, avaliações, dossiês, contratos, pagamentos, gravações e Meus dados |
 | Pedagógico › Alertas de frequência | Quem não alcança mais o mínimo, quem está abaixo e quem está perto, com mensagem pronta para contatar |
 | Pedagógico › Certificados e Modelos de certificado | Prontos para emitir (aprovados), emissão em lote, impressão/PDF, cancelamento, validação pública; vários modelos (aparência, frente e verso) com prévia ao vivo, padrão da escola e escolha por curso |
 | Financeiro › Financeiro | A receber e a pagar por mês, **Em atraso** com lembrete pronto, baixa manual com multa e juros sugeridos, estorno, resultado do mês |

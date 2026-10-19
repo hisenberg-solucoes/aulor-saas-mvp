@@ -27,6 +27,9 @@ PAGINAS = [
   ('aulas', 'Aulas e chamadas', 'frequencia,minhas-aulas', [], 'aulas-app', ''),
   ('chamada', 'Chamada', 'frequencia,minhas-aulas', [], 'chamada-app', ''),
   ('alertas-frequencia', 'Alertas de frequência', 'frequencia', [], 'alertas-frequencia-app', ''),
+  # Portal do Professor: menu próprio no shell para quem só tem "minhas-aulas"; turma e chamada são as de cima.
+  ('meu-dia', 'Início', 'minhas-aulas', [], 'meu-dia-app', ''),
+  ('minhas-turmas', 'Minhas turmas', 'minhas-aulas', [], 'minhas-turmas-app', ''),
   ('certificados', 'Certificados', 'certificados', ['certificado'], 'certificados-app', ''),
   ('certificado', 'Certificado', 'certificados', ['certificado'], 'certificado-app', ''),
   ('templates-certificado', 'Modelos de certificado', 'configuracoes', ['certificado', 'modelos-certificado-ui'], 'modelos-certificado-app', ''),

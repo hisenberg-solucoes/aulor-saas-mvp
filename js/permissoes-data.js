@@ -43,7 +43,7 @@ const FEATURES = [
   { id: 'professores', modulo: 'pessoas', nome: 'Professores', acoes: [VER, ACAO_('gerenciar', 'Cadastrar e editar')] },
 
   { id: 'frequencia', modulo: 'pedagogico', nome: 'Frequência de todas as turmas', acoes: [VER, ACAO_('registrar', 'Lançar e corrigir chamada e notas')] },
-  { id: 'minhas-aulas', modulo: 'pedagogico', nome: 'Minhas aulas (professor)', acoes: [VER, ACAO_('registrar', 'Fazer chamada, diário e nota final')] },
+  { id: 'minhas-aulas', modulo: 'pedagogico', nome: 'Portal do Professor', acoes: [VER, ACAO_('registrar', 'Fazer chamada, diário e nota final')] },
 
   { id: 'certificados', modulo: 'pedagogico', nome: 'Certificados', acoes: [VER, ACAO_('emitir', 'Emitir'), ACAO_('cancelar', 'Cancelar certificado')] },
 

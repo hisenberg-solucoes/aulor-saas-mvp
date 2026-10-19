@@ -653,7 +653,7 @@ const Aulor = (() => {
   }
   const temNota = (c) => c?.notaMinima != null;
 
-  // Grava as notas finais das matrículas em curso da turma (o professor lança em Minhas aulas; a
+  // Grava as notas finais das matrículas em curso da turma (o professor lança na turma, pelo portal; a
   // coordenação, na conclusão). `notas`: { matriculaId: '8,5' }. Vazio apaga a nota.
   function lancarNotas(turmaId, notas, usuario = '') {
     const t = turma(turmaId);

@@ -84,7 +84,7 @@ const Shell = (() => {
     { grupo: 'comercial', href: 'turmas-risco.html', nome: 'Turmas em risco', icone: 'risco', features: ['turmas'] },
     { grupo: 'pedagogico', href: 'cursos.html', nome: 'Cursos', icone: 'cursos', features: ['cursos'] },
     { grupo: 'pedagogico', href: 'turmas.html', nome: 'Turmas', icone: 'turmas', features: ['turmas'] },
-    { grupo: 'pedagogico', href: 'aulas.html', nome: 'Aulas e chamadas', nomeProfessor: 'Minhas aulas', icone: 'aulas', features: ['frequencia', 'minhas-aulas'] },
+    { grupo: 'pedagogico', href: 'aulas.html', nome: 'Aulas e chamadas', icone: 'aulas', features: ['frequencia'] },
     { grupo: 'pedagogico', href: 'alertas-frequencia.html', nome: 'Alertas de frequência', icone: 'alertas', features: ['frequencia'] },
     { grupo: 'pedagogico', href: 'certificados.html', nome: 'Certificados', icone: 'certificados', features: ['certificados'] },
     { grupo: 'pedagogico', href: 'templates-certificado.html', nome: 'Modelos de certificado', icone: 'template', features: ['configuracoes'] },
@@ -100,6 +100,15 @@ const Shell = (() => {
     'certificado.html': 'certificados.html', 'modelo-certificado.html': 'templates-certificado.html', 'perfil.html': 'perfis.html',
     'cobrancas.html': 'financeiro.html', // Cobranças virou a aba "Em atraso" do Financeiro
   };
+  // Portal do Professor (portal-professor/ do original): quem só tem "Minhas aulas" entra nele, com menu
+  // próprio. A turma e a chamada são as mesmas telas do sistema, limitadas às turmas do professor.
+  const GRUPOS_PORTAL = [{ id: 'turmas', nome: 'Turmas' }];
+  const MENU_PORTAL = [
+    { href: 'meu-dia.html', nome: 'Início', icone: 'inicio', features: ['minhas-aulas'] },
+    { grupo: 'turmas', href: 'minhas-turmas.html', nome: 'Minhas turmas', icone: 'turmas', features: ['minhas-aulas'] },
+    { grupo: 'turmas', href: 'aulas.html', nome: 'Minhas aulas', icone: 'aulas', features: ['minhas-aulas'] },
+  ];
+  const ALIAS_PORTAL = { 'turma.html': 'minhas-turmas.html', 'chamada.html': 'minhas-turmas.html' };
 
   // ---------- Sessão (demonstração: escolher o usuário, sem senha) ----------
 
@@ -121,7 +130,10 @@ const Shell = (() => {
   const nome = () => usuario()?.nome ?? '';
   const ehSoProfessor = (u = usuario()) => !!u && !podeUsuario(u, 'frequencia') && podeUsuario(u, 'minhas-aulas');
   const perfisTexto = (u) => (u?.perfis ?? []).map((id) => PERFIS.find((p) => p.id === id)?.nome).filter(Boolean).join(' + ') || 'Sem perfil';
-  const itensVisiveis = (u = usuario()) => MENU.filter((i) => i.href && podeAlguma(i.features, u));
+  const menuDe = (u) => (ehSoProfessor(u) ? MENU_PORTAL : MENU);
+  // Item do menu de uma página (a ficha herda o da lista), no menu que este usuário vê.
+  const itemDaPagina = (pagina, u = usuario()) => menuDe(u).find((i) => i.href === ((ehSoProfessor(u) ? ALIAS_PORTAL : ALIAS)[pagina] ?? pagina));
+  const itensVisiveis = (u = usuario()) => menuDe(u).filter((i) => i.href && podeAlguma(i.features, u));
   const primeiraPagina = (u = usuario()) => itensVisiveis(u)[0]?.href ?? 'entrar.html';
 
   // Pode lançar/corrigir a chamada desta turma? (todas as turmas ou só as próprias, no caso do professor)
@@ -142,21 +154,20 @@ const Shell = (() => {
   const gruposFechados = () => { try { return JSON.parse(localStorage.getItem(CHAVE_MENUS) || '{}'); } catch (_) { return {}; } };
 
   function navHtml(u) {
-    const atual = ALIAS[paginaAtual()] ?? paginaAtual();
+    const atual = itemDaPagina(paginaAtual(), u)?.href;
     const fechados = gruposFechados();
     const link = (i) => {
       const ativo = i.href === atual;
-      const rotulo = i.nomeProfessor && ehSoProfessor(u) ? i.nomeProfessor : i.nome;
-      return `<a href="${i.href}" class="nav-item${ativo ? ' nav-item-ativo' : ''}"${ativo ? ' aria-current="page"' : ''}>${svg(ICONES[i.icone], '')}<span>${esc(rotulo)}</span></a>`;
+      return `<a href="${i.href}" class="nav-item${ativo ? ' nav-item-ativo' : ''}"${ativo ? ' aria-current="page"' : ''}>${svg(ICONES[i.icone], '')}<span>${esc(i.nome)}</span></a>`;
     };
-    const visiveis = MENU.filter((i) => podeAlguma(i.features, u));
+    const visiveis = menuDe(u).filter((i) => podeAlguma(i.features, u));
     // Estilo do item e do grupo vem do .shell de styles.css (igual ao original); a seta gira pelo aria-expanded.
     const busca = `
         <label class="shell-busca">
           <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
           <input data-busca-menu type="search" placeholder="Buscar no menu" aria-label="Buscar no menu" autocomplete="off" />
         </label>`;
-    return busca + visiveis.filter((i) => !i.grupo).map(link).join('') + GRUPOS.map((g) => {
+    return busca + visiveis.filter((i) => !i.grupo).map(link).join('') + (ehSoProfessor(u) ? GRUPOS_PORTAL : GRUPOS).map((g) => {
       const itens = visiveis.filter((i) => i.grupo === g.id);
       if (!itens.length) return '';
       const aberto = itens.some((i) => i.href === atual) || !fechados[g.id];
@@ -172,11 +183,8 @@ const Shell = (() => {
 
   // Nome do item do menu da página atual (a ficha herda o da lista): é o contexto da barra do topo.
   function contextoAtual(u) {
-    const atual = ALIAS[paginaAtual()] ?? paginaAtual();
-    const item = MENU.find((i) => i.href === atual);
-    if (!item) return document.body.dataset.titulo || document.title.replace(/^Aulor · /, '');
-    if (ehSoProfessor(u) && !podeAlguma(item.features, u)) return 'Minhas aulas'; // turma e chamada do professor
-    return item.nomeProfessor && ehSoProfessor(u) ? item.nomeProfessor : item.nome;
+    const item = itemDaPagina(paginaAtual(), u);
+    return item ? item.nome : document.body.dataset.titulo || document.title.replace(/^Aulor · /, '');
   }
 
   function ligarGrupos() {
@@ -230,7 +238,7 @@ const Shell = (() => {
             <img src="img/aulor-simbolo.svg" alt="" class="shell-simbolo">
             <div class="min-w-0">
               <img src="img/aulor-wordmark-claro.svg" alt="Aulor" class="shell-wordmark">
-              <p class="shell-sub truncate" title="${esc(Aulor.escola().nome)}">${esc(Aulor.escola().nome)}</p>
+              <p class="shell-sub truncate" title="${esc(Aulor.escola().nome)}">${ehSoProfessor(u) ? 'Portal do Professor' : esc(Aulor.escola().nome)}</p>
             </div>
           </div>
           <nav class="shell-nav" aria-label="Menu principal">${navHtml(u)}</nav>
@@ -294,10 +302,18 @@ const Shell = (() => {
     ['Nova venda com parcelamento', 'matricula-nova.html?turma=tu6'],
     ['Parcelas em Contas a receber', 'financeiro.html'],
     ['Em atraso: quem deve e o lembrete pronto', 'financeiro.html?aba=atraso'],
-    ['Chamada do professor (abra no celular)', 'aulas.html'],
+    ['Portal do Professor: a aula de hoje e a chamada no celular', 'meu-dia.html', 'professor'],
     ['Concluir a turma que terminou, com a nota final', 'turma.html?id=tu2'],
     ['Emitir e validar o certificado', 'certificados.html'],
   ];
+
+  // Professor do roteiro: quem tem a próxima chamada a fazer hoje (ou a próxima aula da escola), para a chamada aparecer.
+  function professorDemo() {
+    const profs = USUARIOS.filter((x) => x.status === 'ativo' && ehSoProfessor(x));
+    const dele = (a) => profs.find((x) => professorIds(x).includes(Aulor.turma(a.turmaId)?.professorId));
+    const aula = [...Aulor.aulasDoDia().filter((a) => a.status === 'prevista'), ...Aulor.proximasAulas(Aulor.hoje(), Infinity)].find(dele);
+    return (aula ? dele(aula) : profs[0])?.id;
+  }
 
   function abrirPainelDemo() {
     const u = usuario();
@@ -333,7 +349,7 @@ const Shell = (() => {
           <section class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800">
             <h3 class="text-[15px] font-semibold text-slate-900 dark:text-neutral-100 mb-2">Roteiro de 10 minutos</h3>
             <ol class="space-y-1 text-sm list-decimal list-inside marker:text-slate-400">
-              ${ROTEIRO.map(([t, href]) => `<li><a class="link" href="${href}">${esc(t)}</a></li>`).join('')}
+              ${ROTEIRO.map(([t, href, como]) => `<li><a class="link" href="${href}" ${como ? 'data-como-professor' : ''}>${esc(t)}</a></li>`).join('')}
             </ol>
           </section>
 
@@ -361,9 +377,10 @@ const Shell = (() => {
       entrar(b.dataset.entrar);
       const destino = paginaAtual();
       const novo = usuario();
-      const item = MENU.find((i) => i.href === (ALIAS[destino] ?? destino));
+      const item = itemDaPagina(destino, novo);
       location.href = item && podeAlguma(item.features, novo) ? location.href : primeiraPagina(novo);
     }));
+    root.querySelector('[data-como-professor]')?.addEventListener('click', () => { const id = professorDemo(); if (id) entrar(id); });
     root.querySelectorAll('[data-plano]').forEach((b) => b.addEventListener('click', () => { Aulor.definirPlano(b.dataset.plano); location.reload(); }));
     root.querySelector('[data-restaurar]').addEventListener('click', (e) => {
       const b = e.currentTarget;
@@ -402,6 +419,6 @@ const Shell = (() => {
   return {
     get permitido() { return permitido; },
     usuario, nome, pode, podeAlguma, podeChamada, podeVerTurma, professorIds, ehSoProfessor, perfisTexto,
-    itensVisiveis, primeiraPagina, entrar, sair, podeUsuario, MENU,
+    itensVisiveis, itemDaPagina, primeiraPagina, entrar, sair, podeUsuario,
   };
 })();

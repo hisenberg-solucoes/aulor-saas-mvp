@@ -34,15 +34,6 @@
     </div>`;
   }
 
-  // Aulas: com chamada/previstas e o percentual em cima, o medidor embaixo (barraConclusao do original).
-  function celulaAulas(t) {
-    const pr = Aulor.progressoTurma(t);
-    return `<div title="${pr.realizadas} de ${pr.total} aulas com chamada">
-      <div class="flex items-center justify-between text-xs tabular-nums"><span class="text-slate-700 dark:text-neutral-200">${pr.realizadas}/${pr.total}</span><span class="${APOIO}">${pr.percentual}%</span></div>
-      <div class="mt-1 flex">${medidor(pr.percentual, { largura: 'w-full' })}</div>
-    </div>`;
-  }
-
   function render() {
     const todas = Aulor.turmas();
     const sit = new Map(todas.map((t) => [t.id, Aulor.situacaoTurma(t)]));
@@ -107,7 +98,7 @@
                   <td><p class="tabular-nums whitespace-nowrap">${dataCurta(t.inicio)} → ${dataCurta(t.fim)}</p><p class="text-xs ${APOIO} truncate" title="${esc(Agenda.descrever(t.agenda))}">${esc(Agenda.descrever(t.agenda))}</p></td>
                   <td><p class="truncate">${esc(Aulor.professor(t.professorId).nome)}</p><p class="text-xs ${APOIO} truncate" title="${esc(t.local)}">${esc(t.local || 'local a definir')}</p></td>
                   <td>${celulaMatriculas(t)}</td>
-                  <td>${celulaAulas(t)}</td>
+                  <td>${progressoAulasHtml(t)}</td>
                   <td>${status(Aulor.SITUACAO_TURMA[s].tom, Aulor.SITUACAO_TURMA[s].nome)}</td>
                 </tr>`;
               }).join('')}</tbody>

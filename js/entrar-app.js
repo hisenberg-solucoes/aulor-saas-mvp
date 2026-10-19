@@ -48,7 +48,7 @@
                         ${avatar(u.nome, 'h-9 w-9 text-xs')}
                         <span class="min-w-0 flex-1">
                           <span class="block text-sm font-medium ${TITULO}">${esc(u.nome)}</span>
-                          <span class="block text-xs ${APOIO} truncate">${esc(u.cargo)} · ${esc(Shell.itensVisiveis(u).map((i) => (i.nomeProfessor && Shell.ehSoProfessor(u) ? i.nomeProfessor : i.nome)).join(', '))}</span>
+                          <span class="block text-xs ${APOIO} truncate">${esc(u.cargo)} · ${esc(Shell.ehSoProfessor(u) ? 'Portal do Professor' : Shell.itensVisiveis(u).map((i) => i.nome).join(', '))}</span>
                         </span>
                         <span class="text-slate-400 dark:text-neutral-500 group-hover:text-petrol-800 dark:group-hover:text-sky-300 transition">${ICONE.seta}</span>
                       </button>`).join('')}
@@ -69,7 +69,8 @@
     Shell.entrar(b.dataset.entrar);
     const u = Shell.usuario();
     const pagina = (volta ?? '').split('?')[0];
-    const item = Shell.MENU.find((i) => i.href === pagina);
-    location.href = volta && (!item || Shell.podeAlguma(item.features, u)) ? volta : Shell.primeiraPagina(u);
+    const item = Shell.itemDaPagina(pagina, u);
+    // Fora do menu do usuário: o professor vai para o portal; os demais seguem (validar.html etc.).
+    location.href = volta && (item ? Shell.podeAlguma(item.features, u) : !Shell.ehSoProfessor(u)) ? volta : Shell.primeiraPagina(u);
   }));
 })();

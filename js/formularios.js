@@ -323,6 +323,48 @@ function ocupacaoHtml(t, { minimo = false } = {}) {
   return `<span class="inline-flex items-center gap-2" title="${o.ocupadas} de ${o.capacidade} vagas${minimo ? ` · mínimo para abrir: ${Aulor.minimoAlunos(t)}` : ''}">${medidor(p, { referencia: m, pendente: abaixo, largura: 'w-16' })}<span class="text-sm tabular-nums">${o.ocupadas}/${o.capacidade}</span></span>`;
 }
 
+// Aulas: com chamada/previstas e o percentual em cima, o medidor embaixo (barraConclusao do original).
+function progressoAulasHtml(t) {
+  const pr = Aulor.progressoTurma(t);
+  return `<div title="${pr.realizadas} de ${pr.total} aulas com chamada">
+    <div class="flex items-center justify-between text-xs tabular-nums"><span class="text-slate-700 dark:text-neutral-200">${pr.realizadas}/${pr.total}</span><span class="text-slate-500 dark:text-neutral-400">${pr.percentual}%</span></div>
+    <div class="mt-1 flex">${medidor(pr.percentual, { largura: 'w-full' })}</div>
+  </div>`;
+}
+
+// Turmas do professor (Portal do Professor: Início e Minhas turmas). Mesmas colunas da lista de Turmas,
+// com o local no lugar do professor; o alerta da linha leva à aba Alunos da turma.
+function tabelaTurmasProfessor(lista) {
+  return `<div class="overflow-x-auto">
+    <table class="tabela table-fixed min-w-[880px]">
+      <thead><tr><th>Turma</th><th class="w-[176px]">Período e agenda</th><th class="w-[176px]">Local</th><th class="w-[88px]" title="Alunos que ocupam vaga / vagas">Alunos</th><th class="w-[120px]" title="Aulas com chamada / previstas">Aulas</th><th class="w-[176px]">Situação</th></tr></thead>
+      <tbody>${lista.map((t) => {
+        const c = Aulor.curso(t.cursoId);
+        const s = Aulor.situacaoTurma(t);
+        const o = Aulor.ocupacao(t);
+        const pend = ['concluida', 'cancelada'].includes(s) ? 0 : Aulor.aulasDaTurma(t.id).filter((a) => Aulor.chamadaPendente(a)).length;
+        const abaixo = ['em_andamento', 'a_concluir'].includes(s) ? Aulor.matriculasDaTurma(t.id).filter((m) => m.status === 'ativa' && Aulor.frequencia(m).abaixo).length : 0;
+        return `<tr data-href="turma.html?id=${t.id}" class="${FOCO_LINHA} ${s === 'concluida' ? 'linha-apagada' : ''}">
+          <td>
+            <p class="truncate"><span class="font-mono text-xs ${APOIO} mr-1.5">${esc(t.codigo)}</span><a href="turma.html?id=${t.id}" class="${LINK_REGISTRO}" title="${esc(c.nome)}">${esc(c.nome)}</a></p>
+            ${pend || abaixo
+              ? `<p class="text-xs truncate">${[
+                pend ? `<span class="${AVISO}">${plural(pend, 'chamada pendente', 'chamadas pendentes')}</span>` : '',
+                abaixo ? `<a href="turma.html?id=${t.id}&aba=alunos" class="text-red-700 dark:text-red-400 hover:underline underline-offset-2 tabular-nums">${plural(abaixo, 'aluno abaixo', 'alunos abaixo')} da frequência</a>` : '',
+              ].filter(Boolean).join(`<span class="${APOIO}"> · </span>`)}</p>`
+              : `<p class="text-xs ${APOIO} truncate">${c.cargaHoraria} h · ${esc(nomeModalidade(t.agenda.formato))}</p>`}
+          </td>
+          <td><p class="tabular-nums whitespace-nowrap">${dataCurta(t.inicio)} → ${dataCurta(t.fim)}</p><p class="text-xs ${APOIO} truncate" title="${esc(Agenda.descrever(t.agenda))}">${esc(Agenda.descrever(t.agenda))}</p></td>
+          <td><p class="truncate" title="${esc(t.local)}">${esc(t.local || 'local a definir')}</p></td>
+          <td class="tabular-nums text-xs" title="${o.ocupadas} alunos em ${o.capacidade} vagas">${o.ocupadas}<span class="${APOIO}">/${o.capacidade}</span></td>
+          <td>${progressoAulasHtml(t)}</td>
+          <td>${status(Aulor.SITUACAO_TURMA[s].tom, Aulor.SITUACAO_TURMA[s].nome)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
 // ---------- Curso ----------
 
 function linhaModulo(m = {}, i = 0) {
