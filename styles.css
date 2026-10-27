@@ -121,7 +121,7 @@ html.dark,
   --f-linha-forte: #224050;
   --f-tinta: #F5F0E8;
   --f-tinta-2: #AAB6BB;
-  --f-tinta-3: #8A989E;
+  --f-tinta-3: #8D9BA1;
   --f-realce: #0E2B3B;
   --f-selecao: #123A4B;
   --f-marca: #F5F0E8;
@@ -137,6 +137,100 @@ html.dark,
   --f-etiqueta: #10303F;
   --f-etiqueta-tinta: #CBD5D9;
   --f-veu: rgb(2 11 17 / 0.6);
+}
+
+/* Conteúdo no escuro (DESIGN.md do aulor-web): o chão (paper-dark) e o cartão (raised-dark) sobem um
+   degrau de claridade acima do azul profundo do shell, que fica com o conjunto acima (.shell). */
+html.dark {
+  --f-papel: #122938;
+  --f-elevado: #143040;
+  --f-faixa: #122B3A;
+  --f-realce: #173444;
+  --f-etiqueta: #183847;
+  --f-linha: #1E3947;
+  --f-linha-forte: #2A4858;
+  --f-selecao: #1B4253;
+}
+
+/* ---------- Cores do Tailwind → papéis do aulor-web ----------
+   As telas vieram do snorlax-jornada com cores cruas do Tailwind (slate no claro; neutral, preto e
+   sky no escuro; emerald, red e amber no estado). Em vez de reescrever cada classe, as variáveis que
+   o Tailwind lê passam a valer os papéis: tinta, apoio, elevado, linha, acento e os tons de estado.
+   Sem camada: vence o @layer theme do Tailwind. Contornos e hovers do claro (slate-50 a 300) ficam. */
+:root {
+  --color-slate-900: #071E2C; /* ink */
+  --color-slate-800: #071E2C;
+  --color-slate-700: #4E5B61; /* ink-2 */
+  --color-slate-600: #4E5B61;
+  --color-slate-500: #5E6C74; /* ink-3 */
+  --color-emerald-50: #EAF2EE; /* good-tint */
+  --color-emerald-100: #EAF2EE;
+  --color-emerald-500: #2F7A55; /* good */
+  --color-emerald-600: #2F7A55;
+  --color-emerald-700: #2F7A55;
+  --color-emerald-800: #2F7A55;
+  --color-emerald-900: #2F7A55;
+  --color-red-50: #F8ECEA; /* bad-tint */
+  --color-red-100: #F8ECEA;
+  --color-red-500: #B4452F; /* bad */
+  --color-red-600: #B4452F;
+  --color-red-700: #B4452F;
+  --color-red-800: #B4452F;
+  --color-red-900: #B4452F;
+  --color-amber-50: #F9F2EB; /* warning-tint */
+  --color-amber-100: #F9F2EB;
+  --color-amber-400: #C47A3A; /* copper: ponto e traço */
+  --color-amber-500: #C47A3A;
+  --color-amber-600: #985824; /* copper-ink: texto de aviso */
+  --color-amber-700: #985824;
+  --color-amber-800: #985824;
+  --color-amber-900: #985824;
+}
+
+html.dark {
+  --color-black: #122938; /* paper-dark: chão e véu */
+  --color-neutral-950: #143040; /* raised-dark: cartão, campo, menu */
+  --color-neutral-925: #143040;
+  --color-neutral-900: #173444; /* highlight-dark: hover e pílula neutra */
+  --color-neutral-800: #2A4858; /* line-strong-dark: contorno do cartão e divisórias */
+  --color-neutral-700: #2A4858;
+  --color-neutral-600: #8D9BA1; /* ink-3-dark: contorno de controle */
+  --color-neutral-500: #8D9BA1;
+  --color-neutral-400: #8D9BA1;
+  --color-neutral-300: #AAB6BB; /* ink-2-dark */
+  --color-neutral-200: #CBD5D9; /* tag-ink-dark */
+  --color-neutral-100: #F5F0E8; /* sand: tinta */
+  --color-neutral-50: #F5F0E8;
+  --color-sky-100: #9CC3D1; /* petrol-light: acento de ação */
+  --color-sky-200: #9CC3D1;
+  --color-sky-300: #9CC3D1;
+  --color-sky-400: #9CC3D1;
+  --color-sky-500: #9CC3D1;
+  --color-sky-600: #9CC3D1;
+  --color-sky-800: #1B4253; /* selection-dark */
+  --color-sky-900: #1B4253;
+  --color-sky-950: #1B4253;
+  --color-emerald-950: #1E4049; /* good-tint-dark */
+  --color-emerald-900: #1E4049;
+  --color-emerald-200: #6CC496; /* good-dark */
+  --color-emerald-300: #6CC496;
+  --color-emerald-400: #6CC496;
+  --color-emerald-500: #6CC496;
+  --color-red-950: #2B3A46; /* bad-tint-dark */
+  --color-red-900: #2B3A46;
+  --color-red-200: #F08A72; /* bad-dark */
+  --color-red-300: #F08A72;
+  --color-red-400: #F08A72;
+  --color-red-500: #F08A72;
+  --color-red-700: #F08A72;
+  --color-red-800: #F08A72;
+  --color-amber-950: #263840; /* warning-tint-dark */
+  --color-amber-900: #263840;
+  --color-amber-200: #E2A56D; /* copper-ink-dark */
+  --color-amber-300: #E2A56D;
+  --color-amber-400: #C47A3A; /* copper */
+  --color-amber-500: #C47A3A;
+  --color-amber-800: #C47A3A;
 }
 
 .ficha :focus-visible {
@@ -224,72 +318,6 @@ html.dark,
   min-height: 0;
   overflow-y: auto;
   padding: 12px;
-}
-
-.shell-rodape {
-  flex-shrink: 0;
-  padding: 12px 16px;
-  border-top: 1px solid var(--f-linha);
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--f-tinta-3);
-}
-
-.shell-rodape a {
-  color: var(--f-tinta-2);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.shell-rodape a:hover {
-  color: var(--f-tinta);
-}
-
-/* Busca no menu: campo da Ficha (elevado, contorno linha forte, 32px). */
-.shell-busca {
-  position: relative;
-  display: block;
-  margin-bottom: 8px;
-}
-
-.shell-busca svg {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  width: 14px;
-  height: 14px;
-  transform: translateY(-50%);
-  color: var(--f-tinta-3);
-  pointer-events: none;
-}
-
-.shell-busca input {
-  width: 100%;
-  height: 32px;
-  padding: 0 10px 0 30px;
-  border: 1px solid var(--f-linha-forte);
-  border-radius: 8px;
-  background: var(--f-elevado);
-  color: var(--f-tinta);
-  font: inherit;
-  transition: border-color 0.15s ease;
-}
-
-.shell-busca input::placeholder {
-  color: var(--f-tinta-3);
-  opacity: 1;
-}
-
-.shell-busca input:hover {
-  border-color: color-mix(in srgb, var(--f-tinta-3) 60%, transparent);
-}
-
-.shell-busca input:focus {
-  border-color: var(--f-marca-tinta);
-}
-
-.shell-busca input:focus-visible {
-  outline-offset: 0;
 }
 
 /* Item do menu. O ativo é marcado por fundo (seleção) e peso, nunca por borda colorida. */
@@ -439,41 +467,28 @@ html:not(.dark) .shell-tema-sol {
   display: none;
 }
 
-/* Botão da busca global (js/busca-global.js, hoje só em busca.html). */
-.shell-buscar {
+/* Unidade em uso, no alto da sidebar: rótulo em label e tinta 3, nome em Body 600 e tinta. */
+.shell-unidade {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 8px 0 10px;
-  margin-right: 4px;
-  border: 1px solid var(--f-linha-forte);
-  border-radius: 8px;
-  background: var(--f-elevado);
-  color: var(--f-tinta-3);
-  transition: border-color 0.15s ease, color 0.15s ease;
+  flex-direction: column;
+  padding: 4px 8px 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--f-linha);
 }
 
-.shell-buscar:hover {
-  border-color: color-mix(in srgb, var(--f-tinta-3) 60%, transparent);
-  color: var(--f-tinta-2);
-}
-
-.shell-buscar svg {
-  width: 14px;
-  height: 14px;
-}
-
-.shell-buscar kbd {
-  padding: 0 5px;
-  border: 1px solid var(--f-linha-forte);
-  border-radius: 4px;
-  font: inherit;
-  font-size: 11.5px;
+.shell-unidade-rotulo {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
   color: var(--f-tinta-3);
 }
 
-/* Usuário: avatar da Ficha (círculo em seleção com iniciais em tinta) e link para Minha conta. */
+.shell-unidade-nome {
+  font-weight: 600;
+  color: var(--f-tinta);
+}
+
+/* Usuário: avatar da Ficha (círculo em seleção com iniciais em tinta) e o nome; abre o menu da conta. */
 .shell-usuario {
   display: flex;
   align-items: center;
@@ -523,4 +538,54 @@ html:not(.dark) .shell-tema-sol {
   font-size: 12px;
   line-height: 16px;
   color: var(--f-tinta-3);
+}
+
+/* Menu da conta: popover nativo no estilo do "Mais", 4px abaixo da barra, alinhado à direita da pessoa.
+   No escuro usa os tons do conteúdo (.ficha), não os do shell, porque abre sobre o conteúdo. */
+.menu-conta {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: 256px;
+  padding: 6px;
+  border: 1px solid var(--f-linha-forte);
+  border-radius: 10px;
+  background: var(--f-elevado);
+  color: var(--f-tinta);
+  font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.28);
+}
+
+.menu-conta-email,
+.menu-conta-perfil {
+  margin: 0;
+  padding: 2px 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--f-tinta-3);
+}
+
+.menu-conta-email {
+  padding-top: 6px;
+  color: var(--f-tinta-2);
+}
+
+.menu-conta hr {
+  margin: 6px 0;
+  border: 0;
+  border-top: 1px solid var(--f-linha);
+}
+
+.menu-conta [role="menuitem"] {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.menu-conta [role="menuitem"]:hover,
+.menu-conta [role="menuitem"]:focus-visible {
+  background: var(--f-realce);
 }
