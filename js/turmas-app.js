@@ -456,8 +456,9 @@ function renderTurma() {
     try { await navigator.clipboard.writeText(btn.dataset.copiar); toast('Link copiado.'); } catch (_) { toast('Não foi possível copiar — selecione o link manualmente.'); }
   }));
   // A data é o botão (teclado); o resto da linha abre a mesma aula, a não ser que a pessoa esteja selecionando texto.
+  el.querySelectorAll('[data-abrir-aula]').forEach((b) => b.addEventListener('click', () => abrirDrawerAula(t.id, b.dataset.abrirAula)));
   el.querySelectorAll('tr[data-aula]').forEach((tr) => tr.addEventListener('click', (e) => {
-    if (e.target.closest('a, button:not([data-abrir-aula])') || getSelection().toString()) return;
+    if (e.target.closest('a, button') || getSelection().toString()) return;
     abrirDrawerAula(t.id, tr.dataset.aula);
   }));
   if (estado.aba === 'requisitos') ligarRequisitos(el, t);
@@ -496,8 +497,7 @@ function partesAulas(t) {
   const parte = (p) => `
     <button type="button" data-aba="${p.id}" aria-pressed="${estado.aba === p.id}" class="h-7 px-2.5 rounded-md text-[12.5px] font-medium whitespace-nowrap transition ${estado.aba === p.id ? 'bg-[color:var(--f-elevado)] text-[color:var(--f-tinta)] shadow-[0_1px_2px_rgb(7_30_44/0.08)]' : 'text-[color:var(--f-tinta-2)] hover:text-[color:var(--f-tinta)]'}">${p.titulo}</button>`;
   // Gerar só antes de gravar as aulas e com agenda.
-  const podeGerar = !Turmas.temAgendamento(t) && Turmas.podeEditar(t) && Boolean(Turmas.agendaDe(t)?.periodos?.length);
-  const acao = podeGerar ? `<button type="button" id="btn-gerar-aulas" class="${BOTAO_SEC}">${ICONE.calendario} Gerar aulas</button>` : '';
+  const acao = podeGerarAulas(t) ? `<button type="button" id="btn-gerar-aulas" class="${BOTAO_SEC}">${ICONE.calendario} Gerar aulas</button>` : '';
   return `
     <div class="inline-flex rounded-lg bg-[color:var(--f-etiqueta)] p-0.5">${abaDe('aulas').partes.map(parte).join('')}</div>
     <div class="ml-auto flex items-center gap-2">${acao}</div>`;
@@ -820,6 +820,9 @@ function renderAulas(t, visao) {
 const TRACO = '<span class="text-slate-400 dark:text-neutral-600">—</span>';
 const dataAno = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR');
 const diaNome = (id) => Agenda.DIAS.find((d) => d.id === id)?.curto?.toLowerCase() ?? id;
+// Chave da aula no drawer: a gravada pelo id; a da prévia (sem id) pelo nº na agenda.
+const chaveAula = (a) => String(a.id ?? `p${a.n}`);
+const podeGerarAulas = (t) => !Turmas.temAgendamento(t) && Turmas.podeEditar(t) && Boolean(Turmas.agendaDe(t)?.periodos?.length);
 const materiaisDaAula = (turmaId, a) => (a.id == null ? [] : Materiais.daTurma(turmaId).filter((m) => String(m.aulaId) === String(a.id)));
 
 // O que a linha da tabela e o drawer da aula mostram igual: local, conteúdo, situação, motivo e Meet.
@@ -865,22 +868,21 @@ function resumoMateriais(ms, hoje) {
 
 // Tabela da aba Aulas (padrão do Portal do Professor): nº, data, horário, local, conteúdo, materiais,
 // situação e o link do Google Meet da aula (aula.meetUrl, criado ao gerar as aulas), com botão de copiar.
-// Aula gravada abre o drawer da aula (dados e materiais); a prévia ainda não tem aula para guardar material.
+// Toda aula abre o drawer da aula (dados e materiais); a da prévia explica que é preciso gerar as aulas antes.
 function tabelaAulas(t, lista, hoje, agendado) {
   if (!lista.length) return '<p class="px-4 py-8 text-center text-sm text-slate-500 dark:text-neutral-400">Todas as aulas desta turma foram canceladas.</p>';
   const th = (txt, cls = '') => `<th class="${TH} ${cls}">${txt}</th>`;
   const linha = (a) => {
     const p = partesAula(t, a, hoje);
-    const abre = agendado && a.id != null;
     const data = `<span class="tabular-nums ${p.cancelada ? 'line-through' : ''} ${p.ehHoje ? 'font-semibold text-petrol-800 dark:text-sky-300' : 'text-slate-800 dark:text-neutral-100'}">${dataAno(a.data)}</span>`;
     return `
-      <tr ${abre ? `data-aula="${esc(a.id)}"` : ''} class="${abre ? `cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-900 transition ${FOCO_LINHA}` : ''} ${p.cancelada ? 'linha-apagada' : ''} ${p.ehHoje ? 'bg-petrol-800/5 dark:bg-sky-950/40' : ''}">
+      <tr data-aula="${esc(chaveAula(a))}" class="cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-900 transition ${FOCO_LINHA} ${p.cancelada ? 'linha-apagada' : ''} ${p.ehHoje ? 'bg-petrol-800/5 dark:bg-sky-950/40' : ''}">
         <td class="${TD} tabular-nums text-xs text-slate-500 dark:text-neutral-400 text-right">${a.n ?? '—'}</td>
-        <td class="${TD} whitespace-nowrap">${abre ? `<button type="button" data-abrir-aula="${esc(a.id)}" class="link-registro hover:underline underline-offset-2 focus-visible:outline-none" aria-label="Abrir a aula ${a.n ?? ''} de ${dataAno(a.data)}">${data}</button>` : data} <span class="text-xs text-slate-500 dark:text-neutral-400">${diaNome(a.dia)}</span></td>
+        <td class="${TD} whitespace-nowrap"><button type="button" data-abrir-aula="${esc(chaveAula(a))}" class="link-registro hover:underline underline-offset-2 focus-visible:outline-none" aria-label="Abrir a aula ${a.n ?? ''} de ${dataAno(a.data)}">${data}</button> <span class="text-xs text-slate-500 dark:text-neutral-400">${diaNome(a.dia)}</span></td>
         <td class="${TD} tabular-nums whitespace-nowrap">${a.inicio}–${a.fim}<span class="text-xs text-slate-500 dark:text-neutral-400 ml-1.5">${Turmas.horasAula(a).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} h</span></td>
         <td class="${TD} whitespace-nowrap">${p.local}</td>
         <td class="${TD} max-w-md">${p.conteudo ? `<span class="text-slate-700 dark:text-neutral-200">${esc(p.conteudo)}</span>` : TRACO}${p.motivo}</td>
-        ${agendado ? `<td class="${TD} whitespace-nowrap">${resumoMateriais(materiaisDaAula(t.id, a), hoje)}</td>` : ''}
+        <td class="${TD} whitespace-nowrap">${resumoMateriais(materiaisDaAula(t.id, a), hoje)}</td>
         <td class="${TD} whitespace-nowrap">${p.situacao}${p.origem}</td>
         <td class="${TD} whitespace-nowrap">${p.meet}</td>
       </tr>`;
@@ -889,7 +891,7 @@ function tabelaAulas(t, lista, hoje, agendado) {
     <div class="overflow-x-auto">
       <table class="w-full text-left">
         <thead class="${THEAD} border-t">
-          <tr>${th('Nº', 'text-right')}${th('Data')}${th('Horário')}${th('Local')}${th('Conteúdo')}${agendado ? th('Materiais') : ''}${th('Situação')}${th('Google Meet')}</tr>
+          <tr>${th('Nº', 'text-right')}${th('Data')}${th('Horário')}${th('Local')}${th('Conteúdo')}${th('Materiais')}${th('Situação')}${th('Google Meet')}</tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-neutral-900">${lista.map(linha).join('')}</tbody>
       </table>
@@ -903,7 +905,7 @@ function tabelaAulas(t, lista, hoje, agendado) {
 function abrirDrawerAula(turmaId, aulaId) {
   const hoje = Turmas.hoje();
   const turma = () => Turmas.porId(estado.lista, turmaId);
-  const aula = () => Turmas.aulasAgendadas(turma()).find((a) => String(a.id) === String(aulaId));
+  const aula = () => (Turmas.temAgendamento(turma()) ? Turmas.aulasAgendadas(turma()) : Turmas.aulas(turma())).find((a) => chaveAula(a) === String(aulaId));
   const ACAO = 'inline-flex items-center h-7 px-2 rounded-md text-xs font-medium text-slate-600 dark:text-neutral-300 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30';
   const { root, fechar } = abrirDrawer(
     '<div role="dialog" aria-modal="true" aria-labelledby="drawer-aula-titulo" class="drawer-anim relative h-full w-full max-w-lg bg-white dark:bg-neutral-950 border-l border-slate-200 dark:border-neutral-800 shadow-xl flex flex-col"></div>',
@@ -949,6 +951,7 @@ function abrirDrawerAula(turmaId, aulaId) {
     if (!a) { fechar(); return; }
     const p = partesAula(t, a, hoje);
     const ms = materiaisDaAula(t.id, a);
+    const previa = !Turmas.temAgendamento(t);
     painel.innerHTML = `
       ${topo(a.n ? `Aula ${a.n}` : 'Aula cancelada', descricao(a))}
       <div class="flex-1 overflow-y-auto px-5 py-4">
@@ -964,9 +967,14 @@ function abrirDrawerAula(turmaId, aulaId) {
               <h4 id="drawer-aula-materiais" class="font-display text-[15px] font-semibold text-slate-900 dark:text-neutral-100">Materiais${ms.length ? ` <span class="ml-1 text-xs font-normal text-slate-500 dark:text-neutral-400 tabular-nums">${ms.length}</span>` : ''}</h4>
               <p class="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">O aluno vê no portal só o que está liberado, mesmo em aula futura.</p>
             </div>
-            ${p.cancelada ? '' : `<button type="button" data-acao="novo" class="${BOTAO_FANTASMA} -mt-1 -mr-1.5 shrink-0">${ICONE.mais} Adicionar</button>`}
+            ${p.cancelada || previa ? '' : `<button type="button" data-acao="novo" class="${BOTAO_FANTASMA} -mt-1 -mr-1.5 shrink-0">${ICONE.mais} Adicionar</button>`}
           </div>
-          ${ms.length
+          ${previa
+            ? `<div class="mt-4 rounded-lg bg-slate-50 dark:bg-neutral-900 px-4 py-5 text-sm text-slate-600 dark:text-neutral-300">
+                <p>As aulas desta turma ainda são a prévia da agenda. Para cadastrar materiais, gere as aulas; é ali que você escolhe criar o link do Google Meet de cada aula.</p>
+                ${podeGerarAulas(t) ? `<button type="button" data-acao="gerar" class="${BOTAO_SEC} mt-3">${ICONE.calendario} Gerar aulas</button>` : ''}
+              </div>`
+            : ms.length
             ? `<ul class="mt-2 divide-y divide-slate-100 dark:divide-neutral-900">${ms.map(linhaMaterial).join('')}</ul>`
             : `<p class="mt-4 rounded-lg bg-slate-50 dark:bg-neutral-900 px-4 py-6 text-center text-sm text-slate-500 dark:text-neutral-400">Nenhum material nesta aula.${p.cancelada ? '' : ' O professor cadastra pelo Portal do Professor; a coordenação, aqui.'}</p>`}
         </section>
@@ -1065,6 +1073,7 @@ function abrirDrawerAula(turmaId, aulaId) {
     if (!b) return;
     const m = b.dataset.material && Materiais.carregar().find((x) => x.id === b.dataset.material);
     if (b.dataset.acao === 'fechar') fechar();
+    else if (b.dataset.acao === 'gerar') { fechar(); abrirModalGerarAulas(turmaId); }
     else if (b.dataset.acao === 'voltar') { verAula(); painel.querySelector('[data-acao="novo"]')?.focus(); }
     else if (b.dataset.acao === 'novo') formMaterial();
     else if (b.dataset.acao === 'editar' && m) formMaterial(m);
@@ -1119,7 +1128,10 @@ function renderCalendarioAulas(t, aulas, hoje) {
       a.origem === 'reposicao' ? 'Reposição' : a.origem === 'extra' ? 'Aula extra' : '',
       conteudo,
     ].filter(Boolean).join('\n');
-    return `<span title="${esc(titulo)}" class="block w-full text-left rounded border px-1.5 py-0.5 text-[11px] leading-tight tabular-nums ${classeDe(a)}">${a.n ? `<span class="font-semibold">${a.n}</span> · ` : ''}${hora(a.inicio)}–${hora(a.fim)}</span>`;
+    const texto = `${a.n ? `<span class="font-semibold">${a.n}</span> · ` : ''}${hora(a.inicio)}–${hora(a.fim)}`;
+    const classe = `block w-full text-left rounded border px-1.5 py-0.5 text-[11px] leading-tight tabular-nums ${classeDe(a)}`;
+    // Abre o drawer da aula, como na Lista.
+    return `<button type="button" data-abrir-aula="${esc(chaveAula(a))}" title="${esc(titulo)}" class="${classe} cursor-pointer hover:brightness-95 dark:hover:brightness-125 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[color:var(--f-foco)]">${texto}</button>`;
   };
   const mes = (ym) => {
     const [y, mo] = ym.split('-').map(Number);

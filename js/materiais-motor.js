@@ -28,12 +28,23 @@ const Materiais = (() => {
   // Data local (a de UTC vira o dia seguinte às 21h no Brasil e liberaria o material um dia antes).
   const hojeISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 
+  // Semente: a PY1 N da formação FPS-01, em andamento (aulas gravadas em cursos-data.js, AULAS_GRAVADAS_SEED),
+  // com material de cada situação, do professor e da coordenação; a aula 3 fica sem nada. [sup.] títulos e datas meus.
+  const PROFESSOR = { nome: 'Rogério Vidal Trindade', papel: 'professor' };
+  const SEMENTE = [
+    { id: 'mat-s1', aulaId: 'a1', titulo: 'Apostila — Introdução ao Python', descricao: '', tipo: 'arquivo', arquivo: 'py1-apostila-introducao.pdf', url: '', liberarEm: '2026-10-21', autor: PROFESSOR, criadoEm: '2026-10-19T13:10:00.000Z' },
+    { id: 'mat-s2', aulaId: 'a2', titulo: 'Lista de exercícios 1 — Sintaxe e tipos', descricao: 'Entregar até a aula 3.', tipo: 'arquivo', arquivo: 'py1-exercicios-01.pdf', url: '', liberarEm: '2026-10-23', autor: PROFESSOR, criadoEm: '2026-10-22T21:40:00.000Z' },
+    { id: 'mat-s3', aulaId: 'a4', titulo: 'Slides — Funções', descricao: 'Para revisar antes da aula.', tipo: 'link', arquivo: '', url: 'https://slides.exemplo.com/python/funcoes', liberarEm: '2026-10-28', autor: PROFESSOR, criadoEm: '2026-10-26T22:05:00.000Z' },
+    { id: 'mat-s4', aulaId: 'a5', titulo: 'Lista de exercícios 3 — Exceções e arquivos', descricao: '', tipo: 'arquivo', arquivo: 'py1-exercicios-03.pdf', url: '', liberarEm: null, autor: PROFESSOR, criadoEm: '2026-10-26T22:12:00.000Z' },
+    { id: 'mat-s5', aulaId: 'a5', titulo: 'Guia de estilo PEP 8', descricao: 'Leitura recomendada pela coordenação.', tipo: 'link', arquivo: '', url: 'https://peps.python.org/pep-0008/', liberarEm: '2026-10-30', autor: { nome: 'Bruno Lima', papel: 'coordenacao' }, criadoEm: '2026-10-27T12:30:00.000Z' },
+  ].map((m) => ({ turmaId: 'fpsa-py1', ...m }));
+
   function carregar() {
     try {
       const salvo = JSON.parse(localStorage.getItem(CHAVE));
       if (Array.isArray(salvo)) return salvo;
-    } catch (_) { /* vazio */ }
-    return [];
+    } catch (_) { /* volta para a semente */ }
+    return JSON.parse(JSON.stringify(SEMENTE));
   }
   const gravar = (lista) => localStorage.setItem(CHAVE, JSON.stringify(lista));
 

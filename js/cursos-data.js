@@ -307,6 +307,10 @@ const TURMAS_CURSO = [
 // pela agenda em vigor (com os módulos distribuídos), cancela a aula da data (1º período do dia, ou o `inicio`
 // informado) e, com `repor`, encaixa uma reposição na próxima data livre da agenda depois do fim da turma.
 // Só turmas cuja prévia bate com a carga do curso (senão sobram aulas sem conteúdo). [sup.] datas e motivos meus.
+// Turmas em andamento que já começam com as aulas gravadas, para os materiais da semente (js/materiais-motor.js)
+// terem onde ficar. Como o Gerar aulas: sem os feriados e sem Meet.
+const AULAS_GRAVADAS_SEED = ['fpsa-py1'];
+
 const AULAS_CANCELADAS_SEED = [
   // 31/08/2026: cancelamentos distribuídos por set/25–ago/26 para o polar "Aulas canceladas no período" ter todos os motivos [sup.].
   { turmaId: 'sup07-pjs', data: '2025-09-03', motivo: { tipo: 'saude_publica', texto: 'Surto de virose na turma — orientação da Vigilância Sanitária' }, repor: true },
