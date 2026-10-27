@@ -67,7 +67,8 @@ const FEATURES = [
     ],
   },
   { id: 'contas-bancarias', modulo: 'financeiro', nome: 'Contas bancárias', acoes: [VER, EDITAR] },
-  { id: 'centros-custo', modulo: 'financeiro', nome: 'Centros de custo e receita', acoes: [VER, EDITAR] },
+  { id: 'centros-custo', modulo: 'financeiro', nome: 'Centros de custo', acoes: [VER, EDITAR] },
+  { id: 'centros-receita', modulo: 'financeiro', nome: 'Centros de receita', acoes: [VER, EDITAR] },
 
   // ---------- Pessoas ----------
   { id: 'instrutores', modulo: 'pessoas', nome: 'Instrutores', acoes: [VER, CRIAR, EDITAR] },
@@ -123,7 +124,7 @@ const PERFIS = [
   {
     id: 'financeiro', nome: 'Financeiro', ativo: true,
     permissoes: {
-      ...tudo('financeiro', 'contas-bancarias', 'centros-custo'),
+      ...tudo('financeiro', 'contas-bancarias', 'centros-custo', 'centros-receita'),
       contratos: ['visualizar', 'ver-todas', 'adm-ok'],
       ...ver('alunos', 'responsaveis', 'empresas', 'instrutores'),
     },

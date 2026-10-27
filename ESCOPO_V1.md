@@ -14,7 +14,8 @@ Como cada decisão do documento "Aulor – Escopo da primeira versão (V1)" (26/
 | Materiais das aulas (novo) | `materiais.html` | A coordenação vê o que os professores cadastraram, por turma e aula, e também cadastra e libera |
 | Alunos, Responsáveis e Empresas | `alunos.html`, `aluno.html`, `responsaveis.html`, `responsavel.html`, `empresas.html`, `empresa.html` | Aluno com Dados, Responsáveis e Vendas; empresa com Dados, Contatos, Vendas e Alunos; responsável com Dados e Alunos. Sem Acompanhamento, Ocorrências e SPC |
 | Financeiro | `financeiro.html`, `contas-bancarias.html`, `conta-bancaria.html` | Contas (a receber, a pagar, pagar × receber), Conciliação Asaas, Extrato, Saque automático e NF. Contas bancárias para a homologação do Asaas |
-| Centros de custo e receita | `centros-custo.html` | Cria e agrupa centros de custo e de receita (B2B, B2C, Orion); as parcelas da venda levam o centro de receita |
+| Centros de custo | `centros-custo.html` | Cria e agrupa os centros de custo (departamentos) das despesas |
+| Centros de receita | `centros-receita.html` | Cria e agrupa os centros de receita (B2B, B2C, Orion), escolhidos no lançamento da venda e na turma; as parcelas da venda levam o centro, e a tela mostra o recebido e o a receber de cada um |
 | Pessoas | `instrutores.html`, `instrutor.html`, `colaboradores.html`, `colaborador.html` | Instrutor com cadastro (e cadastro pelo link) e só a aba Dados; colaboradores como equipe e usuários |
 | Perfis de acesso | `perfis.html`, `perfil.html` | Catálogo das telas da V1 e o perfil Vendedor externo, que vê só as vendas dele, confirma os alunos pelos quais responde e não acessa Alunos |
 | Entrada (nova) | `entrar.html` | Login, primeiro acesso e recuperação de senha para equipe, professores e alunos |

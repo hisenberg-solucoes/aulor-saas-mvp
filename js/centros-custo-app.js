@@ -1,16 +1,19 @@
 // ============================================================
-// UI da tela "Centros de custo" (centros-custo.html), na direção Ficha em cartões.
-// Dois tipos na mesma lista (plano.centrosCusto, campo tipo): custo = departamento que responde pela despesa;
-// receita = de onde vem a venda (B2B, B2C, Orion…), escolhido no contrato. Um centro pode ficar dentro de um grupo
-// (grupoId: outro centro do mesmo tipo, de primeiro nível).
+// UI das telas "Centros de custo" (centros-custo.html) e "Centros de receita" (centros-receita.html), na
+// direção Ficha em cartões. Os dois tipos moram na mesma lista do plano (plano.centrosCusto, campo tipo), e cada
+// tela mostra e cria só o seu: custo = departamento que responde pela despesa; receita = de onde vem a venda
+// (B2B, B2C, Orion…), escolhido no contrato. Um centro pode ficar dentro de um grupo (grupoId: outro centro do
+// mesmo tipo, de primeiro nível).
 // Cadastro simples, como Áreas: lista + modal (criar/editar); status e exclusão moram no modal.
 // Cadastro e regras em Lancamentos.* (plano.centrosCusto, validarPlano; chave aulor-v1-financeiro-plano-v2).
 // O dinheiro de cada centro vem dos lançamentos, só leitura (Lancamentos.porCentroCusto, regime de caixa): pago e a pagar
 // nos de custo; recebido e a receber nos de receita (parcelas das vendas). Cada valor leva ao Financeiro já filtrado (?centro=).
-// ?id= abre o modal do centro; ?nova=1 abre o de novo.
+// ?id= abre o modal do centro (o de outro tipo vai para a tela dele); ?nova=1 abre o de novo.
 // ============================================================
 
 const L = Lancamentos;
+const TELA = /centros-receita\.html$/.test(location.pathname) ? 'receita' : 'custo';
+const PAGINA = { custo: 'centros-custo.html', receita: 'centros-receita.html' };
 
 const estado = {
   plano: null,
@@ -60,8 +63,8 @@ const tipoDe = (c) => L.tipoCentro(c);
 const filhosDe = (c) => estado.plano.centrosCusto.filter((x) => x.grupoId === c.id);
 // O que muda entre as duas tabelas: valores, rótulos e a aba do Financeiro.
 const TIPO = {
-  custo: { titulo: 'Centros de custo', sub: 'Quem gastou: um centro por departamento. A categoria diz o quê; o centro, quem gastou.', pago: 'Pago em 12 meses', aberto: 'A pagar', verbo: 'pagos', aba: 'pagar', opcoes: 'despesas novas', exemplo: 'Ex.: Eventos', descricao: 'Que gastos este departamento responde' },
-  receita: { titulo: 'Centros de receita', sub: 'De onde vem a venda: escolhido no contrato, identifica B2B, B2C, Orion…', pago: 'Recebido em 12 meses', aberto: 'A receber', verbo: 'recebidos', aba: 'receber', opcoes: 'vendas novas', exemplo: 'Ex.: Parcerias', descricao: 'Que vendas entram neste centro' },
+  custo: { titulo: 'Centros de custo', novo: 'Novo centro de custo', sub: 'Quem gastou: um centro por departamento. A categoria diz o quê; o centro, quem gastou.', pago: 'Pago em 12 meses', aberto: 'A pagar', verbo: 'pagos', aba: 'pagar', opcoes: 'despesas novas', exemplo: 'Ex.: Eventos', descricao: 'Que gastos este departamento responde' },
+  receita: { titulo: 'Centros de receita', novo: 'Novo centro de receita', sub: 'De onde vem a venda: escolhido no lançamento da venda, identifica B2B, B2C, Orion…', pago: 'Recebido em 12 meses', aberto: 'A receber', verbo: 'recebidos', aba: 'receber', opcoes: 'vendas novas', exemplo: 'Ex.: Parcerias', descricao: 'Que vendas entram neste centro' },
 };
 const valorPago = (c) => (tipoDe(c) === 'receita' ? estado.pago[c.id]?.receita : estado.pago[c.id]?.despesa) ?? 0;
 const pctPago = (c) => (tipoDe(c) === 'receita' ? (estado.totalReceita ? (valorPago(c) / estado.totalReceita) * 100 : 0) : estado.pago[c.id]?.pctDespesa ?? 0);
@@ -177,8 +180,6 @@ function tabelaTipo(tipo) {
        <button type="button" data-novo="${tipo}" class="${BOTAO_PRI} mt-4">${ICONE.mais} Criar o primeiro</button>`;
   return `
     <section class="mb-6">
-      <h3 class="font-display text-[15px] font-semibold ${TITULO}">${t.titulo}</h3>
-      <p class="text-sm mb-2 ${APOIO_FUNDO}">${t.sub}</p>
       <div class="${CARTAO} overflow-hidden">
         <table class="w-full table-fixed text-left">
           <thead class="${THEAD}">
@@ -206,19 +207,18 @@ function renderLista() {
   el.innerHTML = `
     <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
       <div class="min-w-0 flex-1 basis-96">
-        <h2 class="font-display text-xl font-semibold ${TITULO}">Centros de custo</h2>
-        <p class="max-w-3xl text-sm mt-0.5 ${APOIO_FUNDO}">De quem é cada despesa e de onde vem cada venda. Os valores vêm do <a href="financeiro.html" class="${LINK}">Financeiro</a> e levam a ele já filtrado.</p>
+        <h2 class="font-display text-xl font-semibold ${TITULO}">${TIPO[TELA].titulo}</h2>
+        <p class="max-w-3xl text-sm mt-0.5 ${APOIO_FUNDO}">${TIPO[TELA].sub} Os valores vêm do <a href="financeiro.html" class="${LINK}">Financeiro</a> e levam a ele já filtrado.</p>
       </div>
-      <button type="button" id="btn-novo" class="${BOTAO_PRI}">${ICONE.mais} Novo centro</button>
+      <button type="button" id="btn-novo" class="${BOTAO_PRI}">${ICONE.mais} ${TIPO[TELA].novo}</button>
     </div>
-    ${tabelaTipo('custo')}
-    ${tabelaTipo('receita')}`;
+    ${tabelaTipo(TELA)}`;
 
   el.querySelector('#btn-novo').addEventListener('click', () => abrirModalCentro());
   // O nome é o botão (teclado); o resto da linha abre o mesmo centro, menos os valores (links) e a seleção de texto.
   el.querySelectorAll('tbody').forEach((tb) => tb.addEventListener('click', (e) => {
     const novo = e.target.closest('[data-novo]');
-    if (novo) { abrirModalCentro(null, novo.dataset.novo); return; }
+    if (novo) { abrirModalCentro(); return; }
     const tr = e.target.closest('tr[data-editar]');
     if (!tr || e.target.closest('a') || getSelection().toString()) return;
     abrirModalCentro(tr.dataset.editar);
@@ -248,23 +248,17 @@ function opcoesGrupo(tipo, c, valor) {
   return `<option value="">Nenhum (primeiro nível)</option>${grupos.map((x) => `<option value="${x.id}" ${x.id === valor ? 'selected' : ''}>${esc(x.codigo)} ${esc(x.nome)}</option>`).join('')}`;
 }
 
-function abrirModalCentro(id = null, tipoInicial = 'custo') {
+function abrirModalCentro(id = null) {
   const c = id ? centroDe(id) : null;
   if (id && !c) { toast('Esse centro não existe mais.'); return; }
-  const tipo = c ? tipoDe(c) : (TIPO[tipoInicial] ? tipoInicial : 'custo');
+  const tipo = c ? tipoDe(c) : TELA;
   const d = c ?? { codigo: proximoCodigo(tipo), nome: '', descricao: '', grupoId: null, status: 'ativo' };
   const v = c ? vinculos(c) : null;
   const pago = c ? valorPago(c) : 0;
   const nomeTipo = (t) => (t === 'receita' ? 'centro de receita' : 'centro de custo');
-  // O tipo só troca sem nada preso: lançamentos e fornecedores são de um tipo, e o departamento é de custo.
-  const travaTipo = v && (v.lancamentos || v.dep || estado.plano.fornecedores.some((x) => x.centroCustoId === c.id)) ? 'Em uso; o tipo não muda.' : '';
   const subtitulo = !c
-    ? 'Nasce ativo e já aparece nas opções do Financeiro (custo) ou da venda (receita).'
+    ? (tipo === 'receita' ? 'Nasce ativo e já aparece nas opções da venda.' : 'Nasce ativo e já aparece nas opções do Financeiro.')
     : pago ? `${tipo === 'receita' ? 'Recebeu' : 'Pagou'} ${moeda(pago)} em 12 meses. Mudar o nome reflete em ${plural(v.lancamentos, 'lançamento')}.` : v.lancamentos ? `Mudar o nome reflete em ${plural(v.lancamentos, 'lançamento')}.` : 'Ainda sem lançamentos.';
-  const TIPOS = [
-    { id: 'custo', nome: 'Custo', descricao: 'Quem gastou: o departamento da despesa.' },
-    { id: 'receita', nome: 'Receita', descricao: 'De onde vem a venda: B2B, B2C, Orion…' },
-  ];
   const STATUS = [
     { id: 'ativo', nome: 'Ativo', descricao: `Aparece nas opções de ${TIPO[tipo].opcoes}.` },
     { id: 'inativo', nome: 'Inativo', descricao: v?.lancamentos ? `Sai das opções; os ${plural(v.lancamentos, 'lançamento')} já classificados continuam nele.` : `Sai das opções de ${TIPO[tipo].opcoes}.` },
@@ -280,18 +274,12 @@ function abrirModalCentro(id = null, tipoInicial = 'custo') {
     <form id="form-centro" novalidate class="flex flex-col max-h-full min-h-0">
       <div class="px-5 pt-4 pb-3 flex items-start justify-between gap-3">
         <div>
-          <h3 id="titulo-centro" class="font-display text-[15px] font-semibold ${TITULO}">${c ? `Editar ${nomeTipo(tipo)}` : 'Novo centro'}</h3>
+          <h3 id="titulo-centro" class="font-display text-[15px] font-semibold ${TITULO}">${c ? `Editar ${nomeTipo(tipo)}` : TIPO[tipo].novo}</h3>
           <p class="text-xs mt-0.5 ${APOIO}">${subtitulo}</p>
         </div>
         <button type="button" data-fechar-modal class="${BOTAO_ICONE} -mr-1.5 -mt-1" aria-label="Fechar">${ICONE.fechar}</button>
       </div>
       <div class="flex-1 overflow-y-auto px-5 pt-1 pb-5 space-y-4">
-        <fieldset>
-          <legend class="rotulo">Tipo</legend>
-          <div class="grid grid-cols-2 gap-2">${cartoes('tipo', TIPOS, tipo, Boolean(travaTipo))}</div>
-          ${travaTipo ? `<p class="text-xs mt-1 ${APOIO}">${travaTipo}</p>` : ''}
-          ${ERRO('tipo')}
-        </fieldset>
         <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="rotulo" for="fc-codigo">Código</label>
@@ -331,22 +319,11 @@ function abrirModalCentro(id = null, tipoInicial = 'custo') {
     </form>`, 'max-w-lg');
   root.querySelector('[role="dialog"]').setAttribute('aria-labelledby', 'titulo-centro');
   const form = root.querySelector('#form-centro');
-  // Trocar o tipo troca a sugestão de código (se ainda era a sugerida), as dicas e os grupos possíveis.
-  form.querySelectorAll('input[name="tipo"]').forEach((r) => r.addEventListener('change', () => {
-    const t = r.value; const antes = t === 'receita' ? 'custo' : 'receita';
-    const cod = form.querySelector('#fc-codigo');
-    if (!c && cod.value === proximoCodigo(antes)) cod.value = proximoCodigo(t);
-    cod.placeholder = `Ex.: ${proximoCodigo(t) || (t === 'receita' ? 'R40' : '800')}`;
-    form.querySelector('#dica-codigo').innerHTML = dicaCodigo(t);
-    form.querySelector('#fc-nome').placeholder = TIPO[t].exemplo;
-    form.querySelector('#fc-descricao').placeholder = TIPO[t].descricao;
-    const g = form.querySelector('#fc-grupo'); g.innerHTML = opcoesGrupo(t, c, null);
-  }));
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const fd = new FormData(form);
     const dados = {
-      tipo: fd.get('tipo') ?? tipo, // radio desabilitado não vai no FormData
+      tipo, // o da tela; o tipo de um centro não muda
       codigo: String(fd.get('codigo') ?? '').trim().toUpperCase(), nome: fd.get('nome') ?? '',
       grupoId: fd.get('grupoId') || null, descricao: String(fd.get('descricao') ?? '').trim(),
     };
@@ -409,6 +386,8 @@ function confirmarExclusao(id) {
   recarregar();
   renderLista();
   const id = parametroUrl('id');
+  const doId = id ? centroDe(id) : null;
+  if (doId && tipoDe(doId) !== TELA) { location.replace(`${PAGINA[tipoDe(doId)]}?id=${encodeURIComponent(id)}`); return; }
   if (id) abrirModalCentro(id);
   else if (parametroUrl('nova') === '1') abrirModalCentro();
 })();

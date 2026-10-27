@@ -2,7 +2,7 @@
 // Centros de receita (V1): identificam o tipo de cada venda (B2B, B2C, Orion…).
 // Moram no plano financeiro, na mesma lista dos centros de custo
 // (plano.centrosCusto, com tipo 'receita'; os de custo têm tipo 'custo' ou
-// nenhum), e se cadastram em centros-custo.html. A venda leva o centro no
+// nenhum), e se cadastram em centros-receita.html. A venda leva o centro no
 // lançamento (contrato.centroReceitaId) e a turma pode levar um padrão
 // (turma.centroReceitaId), que a venda da turma herda.
 // Este arquivo é a semente e a leitura leve para Vendas e Turmas, que não
