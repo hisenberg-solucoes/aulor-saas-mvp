@@ -115,3 +115,19 @@
 
   window.Sidebar = { fechada, alternar, CHAVE };
 })();
+
+// ============================================================
+// Limpeza de chaves superadas: cada módulo sobe '<nome>-vN' quando muda o formato
+// e a versão anterior ficava para trás, até estourar a cota (~5 MB por origem).
+// Apaga '<nome>-vK' quando já existe '<nome>-vN' com N > K. Leituras de legado
+// (ex.: extrato-v2 → v3) só acontecem enquanto a versão nova não existe, então seguem a salvo.
+// Roda no <head>, antes de qualquer motor gravar.
+// shortcut: se a 1ª gravação da vN já estourar, a v(N-1) só sai depois que a vN existir; se isso ocorrer, listar as chaves vigentes por módulo.
+// ============================================================
+
+(function () {
+  const maior = {};
+  const versionadas = Object.keys(localStorage).map((k) => k.match(/^(.+)-v(\d+)$/)).filter(Boolean);
+  versionadas.forEach(([, nome, v]) => { maior[nome] = Math.max(maior[nome] ?? 0, Number(v)); });
+  versionadas.forEach(([chave, nome, v]) => { if (Number(v) < maior[nome]) localStorage.removeItem(chave); });
+})();

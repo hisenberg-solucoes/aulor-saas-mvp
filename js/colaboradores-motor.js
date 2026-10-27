@@ -1,20 +1,27 @@
 // ============================================================
 // Motor da tela "Colaboradores": regras puras (sem DOM).
-// Trazido do protótipo original (snorlax-jornada). No MVP a lista mora na base
-// única (`colaboradores` em js/aulor.js) e o bloco `Acesso` mexe nos mesmos
-// PERFIS/USUARIOS que Usuários e Perfis de acesso usam (Acessos, js/shell.js),
-// para que vincular/criar usuário aqui apareça lá e vice-versa.
+// Persistência em localStorage — trocar o sufixo da chave força reset.
+// O bloco `Acesso` conversa com o protótipo de permissões pela MESMA chave
+// que permissoes-app.js usa ({ perfis, usuarios }), para que vincular/criar
+// usuário aqui apareça lá e vice-versa.
 // ============================================================
 
 const Colaboradores = (() => {
+  const CHAVE = 'prototipo-colaboradores-v3';
+  const CHAVE_PERMISSOES = 'prototipo-permissionamento-v6';
+
   const clonar = (x) => JSON.parse(JSON.stringify(x));
 
-  const carregar = () => clonar(Aulor.colaboradores() ?? []);
+  function carregar() {
+    try {
+      const salvo = localStorage.getItem(CHAVE);
+      if (salvo) return JSON.parse(salvo);
+    } catch (_) { /* volta para a semente */ }
+    return clonar(COLABORADORES_SEED);
+  }
 
   function salvar(lista) {
-    Aulor.carregar().colaboradores = clonar(lista);
-    Aulor.salvar();
-    Acesso.sincronizar(lista);
+    localStorage.setItem(CHAVE, JSON.stringify(lista));
   }
 
   // ---------- Helpers ----------
@@ -266,16 +273,26 @@ const Colaboradores = (() => {
 
   const remover = (lista, id) => lista.filter((c) => c.id !== id);
 
-  // ---------- Acesso (usuários e perfis do MVP) ----------
-  // Mexe nos PERFIS/USUARIOS já carregados pelo shell (Acessos) e grava pela
-  // mesma chave de Usuários e Perfis de acesso.
+  // ---------- Acesso (protótipo de permissões) ----------
+  // Lê e grava a mesma chave de permissoes-app.js. Sem snapshot salvo, usa a
+  // semente PERFIS/USUARIOS de js/permissoes-data.js.
 
   const Acesso = (() => {
-    const snapshot = () => ({ perfis: PERFIS, usuarios: USUARIOS });
-    const gravar = () => { if (typeof Acessos !== 'undefined') Acessos.salvar(); };
+    function snapshot() {
+      try {
+        const bruto = localStorage.getItem(CHAVE_PERMISSOES);
+        if (bruto) {
+          const s = JSON.parse(bruto);
+          if (Array.isArray(s.perfis) && Array.isArray(s.usuarios)) return s;
+        }
+      } catch (_) { /* usa a semente */ }
+      return { perfis: clonar(PERFIS), usuarios: clonar(USUARIOS) };
+    }
+
+    const gravar = (s) => localStorage.setItem(CHAVE_PERMISSOES, JSON.stringify(s));
 
     const usuarios = () => snapshot().usuarios.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-    const perfis = () => snapshot().perfis.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    const perfis = () => snapshot().perfis.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 
     // Situação do usuário vinculado: { usuario, perfis: [perfil ativo...], inativos: [...], extras: n } ou null.
     function de(usuarioId) {
@@ -298,14 +315,20 @@ const Colaboradores = (() => {
       return usuarios().filter((u) => !usados.has(u.id));
     }
 
+    function idDe(nome, existentes) {
+      const base = normalizar(nome).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'usuario';
+      let id = base; let n = 2;
+      while (existentes.some((u) => u.id === id)) { id = `${base}-${n}`; n += 1; }
+      return id;
+    }
+
     const filtrarPerfis = (s, perfilIds) => perfilIds.filter((p) => s.perfis.some((x) => x.id === p));
 
-    // E-mail, cargo e o vínculo com o colaborador entram no salvar (sincronizar).
     function criar(nome, perfilIds) {
       const s = snapshot();
       const usuario = {
-        id: `u${Math.max(0, ...s.usuarios.map((u) => Number(String(u.id).slice(1)) || 0)) + 1}`,
-        nome: String(nome).trim(), email: '', cargo: '', status: 'ativo', vinculos: [],
+        id: idDe(nome, s.usuarios),
+        nome: String(nome).trim(),
         perfis: filtrarPerfis(s, perfilIds),
         extras: {},
       };
@@ -333,23 +356,7 @@ const Colaboradores = (() => {
       return true;
     }
 
-    // Mantém `usuario.vinculos` (que o MVP usa para o tipo de usuário) igual a `colaborador.acesso.usuarioId`.
-    // Vínculo de colaborador que não aponta para um colaborador da lista (convite antigo) fica como está.
-    function sincronizar(lista) {
-      const ids = new Set(lista.map((c) => c.id));
-      USUARIOS.forEach((u) => {
-        const meus = lista.filter((c) => c.acesso?.usuarioId === u.id);
-        u.vinculos = (u.vinculos ?? []).filter((v) => v.tipo !== 'colaborador' || (!ids.has(v.id) && !(meus.length && v.id === u.id)));
-        meus.forEach((c) => {
-          u.vinculos.push({ tipo: 'colaborador', id: c.id });
-          if (!u.email) u.email = c.contato.email;
-          if (!u.cargo) u.cargo = c.cargo;
-        });
-      });
-      gravar();
-    }
-
-    return { usuarios, perfis, de, livres, criar, definirPerfis, bloquear, sincronizar };
+    return { usuarios, perfis, de, livres, criar, definirPerfis, bloquear };
   })();
 
   return {

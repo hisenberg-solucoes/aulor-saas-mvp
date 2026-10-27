@@ -404,7 +404,7 @@ function renderInstrutor() {
 
   el.innerHTML = `
     <nav aria-label="Breadcrumb" class="mb-3 flex items-center gap-1.5 text-sm text-slate-600 dark:text-neutral-400">
-      <a href="inicio.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Home</a>
+      <a href="home.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Home</a>
       <span>/</span>
       <a href="instrutores.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Instrutores</a>
       <span>/</span>
@@ -490,7 +490,7 @@ function renderAbaCalendario(el, i) {
     mes: parametroUrl('mes'),
     turmaId: parametroUrl('turma'),
     linkTurma: (t) => `turma.html?id=${encodeURIComponent(t.turma.id)}`,
-    linkAula: (t, a) => `chamada.html?aula=${encodeURIComponent(a.id)}`,
+    linkAula: (t) => `agendamento.html?turma=${encodeURIComponent(t.turma.id)}`,
   });
 }
 
@@ -549,7 +549,7 @@ function renderAbaDados(el, i) {
       </section>
 
       <section class="${CARTAO}">
-        ${cabecalhoSecao('Cursos habilitados', 'Cursos em que já tem ou vai ter turma.', null)}
+        ${cabecalhoSecao('Cursos habilitados', 'Definido em cada curso, na aba Requisitos.', null)}
         ${cursosHab.length ? `<ul class="border-t border-slate-100 dark:border-neutral-900 divide-y divide-slate-100 dark:divide-neutral-900">${cursosHab.map((cu) => `<li class="px-4 py-2 text-sm">${cursoLink(cu)} <span class="${APOIO} tabular-nums">· ${cu.cargaHoraria} h</span></li>`).join('')}</ul>` : listaVazia('Nenhum curso habilita este instrutor ainda.')}
       </section>
 
@@ -1239,7 +1239,7 @@ function abrirDrawerEndereco() {
 }
 
 function abrirDrawerEmpresa() {
-  const i = atual(); const e = i.empresa ?? { cnpj: '', razaoSocial: '', banco: '', agencia: '', conta: '', pix: '' };
+  const i = atual(); const e = i.empresa ?? { cnpj: '', razaoSocial: '', banco: 'Viacredi', agencia: '', conta: '', pix: '' };
   drawerFormulario({
     id: 'form-empresa', titulo: i.empresa ? 'Editar empresa' : 'Cadastrar empresa', subtitulo: 'Pessoa jurídica do instrutor — a nota fiscal e o pagamento saem contra ela.', rotulo: i.empresa ? 'Salvar alterações' : 'Cadastrar', largura: 'max-w-lg', foco: '#f-cnpj',
     corpo: `
@@ -1250,7 +1250,7 @@ function abrirDrawerEmpresa() {
       <fieldset class="space-y-3">
         <legend class="rotulo">Conta bancária ${OPCIONAL}</legend>
         <div class="grid grid-cols-3 gap-3">
-          ${campoTexto('banco', 'Banco', e.banco, { max: 40, placeholder: 'Ex.: Sicredi' })}
+          ${campoTexto('banco', 'Banco', e.banco, { max: 40, placeholder: 'Ex.: Viacredi' })}
           ${campoTexto('agencia', 'Agência', e.agencia, { max: 10 })}
           ${campoTexto('conta', 'Conta', e.conta, { max: 20 })}
         </div>
@@ -1456,7 +1456,7 @@ function abrirModalLinkInstrutor(id) {
   const url = Instrutores.urlCadastro(i, 'formulario');
   const urlPassos = Instrutores.urlCadastro(i, 'passos');
   const preenchido = Boolean(i.cadastro.preenchidoEm);
-  const msg = `Olá, ${(i.apelido || i.nome).split(' ')[0]}! Para fecharmos seu cadastro de instrutor na ${Aulor.escola().nome} (contrato e pagamento), preencha seus dados neste link: ${url}`;
+  const msg = `Olá, ${(i.apelido || i.nome).split(' ')[0]}! Para fecharmos seu cadastro de instrutor na ProWay (contrato e pagamento), preencha seus dados neste link: ${url}`;
   const root = abrirModal(`
     <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-start justify-between gap-3">
       <div>
@@ -1472,7 +1472,7 @@ function abrirModalLinkInstrutor(id) {
       ${linhasLinks('link-instrutor', url, urlPassos)}
       <div class="flex flex-wrap items-center gap-2">
         ${i.contato.whatsapp ? `<a href="https://wa.me/55${esc(i.contato.whatsapp)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener" class="${BOTAO_SEC} text-emerald-700 dark:text-emerald-400">${ICONE_WHATSAPP} Enviar por WhatsApp</a>` : ''}
-        ${i.contato.email ? `<a href="mailto:${esc(i.contato.email)}?subject=${encodeURIComponent(`Complete seu cadastro de instrutor — ${Aulor.escola().nome}`)}&body=${encodeURIComponent(msg)}" class="${BOTAO_SEC}">${ICONE.envelope} Enviar por e-mail</a>` : ''}
+        ${i.contato.email ? `<a href="mailto:${esc(i.contato.email)}?subject=${encodeURIComponent('Complete seu cadastro de instrutor — ProWay')}&body=${encodeURIComponent(msg)}" class="${BOTAO_SEC}">${ICONE.envelope} Enviar por e-mail</a>` : ''}
         <span class="text-xs text-slate-500 dark:text-neutral-400 ml-auto">WhatsApp/e-mail mandam o formulário único.</span>
       </div>
       <p class="text-xs text-slate-500 dark:text-neutral-400">Protótipo: o link funciona neste navegador (mesmo localStorage). Em produção o token expira e é de uso único.</p>
@@ -1525,14 +1525,12 @@ function abrirDrawerContrato(contratoId = null) {
   const i = atual(); const c = contratoId ? Instrutores.contratoDe(i, contratoId) : null;
   const d = c ? { tipo: c.tipo, formacaoId: c.formacaoId ?? '', turmaIds: c.itens.map((it) => it.turmaId), observacoes: c.observacoes } : { tipo: null, formacaoId: '', turmaIds: [], observacoes: '' };
   const formacoes = Instrutores.formacoes().map((f) => ({ id: f.id, nome: `${f.codigo ?? ''} ${f.nome}`.trim() }));
-  // MVP: sem formações, todo contrato é de cursos avulsos e a escolha do escopo some.
-  if (!formacoes.length) d.tipo = 'cursos';
   const contratadas = Instrutores.turmasContratadas(i, contratoId);
   const todas = (typeof Cursos !== 'undefined' ? Cursos.todasTurmas() : []).filter((t) => t.status !== 'cancelada');
   const { form } = drawerFormulario({
-    id: 'form-contrato', titulo: c ? `Editar itens · ${esc(c.codigo)}` : 'Novo contrato', subtitulo: `${formacoes.length ? 'Cursos de uma formação ou cursos avulsos. ' : ''}Cada turma vira um item com horas × valor hora da tabela.`, rotulo: c ? 'Salvar itens' : 'Criar rascunho', largura: 'max-w-2xl',
+    id: 'form-contrato', titulo: c ? `Editar itens · ${esc(c.codigo)}` : 'Novo contrato', subtitulo: 'Cursos de uma formação ou cursos avulsos. Cada turma vira um item com horas × valor hora da tabela.', rotulo: c ? 'Salvar itens' : 'Criar rascunho', largura: 'max-w-2xl',
     corpo: `
-      <fieldset class="${formacoes.length ? '' : 'hidden'}">
+      <fieldset>
         <legend class="rotulo">Escopo</legend>
         ${cartoesRadio('tipo', [{ id: 'formacao', nome: 'Cursos de uma formação', descricao: 'Turmas da edição escolhida.' }, { id: 'cursos', nome: 'Cursos avulsos', descricao: 'Turmas abertas, in company ou soltas.' }], d.tipo, 'grid-cols-2')}
         ${ERRO('tipo')}
@@ -1579,7 +1577,7 @@ function abrirDrawerContrato(contratoId = null) {
     el.innerHTML = lista.length ? lista.map((t) => {
       const cu = Instrutores.cursoDe(t.cursoId); const usada = contratadas.has(t.id);
       const item = Instrutores.itemDeTurma(i, t.id);
-      const outro = t.instrutorId && t.instrutorId !== i.id ? nomeDe(estado.lista, t.instrutorId) : '';
+      const outro = t.instrutorId && t.instrutorId !== i.id ? nomeDe(typeof INSTRUTORES !== 'undefined' ? INSTRUTORES : [], t.instrutorId) : '';
       return `<label class="flex items-center gap-3 px-3 py-2 text-sm ${usada ? 'opacity-50' : 'cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-900'}">
         <input type="checkbox" name="turmaIds" value="${t.id}" class="check" ${marcadas.has(t.id) ? 'checked' : ''} ${usada ? 'disabled' : ''}>
         <span class="flex-1 min-w-0">
@@ -1637,7 +1635,7 @@ function confirmarClicksign(i, c) {
     <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800"><h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Enviar ao Clicksign</h3></div>
     <div class="px-5 py-4 text-sm text-slate-700 dark:text-neutral-200 space-y-2">
       <p>Cria o envelope do contrato <strong>${esc(c.codigo)}</strong> (documento v${c.documento?.versao}) com dois signatários:</p>
-      <ul class="list-disc pl-5 text-slate-600 dark:text-neutral-300"><li><strong>${esc(i.nome)}</strong> · ${esc(i.contato.email || 'sem e-mail!')}</li><li><strong>${esc(Aulor.escola().nome)}</strong> (escola)</li></ul>
+      <ul class="list-disc pl-5 text-slate-600 dark:text-neutral-300"><li><strong>${esc(i.nome)}</strong> · ${esc(i.contato.email || 'sem e-mail!')}</li><li><strong>ProWay</strong> (escola)</li></ul>
       <p class="text-slate-500 dark:text-neutral-400">Depois de enviado, os itens não mudam mais — para alterar, cancele e crie outro.</p>
     </div>
     <div class="px-5 py-3 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-end gap-2">
@@ -1686,7 +1684,7 @@ function abrirModalDocumento(i, c) {
     </div>
     <div class="px-5 py-4 overflow-y-auto text-sm text-slate-800 dark:text-neutral-100 space-y-4 leading-relaxed">
       <h4 class="font-display font-semibold text-center uppercase tracking-wide">Contrato de prestação de serviços de instrutoria</h4>
-      <p><strong>CONTRATANTE:</strong> ${esc(Aulor.escola().nome)}, CNPJ ${esc(Documento.fmtCnpj(Aulor.escola().cnpj))}, ${esc(Aulor.escola().cidade)}/${esc(Aulor.escola().uf)} ("Escola").</p>
+      <p><strong>CONTRATANTE:</strong> ProWay Informática e Treinamentos Ltda, Blumenau/SC ("Escola").</p>
       <p><strong>CONTRATADA:</strong> ${rpa ? `<strong>${esc(i.nome)}</strong>, autônomo, CPF ${esc(fmtCpf(cpf))}, RG ${esc(i.rg)}, residente em ${endereco} ("Instrutor").` : `${emp ? `${esc(emp.razaoSocial)}, CNPJ ${esc(fmtCnpj(emp.cnpj))}` : '<span class="text-red-600 dark:text-red-400">[empresa do instrutor não cadastrada]</span>'}, representada por <strong>${esc(i.nome)}</strong>, CPF ${esc(fmtCpf(cpf))}, RG ${esc(i.rg)}, residente em ${endereco} ("Instrutor").`}</p>
       <p><strong>OBJETO:</strong> ministração das aulas ${c.tipo === 'formacao' ? `da formação <strong>${esc(f?.nome ?? c.formacaoId)}</strong>` : 'dos cursos avulsos'} listadas abaixo, nas datas e cargas horárias indicadas.</p>
       <table class="w-full text-xs">
@@ -1777,7 +1775,6 @@ function abrirDrawerPagar(pagamentoId) {
       ${campoTexto('pagoEm', 'Pago em', Instrutores.hoje(), { tipo: 'date' })}`,
     aoSalvar: (fd) => {
       if (!fd.get('pagoEm')) return [{ campo: 'pagoEm', mensagem: 'Data do pagamento.' }];
-      if (fd.get('pagoEm') > Instrutores.hoje()) return [{ campo: 'pagoEm', mensagem: 'Não registre pagamento com data futura.' }]; // a conta a pagar recusa
       estado.lista = Instrutores.registrarPagamento(estado.lista, i.id, pagamentoId, fd.get('pagoEm'));
       persistir(); renderInstrutor(); toast(`Pagamento de ${fmtMoeda(p.valor)} registrado.`);
     },
@@ -1811,6 +1808,8 @@ function confirmarExclusao(id) {
     renderLista();
     return;
   }
+  // URL antiga da tela de avaliações do instrutor (instrutor.html?instrutor=…) → página renomeada.
+  if (!parametroUrl('id') && parametroUrl('instrutor')) { location.replace(`avaliacoes-instrutor.html${location.search}`); return; }
   const id = parametroUrl('id');
   if (!id || !Instrutores.porId(estado.lista, id)) { location.replace('instrutores.html?erro=nao-encontrado'); return; }
   estado.selecionado = id;

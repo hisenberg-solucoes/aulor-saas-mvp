@@ -1,5 +1,5 @@
 // Documento — máscara e validação compartilhadas de CPF e CNPJ (inclusive o CNPJ alfanumérico).
-// Carregar ANTES de js/ui-form.js e do motor (js/aulor.js). Não depende de nada.
+// Carregar ANTES de js/ui-form.js e dos motores (clientes, instrutores, colaboradores, spc). Não depende de nada.
 //
 // CPF: 11 dígitos numéricos, DV clássico (módulo 11).
 // CNPJ alfanumérico (Nota Técnica COCAD/SUARA/RFB 49/2024, emissão a partir de jul/2026): 12 posições

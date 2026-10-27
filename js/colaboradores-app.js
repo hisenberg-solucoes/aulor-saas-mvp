@@ -370,7 +370,7 @@ function renderColaborador() {
 
   el.innerHTML = `
     <nav aria-label="Breadcrumb" class="mb-3 flex items-center gap-1.5 text-sm text-slate-600 dark:text-neutral-400">
-      <a href="inicio.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Home</a>
+      <a href="home.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Home</a>
       <span>/</span>
       <a href="colaboradores.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Colaboradores</a>
       <span>/</span>
@@ -621,7 +621,7 @@ function abrirDrawerColaborador(id = null) {
         ${campoTexto('cargo', 'Cargo', d.cargo, { placeholder: 'Ex.: Analista financeiro', max: 60 })}
         ${campoSelect('departamentoId', 'Departamento', DEPARTAMENTOS, d.departamentoId, { vazio: 'Escolha o departamento' })}
       </div>
-      ${campoTexto('email', 'E-mail corporativo', d.email, { tipo: 'email', placeholder: `nome.sobrenome@${Aulor.escola().site}`, max: 120, opcional: true })}`,
+      ${campoTexto('email', 'E-mail corporativo', d.email, { tipo: 'email', placeholder: 'nome.sobrenome@proway.com.br', max: 120, opcional: true })}`,
     aoSalvar: (fd) => {
       const novo = { matricula: c ? fd.get('matricula') : null, nome: fd.get('nome') ?? '', cpf: fd.get('cpf') ?? '', cargo: fd.get('cargo') ?? '', departamentoId: fd.get('departamentoId') ?? '', admissao: fd.get('admissao') ?? '', email: fd.get('email') ?? '' };
       const erros = C.validarDados(novo, estado.lista, id);
