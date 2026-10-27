@@ -1,17 +1,12 @@
 // ============================================================
-// Financeiro — UI de duas páginas que compartilham este arquivo (o modo vem de <body data-modo>):
-//   · financeiro.html (MODO 'lancamentos') — abas Contas a receber · Contas a pagar · Pagar × Receber (combinada,
-//     receitas e despesas na mesma tabela com ícone por tipo) · Conciliação Asaas · Extrato
-//   · financeiro-indicadores.html (MODO 'indicadores') — painel da diretoria (a antiga aba "Visão geral",
-//     movida para página própria em 31/08/2026, 1º item do grupo Financeiro no menu; `?aba=visao` redireciona)
+// Financeiro (financeiro.html) — abas Contas (A receber · A pagar · Pagar × Receber, receitas e despesas na
+// mesma tabela com ícone por tipo) · Conciliação Asaas · Extrato · Saque automático. Na V1 não há página de indicadores.
 // Lê o motor `Lancamentos` (js/lancamentos-motor.js); nunca recalcula o que o motor consolida.
 // Depende de: avaliacoes-ui (esc, toast, abrirModal, fecharModal, parametroUrl),
-// ui-form (modalFormulario, campoCombo, ativarCombos, mostrarErros),
-// chamados-graficos (tile, barrasHorizontais, legenda, tabelaDados, ligarTooltips, GRAF).
+// ui-form (modalFormulario, campoCombo, ativarCombos, mostrarErros).
 // ============================================================
 
 const L = Lancamentos;
-const MODO = document.body?.dataset.modo === 'indicadores' ? 'indicadores' : 'lancamentos';
 
 // ---------- Estilo (direção "Ficha em cartões": mesmas constantes de salas-app e contratos-app; ui-form lê BOTAO_PRI etc.) ----------
 const CARTAO = 'bg-white dark:bg-neutral-950 rounded-xl border border-slate-200/80 dark:border-neutral-800 shadow-[0_1px_2px_rgb(7_30_44/0.05)]';
@@ -71,15 +66,12 @@ const abaDaTela = () => (ehParteContas(estado.aba) ? 'contas' : estado.aba);
 // 'ambas' é o pseudo-tipo da parte combinada: indexa estado.contas/ROTULO_TIPO e vira tipo '' (todos) no L.filtrar.
 const TIPO_DA_ABA = { receber: 'receita', pagar: 'despesa', ambas: 'ambas' };
 const ABA_PADRAO = 'receber';
-const LIMIAR_INADIMPLENCIA = 5; // % — acima disso a taxa fica vermelha (mesma faixa dos indicadores comerciais) [sup.]
 const ROTULO_TIPO = { receita: { titulo: 'Contas a receber', novo: 'Nova receita', pessoa: 'cliente' }, despesa: { titulo: 'Contas a pagar', novo: 'Nova despesa', pessoa: 'favorecido' }, ambas: { titulo: 'Pagar × Receber', novo: 'Novo lançamento', pessoa: 'cliente ou favorecido' } };
 
 // ---------- Helpers ----------
 const moeda = (n) => L.fmtMoedaCentavos(n);
-const moedaCurta = (n) => L.fmtMoeda(n);
 const dataBr = (iso) => (iso ? L.fmtData(iso) : '—');
 const mesRotulo = (ym) => (ym && /^\d{4}-\d{2}$/.test(ym) ? L.rotuloMes(ym) : ym || '—');
-const corResultado = (v) => (v == null ? 'text-slate-400' : v < 0 ? 'text-red-700 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400');
 const plural = (n, um, varios = `${um}s`) => `${n} ${n === 1 ? um : varios}`;
 const nomeCat = (id) => { const c = L.categoriaDe(estado.plano, id); return c ? `${c.codigo} ${c.nome}` : '—'; };
 const nomeCentro = (id) => L.centroDe(estado.plano, id)?.nome ?? '—';
@@ -114,12 +106,6 @@ const campoHtml = (rotulo, corpo, { name = '', opcional = false, ajuda = '' } = 
     ${ajuda ? `<p class="text-xs ${APOIO} mt-1">${ajuda}</p>` : ''}
     ${name ? ERRO(name) : ''}
   </div>`;
-const cartaoGrafico = (titulo, subtitulo, html, extra = '') => `
-  <section class="${CARTAO} p-4 ${extra}">
-    <h3 class="font-display font-semibold text-slate-800 dark:text-neutral-100">${titulo}</h3>
-    ${subtitulo ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mb-3">${subtitulo}</p>` : '<div class="mb-3"></div>'}
-    ${html}
-  </section>`;
 
 function baixarArquivo(nome, conteudo, tipo = 'text/csv;charset=utf-8') {
   const blob = new Blob([conteudo], { type: tipo });
@@ -138,7 +124,6 @@ const estado = {
   lista: [], plano: null, movimentos: [], pessoas: {}, turmas: [],
   aba: ABA_PADRAO,
   parteContas: ABA_PADRAO, // última parte aberta de Contas, para a aba voltar nela
-  painel: { periodoId: '12m', de: '', ate: '', regime: 'caixa', contaBancariaId: '', mesArea: '' },
   // 'ambas' = aba combinada Pagar × Receber (mesma estrutura; sem seleção em massa na prática, pois a tabela não tem checkboxes).
   contas: { receita: abaContasPadrao(), despesa: abaContasPadrao(), ambas: abaContasPadrao() },
   // filtro: 'pendentes' (fila do que precisa de você) | 'conciliado' | 'outros' (taxas e transferências) | 'todos'.
@@ -187,7 +172,7 @@ function atualizarUrl() {
   else if (filtros?.situacao === 'aberto' && filtros.de === hoje && filtros.ate === L.somarDias(hoje, 7)) q.set('vencimento', '7-dias');
   else if (filtros?.situacao && !filtros.de && !filtros.ate) q.set('situacao', filtros.situacao);
   if (filtros?.natureza) q.set('natureza', filtros.natureza); // ?natureza=pf|pj, independente dos demais parâmetros
-  if (filtros?.centroCustoId && tipo !== 'receita') q.set('centro', filtros.centroCustoId);
+  if (filtros?.centroCustoId) q.set('centro', filtros.centroCustoId);
   const qs = q.toString();
   history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
 }
@@ -291,7 +276,6 @@ function render() {
   const foco = lembrarFoco();
   fecharMenu();
   fecharPainel();
-  if (MODO === 'indicadores') { renderPaginaIndicadores(); return; }
   if (ehParteContas(estado.aba)) estado.parteContas = estado.aba;
   const el = document.getElementById('tela');
   const atual = abaDaTela();
@@ -308,7 +292,6 @@ function render() {
   el.querySelectorAll('[data-operacional]').forEach((b) => b.addEventListener('click', () => aplicarOperacional(b.dataset.operacional)));
   el.querySelectorAll('[data-aba]').forEach((b) => b.addEventListener('click', () => { estado.aba = b.dataset.aba === 'contas' ? estado.parteContas : b.dataset.aba; atualizarUrl(); render(); }));
   ligarAba(el);
-  ligarTooltips(el);
   devolverFocoDaTela(foco);
   el.querySelectorAll('[data-mais]').forEach((b) => b.addEventListener('click', () => {
     const lista = b.dataset.mais; const antes = limites[lista].n;
@@ -330,273 +313,6 @@ function ligarAba(el) {
   else if (estado.aba === 'extrato') ligarExtrato(el);
   else if (estado.aba === 'saques') ligarSaques(el);
   else ligarContas(el, TIPO_DA_ABA[estado.aba] ?? 'receita');
-}
-
-// ============================================================
-// Indicadores financeiros (financeiro-indicadores.html) — a antiga aba "Visão geral"
-// ============================================================
-
-// Página própria (1º item do grupo Financeiro), mesmo app com MODO 'indicadores' — como comercial.html e pedagogico.html.
-function renderPaginaIndicadores() {
-  const el = document.getElementById('tela');
-  el.innerHTML = `
-    <div class="mb-4">
-      <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100">Indicadores financeiros</h2>
-      <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">Dashboards financeiros calculados dos <a href="${urlLancamentos()}" class="text-petrol-800 dark:text-sky-300 hover:underline">lançamentos</a>: saldo, receita × despesa, B2C × B2B, centros de custo, balanço e DRE. Referência: ${esc(dataBr(L.hoje()))}.</p>
-    </div>
-    <div id="conteudo">${htmlVisao()}</div>`;
-  ligarVisao(el);
-  ligarTooltips(el);
-}
-// Link para a tela de lançamentos (financeiro.html) numa aba, opcionalmente já filtrada por situação.
-function urlLancamentos(aba = ABA_PADRAO, situacao = '') {
-  const q = new URLSearchParams();
-  if (aba !== ABA_PADRAO) q.set('aba', aba);
-  if (situacao) q.set('situacao', situacao);
-  const qs = q.toString();
-  return `financeiro.html${qs ? `?${qs}` : ''}`;
-}
-
-function periodoPainel() {
-  const p = estado.painel;
-  const opc = L.periodosPainel().find((x) => x.id === p.periodoId);
-  if (p.periodoId === 'personalizado') return { de: p.de || L.periodoPadrao().de, ate: p.ate || L.periodoPadrao().ate };
-  return { de: opc?.de, ate: opc?.ate };
-}
-
-// Gráfico de linhas com escala em R$ (uma escala por gráfico, passos "redondos", valores em texto de ink).
-function linhasMoeda(pontos, series, { largura = 640, altura = 220 } = {}) {
-  const mL = 56; const mR = 32; const mT = 12; const mB = 28;
-  const w = largura - mL - mR; const h = altura - mT - mB;
-  const max = Math.max(1, ...pontos.flatMap((p) => series.map((s) => p[s.chave] ?? 0)));
-  const bruto = max / 4; const pot = 10 ** Math.floor(Math.log10(bruto)); const passo = [1, 2, 2.5, 5, 10].map((m) => m * pot).find((v) => v >= bruto) ?? pot * 10;
-  const topo = Math.ceil(max / passo) * passo;
-  const x = (i) => mL + (pontos.length === 1 ? w / 2 : (i / (pontos.length - 1)) * w);
-  const y = (v) => mT + h - (v / topo) * h;
-  const rotEixo = (v) => (v >= 1000 ? `${(v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mil` : String(v));
-  const grade = []; for (let v = 0; v <= topo + 0.001; v += passo) grade.push(`<line x1="${mL}" x2="${mL + w}" y1="${y(v)}" y2="${y(v)}" class="${GRAF.grade}" stroke-width="1"/><text x="${mL - 6}" y="${y(v) + 4}" text-anchor="end" class="${GRAF.inkSec} text-[10px] tabular-nums">${rotEixo(v)}</text>`);
-  const caminho = (s) => pontos.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p[s.chave] ?? 0)}`).join(' ');
-  const marcas = (s) => pontos.map((p, i) => `<circle cx="${x(i)}" cy="${y(p[s.chave] ?? 0)}" r="6" class="${s.corFill} stroke-white dark:stroke-neutral-950" stroke-width="2" data-tip="${esc(`${p.rotulo}\n${s.nome}: ${moeda(p[s.chave] ?? 0)}`)}"/>`).join('');
-  const rotulos = pontos.map((p, i) => (pontos.length > 18 && i % 2 ? '' : `<text x="${x(i)}" y="${altura - 8}" text-anchor="middle" class="${GRAF.inkSec} text-[10px]">${esc(p.rotulo)}</text>`)).join('');
-  return `${legenda(series.map((s) => ({ nome: s.nome, cor: s.corFill })))}
-    <svg viewBox="0 0 ${largura} ${altura}" class="w-full" role="img">
-      ${grade.join('')}
-      <line x1="${mL}" x2="${mL + w}" y1="${y(0)}" y2="${y(0)}" class="${GRAF.eixo}" stroke-width="1"/>
-      ${series.map((s) => `<path d="${caminho(s)}" fill="none" class="${s.cor}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>`).join('')}
-      ${series.map(marcas).join('')}
-      ${rotulos}
-    </svg>`;
-}
-
-// Colunas empilhadas por período (2 partes) com escala própria em R$.
-function colunasEmpilhadas(pontos, partes, { largura = 640, altura = 220 } = {}) {
-  const mL = 56; const mR = 12; const mT = 12; const mB = 28;
-  const w = largura - mL - mR; const h = altura - mT - mB;
-  const max = Math.max(1, ...pontos.map((p) => partes.reduce((s, pt) => s + (p[pt.chave] ?? 0), 0)));
-  const bruto = max / 4; const pot = 10 ** Math.floor(Math.log10(bruto)); const passo = [1, 2, 2.5, 5, 10].map((m) => m * pot).find((v) => v >= bruto) ?? pot * 10;
-  const topo = Math.ceil(max / passo) * passo;
-  const gap = 8; const wCol = Math.max(4, (w - gap * (pontos.length + 1)) / pontos.length);
-  const y = (v) => mT + h - (v / topo) * h;
-  const rotEixo = (v) => (v >= 1000 ? `${(v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mil` : String(v));
-  const grade = []; for (let v = 0; v <= topo + 0.001; v += passo) grade.push(`<line x1="${mL}" x2="${mL + w}" y1="${y(v)}" y2="${y(v)}" class="${GRAF.grade}" stroke-width="1"/><text x="${mL - 6}" y="${y(v) + 4}" text-anchor="end" class="${GRAF.inkSec} text-[10px] tabular-nums">${rotEixo(v)}</text>`);
-  const cols = pontos.map((p, i) => {
-    const x = mL + gap + i * (wCol + gap);
-    let acumulado = 0;
-    const segs = partes.map((pt) => {
-      const v = p[pt.chave] ?? 0; const y1 = y(acumulado + v); const alturaSeg = y(acumulado) - y1; acumulado += v;
-      return v > 0 ? `<rect x="${x}" y="${y1}" width="${wCol}" height="${alturaSeg}" class="${pt.cor}" data-tip="${esc(`${p.rotulo}\n${pt.nome}: ${moeda(v)}`)}"/>` : '';
-    }).join('');
-    const rot = pontos.length > 18 && i % 2 ? '' : `<text x="${x + wCol / 2}" y="${altura - 8}" text-anchor="middle" class="${GRAF.inkSec} text-[10px]">${esc(p.rotulo)}</text>`;
-    return `${segs}${rot}`;
-  });
-  return `${legenda(partes.map((s) => ({ nome: s.nome, cor: s.cor })))}
-    <svg viewBox="0 0 ${largura} ${altura}" class="w-full" role="img">${grade.join('')}<line x1="${mL}" x2="${mL + w}" y1="${y(0)}" y2="${y(0)}" class="${GRAF.eixo}" stroke-width="1"/>${cols.join('')}</svg>`;
-}
-
-// Colunas empilhadas em R$ (eixo esquerdo) + linha de percentual (eixo direito) — inadimplência por mês.
-function colunasComLinhaPct(pontos, partes, linha, { largura = 640, altura = 220 } = {}) {
-  const mL = 56; const mR = 44; const mT = 12; const mB = 28;
-  const w = largura - mL - mR; const h = altura - mT - mB;
-  const max = Math.max(1, ...pontos.map((p) => partes.reduce((s, pt) => s + (p[pt.chave] ?? 0), 0)));
-  const bruto = max / 4; const pot = 10 ** Math.floor(Math.log10(bruto)); const passo = [1, 2, 2.5, 5, 10].map((m) => m * pot).find((v) => v >= bruto) ?? pot * 10;
-  const topo = Math.ceil(max / passo) * passo;
-  const maxPct = Math.max(10, Math.ceil(Math.max(0, ...pontos.map((p) => p[linha.chave] ?? 0)) / 10) * 10);
-  const gap = 8; const wCol = Math.max(4, (w - gap * (pontos.length + 1)) / pontos.length);
-  const y = (v) => mT + h - (v / topo) * h;
-  const yp = (v) => mT + h - (v / maxPct) * h;
-  const xc = (i) => mL + gap + i * (wCol + gap) + wCol / 2;
-  const rotEixo = (v) => (v >= 1000 ? `${(v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mil` : String(v));
-  const grade = []; for (let v = 0; v <= topo + 0.001; v += passo) grade.push(`<line x1="${mL}" x2="${mL + w}" y1="${y(v)}" y2="${y(v)}" class="${GRAF.grade}" stroke-width="1"/><text x="${mL - 6}" y="${y(v) + 4}" text-anchor="end" class="${GRAF.inkSec} text-[10px] tabular-nums">${rotEixo(v)}</text>`);
-  const eixoPct = [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${mL + w + 6}" y="${yp(maxPct * f) + 4}" text-anchor="start" class="${GRAF.inkSec} text-[10px] tabular-nums">${Math.round(maxPct * f)}%</text>`);
-  const cols = pontos.map((p, i) => {
-    const x = xc(i) - wCol / 2;
-    let acumulado = 0;
-    const segs = partes.map((pt) => {
-      const v = p[pt.chave] ?? 0; const y1 = y(acumulado + v); const alturaSeg = y(acumulado) - y1; acumulado += v;
-      return v > 0 ? `<rect x="${x}" y="${y1}" width="${wCol}" height="${alturaSeg}" class="${pt.cor}" data-tip="${esc(`${p.rotulo}\n${pt.nome}: ${moeda(v)}`)}"/>` : '';
-    }).join('');
-    const rot = pontos.length > 18 && i % 2 ? '' : `<text x="${xc(i)}" y="${altura - 8}" text-anchor="middle" class="${GRAF.inkSec} text-[10px]">${esc(p.rotulo)}</text>`;
-    return `${segs}${rot}`;
-  });
-  const comPct = pontos.map((p, i) => ({ p, i })).filter(({ p }) => p[linha.chave] != null);
-  const caminho = comPct.map(({ p, i }, k) => `${k ? 'L' : 'M'}${xc(i)},${yp(p[linha.chave])}`).join(' ');
-  const marcas = comPct.map(({ p, i }) => `<circle cx="${xc(i)}" cy="${yp(p[linha.chave])}" r="6" class="${linha.corFill} stroke-white dark:stroke-neutral-950" stroke-width="2" data-tip="${esc(`${p.rotulo}\n${linha.nome}: ${L.fmtPct(p[linha.chave])}${linha.tip ? `\n${linha.tip(p)}` : ''}`)}"/>`).join('');
-  return `${legenda([...partes.map((s) => ({ nome: s.nome, cor: s.cor })), { nome: `${linha.nome} (eixo direito)`, cor: linha.corFill }])}
-    <svg viewBox="0 0 ${largura} ${altura}" class="w-full" role="img">${grade.join('')}${eixoPct.join('')}<line x1="${mL}" x2="${mL + w}" y1="${y(0)}" y2="${y(0)}" class="${GRAF.eixo}" stroke-width="1"/>${cols.join('')}
-      ${caminho ? `<path d="${caminho}" fill="none" class="${linha.cor}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>` : ''}${marcas}</svg>`;
-}
-
-function htmlVisao() {
-  const p = estado.painel;
-  const per = periodoPainel();
-  const pn = L.painel(estado.lista, estado.plano, estado.movimentos, { ...per, regime: p.regime, contaBancariaId: p.contaBancariaId });
-  const t = pn.tiles;
-  const serie = pn.serie;
-  const seg = pn.porSegmento;
-  const bal = pn.balanco;
-  const d = pn.dre;
-  const inad = pn.inadimplencia;
-  const tInad = L.totaisInadimplencia(inad);
-  const contas = estado.plano.contasBancarias.filter((c) => c.status === 'ativo');
-  const rotuloPeriodo = `${dataBr(pn.periodo.de)} a ${dataBr(pn.periodo.ate)} · ${p.regime === 'caixa' ? 'regime de caixa (pagos)' : 'regime de competência'}`;
-  const faixa = (env, rot) => `
-    <table class="w-full text-sm">
-      <tbody>
-        <tr><td class="py-1 text-slate-500 dark:text-neutral-400">Vencido</td><td class="py-1 text-right tabular-nums ${env.vencido ? 'text-red-700 dark:text-red-400 font-medium' : ''}">${moeda(env.vencido)}</td></tr>
-        <tr><td class="py-1 text-slate-500 dark:text-neutral-400">A vencer até 30 dias</td><td class="py-1 text-right tabular-nums">${moeda(env.ate30)}</td></tr>
-        <tr><td class="py-1 text-slate-500 dark:text-neutral-400">31 a 60 dias</td><td class="py-1 text-right tabular-nums">${moeda(env.ate60)}</td></tr>
-        <tr><td class="py-1 text-slate-500 dark:text-neutral-400">Mais de 60 dias</td><td class="py-1 text-right tabular-nums">${moeda(env.mais60)}</td></tr>
-        <tr class="border-t border-slate-200 dark:border-neutral-800 font-semibold text-slate-800 dark:text-neutral-100"><td class="py-1.5">Total ${rot}</td><td class="py-1.5 text-right tabular-nums">${moeda(env.total)}</td></tr>
-      </tbody>
-    </table>`;
-  const linhaDre = (rot, v, { negrito = false, sinal = '', pctv = null, indent = false } = {}) => `
-    <tr class="${negrito ? 'font-semibold text-slate-800 dark:text-neutral-100 border-t border-slate-200 dark:border-neutral-800' : ''}">
-      <td class="py-1.5 ${indent ? 'pl-5' : ''} text-slate-600 dark:text-neutral-300 ${negrito ? '' : ''}">${sinal ? `<span class="text-slate-400 mr-1">${sinal}</span>` : ''}${rot}</td>
-      <td class="py-1.5 text-right tabular-nums ${negrito ? corResultado(v) : ''}">${moeda(v)}</td>
-      <td class="py-1.5 text-right tabular-nums text-xs text-slate-400 w-14">${pctv == null ? '' : L.fmtPct(pctv)}</td>
-    </tr>`;
-  const topCat = pn.porCategoriaDespesa.slice(0, 8).map((c) => ({ nome: `${c.categoria.codigo} ${c.categoria.nome}`, valor: c.valor, tip: `${c.categoria.codigo} ${c.categoria.nome}\n${moeda(c.valor)} · ${L.fmtPct(c.pct)} · ${plural(c.n, 'lançamento', 'lançamentos')}` }));
-  const catsRec = pn.porCategoriaReceita.filter((c) => c.valor > 0).map((c) => ({ nome: `${c.categoria.codigo} ${c.categoria.nome}`, valor: c.valor, tip: `${c.categoria.codigo} ${c.categoria.nome}\n${moeda(c.valor)} · ${L.fmtPct(c.pct)} · ${plural(c.n, 'lançamento', 'lançamentos')}` }));
-  const centros = pn.porCentroCusto.filter((c) => c.despesa > 0).map((c) => ({ nome: `${c.centro.codigo ? `${c.centro.codigo} ` : ''}${c.centro.nome}`, valor: c.despesa, tip: `${c.centro.nome}\nDespesa: ${moeda(c.despesa)} (${L.fmtPct(c.pctDespesa)})\n${plural(c.n, 'lançamento', 'lançamentos')}` }));
-
-  return `
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-      ${selectHtml('painel-periodo', L.periodosPainel().map((o) => ({ id: o.id, nome: o.nome })), p.periodoId, { vazio: 'Período', classe: SELECT_FILTRO, title: 'Período do painel' })}
-      ${p.periodoId === 'personalizado' ? `<input id="painel-de" type="date" value="${esc(p.de || per.de)}" class="${CAMPO_DATA}" title="Data inicial"><span class="text-slate-400 text-sm">a</span><input id="painel-ate" type="date" value="${esc(p.ate || per.ate)}" class="${CAMPO_DATA}" title="Data final">` : ''}
-      ${selectHtml('painel-regime', [{ id: 'caixa', nome: 'Regime de caixa' }, { id: 'competencia', nome: 'Regime de competência' }], p.regime, { vazio: 'Regime', classe: SELECT_FILTRO, title: 'Caixa = por data de pagamento (só pagos); competência = por mês de competência (todos não cancelados)' })}
-      ${selectHtml('painel-conta', contas, p.contaBancariaId, { vazio: 'Todas as contas', classe: SELECT_FILTRO, title: 'Conta bancária' })}
-      <span class="text-xs text-slate-500 dark:text-neutral-400 ml-1">${esc(rotuloPeriodo)}</span>
-      <div class="ml-auto flex items-center gap-2">
-        ${MODO === 'indicadores' ? `<a href="jornada-financeira.html" class="${BOTAO_SEC}">Jornada financeira</a>` : ''}
-        <a href="faturamento.html" class="${BOTAO_SEC}">Faturamento por curso</a>
-        <a href="diretoria.html" class="${BOTAO_SEC}">Indicadores da diretoria</a>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
-      ${tile({ fundo: true, tom: 'info', icone: 'banco', rotulo: 'Saldo em contas', valor: moedaCurta(t.saldo), ajuda: `${plural(bal.saldoContas.length, 'conta ativa', 'contas ativas')} · posição em ${esc(dataBr(pn.ref))}` })}
-      ${tile({ fundo: true, tom: 'bom', icone: 'entrada', rotulo: 'Receita', valor: moedaCurta(t.receita), ajuda: 'no período' })}
-      ${tile({ fundo: true, tom: 'alerta', icone: 'saida', rotulo: 'Despesa', valor: moedaCurta(t.despesa), ajuda: 'no período' })}
-      ${tile({ fundo: true, icone: 'resultado', rotulo: 'Resultado', valor: moedaCurta(t.resultado), tom: t.resultado < 0 ? 'ruim' : 'bom', ajuda: t.resultadoPct == null ? 'sem receita no período' : `${L.fmtPct(t.resultadoPct)} sobre a receita` })}
-      ${tile({ fundo: true, icone: 'alerta', rotulo: 'A receber vencido', valor: moedaCurta(t.aReceberVencido.total), tom: t.aReceberVencido.n ? 'ruim' : 'neutro', ajuda: plural(t.aReceberVencido.n, 'parcela', 'parcelas'), extraHtml: t.aReceberVencido.n ? `<a href="${urlLancamentos('receber', 'vencido')}" class="${BOTAO_LINK}">Ver vencidos</a>` : '' })}
-      ${tile({ fundo: true, icone: 'relogio', rotulo: 'A pagar vencido', valor: moedaCurta(t.aPagarVencido.total), tom: t.aPagarVencido.n ? 'alerta' : 'neutro', ajuda: plural(t.aPagarVencido.n, 'conta', 'contas'), extraHtml: t.aPagarVencido.n ? `<a href="${urlLancamentos('pagar', 'vencido')}" class="${BOTAO_LINK}">Ver vencidos</a>` : '' })}
-    </div>
-
-    ${cartaoGrafico('Receita × despesa', `Por mês do período (${p.regime === 'caixa' ? 'pelo pagamento' : 'pela competência'}); o acumulado do resultado está na tabela.`, `
-      ${linhasMoeda(serie.map((m) => ({ rotulo: m.rotulo, receita: m.receita, despesa: m.despesa })), [{ chave: 'receita', nome: 'Receita', cor: GRAF.linha1, corFill: GRAF.serie1 }, { chave: 'despesa', nome: 'Despesa', cor: GRAF.linha2, corFill: GRAF.serie2 }], { largura: 1280, altura: 300 })}
-      ${tabelaDados(['Mês', 'Receita', 'Despesa', 'Resultado', 'Acumulado'], serie.map((m) => [m.rotulo, moeda(m.receita), moeda(m.despesa), moeda(m.resultado), moeda(m.acumulado)]))}
-    `, 'mb-4')}
-
-    <div class="grid lg:grid-cols-2 gap-4 mb-4">
-      ${cartaoGrafico('Inadimplência por mês', `Parcelas a receber pelo mês de <b>vencimento</b> (independe do regime): pagas em dia (até ${L.TOLERANCIA_ATRASO_DIAS} dias após o vencimento, compensação bancária), pagas com atraso e ainda em aberto em ${esc(dataBr(pn.ref))}. Taxa de inadimplência = em aberto ÷ total vencido no mês; meses futuros aparecem só como "a vencer".`, `
-      ${colunasComLinhaPct(inad.map((m) => ({ rotulo: m.rotulo, pagoEmDia: m.pagoEmDia, pagoAtraso: m.pagoAtraso, emAberto: m.emAberto, aVencer: m.aVencer, pct: m.pct, nEmAberto: m.nEmAberto, pctAtraso: m.pctAtraso })), [{ chave: 'pagoEmDia', nome: 'Pago em dia', cor: GRAF.serie1 }, { chave: 'pagoAtraso', nome: 'Pago com atraso', cor: GRAF.alerta }, { chave: 'emAberto', nome: 'Em aberto (inadimplente)', cor: GRAF.critico }, { chave: 'aVencer', nome: 'A vencer', cor: GRAF.neutro }], { chave: 'pct', nome: 'Inadimplência', cor: 'stroke-[#d03b3b]', corFill: GRAF.critico, tip: (m) => `${plural(m.nEmAberto, 'parcela em aberto', 'parcelas em aberto')} · atraso total (pago com atraso + em aberto): ${L.fmtPct(m.pctAtraso)}` })}
-      <div class="grid grid-cols-2 gap-3 mt-3 text-sm">
-        <div><p class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">Inadimplência do período</p><p class="font-display text-xl font-semibold ${tInad.pct == null ? 'text-slate-400' : tInad.pct > LIMIAR_INADIMPLENCIA ? 'text-red-700 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'}">${tInad.pct == null ? '—' : L.fmtPct(tInad.pct)}</p><p class="text-xs text-slate-400">${moeda(tInad.emAberto)} em aberto de ${moeda(tInad.vencido)} vencidos${tInad.pct != null ? ` · meta ≤ ${LIMIAR_INADIMPLENCIA}%` : ''}</p></div>
-        <div><p class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">Parcelas em aberto</p><p class="font-display text-xl font-semibold text-slate-800 dark:text-neutral-100">${tInad.nEmAberto}</p><p class="text-xs text-slate-400">${tInad.nEmAberto ? `<a href="${urlLancamentos('receber', 'vencido')}" class="${BOTAO_LINK}">Ver em Contas a receber</a>` : 'nenhuma vencida em aberto'}</p></div>
-        <div><p class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">Recuperado com atraso</p><p class="font-display text-xl font-semibold text-slate-800 dark:text-neutral-100">${moedaCurta(tInad.pagoAtraso)}</p><p class="text-xs text-slate-400">${plural(tInad.nAtraso, 'parcela paga', 'parcelas pagas')} depois do vencimento${tInad.nAtraso ? ` · ${plural(tInad.mediaDiasAtraso, 'dia', 'dias')} de atraso em média` : ''}</p></div>
-        <div><p class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">Pior mês</p><p class="font-display text-xl font-semibold text-slate-800 dark:text-neutral-100">${tInad.pior ? esc(tInad.pior.rotulo) : '—'}</p><p class="text-xs text-slate-400">${tInad.pior ? `${L.fmtPct(tInad.pior.pct)} · ${moeda(tInad.pior.emAberto)} em aberto` : 'sem parcelas vencidas no período'}</p></div>
-      </div>
-      ${tabelaDados(['Mês', 'Vencido no mês', 'Pago em dia', 'Pago com atraso', 'Em aberto', 'Inadimplência', 'Atraso total', 'A vencer'], inad.map((m) => [m.rotulo, moeda(m.vencido), moeda(m.pagoEmDia), moeda(m.pagoAtraso), moeda(m.emAberto), m.pct == null ? '—' : L.fmtPct(m.pct), m.pctAtraso == null ? '—' : L.fmtPct(m.pctAtraso), m.aVencer ? moeda(m.aVencer) : '—']))}
-    `)}
-      ${cartaoGrafico('B2C × B2B', 'Receita por mês por segmento — pessoa jurídica (CNPJ) pagando é B2B; pessoa física, B2C.', `
-        ${colunasEmpilhadas(serie.map((m) => ({ rotulo: m.rotulo, b2c: m.receitaB2c, b2b: m.receitaB2b })), [{ chave: 'b2c', nome: 'For You (B2C)', cor: GRAF.serie1 }, { chave: 'b2b', nome: 'Corporativo (B2B)', cor: GRAF.serie2 }])}
-        <div class="grid grid-cols-3 gap-3 mt-3 text-sm">
-          <div><p class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">Participação B2B</p><p class="font-display text-xl font-semibold text-slate-800 dark:text-neutral-100">${L.fmtPct(seg.pctB2b)}</p><p class="text-xs text-slate-400">${moeda(seg.b2b.receita)} de ${moeda(seg.total)}</p></div>
-          <div><p class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">Ticket médio</p><p class="font-display text-xl font-semibold text-slate-800 dark:text-neutral-100">${moedaCurta(seg.b2c.ticket)} <span class="text-xs font-normal text-slate-400">B2C</span></p><p class="text-xs text-slate-400">${moedaCurta(seg.b2b.ticket)} B2B · por venda</p></div>
-          <div><p class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-neutral-400">Vendas</p><p class="font-display text-xl font-semibold text-slate-800 dark:text-neutral-100">${seg.contratos}</p><p class="text-xs text-slate-400">${seg.b2c.contratos} B2C · ${seg.b2b.contratos} B2B</p></div>
-        </div>
-        ${tabelaDados(['Mês', 'B2C', 'B2B', 'Total'], serie.map((m) => [m.rotulo, moeda(m.receitaB2c), moeda(m.receitaB2b), moeda(m.receita)]))}
-      `)}
-    </div>
-
-    <div class="grid lg:grid-cols-2 gap-4 mb-4">
-      ${cartaoGrafico('Por categoria de receita', 'Receitas do período pelo que foi vendido (turma aberta, in company, assinatura…), com a participação no total.', `
-        ${catsRec.length ? barrasHorizontais(catsRec, { formato: (v) => moedaCurta(v), rotuloLargura: 170 }) : '<p class="text-sm text-slate-400 py-6 text-center">Sem receitas no período.</p>'}
-        ${tabelaDados(['Categoria', 'Receita', '%', 'Lançamentos'], pn.porCategoriaReceita.map((c) => [`${c.categoria.codigo} ${c.categoria.nome}`, moeda(c.valor), L.fmtPct(c.pct), c.n]))}
-      `)}
-      ${cartaoGrafico('Por centro de custo', 'Despesas do período por departamento, com a participação no total.', centros.length ? barrasHorizontais(centros, { formato: (v) => moedaCurta(v), rotuloLargura: 170 }) : '<p class="text-sm text-slate-400 py-6 text-center">Sem despesas no período.</p>')}
-    </div>
-
-    <div class="grid lg:grid-cols-2 gap-4 mb-4">
-      ${htmlVendasPorArea(serie, p.mesArea, 'painel-mes-area')}
-    </div>
-
-    <section class="${CARTAO} p-4 mb-4">
-      <h3 class="font-display font-semibold text-slate-800 dark:text-neutral-100">Balanço da instituição</h3>
-      <p class="text-xs text-slate-500 dark:text-neutral-400 mb-3">Posição em ${esc(dataBr(bal.ref))}: saldo das contas + a receber − a pagar (contas em aberto, todas as datas).</p>
-      <div class="grid md:grid-cols-3 gap-4">
-        <div>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-1">Saldo por conta</p>
-          <table class="w-full text-sm"><tbody>
-            ${bal.saldoContas.map((s) => `<tr><td class="py-1 text-slate-600 dark:text-neutral-300">${esc(s.conta.nome)}<span class="block text-[11px] text-slate-400">${esc(L.nomeDe(L.TIPOS_CONTA, s.conta.tipo))}</span></td><td class="py-1 text-right tabular-nums ${corResultado(s.saldo)}" title="Inicial ${moeda(s.saldoInicial)} + entradas ${moeda(s.entradas)} − saídas ${moeda(s.saidas)} ${s.transferencias ? `+ transferências ${moeda(s.transferencias)}` : ''}">${moeda(s.saldo)}</td></tr>`).join('')}
-            <tr class="border-t border-slate-200 dark:border-neutral-800 font-semibold text-slate-800 dark:text-neutral-100"><td class="py-1.5">Total em contas</td><td class="py-1.5 text-right tabular-nums">${moeda(bal.saldoTotal)}</td></tr>
-          </tbody></table>
-        </div>
-        <div><p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-1">A receber (${plural(bal.aReceber.n, 'parcela', 'parcelas')})</p>${faixa(bal.aReceber, 'a receber')}</div>
-        <div><p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-1">A pagar (${plural(bal.aPagar.n, 'conta', 'contas')})</p>${faixa(bal.aPagar, 'a pagar')}</div>
-      </div>
-      <div class="mt-3 pt-3 border-t border-slate-200 dark:border-neutral-800 flex flex-wrap items-baseline gap-x-2">
-        <span class="text-sm text-slate-500 dark:text-neutral-400">Posição líquida</span>
-        <span class="font-display text-2xl font-semibold ${corResultado(bal.posicaoLiquida)}">${moeda(bal.posicaoLiquida)}</span>
-        <span class="text-xs text-slate-400">= ${moeda(bal.saldoTotal)} em contas + ${moeda(bal.aReceber.total)} a receber − ${moeda(bal.aPagar.total)} a pagar</span>
-      </div>
-    </section>
-
-    <div class="grid lg:grid-cols-2 gap-4 mb-4">
-      ${cartaoGrafico('DRE simplificada', `${esc(rotuloPeriodo)}. Linhas pelo grupo da categoria; impostos = DAS lançado (34% da receita recebida).`, `
-        <table class="w-full text-sm"><tbody>
-          ${linhaDre('Receita bruta', d.receitaBruta, { negrito: true })}
-          ${linhaDre('Impostos (DAS/ISS)', d.impostos, { sinal: '(−)', pctv: d.impostosPct })}
-          ${linhaDre('Receita líquida', d.receitaLiquida, { negrito: true })}
-          ${linhaDre('Instrutores (PJ)', d.custosDiretos.instrutores, { sinal: '(−)', indent: true })}
-          ${linhaDre('Material didático', d.custosDiretos.material, { sinal: '(−)', indent: true })}
-          ${linhaDre('Coffee break', d.custosDiretos.coffee, { sinal: '(−)', indent: true })}
-          ${linhaDre('Licenças e laboratório', d.custosDiretos.licencas, { sinal: '(−)', indent: true })}
-          ${d.custosDiretos.outros ? linhaDre('Outros custos diretos', d.custosDiretos.outros, { sinal: '(−)', indent: true }) : ''}
-          ${linhaDre('Margem de contribuição', d.margemContribuicao, { negrito: true, pctv: d.margemPct })}
-          ${linhaDre('Pessoas', d.despesas.pessoas, { sinal: '(−)', indent: true })}
-          ${linhaDre('Ocupação (sede)', d.despesas.ocupacao, { sinal: '(−)', indent: true })}
-          ${linhaDre('Administrativo', d.despesas.administrativo, { sinal: '(−)', indent: true })}
-          ${linhaDre('Marketing', d.despesas.marketing, { sinal: '(−)', indent: true })}
-          ${linhaDre('Financeiro (taxas)', d.despesas.financeiro, { sinal: '(−)', indent: true })}
-          ${d.despesas.outros ? linhaDre('Outras despesas', d.despesas.outros, { sinal: '(−)', indent: true }) : ''}
-          ${linhaDre('EBITDA', d.ebitda, { negrito: true, pctv: d.ebitdaPct })}
-          ${linhaDre('Investimentos', d.investimentos, { sinal: '(−)', indent: true })}
-          ${linhaDre('Resultado', d.resultado, { negrito: true, pctv: d.resultadoPct })}
-        </tbody></table>
-      `)}
-      ${cartaoGrafico('Top categorias de despesa', 'As maiores despesas do período, com a participação no total de despesas.', topCat.length ? barrasHorizontais(topCat, { formato: (v) => moedaCurta(v), rotuloLargura: 190 }) : '<p class="text-sm text-slate-400 py-6 text-center">Sem despesas no período.</p>')}
-    </div>`;
-}
-
-function ligarVisao(el) {
-  const p = estado.painel;
-  el.querySelector('#painel-periodo')?.addEventListener('change', (e) => { p.periodoId = e.target.value || '12m'; render(); });
-  el.querySelector('#painel-de')?.addEventListener('change', (e) => { p.de = e.target.value; render(); });
-  el.querySelector('#painel-ate')?.addEventListener('change', (e) => { p.ate = e.target.value; render(); });
-  el.querySelector('#painel-regime')?.addEventListener('change', (e) => { p.regime = e.target.value || 'caixa'; render(); });
-  el.querySelector('#painel-mes-area')?.addEventListener('change', (e) => { p.mesArea = e.target.value; render(); });
-  el.querySelector('#painel-conta')?.addEventListener('change', (e) => { p.contaBancariaId = e.target.value; render(); });
 }
 
 // ============================================================
@@ -658,7 +374,7 @@ function resumoFiltrosPainel(f) {
     f.forma && nomeForma(f.forma),
     f.origem && `Origem ${L.nomeDe(L.ORIGENS, f.origem).toLowerCase()}`,
     f.pessoaTipo && L.nomeDe(L.TIPOS_PESSOA, f.pessoaTipo),
-    f.centroCustoId && `Centro de custo ${nomeCentro(f.centroCustoId)}`,
+    f.centroCustoId && `Centro de ${L.tipoCentro(L.centroDe(estado.plano, f.centroCustoId))} ${nomeCentro(f.centroCustoId)}`,
     f.categoriaId && `Categoria ${nomeCat(f.categoriaId)}`,
     f.contaBancariaId && `Conta ${nomeConta(f.contaBancariaId)}`,
     f.turmaId && `Turma ${estado.turmas.find((t) => t.id === f.turmaId)?.nome ?? f.turmaId}`,
@@ -740,7 +456,7 @@ function painelFiltros(tipo, gatilho) {
   const f = estado.contas[tipo].filtros;
   const combinada = tipo === 'ambas';
   const categorias = combinada ? [] : L.categoriasDoTipo(estado.plano, tipo).map((x) => ({ id: x.id, nome: `${x.codigo} ${x.nome}` }));
-  const centros = estado.plano.centrosCusto.filter((x) => x.status === 'ativo').map((x) => ({ id: x.id, nome: `${x.codigo} ${x.nome}` }));
+  const centros = L.centrosDoTipo(estado.plano, tipo === 'receita' ? 'receita' : 'custo').map((x) => ({ id: x.id, nome: `${x.codigo} ${x.nome}` }));
   const contas = estado.plano.contasBancarias.filter((x) => x.status === 'ativo');
   const tiposPessoa = combinada ? L.TIPOS_PESSOA : L.TIPOS_PESSOA.filter((t) => (tipo === 'receita' ? ['aluno', 'empresa', 'responsavel'].includes(t.id) : ['fornecedor', 'instrutor', 'colaborador', 'empresa'].includes(t.id)));
   const origens = combinada ? [] : L.ORIGENS.filter((o) => (tipo === 'receita' ? o.id !== 'instrutor' && o.id !== 'folha' : o.id !== 'contrato'));
@@ -751,7 +467,7 @@ function painelFiltros(tipo, gatilho) {
     ['Forma de pagamento', sel('forma', L.FORMAS, 'Todas')],
     combinada ? null : ['Origem', sel('origem', origens, 'Todas')],
     ['Tipo de pessoa', sel('pessoaTipo', tiposPessoa, 'Todos')],
-    tipo === 'receita' ? null : ['Centro de custo', sel('centroCustoId', centros, 'Todos')],
+    [tipo === 'receita' ? 'Centro de receita' : 'Centro de custo', sel('centroCustoId', centros, 'Todos')],
     combinada ? null : ['Categoria', sel('categoriaId', categorias, 'Todas')],
     ['Conta bancária', sel('contaBancariaId', contas, 'Todas')],
     ['Turma', campoCombo('turmaId', estado.turmas, f.turmaId, { id: 'pf-turmaId', vazio: 'Todas', opcional: true })],
@@ -1036,7 +752,7 @@ function modalLancamento({ tipo = null, id = null } = {}) {
   const pode = (campo) => !editando || editaveis.includes(campo);
   let tipoAtual = atual?.tipo ?? tipo ?? 'despesa';
   const categorias = (t) => L.categoriasDoTipo(estado.plano, t).map((x) => ({ id: x.id, nome: `${x.codigo} ${x.nome}` }));
-  const centros = estado.plano.centrosCusto.filter((x) => x.status === 'ativo').map((x) => ({ id: x.id, nome: `${x.codigo} ${x.nome}` }));
+  const centros = L.centrosDoTipo(estado.plano, 'custo').map((x) => ({ id: x.id, nome: `${x.codigo} ${x.nome}` }));
   const trava = (campo) => (pode(campo) ? '' : 'disabled');
   // Receita não tem centro de custo: o campo some (o segmento B2C/B2B vem do CPF/CNPJ do cliente).
   const blocoCentro = campoHtml('Centro de custo', selectHtml('f-centroCustoId', centros, atual?.centroCustoId ?? '', { name: 'centroCustoId' }), { name: 'centroCustoId' });
@@ -1141,8 +857,7 @@ function modalBaixa(id) {
   if (!ok.ok) { toast(ok.motivo); return; }
   const vf = L.valorFinal(l);
   const aviso = l.origem?.tipo === 'contrato' ? `<div class="${FAIXA_INFO}">Baixa refletida na parcela ${l.origem.parcelaN}/${l.origem.totalParcelas} da venda ${esc(l.origem.codigo)} — a tela de Vendas e Cobranças passa a mostrar a parcela como paga.</div>`
-    : l.origem?.tipo === 'instrutor' ? `<div class="${FAIXA_INFO}">Baixa refletida no pagamento ${esc(l.origem.pagamentoId)} do contrato do instrutor (NF ${esc(l.nf?.numero ?? '')}).</div>`
-    : l.origem?.tipo === 'compra' ? `<div class="${FAIXA_INFO}">Pagamento ao fornecedor da compra <a href="compra.html?id=${esc(l.origem.compraId)}" class="font-medium hover:underline">${esc(l.origem.codigo ?? '')}</a>; o detalhe da compra passa a mostrar a conta como paga.</div>` : '';
+    : l.origem?.tipo === 'instrutor' ? `<div class="${FAIXA_INFO}">Baixa refletida no pagamento ${esc(l.origem.pagamentoId)} do contrato do instrutor (NF ${esc(l.nf?.numero ?? '')}).</div>` : '';
   const corpo = `
     <div class="rounded-lg bg-slate-50 dark:bg-neutral-900 px-3 py-2 text-sm">
       <p class="font-medium text-slate-800 dark:text-neutral-100">${esc(l.descricao)}</p>
@@ -1320,6 +1035,7 @@ function modalDetalhes(id) {
       ${bloco('Classificação', [
         item('Categoria', esc(nomeCat(l.categoriaId))),
         l.tipo === 'receita' ? item('Segmento', l.segmento === 'b2b' ? 'B2B — pessoa jurídica' : 'B2C — pessoa física') : item('Centro de custo', esc(nomeCentro(l.centroCustoId))),
+        l.tipo === 'receita' && l.centroCustoId ? item('Centro de receita', esc(nomeCentro(l.centroCustoId))) : '',
         item('Conta bancária', esc(nomeConta(l.contaBancariaId))),
         l.turmaId ? item('Turma', `<a href="turma.html?id=${esc(l.turmaId)}" class="hover:underline hover:text-petrol-800 dark:hover:text-sky-300">${esc(turma?.nome ?? l.turmaId)}</a>`) : '',
       ])}
@@ -1589,7 +1305,7 @@ function modalCriarDoMovimento(movId) {
   if (!m) return;
   const tipo = m.tipo === 'credito' ? 'receita' : 'despesa';
   const categorias = L.categoriasDoTipo(estado.plano, tipo).map((x) => ({ id: x.id, nome: `${x.codigo} ${x.nome}` }));
-  const centros = estado.plano.centrosCusto.filter((x) => x.status === 'ativo').map((x) => ({ id: x.id, nome: `${x.codigo} ${x.nome}` }));
+  const centros = L.centrosDoTipo(estado.plano, 'custo').map((x) => ({ id: x.id, nome: `${x.codigo} ${x.nome}` }));
   const catSug = L.categoriaDe(estado.plano, m.categoriaSugerida)?.id ?? '';
   const nomeSugerido = m.descricao.replace(/^.*?[–-]\s*/, '').replace(/\s*\(.*\)\s*$/, '').trim() || m.descricao;
   const corpo = `
@@ -1912,7 +1628,6 @@ function ligarExtrato(el) {
 
 function iniciar() {
   carregarTudo();
-  if (MODO === 'indicadores') { render(); return; }
   const aba = parametroUrl('aba');
   if (aba === 'visao') { location.replace('financeiro.html'); return; } // aba antiga → tela operacional
   if (aba === 'contas') estado.aba = ABA_PADRAO;
@@ -1928,7 +1643,7 @@ function iniciar() {
   // ?natureza=pf|pj soma-se ao que vencimento/situacao já configuraram (ex.: ?vencimento=hoje&natureza=pj).
   const natureza = parametroUrl('natureza');
   if (tipo && L.NATUREZAS_PESSOA.some((n) => n.id === natureza)) estado.contas[tipo].filtros.natureza = natureza;
-  // ?busca=PC-2026-020 (link "Conta a pagar" de compra.html, 08/09/2026): abre a aba com a busca preenchida, sem período nem situação.
+  // ?busca=<texto>: abre a aba com a busca preenchida, sem período nem situação.
   const busca = parametroUrl('busca');
   if (tipo && busca) estado.contas[tipo].filtros = { ...estado.contas[tipo].filtros, de: '', ate: '', situacao: '', busca };
   // ?conta=cb-bb (ficha da conta bancária, 19/10/2026): Extrato e Conciliação abrem nessa conta.
@@ -1937,9 +1652,9 @@ function iniciar() {
   // ?categoria=cat-701 (contagem de Categorias/Produtos, 19/10/2026): Receber ou Pagar pelo tipo da categoria, em qualquer data e situação.
   const categoria = L.categoriaDe(estado.plano, parametroUrl('categoria'));
   if (categoria) { estado.aba = categoria.tipo === 'receita' ? 'receber' : 'pagar'; estado.contas[categoria.tipo].filtros = { ...filtrosPadrao(), de: '', ate: '', situacao: '', categoriaId: categoria.id }; }
-  // ?centro=cc-200 (valores da tela Centros de custo, 19/10/2026): soma-se a situacao, como natureza; receita não tem centro.
-  const centro = parametroUrl('centro');
-  if (tipo && tipo !== 'receita' && L.centroDe(estado.plano, centro)) estado.contas[tipo].filtros.centroCustoId = centro;
+  // ?centro=cc-200 | cr-b2b (valores da tela Centros de custo): soma-se a situacao, como natureza; o centro é do tipo da aba.
+  const centro = L.centroDe(estado.plano, parametroUrl('centro'));
+  if (tipo && centro && (tipo === 'receita') === (L.tipoCentro(centro) === 'receita')) estado.contas[tipo].filtros.centroCustoId = centro.id;
   // ?de=&ate=&periodo=pagoEm: o período exato do número que trouxe a pessoa (o pago em 12 meses de Centros de custo).
   const de = parametroUrl('de'); const ate = parametroUrl('ate'); const periodo = parametroUrl('periodo');
   const ehData = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d ?? '');
@@ -1949,26 +1664,3 @@ function iniciar() {
 }
 
 if (typeof document !== 'undefined' && document.getElementById('tela')) iniciar();
-
-// ---------- Vendas por área (pizza; dados fictícios de lancamentos-data.js) ----------
-function MESES_AREA(serie) { return serie.map((m) => ({ id: m.mes, nome: m.rotulo })); }
-function htmlVendasPorArea(serie, mesEscolhido, idSelect) {
-  const meses = MESES_AREA(serie);
-  const mes = meses.some((m) => m.id === mesEscolhido) ? mesEscolhido : (meses.at(-1)?.id ?? '');
-  const areas = typeof Areas !== 'undefined' ? Areas.carregar() : [];
-  const itens = mes ? gerarVendasPorAreaFicticio(mes, areas).map((i) => ({ nome: i.area.nome, valor: i.valor, cor: Areas.cor(i.area).fill })) : [];
-  const total = itens.reduce((s, i) => s + i.valor, 0);
-  const seletor = `<select id="${idSelect}" class="${SELECT_FILTRO}" title="Mês">${meses.map((m) => `<option value="${m.id}" ${m.id === mes ? 'selected' : ''}>${esc(m.nome)}</option>`).join('')}</select>`;
-  return `
-    <section class="${CARTAO} p-4">
-      <div class="flex items-start justify-between gap-3 mb-3">
-        <div>
-          <h3 class="font-display font-semibold text-slate-800 dark:text-neutral-100">Vendas por área</h3>
-          <p class="text-xs text-slate-500 dark:text-neutral-400">Participação de cada área nas vendas do mês. <span class="text-amber-700 dark:text-amber-400">Dados fictícios</span> — só para ilustrar o gráfico.</p>
-        </div>
-        ${seletor}
-      </div>
-      ${itens.length ? rosca(itens, { formato: (v) => moedaCurta(v), centro: moedaCurta(total) }) : '<p class="text-sm text-slate-400 py-6 text-center">Sem meses no período.</p>'}
-      ${tabelaDados(['Área', 'Vendas', '%'], itens.map((i) => [i.nome, moedaCurta(i.valor), `${(Math.round((i.valor / (total || 1)) * 1000) / 10).toLocaleString('pt-BR')}%`]))}
-    </section>`;
-}

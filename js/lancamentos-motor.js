@@ -18,7 +18,8 @@
 //   quando a chave ainda não existe.
 // - 'vencido' é derivado (previsto/emitido com vencimento < hoje).
 // - Segmento B2C/B2B da receita = natureza de quem contratou (CNPJ → B2B, CPF → B2C),
-//   derivado em toda sincronização. Centros de custo são os departamentos; receita não tem centro.
+//   derivado em toda sincronização. Centros de custo (tipo 'custo') são os departamentos; os de receita (tipo 'receita',
+//   B2B/B2C/Orion…) vêm da venda (contrato.centroReceitaId) e o lançamento da parcela os leva em centroCustoId.
 //
 // Depende de: Contratos, Clientes, Cursos, Formacoes; opcionais (typeof):
 // Instrutores, Turmas, Colaboradores/COLABORADORES_SEED, Areas, Compras.
@@ -30,7 +31,7 @@ const Lancamentos = (() => {
   // v3 (08/09/2026): módulo Compras — a semente manual passou a abater coffee/material/limpeza já lançados pelas compras
   // (dupla contagem); v2 (07/09/2026): só manuais + derivados alterados ficam no storage.
   const CHAVE = 'aulor-v1-financeiro-lancamentos-v4';
-  const CHAVE_PLANO = 'aulor-v1-financeiro-plano-v2'; // v2 (19/10/2026): centros de custo = departamentos, sem centros de receita
+  const CHAVE_PLANO = 'aulor-v1-financeiro-plano-v2'; // a mesma de js/centros-receita.js; centros de custo e de receita na mesma lista
   // v3 (19/10/2026): a semente passou a trazer os pagamentos da conta de pagamento (BB); o v2 salvo é migrado em carregarExtrato.
   const CHAVE_EXTRATO = 'aulor-v1-financeiro-extrato-v3';
   const CHAVE_EXTRATO_V2 = 'aulor-v1-financeiro-extrato-v2';
@@ -99,6 +100,8 @@ const Lancamentos = (() => {
         // Categoria 750 (material de escritório e copa) entrou com o módulo Compras (08/09/2026): plano salvo antes recebe a semente dela.
         const cat750 = PLANO_CATEGORIAS_SEED.find((c) => c.codigo === '750');
         if (cat750 && !p.categorias.some((c) => c.codigo === '750')) { p.categorias = [...p.categorias, clonar(cat750)]; salvarPlano(p); }
+        // Centros de receita entraram na V1: plano salvo sem nenhum recebe a semente (B2B, B2C, Orion).
+        if (!p.centrosCusto.some((c) => c.tipo === 'receita')) { p.centrosCusto = [...p.centrosCusto, ...clonar(CENTROS_RECEITA_SEED)]; salvarPlano(p); }
         // Contas salvas antes do catálogo de instituições (30/08/2026): casa pelo nome do banco.
         if (typeof buscarInstituicoes === 'function' && p.contasBancarias.some((c) => c.instituicaoId === undefined)) {
           p.contasBancarias = p.contasBancarias.map((c) => (c.instituicaoId !== undefined ? c : { ...c, instituicaoId: instituicaoPorNome(c.banco)?.id ?? null }));
@@ -125,6 +128,10 @@ const Lancamentos = (() => {
   const categoriaPorCodigo = (p, codigo) => p.categorias.find((c) => c.codigo === String(codigo)) ?? null;
   const centroDe = (p, id) => porId(p.centrosCusto, id);
   const centroPorCodigo = (p, codigo) => p.centrosCusto.find((c) => c.codigo === String(codigo)) ?? null;
+  // Centro sem tipo é de custo (os salvos antes dos centros de receita).
+  const tipoCentro = (c) => (c?.tipo === 'receita' ? 'receita' : 'custo');
+  const centrosDoTipo = (p, tipo, { soAtivos = true } = {}) => p.centrosCusto.filter((c) => tipoCentro(c) === tipo && (!soAtivos || c.status === 'ativo'));
+  const TIPOS_CENTRO = [{ id: 'custo', nome: 'Custo' }, { id: 'receita', nome: 'Receita' }];
   // Centro de custo de cada departamento (DEPARTAMENTOS em colaboradores-data.js); folha e regras padrão usam este mapa.
   const CENTRO_POR_DEPARTAMENTO = { direcao: '100', pedagogico: '200', comercial: '300', marketing: '400', suporte: '500', financeiro: '600', administrativo: '700' };
   const centroDoDepartamento = (p, dep) => centroPorCodigo(p, CENTRO_POR_DEPARTAMENTO[dep] ?? '700');
@@ -154,17 +161,36 @@ const Lancamentos = (() => {
   function validarPlano(p, colecao, dados, excetoId = null) {
     const erros = [];
     const nome = String(dados.nome ?? '').trim();
-    // Na ordem dos campos do formulário (código antes do nome), para o foco ir ao primeiro erro de cima.
-    if (colecao === 'categorias' || colecao === 'centrosCusto') {
+    // Na ordem dos campos do formulário (tipo, código, nome, grupo), para o foco ir ao primeiro erro de cima.
+    const ehCentro = colecao === 'centrosCusto';
+    const tipoC = ehCentro ? (dados.tipo ?? 'custo') : null;
+    // O código liga o centro ao departamento (CENTRO_POR_DEPARTAMENTO): folha e regras padrão acham o centro por ele.
+    const ligado = ehCentro && excetoId ? centroDe(p, excetoId) : null;
+    const doDepartamento = Boolean(ligado) && Object.values(CENTRO_POR_DEPARTAMENTO).includes(ligado.codigo);
+    const filhos = ehCentro && excetoId ? p.centrosCusto.filter((x) => x.grupoId === excetoId) : [];
+    if (ehCentro) {
+      if (!TIPOS_CENTRO.some((t) => t.id === tipoC)) erros.push({ campo: 'tipo', mensagem: 'Escolha custo ou receita.' });
+      else if (doDepartamento && tipoC !== 'custo') erros.push({ campo: 'tipo', mensagem: `O centro ${ligado.codigo} é de um departamento e continua de custo.` });
+      else if (filhos.some((x) => tipoCentro(x) !== tipoC)) erros.push({ campo: 'tipo', mensagem: 'Os centros deste grupo são do outro tipo; tire-os do grupo antes.' });
+    }
+    if (colecao === 'categorias' || ehCentro) {
       const codigo = String(dados.codigo ?? '').trim();
       const repetido = p[colecao].find((x) => x.codigo === codigo && x.id !== excetoId);
-      // O código liga o centro ao departamento (CENTRO_POR_DEPARTAMENTO): folha e regras padrão acham o centro por ele.
-      const ligado = colecao === 'centrosCusto' && excetoId ? centroDe(p, excetoId) : null;
-      if (ligado && Object.values(CENTRO_POR_DEPARTAMENTO).includes(ligado.codigo) && codigo !== ligado.codigo) erros.push({ campo: 'codigo', mensagem: `O código ${ligado.codigo} liga este centro a um departamento; mantenha ${ligado.codigo}.` });
-      else if (!/^\d{3}$/.test(codigo)) erros.push({ campo: 'codigo', mensagem: `Código com 3 dígitos (ex.: ${colecao === 'centrosCusto' ? '800' : '701'}).` });
+      // Centro de receita numera em R + dezena (R10 B2B, R20 B2C…), para não cruzar com as centenas dos departamentos.
+      const receita = tipoC === 'receita';
+      if (doDepartamento && codigo !== ligado.codigo) erros.push({ campo: 'codigo', mensagem: `O código ${ligado.codigo} liga este centro a um departamento; mantenha ${ligado.codigo}.` });
+      else if (!(receita ? /^R\d{2}$/ : /^\d{3}$/).test(codigo)) erros.push({ campo: 'codigo', mensagem: receita ? 'Código com R e 2 dígitos (ex.: R40).' : `Código com 3 dígitos (ex.: ${ehCentro ? '800' : '701'}).` });
       else if (repetido) erros.push({ campo: 'codigo', mensagem: `O código ${codigo} já é de "${repetido.nome}".` });
     }
     if (!nome) erros.push({ campo: 'nome', mensagem: 'Informe o nome.' });
+    // Grupo: um centro de primeiro nível, do mesmo tipo; um grupo não entra em outro.
+    if (ehCentro && dados.grupoId) {
+      const g = centroDe(p, dados.grupoId);
+      if (!g || g.id === excetoId) erros.push({ campo: 'grupoId', mensagem: 'Escolha um grupo da lista.' });
+      else if (tipoCentro(g) !== tipoC) erros.push({ campo: 'grupoId', mensagem: `"${g.nome}" é centro de ${tipoCentro(g)}; o grupo precisa ser do mesmo tipo.` });
+      else if (g.grupoId) erros.push({ campo: 'grupoId', mensagem: `"${g.nome}" já está dentro de outro grupo; escolha um de primeiro nível.` });
+      else if (filhos.length) erros.push({ campo: 'grupoId', mensagem: 'Este centro já agrupa outros; um grupo não entra em outro grupo.' });
+    }
     if (colecao === 'categorias') {
       if (!TIPOS.some((t) => t.id === dados.tipo)) erros.push({ campo: 'tipo', mensagem: 'Escolha receita ou despesa.' });
       if (!GRUPOS_CATEGORIA.some((g) => g.id === dados.grupo)) erros.push({ campo: 'grupo', mensagem: 'Escolha o grupo (linha do DRE).' });
@@ -234,13 +260,12 @@ const Lancamentos = (() => {
     if (o.tipo === 'contrato') return `contrato.html?id=${encodeURIComponent(o.contratoId)}`;
     if (o.tipo === 'instrutor') return `instrutor.html?id=${encodeURIComponent(o.instrutorId)}`;
     if (o.tipo === 'folha') return `colaborador.html?id=${encodeURIComponent(o.colaboradorId)}`;
-    if (o.tipo === 'compra') return `compra.html?id=${encodeURIComponent(o.compraId)}`;
     return null;
   }
   // Link para o cadastro da pessoa do lançamento (quando há cadastro).
   function linkPessoa(l) {
     const p = l.pessoa; if (!p?.id) return null;
-    return { aluno: `aluno.html?id=${p.id}`, empresa: `empresa.html?id=${p.id}`, responsavel: `responsavel.html?id=${p.id}`, instrutor: `instrutor.html?id=${p.id}`, colaborador: `colaborador.html?id=${p.id}`, fornecedor: `fornecedores.html?id=${p.id}` }[p.tipo] ?? null;
+    return { aluno: `aluno.html?id=${p.id}`, empresa: `empresa.html?id=${p.id}`, responsavel: `responsavel.html?id=${p.id}`, instrutor: `instrutor.html?id=${p.id}`, colaborador: `colaborador.html?id=${p.id}` }[p.tipo] ?? null;
   }
 
   // Campos que a tela pode editar conforme a origem.
@@ -334,6 +359,7 @@ const Lancamentos = (() => {
       const tc = turmaDoContrato(ctx, c);
       const pessoa = { tipo: rf.tipo === 'terceiro' ? 'aluno' : (rf.tipo ?? 'aluno'), id: rf.empresa?.id ?? rf.responsavel?.id ?? rf.aluno?.id ?? null, nome: rf.nome, documento: rf.documento ?? '' };
       const forma = ['boleto', 'pix', 'cartao', 'transferencia'].includes(c.cobranca?.forma) ? c.cobranca.forma : 'boleto';
+      const centroReceita = centroDe(p, c.centroReceitaId);
       c.parcelas.forEach((pc) => {
         const id = `lc-${c.id}-${pc.n}`;
         const atual = mapa.get(id);
@@ -344,6 +370,7 @@ const Lancamentos = (() => {
           valor: arred(pc.valor), competencia: mesDe(pc.vencimento), vencimento: pc.vencimento, pagoEm: pc.pagoEm ?? null,
           status: status === 'previsto' && atual?.asaas && atual.asaas.status !== 'REFUNDED' ? 'emitido' : status,
           forma, pessoa, turmaId: tc.turmaId, cursoId: tc.cursoId,
+          centroCustoId: tipoCentro(centroReceita) === 'receita' ? centroReceita.id : null,
           origem: { tipo: 'contrato', contratoId: c.id, codigo: c.codigo, parcelaN: pc.n, totalParcelas: c.parcelas.length },
         };
         if (atual) {
@@ -709,7 +736,8 @@ const Lancamentos = (() => {
     const cat = categoriaDe(p, dados.categoriaId);
     if (!cat) erros.push({ campo: 'categoriaId', mensagem: 'Escolha a categoria.' });
     else if ((dados.tipo ?? atual?.tipo) && cat.tipo !== (dados.tipo ?? atual?.tipo)) erros.push({ campo: 'categoriaId', mensagem: `Categoria de ${cat.tipo}; o lançamento é ${dados.tipo ?? atual?.tipo}.` });
-    if ((dados.tipo ?? atual?.tipo) === 'despesa' && !centroDe(p, dados.centroCustoId)) erros.push({ campo: 'centroCustoId', mensagem: 'Escolha o centro de custo.' });
+    const centro = centroDe(p, dados.centroCustoId);
+    if ((dados.tipo ?? atual?.tipo) === 'despesa' && (!centro || tipoCentro(centro) !== 'custo')) erros.push({ campo: 'centroCustoId', mensagem: 'Escolha o centro de custo.' });
     if (!contaDe(p, dados.contaBancariaId)) erros.push({ campo: 'contaBancariaId', mensagem: 'Escolha a conta bancária.' });
     if (pode('pessoa')) {
       const pe = dados.pessoa;
@@ -749,7 +777,7 @@ const Lancamentos = (() => {
       });
       if (permitidos.includes('competencia') && !novo.competencia) novo.competencia = mesDe(novo.vencimento);
       novo.segmento = segmentoDe(novo);
-      if (novo.tipo === 'receita') novo.centroCustoId = null;
+      if (novo.tipo === 'receita') novo.centroCustoId = ehContrato(l) ? l.centroCustoId : null; // o centro de receita vem da venda
       return registrar(novo, 'Lançamento editado');
     });
   }
@@ -967,8 +995,9 @@ const Lancamentos = (() => {
     const p = plano();
     const tipo = movimento.tipo === 'credito' ? 'receita' : 'despesa';
     const catPadrao = categoriaDe(p, movimento.categoriaSugerida) ?? categoriaPorCodigo(p, tipo === 'receita' ? '190' : '740');
-    // Receita não tem centro de custo; o fallback de centro vale só para despesa.
-    const centro = tipo === 'despesa' ? centroDe(p, dados.centroCustoId) ?? centroDoDepartamento(p, 'administrativo') : null;
+    // Receita sem venda fica sem centro; o fallback de centro vale só para despesa (e só centro de custo).
+    const escolhido = centroDe(p, dados.centroCustoId);
+    const centro = tipo === 'despesa' ? (escolhido && tipoCentro(escolhido) === 'custo' ? escolhido : centroDoDepartamento(p, 'administrativo')) : null;
     const categoriaId = dados.categoriaId ?? catPadrao?.id ?? null;
     const r = incluir(lista, {
       tipo, descricao: dados.descricao ?? movimento.descricao, valor: movimento.valor, desconto: 0, competencia: mesDe(movimento.data), vencimento: movimento.data,
@@ -1365,7 +1394,7 @@ const Lancamentos = (() => {
     // persistência e contexto
     carregar, salvar, plano, salvarPlano, carregarExtrato, salvarExtrato, contexto, sincronizar, proximoId,
     // plano
-    categoriaDe, categoriaPorCodigo, centroDe, centroPorCodigo, centroDoDepartamento, CENTRO_POR_DEPARTAMENTO, segmentoDe, contaDe, fornecedorDe, contaPadrao, contaAsaas, categoriasDoTipo, usoDoPlano,
+    categoriaDe, categoriaPorCodigo, centroDe, centroPorCodigo, centroDoDepartamento, tipoCentro, centrosDoTipo, TIPOS_CENTRO, CENTRO_POR_DEPARTAMENTO, segmentoDe, contaDe, fornecedorDe, contaPadrao, contaAsaas, categoriasDoTipo, usoDoPlano,
     validarPlano, incluirNoPlano, atualizarNoPlano, alterarStatusPlano, removerDoPlano, instituicaoDaConta, instituicaoPorNome,
     // lançamento
     naturezaPessoa, valorFinal, situacao, situacaoDe, diasAtraso, emAberto, descricaoOrigem, linkOrigem, linkPessoa, camposEditaveis,

@@ -83,7 +83,6 @@ const LANC_ORIGENS = [
   { id: 'contrato', nome: 'Venda', descricao: 'Parcela de venda de aluno/empresa (fonte de verdade: Vendas).' },
   { id: 'instrutor', nome: 'Instrutor', descricao: 'Pagamento programado no contrato do instrutor.' },
   { id: 'folha', nome: 'Folha', descricao: 'Custo mensal de pessoal (tabela mock LANC_FOLHA_MOCK; o sistema não faz folha).' },
-  { id: 'compra', nome: 'Compra', descricao: 'Compra recebida no módulo Compras (js/compras-motor.js): a conta a pagar nasce no recebimento.' },
   { id: 'manual', nome: 'Manual', descricao: 'Lançado à mão no financeiro.' },
 ];
 
@@ -180,16 +179,19 @@ const PLANO_CATEGORIAS_SEED = [
   { id: 'cat-980', codigo: '980', nome: 'Aplicações e reservas', tipo: 'despesa', grupo: 'investimento', descricao: 'Transferência para aplicação financeira / reserva.', status: 'ativo' },
 ];
 
-// Centros de custo = departamentos (DEPARTAMENTOS em colaboradores-data.js): de quem é o gasto. A categoria diz o quê;
-// o centro, quem consumiu. Receita não tem centro (o segmento B2C/B2B vem do CPF/CNPJ de quem contratou).
+// Centros do plano, numa lista só (plano.centrosCusto), pelo tipo:
+// · 'custo' = departamentos (DEPARTAMENTOS em colaboradores-data.js): de quem é o gasto. A categoria diz o quê; o centro, quem consumiu.
+// · 'receita' = de onde vem a venda (B2B, B2C, Orion…): CENTROS_RECEITA_SEED, de js/centros-receita.js (carregar antes deste).
+// `grupoId` (opcional) agrupa centros do mesmo tipo sob outro centro de primeiro nível.
 const PLANO_CENTROS_SEED = [
-  { id: 'cc-100', codigo: '100', nome: 'Direção', descricao: 'Diretoria e custos da empresa como um todo: impostos sobre a receita.', status: 'ativo' },
-  { id: 'cc-200', codigo: '200', nome: 'Pedagógico', descricao: 'Entrega das aulas: instrutores, material didático, coffee, licenças e equipamentos das salas.', status: 'ativo' },
-  { id: 'cc-300', codigo: '300', nome: 'Comercial', descricao: 'Equipe de vendas, comissões e bônus de meta.', status: 'ativo' },
-  { id: 'cc-400', codigo: '400', nome: 'Marketing', descricao: 'Mídia, agência e equipe de marketing.', status: 'ativo' },
-  { id: 'cc-500', codigo: '500', nome: 'Suporte', descricao: 'Atendimento a alunos e professores e suporte técnico.', status: 'ativo' },
-  { id: 'cc-600', codigo: '600', nome: 'Financeiro', descricao: 'Contabilidade, taxas do banco e do Asaas, aplicações.', status: 'ativo' },
-  { id: 'cc-700', codigo: '700', nome: 'Administrativo', descricao: 'Sede (aluguel, energia, internet, limpeza), copa, escritório, softwares da equipe e benefícios.', status: 'ativo' },
+  { id: 'cc-100', codigo: '100', nome: 'Direção', descricao: 'Diretoria e custos da empresa como um todo: impostos sobre a receita.', tipo: 'custo', status: 'ativo' },
+  { id: 'cc-200', codigo: '200', nome: 'Pedagógico', descricao: 'Entrega das aulas: instrutores, material didático, coffee, licenças e equipamentos das salas.', tipo: 'custo', status: 'ativo' },
+  { id: 'cc-300', codigo: '300', nome: 'Comercial', descricao: 'Equipe de vendas, comissões e bônus de meta.', tipo: 'custo', status: 'ativo' },
+  { id: 'cc-400', codigo: '400', nome: 'Marketing', descricao: 'Mídia, agência e equipe de marketing.', tipo: 'custo', status: 'ativo' },
+  { id: 'cc-500', codigo: '500', nome: 'Suporte', descricao: 'Atendimento a alunos e professores e suporte técnico.', tipo: 'custo', status: 'ativo' },
+  { id: 'cc-600', codigo: '600', nome: 'Financeiro', descricao: 'Contabilidade, taxas do banco e do Asaas, aplicações.', tipo: 'custo', status: 'ativo' },
+  { id: 'cc-700', codigo: '700', nome: 'Administrativo', descricao: 'Sede (aluguel, energia, internet, limpeza), copa, escritório, softwares da equipe e benefícios.', tipo: 'custo', status: 'ativo' },
+  ...CENTROS_RECEITA_SEED,
 ];
 
 // `saldoInicialEm` = data de abertura no sistema; o saldo atual soma só os lançamentos pagos a partir dela.

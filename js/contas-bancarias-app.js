@@ -2,10 +2,10 @@
 // UI da tela "Contas bancárias", na direção Ficha em cartões.
 // Fluxo: lista (contas-bancarias.html) → ficha em página própria (conta-bancaria.html?id=).
 // O mesmo arquivo atende as duas páginas; o modo vem de <body data-modo>.
-// Cadastro e regras em Lancamentos.* (plano.contasBancarias, validarPlano; chave prototipo-financeiro-plano-v2).
+// Cadastro e regras em Lancamentos.* (plano.contasBancarias, validarPlano; chave aulor-v1-financeiro-plano-v2).
 // Saldo = Lancamentos.balanco; conciliação = Lancamentos.conciliacao (nas contas com extrato: Asaas e a de pagamento);
 // saque automático = Lancamentos.carregarSaques (a conta de destino). Tudo só leitura aqui, menos o cadastro.
-// O link antigo contas-bancarias.html?id= (plano-financeiro.html?aba=contas&id=) abre a ficha.
+// contas-bancarias.html?id= abre a ficha.
 // ============================================================
 
 const MODO = document.body.dataset.modo === 'detalhe' ? 'detalhe' : 'lista';
@@ -365,8 +365,6 @@ function renderFicha() {
 
   el.innerHTML = `
     <nav aria-label="Breadcrumb" class="mb-3 flex items-center gap-1.5 text-sm ${APOIO_FUNDO}">
-      <a href="home.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Home</a>
-      <span aria-hidden="true">/</span>
       <a href="contas-bancarias.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Contas bancárias</a>
       <span aria-hidden="true">/</span>
       <span class="font-medium text-slate-800 dark:text-neutral-100 truncate max-w-xs" aria-current="page">${esc(c.nome)}</span>
@@ -565,7 +563,7 @@ function confirmarExclusao() {
 (function iniciar() {
   const id = parametroUrl('id');
   if (MODO === 'lista') {
-    if (id) { location.replace(urlConta(id)); return; } // link antigo: plano-financeiro.html?aba=contas&id=
+    if (id) { location.replace(urlConta(id)); return; } // ?id= na lista abre a ficha
     recarregar();
     renderLista();
     if (parametroUrl('nova') === '1') abrirFormulario();
