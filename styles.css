@@ -206,7 +206,7 @@ html.dark {
   --color-sky-300: #9CC3D1;
   --color-sky-400: #9CC3D1;
   --color-sky-500: #9CC3D1;
-  --color-sky-600: #9CC3D1;
+  --color-sky-600: #1B4253; /* selection-dark: no protótipo é o fundo sólido (avatar, selo) com texto branco */
   --color-sky-800: #1B4253; /* selection-dark */
   --color-sky-900: #1B4253;
   --color-sky-950: #1B4253;

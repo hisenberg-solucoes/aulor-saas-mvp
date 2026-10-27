@@ -23,7 +23,8 @@ const Materiais = (() => {
     bloqueado: { nome: 'Não liberado', descricao: 'O aluno ainda não vê.' },
   };
 
-  const hojeISO = () => new Date().toISOString().slice(0, 10);
+  // Data local (a de UTC vira o dia seguinte às 21h no Brasil e liberaria o material um dia antes).
+  const hojeISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 
   function carregar() {
     try {

@@ -1,6 +1,6 @@
 // Instrutor como papel docente (docs/pessoas-papeis.md): remuneração folha/PJ/RPA e vínculo com colaborador.
-// Scripts das regras de instrutor.html, mais financeiro, num vm com localStorage falso.
-// Aniversariantes e chamados ficaram fora da V1: os testes deles não vieram do protótipo.
+// Scripts das regras de instrutor.html num vm com localStorage falso.
+// Aniversariantes, chamados e o custo do instrutor na turma ficaram fora da V1: os testes deles não vieram do protótipo.
 // Rode: node --test tests/instrutores-remuneracao.test.mjs
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,7 +9,7 @@ import vm from 'node:vm';
 
 const store = {};
 const ctx = vm.createContext({ localStorage: { getItem: (k) => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: (k) => { delete store[k]; } } });
-['js/agenda.js', 'js/cursos-data.js', 'js/instrutores-data.js', 'js/instrutores-motor.js', 'js/colaboradores-data.js', 'js/colaboradores-motor.js', 'js/clientes-data.js', 'js/clientes-motor.js', 'js/softwares-data.js', 'js/financeiro-motor.js']
+['js/agenda.js', 'js/cursos-data.js', 'js/instrutores-data.js', 'js/instrutores-motor.js', 'js/colaboradores-data.js', 'js/colaboradores-motor.js', 'js/clientes-data.js', 'js/clientes-motor.js', 'js/softwares-data.js']
   .forEach((f) => vm.runInContext(readFileSync(new URL(`../${f}`, import.meta.url), 'utf8'), ctx, { filename: f }));
 const rodar = (expr) => JSON.parse(JSON.stringify(vm.runInContext(expr, ctx)));
 const instrutor = (id, extra = '') => `({ ...Instrutores.porId(Instrutores.carregar(), '${id}')${extra} })`;
@@ -75,15 +75,6 @@ test('conta pessoal do RPA e filtro por remuneração', () => {
   const conta = rodar(`Instrutores.porId(Instrutores.atualizarContaPessoal(Instrutores.carregar(), 'i1', { pix: ' andre@exemplo.com.br ' }), 'i1').contaPessoal`);
   assert.equal(conta.pix, 'andre@exemplo.com.br');
   assert.deepEqual(rodar(`Instrutores.filtrar(Instrutores.carregar(), { remuneracao: 'folha' }).map((i) => i.id)`), ['i0']);
-});
-
-test('custo da turma com docente folha vem do custo-hora de referência', () => {
-  const custo = (extra) => rodar(`Financeiro.custoInstrutor({ instrutores: [${instrutor('i0', extra)}] }, { id: 'tx', instrutorId: 'i0' }, { cargaHoraria: 40 })`);
-  assert.deepEqual(custo(''), { valor: 3400, origem: 'folha', horas: 40, valorHora: 85 });
-  assert.deepEqual(custo(', custoHoraReferencia: null'), { valor: 0, origem: 'folha_sem_custo', horas: 40, valorHora: 0 });
-  assert.equal(rodar(`Financeiro.ORIGENS_INSTRUTOR.folha_sem_custo`), 'custo de folha não informado');
-  // PJ sem contrato nem tabela continua na estimativa.
-  assert.equal(custo(", remuneracao: 'pj', custoHoraReferencia: 85").origem, 'estimado');
 });
 
 test('custo-hora de referência: só para folha, maior que zero ou em branco', () => {

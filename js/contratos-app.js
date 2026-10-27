@@ -533,7 +533,7 @@ function renderResumo() {
     const feito = Contratos.statusDe(c).ordem >= s.ordem && c.status !== 'cancelado';
     const atualEtapa = c.status === s.id;
     return `<li class="flex items-center gap-2 ${feito ? 'text-slate-800 dark:text-neutral-100' : 'text-slate-400'}">
-      <span class="h-5 w-5 shrink-0 rounded-full grid place-items-center text-[10px] font-semibold ${feito ? 'bg-petrol-800 dark:bg-sky-500 text-white' : 'border border-slate-300 dark:border-neutral-700'}">${feito ? '✓' : s.ordem + 1}</span>
+      <span class="h-5 w-5 shrink-0 rounded-full grid place-items-center text-[10px] font-semibold ${feito ? 'bg-petrol-800 dark:bg-sky-500 text-white dark:text-petrol-800' : 'border border-slate-300 dark:border-neutral-700'}">${feito ? '✓' : s.ordem + 1}</span>
       <span class="${atualEtapa ? 'font-semibold' : ''}">${esc(s.nome)}</span></li>`;
   };
   const tipoResp = { empresa: 'Empresa', responsavel: 'Responsável cadastrado', aluno: 'O próprio aluno', terceiro: r.tipo === 'terceiro' ? `Responsável (${r.parentesco || 'terceiro'}) por ${r.aluno?.nome ?? ''}` : '' }[r.tipo] ?? '';
