@@ -45,6 +45,8 @@ const ICONE = {
   baixo: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>',
   tag: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" /></svg>',
   chevron: '<svg class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>',
+  arquivo: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>',
+  link: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>',
 };
 
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
@@ -453,6 +455,11 @@ function renderTurma() {
   el.querySelectorAll('[data-copiar]').forEach((btn) => btn.addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(btn.dataset.copiar); toast('Link copiado.'); } catch (_) { toast('Não foi possível copiar — selecione o link manualmente.'); }
   }));
+  // A data é o botão (teclado); o resto da linha abre a mesma aula, a não ser que a pessoa esteja selecionando texto.
+  el.querySelectorAll('tr[data-aula]').forEach((tr) => tr.addEventListener('click', (e) => {
+    if (e.target.closest('a, button:not([data-abrir-aula])') || getSelection().toString()) return;
+    abrirDrawerAula(t.id, tr.dataset.aula);
+  }));
   if (estado.aba === 'requisitos') ligarRequisitos(el, t);
   el.querySelector('#btn-gerar-aulas')?.addEventListener('click', () => abrirModalGerarAulas(t.id));
 
@@ -488,9 +495,9 @@ function contadorAba(t, id) {
 function partesAulas(t) {
   const parte = (p) => `
     <button type="button" data-aba="${p.id}" aria-pressed="${estado.aba === p.id}" class="h-7 px-2.5 rounded-md text-[12.5px] font-medium whitespace-nowrap transition ${estado.aba === p.id ? 'bg-[color:var(--f-elevado)] text-[color:var(--f-tinta)] shadow-[0_1px_2px_rgb(7_30_44/0.08)]' : 'text-[color:var(--f-tinta-2)] hover:text-[color:var(--f-tinta)]'}">${p.titulo}</button>`;
-  // Materiais das aulas: visão da coordenação (materiais.html). Gerar só antes de gravar as aulas e com agenda.
+  // Gerar só antes de gravar as aulas e com agenda.
   const podeGerar = !Turmas.temAgendamento(t) && Turmas.podeEditar(t) && Boolean(Turmas.agendaDe(t)?.periodos?.length);
-  const acao = `<a href="materiais.html?turma=${encodeURIComponent(t.id)}" class="${BOTAO_LINK}">Materiais</a>${podeGerar ? `<button type="button" id="btn-gerar-aulas" class="${BOTAO_SEC}">${ICONE.calendario} Gerar aulas</button>` : ''}`;
+  const acao = podeGerar ? `<button type="button" id="btn-gerar-aulas" class="${BOTAO_SEC}">${ICONE.calendario} Gerar aulas</button>` : '';
   return `
     <div class="inline-flex rounded-lg bg-[color:var(--f-etiqueta)] p-0.5">${abaDe('aulas').partes.map(parte).join('')}</div>
     <div class="ml-auto flex items-center gap-2">${acao}</div>`;
@@ -810,60 +817,269 @@ function renderAulas(t, visao) {
     </section>`;
 }
 
-// Tabela da aba Aulas (padrão do Portal do Professor): nº, data, horário, local, conteúdo, situação
-// e o link do Google Meet da aula (aula.meetUrl, criado ao gerar as aulas), com botão de copiar.
-function tabelaAulas(t, lista, hoje, agendado) {
-  if (!lista.length) return '<p class="px-4 py-8 text-center text-sm text-slate-500 dark:text-neutral-400">Todas as aulas desta turma foram canceladas.</p>';
+const TRACO = '<span class="text-slate-400 dark:text-neutral-600">—</span>';
+const dataAno = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR');
+const diaNome = (id) => Agenda.DIAS.find((d) => d.id === id)?.curto?.toLowerCase() ?? id;
+const materiaisDaAula = (turmaId, a) => (a.id == null ? [] : Materiais.daTurma(turmaId).filter((m) => String(m.aulaId) === String(a.id)));
+
+// O que a linha da tabela e o drawer da aula mostram igual: local, conteúdo, situação, motivo e Meet.
+function partesAula(t, a, hoje) {
   const curso = cursoDe(t.cursoId);
-  const { sala } = contexto(t);
   const moduloTitulo = (id) => curso?.modulos.find((m) => m.id === id)?.titulo ?? id;
-  const diaNome = (id) => Agenda.DIAS.find((d) => d.id === id)?.curto?.toLowerCase() ?? id;
-  const dataAno = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR');
   const ponto = (cor, txt, cls = 'text-slate-600 dark:text-neutral-300') => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap ${cls}"><span class="h-2 w-2 rounded-full ${cor}"></span>${txt}</span>`;
-  const traco = '<span class="text-slate-400 dark:text-neutral-600">—</span>';
-  const th = (txt, cls = '') => `<th class="${TH} ${cls}">${txt}</th>`;
-  const linha = (a) => {
-    const cancelada = a.status === 'cancelada';
-    const passada = !cancelada && a.data < hoje;
-    const ehHoje = !cancelada && a.data === hoje;
-    const salaA = a.salaId ? salaDe(a.salaId) : sala;
-    const local = t.formato === 'online'
+  const cancelada = a.status === 'cancelada';
+  const passada = !cancelada && a.data < hoje;
+  const ehHoje = !cancelada && a.data === hoje;
+  const salaA = a.salaId ? salaDe(a.salaId) : contexto(t).sala;
+  return {
+    cancelada,
+    ehHoje,
+    local: t.formato === 'online'
       ? (t.meetLink ? `<a href="${esc(t.meetLink)}" target="_blank" rel="noopener" class="text-petrol-800 dark:text-sky-300 hover:underline">Google Meet</a>` : 'Online')
-      : `${salaA ? esc(salaA.nome) : vazio()}${t.formato === 'hibrido' ? ' <span class="text-xs text-slate-500 dark:text-neutral-400">· Meet</span>' : ''}`;
-    const conteudo = [...(a.moduloIds ?? []).map(moduloTitulo), a.conteudo].filter(Boolean).join(' · ');
+      : `${salaA ? esc(salaA.nome) : vazio()}${t.formato === 'hibrido' ? ' <span class="text-xs text-slate-500 dark:text-neutral-400">· Meet</span>' : ''}`,
+    conteudo: [...(a.moduloIds ?? []).map(moduloTitulo), a.conteudo].filter(Boolean).join(' · '),
     // Hoje em petróleo (o "você está aqui"); verde fica para a chamada feita.
-    const situacao = cancelada ? ponto('bg-red-500', 'Cancelada', 'text-red-700 dark:text-red-400')
+    situacao: cancelada ? ponto('bg-red-500', 'Cancelada', 'text-red-700 dark:text-red-400')
       : ehHoje ? ponto('bg-petrol-800 dark:bg-sky-300', 'Hoje', 'font-medium text-petrol-800 dark:text-sky-300')
       : passada ? ponto('bg-slate-400', 'Realizada')
-      : ponto('bg-slate-200 dark:bg-neutral-700', 'Prevista', 'text-slate-500 dark:text-neutral-400');
-    const origem = a.origem && a.origem !== 'agenda' ? `<span class="ml-1.5 text-xs text-slate-500 dark:text-neutral-400">${a.origem === 'reposicao' ? 'reposição' : 'extra'}</span>` : '';
-    const motivo = cancelada && a.motivo ? `<p class="text-xs text-red-700 dark:text-red-400">${esc(Aulas.motivoDe(a.motivo.tipo))}${a.motivo.texto ? ` — ${esc(a.motivo.texto)}` : ''}</p>` : '';
-
-    const meet = a.meetUrl && !cancelada
+      : ponto('bg-slate-200 dark:bg-neutral-700', 'Prevista', 'text-slate-500 dark:text-neutral-400'),
+    origem: a.origem && a.origem !== 'agenda' ? `<span class="ml-1.5 text-xs text-slate-500 dark:text-neutral-400">${a.origem === 'reposicao' ? 'reposição' : 'extra'}</span>` : '',
+    motivo: cancelada && a.motivo ? `<p class="text-xs text-red-700 dark:text-red-400">${esc(Aulas.motivoDe(a.motivo.tipo))}${a.motivo.texto ? ` — ${esc(a.motivo.texto)}` : ''}</p>` : '',
+    meet: a.meetUrl && !cancelada
       ? `<a href="${esc(a.meetUrl)}" target="_blank" rel="noopener" class="font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline">${esc(a.meetUrl.replace('https://', ''))}</a> <button type="button" data-copiar="${esc(a.meetUrl)}" class="${BOTAO_LINK} ml-1" title="Copiar link">${ICONE.copiar} copiar</button>`
-      : traco;
+      : TRACO,
+  };
+}
 
+// Materiais na linha: a quantidade e só a exceção (Regra da Pílula de Exceção): não liberado espera
+// alguém liberar (aviso); programado diz quando libera. Tudo liberado é o comum e não se anuncia.
+function resumoMateriais(ms, hoje) {
+  if (!ms.length) return TRACO;
+  const de = (sit) => ms.filter((m) => Materiais.situacao(m, hoje) === sit);
+  const bloqueados = de('bloqueado').length;
+  const proximo = de('programado').sort((x, y) => x.liberarEm.localeCompare(y.liberarEm))[0];
+  const excecao = bloqueados ? `<p class="text-xs ${AVISO}">${plural(bloqueados, 'não liberado', 'não liberados')}</p>`
+    : proximo ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${Materiais.rotulo(proximo, hoje)}</p>` : '';
+  return `<span class="tabular-nums text-slate-700 dark:text-neutral-200">${plural(ms.length, 'material', 'materiais')}</span>${excecao}`;
+}
+
+// Tabela da aba Aulas (padrão do Portal do Professor): nº, data, horário, local, conteúdo, materiais,
+// situação e o link do Google Meet da aula (aula.meetUrl, criado ao gerar as aulas), com botão de copiar.
+// Aula gravada abre o drawer da aula (dados e materiais); a prévia ainda não tem aula para guardar material.
+function tabelaAulas(t, lista, hoje, agendado) {
+  if (!lista.length) return '<p class="px-4 py-8 text-center text-sm text-slate-500 dark:text-neutral-400">Todas as aulas desta turma foram canceladas.</p>';
+  const th = (txt, cls = '') => `<th class="${TH} ${cls}">${txt}</th>`;
+  const linha = (a) => {
+    const p = partesAula(t, a, hoje);
+    const abre = agendado && a.id != null;
+    const data = `<span class="tabular-nums ${p.cancelada ? 'line-through' : ''} ${p.ehHoje ? 'font-semibold text-petrol-800 dark:text-sky-300' : 'text-slate-800 dark:text-neutral-100'}">${dataAno(a.data)}</span>`;
     return `
-      <tr class="${cancelada ? 'linha-apagada' : ''} ${ehHoje ? 'bg-petrol-800/5 dark:bg-sky-950/40' : ''}">
+      <tr ${abre ? `data-aula="${esc(a.id)}"` : ''} class="${abre ? `cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-900 transition ${FOCO_LINHA}` : ''} ${p.cancelada ? 'linha-apagada' : ''} ${p.ehHoje ? 'bg-petrol-800/5 dark:bg-sky-950/40' : ''}">
         <td class="${TD} tabular-nums text-xs text-slate-500 dark:text-neutral-400 text-right">${a.n ?? '—'}</td>
-        <td class="${TD} whitespace-nowrap"><span class="tabular-nums ${cancelada ? 'line-through' : ''} ${ehHoje ? 'font-semibold text-petrol-800 dark:text-sky-300' : 'text-slate-800 dark:text-neutral-100'}">${dataAno(a.data)}</span> <span class="text-xs text-slate-500 dark:text-neutral-400">${diaNome(a.dia)}</span></td>
+        <td class="${TD} whitespace-nowrap">${abre ? `<button type="button" data-abrir-aula="${esc(a.id)}" class="link-registro hover:underline underline-offset-2 focus-visible:outline-none" aria-label="Abrir a aula ${a.n ?? ''} de ${dataAno(a.data)}">${data}</button>` : data} <span class="text-xs text-slate-500 dark:text-neutral-400">${diaNome(a.dia)}</span></td>
         <td class="${TD} tabular-nums whitespace-nowrap">${a.inicio}–${a.fim}<span class="text-xs text-slate-500 dark:text-neutral-400 ml-1.5">${Turmas.horasAula(a).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} h</span></td>
-        <td class="${TD} whitespace-nowrap">${local}</td>
-        <td class="${TD} max-w-md">${conteudo ? `<span class="text-slate-700 dark:text-neutral-200">${esc(conteudo)}</span>` : traco}${motivo}</td>
-        <td class="${TD} whitespace-nowrap">${situacao}${origem}</td>
-        <td class="${TD} whitespace-nowrap">${meet}</td>
+        <td class="${TD} whitespace-nowrap">${p.local}</td>
+        <td class="${TD} max-w-md">${p.conteudo ? `<span class="text-slate-700 dark:text-neutral-200">${esc(p.conteudo)}</span>` : TRACO}${p.motivo}</td>
+        ${agendado ? `<td class="${TD} whitespace-nowrap">${resumoMateriais(materiaisDaAula(t.id, a), hoje)}</td>` : ''}
+        <td class="${TD} whitespace-nowrap">${p.situacao}${p.origem}</td>
+        <td class="${TD} whitespace-nowrap">${p.meet}</td>
       </tr>`;
   };
   return `
     <div class="overflow-x-auto">
       <table class="w-full text-left">
         <thead class="${THEAD} border-t">
-          <tr>${th('Nº', 'text-right')}${th('Data')}${th('Horário')}${th('Local')}${th('Conteúdo')}${th('Situação')}${th('Google Meet')}</tr>
+          <tr>${th('Nº', 'text-right')}${th('Data')}${th('Horário')}${th('Local')}${th('Conteúdo')}${agendado ? th('Materiais') : ''}${th('Situação')}${th('Google Meet')}</tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-neutral-900">${lista.map(linha).join('')}</tbody>
       </table>
     </div>
-    ${agendado ? '' : '<p class="px-4 py-2.5 border-t border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-xs text-slate-500 dark:text-neutral-400">Datas previstas pela agenda, ainda não gravadas; use Gerar aulas para gravá-las.</p>'}`;
+    ${agendado ? '' : '<p class="px-4 py-2.5 border-t border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-xs text-slate-500 dark:text-neutral-400">Datas previstas pela agenda, ainda não gravadas; use Gerar aulas para gravá-las e cadastrar os materiais de cada aula.</p>'}`;
+}
+
+// ---------- Drawer da aula: os dados dela e os materiais ----------
+// A coordenação acompanha e mexe nos materiais que o professor cadastrou (o mesmo cadastro do Portal do
+// Professor, js/materiais-motor.js). Um painel com duas vistas: a aula e o formulário do material.
+function abrirDrawerAula(turmaId, aulaId) {
+  const hoje = Turmas.hoje();
+  const turma = () => Turmas.porId(estado.lista, turmaId);
+  const aula = () => Turmas.aulasAgendadas(turma()).find((a) => String(a.id) === String(aulaId));
+  const ACAO = 'inline-flex items-center h-7 px-2 rounded-md text-xs font-medium text-slate-600 dark:text-neutral-300 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30';
+  const { root, fechar } = abrirDrawer(
+    '<div role="dialog" aria-modal="true" aria-labelledby="drawer-aula-titulo" class="drawer-anim relative h-full w-full max-w-lg bg-white dark:bg-neutral-950 border-l border-slate-200 dark:border-neutral-800 shadow-xl flex flex-col"></div>',
+    () => document.querySelector(`[data-abrir-aula="${CSS.escape(String(aulaId))}"]`)?.focus(),
+  );
+  const painel = root.querySelector('[role="dialog"]');
+  const descricao = (a) => `${diaNome(a.dia)}, ${dataAno(a.data)} · ${a.inicio}–${a.fim} · ${Turmas.horasAula(a).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} h`;
+  const topo = (titulo, subtitulo) => `
+    <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <h3 id="drawer-aula-titulo" class="font-display font-semibold text-slate-900 dark:text-neutral-100">${titulo}</h3>
+        <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${subtitulo}</p>
+      </div>
+      <button type="button" data-acao="fechar" class="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-neutral-200" aria-label="Fechar">${ICONE.fechar}</button>
+    </div>`;
+  // Grava, redesenha a tabela atrás e volta para a aula com o foco no material mexido.
+  const depois = (msg, focar = '[data-acao="novo"]') => { renderTurma(); verAula(); painel.querySelector(focar)?.focus(); toast(msg); };
+
+  const linhaMaterial = (m) => `
+    <li class="py-3">
+      <div class="flex items-start gap-3">
+        <span class="mt-0.5 text-slate-400 dark:text-neutral-500">${m.tipo === 'link' ? ICONE.link : ICONE.arquivo}</span>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 break-words">${esc(m.titulo)}</p>
+          <p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${m.tipo === 'link' ? `<a href="${esc(m.url)}" target="_blank" rel="noopener" class="text-petrol-800 dark:text-sky-300 hover:underline">${esc(m.url.replace(/^https?:\/\//, ''))}</a>` : esc(m.arquivo)}</p>
+          ${m.descricao ? `<p class="mt-1 text-xs text-slate-600 dark:text-neutral-300">${esc(m.descricao)}</p>` : ''}
+        </div>
+        ${Materiais.pilula(m, hoje)}
+      </div>
+      <div class="mt-1.5 pl-7 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <p class="text-xs text-slate-500 dark:text-neutral-400">${esc(m.autor?.nome ?? '—')} · ${m.autor?.papel === 'professor' ? 'Professor' : 'Coordenação'} · ${fmtData(m.criadoEm?.slice(0, 10))}</p>
+        <div class="-mr-2 flex items-center">
+          ${Materiais.situacao(m, hoje) === 'liberado' ? '' : `<button type="button" data-acao="liberar" data-material="${esc(m.id)}" class="${ACAO}">Liberar agora</button>`}
+          <button type="button" data-acao="editar" data-material="${esc(m.id)}" class="${ACAO}" aria-label="Editar ${esc(m.titulo)}">Editar</button>
+          <button type="button" data-acao="remover" data-material="${esc(m.id)}" class="${ACAO} hover:!text-red-700 dark:hover:!text-red-400" aria-label="Remover ${esc(m.titulo)}">Remover</button>
+        </div>
+      </div>
+    </li>`;
+
+  function verAula() {
+    const t = turma();
+    const a = t && aula();
+    if (!a) { fechar(); return; }
+    const p = partesAula(t, a, hoje);
+    const ms = materiaisDaAula(t.id, a);
+    painel.innerHTML = `
+      ${topo(a.n ? `Aula ${a.n}` : 'Aula cancelada', descricao(a))}
+      <div class="flex-1 overflow-y-auto px-5 py-4">
+        <div class="grid grid-cols-2 gap-x-4 gap-y-4">
+          ${campo('Situação', `${p.situacao}${p.origem}${p.motivo}`)}
+          ${campo('Local', p.local)}
+          ${campo('Conteúdo', p.conteudo ? esc(p.conteudo) : vazio('sem conteúdo definido'), 'col-span-2')}
+          ${a.meetUrl ? campo('Google Meet', p.meet, 'col-span-2') : ''}
+        </div>
+        <section aria-labelledby="drawer-aula-materiais" class="mt-6 pt-5 border-t border-slate-200 dark:border-neutral-800">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h4 id="drawer-aula-materiais" class="font-display text-[15px] font-semibold text-slate-900 dark:text-neutral-100">Materiais${ms.length ? ` <span class="ml-1 text-xs font-normal text-slate-500 dark:text-neutral-400 tabular-nums">${ms.length}</span>` : ''}</h4>
+              <p class="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">O aluno vê no portal só o que está liberado, mesmo em aula futura.</p>
+            </div>
+            ${p.cancelada ? '' : `<button type="button" data-acao="novo" class="${BOTAO_FANTASMA} -mt-1 -mr-1.5 shrink-0">${ICONE.mais} Adicionar</button>`}
+          </div>
+          ${ms.length
+            ? `<ul class="mt-2 divide-y divide-slate-100 dark:divide-neutral-900">${ms.map(linhaMaterial).join('')}</ul>`
+            : `<p class="mt-4 rounded-lg bg-slate-50 dark:bg-neutral-900 px-4 py-6 text-center text-sm text-slate-500 dark:text-neutral-400">Nenhum material nesta aula.${p.cancelada ? '' : ' O professor cadastra pelo Portal do Professor; a coordenação, aqui.'}</p>`}
+        </section>
+      </div>`;
+  }
+
+  function formMaterial(m = null) {
+    const a = aula();
+    const modo = !m ? 'agora' : Materiais.situacao(m, hoje) === 'liberado' ? 'agora' : m.liberarEm ? 'data' : 'depois';
+    const tipo = m?.tipo ?? 'arquivo';
+    const erro = (c) => `<p data-erro="${c}" class="text-xs text-red-600 dark:text-red-400 mt-1 hidden"></p>`;
+    const opcao = (nome, valor, rotulo, apoio = '') => `
+      <label class="flex items-start gap-2 cursor-pointer">
+        <input type="radio" name="${nome}" value="${valor}" ${(nome === 'tipo' ? tipo : modo) === valor ? 'checked' : ''} class="mt-0.5 h-4 w-4 shrink-0 accent-petrol-800 dark:accent-sky-500">
+        <span class="text-sm text-slate-800 dark:text-neutral-100">${rotulo}${apoio ? `<span class="block text-xs text-slate-500 dark:text-neutral-400">${apoio}</span>` : ''}</span>
+      </label>`;
+    painel.innerHTML = `
+      <form novalidate class="flex-1 min-h-0 flex flex-col">
+        ${topo(m ? 'Editar material' : 'Adicionar material', `Aula ${a.n} · ${descricao(a)}`)}
+        <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          <div>
+            <label class="rotulo" for="dm-titulo">Título</label>
+            <input id="dm-titulo" name="titulo" type="text" maxlength="120" value="${esc(m?.titulo ?? '')}" placeholder="Ex.: Apostila do módulo 1" class="campo">
+            ${erro('titulo')}
+          </div>
+          <fieldset>
+            <legend class="rotulo">Tipo</legend>
+            <div class="flex flex-wrap gap-x-6 gap-y-2">${opcao('tipo', 'arquivo', 'Arquivo')}${opcao('tipo', 'link', 'Link')}</div>
+          </fieldset>
+          <div data-bloco="arquivo" ${tipo === 'arquivo' ? '' : 'hidden'}>
+            <label class="rotulo" for="dm-arquivo">Arquivo</label>
+            <input id="dm-arquivo" name="arquivo" type="file" class="campo file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 dark:file:bg-neutral-900 file:px-2.5 file:py-1 file:text-sm file:font-medium file:text-slate-700 dark:file:text-neutral-200">
+            <p class="mt-1 text-xs text-slate-500 dark:text-neutral-400">${m?.arquivo ? `Atual: <span class="font-medium text-slate-700 dark:text-neutral-200">${esc(m.arquivo)}</span>. Escolha outro só para trocar.` : 'No protótipo, fica guardado só o nome do arquivo.'}</p>
+            ${erro('arquivo')}
+          </div>
+          <div data-bloco="link" ${tipo === 'link' ? '' : 'hidden'}>
+            <label class="rotulo" for="dm-url">Link</label>
+            <input id="dm-url" name="url" type="url" value="${esc(m?.url ?? '')}" placeholder="https://" class="campo">
+            ${erro('url')}
+          </div>
+          <div>
+            <label class="rotulo" for="dm-descricao">Descrição <span class="font-normal text-slate-400">(opcional)</span></label>
+            <textarea id="dm-descricao" name="descricao" rows="2" maxlength="300" class="campo resize-y">${esc(m?.descricao ?? '')}</textarea>
+          </div>
+          <fieldset>
+            <legend class="rotulo">Quando liberar</legend>
+            <div class="mt-1 space-y-2.5">
+              ${opcao('liberar', 'agora', 'Agora', esc(Materiais.SITUACOES.liberado.descricao))}
+              ${opcao('liberar', 'data', 'Em uma data', esc(Materiais.SITUACOES.programado.descricao))}
+              <div data-bloco="data" class="pl-6" ${modo === 'data' ? '' : 'hidden'}>
+                <input name="liberarEm" type="date" value="${esc(modo === 'data' ? m.liberarEm : '')}" aria-label="Data de liberação" class="campo !w-auto">
+                ${erro('liberarEm')}
+              </div>
+              ${opcao('liberar', 'depois', 'Depois (não liberar ainda)', esc(Materiais.SITUACOES.bloqueado.descricao))}
+            </div>
+          </fieldset>
+        </div>
+        <div class="px-5 py-3 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-end gap-2">
+          <button type="button" data-acao="voltar" class="${BOTAO_CANCELAR}">Cancelar</button>
+          <button type="submit" class="${BOTAO_PRI}">${m ? 'Salvar' : 'Adicionar'}</button>
+        </div>
+      </form>`;
+    const form = painel.querySelector('form');
+    const f = form.elements;
+    form.addEventListener('change', (e) => {
+      form.querySelector('[data-bloco="arquivo"]').hidden = f.tipo.value !== 'arquivo';
+      form.querySelector('[data-bloco="link"]').hidden = f.tipo.value !== 'link';
+      form.querySelector('[data-bloco="data"]').hidden = f.liberar.value !== 'data';
+      if (e.target.name === 'liberar' && e.target.value === 'data') f.liberarEm.focus();
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const liberar = f.liberar.value;
+      const dados = {
+        id: m?.id, turmaId, aulaId: m?.aulaId ?? a.id,
+        titulo: f.titulo.value, descricao: f.descricao.value, tipo: f.tipo.value,
+        arquivo: f.arquivo.files[0]?.name ?? m?.arquivo ?? '', url: f.url.value,
+        // "Agora" mantém a data de quem já estava liberado.
+        liberarEm: liberar === 'agora' ? (m && Materiais.situacao(m, hoje) === 'liberado' ? m.liberarEm : hoje) : liberar === 'data' ? f.liberarEm.value : null,
+        autor: m?.autor ?? { nome: Sessao.atual()?.nome ?? 'Coordenação', papel: 'coordenacao' },
+      };
+      const erros = Materiais.validar(dados);
+      if (liberar === 'data' && !dados.liberarEm) erros.liberarEm = 'Informe a data.';
+      if (mostrarErros(form, Object.entries(erros).map(([c, mensagem]) => ({ campo: c, mensagem })))) return;
+      const { material } = Materiais.salvar(dados);
+      const quando = { liberado: 'o aluno já vê', programado: Materiais.rotulo(material, hoje).toLowerCase(), bloqueado: 'ainda não liberado' }[Materiais.situacao(material, hoje)];
+      depois(`${m ? 'Material salvo' : 'Material adicionado'}: ${quando}.`, `[data-acao="editar"][data-material="${CSS.escape(material.id)}"]`);
+    });
+    f.titulo.focus();
+  }
+
+  painel.addEventListener('click', (e) => {
+    const c = e.target.closest('[data-copiar]');
+    if (c) { navigator.clipboard.writeText(c.dataset.copiar).then(() => toast('Link copiado.'), () => toast('Não foi possível copiar — selecione o link manualmente.')); return; }
+    const b = e.target.closest('[data-acao]');
+    if (!b) return;
+    const m = b.dataset.material && Materiais.carregar().find((x) => x.id === b.dataset.material);
+    if (b.dataset.acao === 'fechar') fechar();
+    else if (b.dataset.acao === 'voltar') { verAula(); painel.querySelector('[data-acao="novo"]')?.focus(); }
+    else if (b.dataset.acao === 'novo') formMaterial();
+    else if (b.dataset.acao === 'editar' && m) formMaterial(m);
+    else if (b.dataset.acao === 'liberar' && m) { Materiais.liberar(m.id, hoje); depois(`"${m.titulo}" liberado: o aluno já vê.`, `[data-acao="editar"][data-material="${CSS.escape(m.id)}"]`); }
+    else if (b.dataset.acao === 'remover' && m) {
+      modalConfirmacao({
+        titulo: 'Remover material',
+        corpo: `<p><strong>${esc(m.titulo)}</strong> sai da aula ${aula()?.n ?? ''} e o aluno deixa de ver. Não dá para desfazer.</p>`,
+        rotulo: 'Remover',
+        aoConfirmar: () => { Materiais.remover(m.id); depois('Material removido.'); },
+      });
+    }
+  });
+  verAula();
+  painel.querySelector('[data-acao="fechar"]').focus();
 }
 
 // Calendário mensal (só leitura) das aulas da turma: um cartão por mês do período,
@@ -1021,15 +1237,16 @@ function abrirModalGerarAulas(turmaId) {
 
 // ---------- Drawer genérico ----------
 
-function abrirDrawer(html) {
+function abrirDrawer(html, aoFechar = null) {
   const root = document.getElementById('drawer-root');
   root.innerHTML = `
     <div class="fixed inset-0 z-40 flex justify-end">
       <div data-fechar-drawer class="absolute inset-0 bg-slate-900/50 dark:bg-black/70"></div>
       ${html}
     </div>`;
-  const fechar = () => { root.innerHTML = ''; document.removeEventListener('keydown', aoTeclar); };
-  const aoTeclar = (e) => { if (e.key === 'Escape') fechar(); };
+  const fechar = () => { root.innerHTML = ''; document.removeEventListener('keydown', aoTeclar); aoFechar?.(); };
+  // Com uma confirmação aberta por cima, o Esc fecha só ela.
+  const aoTeclar = (e) => { if (e.key === 'Escape' && !document.getElementById('modal-root').innerHTML.trim()) fechar(); };
   document.addEventListener('keydown', aoTeclar);
   root.querySelectorAll('[data-fechar-drawer]').forEach((b) => b.addEventListener('click', fechar));
   return { root, fechar };

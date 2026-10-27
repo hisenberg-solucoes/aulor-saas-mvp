@@ -50,9 +50,8 @@ const FEATURES = [
   // ---------- Pedagógico ----------
   { id: 'cursos', modulo: 'pedagogico', nome: 'Cursos', acoes: [VER, CRIAR, EDITAR] },
   { id: 'formacoes', modulo: 'pedagogico', nome: 'Formações', acoes: [VER, CRIAR, EDITAR] },
-  { id: 'turmas', modulo: 'pedagogico', nome: 'Turmas', acoes: [VER, CRIAR, EDITAR, { id: 'gerar-aulas', nome: 'Gerar e remarcar aulas' }] },
+  { id: 'turmas', modulo: 'pedagogico', nome: 'Turmas', acoes: [VER, CRIAR, EDITAR, { id: 'gerar-aulas', nome: 'Gerar e remarcar aulas' }, { id: 'materiais', nome: 'Cadastrar e liberar os materiais das aulas' }] },
   { id: 'feriados', modulo: 'pedagogico', nome: 'Feriados', acoes: [VER, EDITAR] },
-  { id: 'materiais', modulo: 'pedagogico', nome: 'Materiais das aulas', acoes: [VER, { id: 'publicar', nome: 'Cadastrar e liberar' }] },
 
   // ---------- Financeiro ----------
   {
@@ -105,7 +104,7 @@ const PERFIS = [
   { id: 'admin', nome: 'Administrador', ativo: true, permissoes: todasAsPermissoes() },
   {
     id: 'coordenador', nome: 'Coordenador pedagógico', ativo: true,
-    permissoes: { ...tudo('cursos', 'formacoes', 'turmas', 'feriados', 'materiais', 'instrutores'), ...ver('alunos', 'responsaveis', 'contratos') },
+    permissoes: { ...tudo('cursos', 'formacoes', 'turmas', 'feriados', 'instrutores'), ...ver('alunos', 'responsaveis', 'contratos') },
   },
   {
     id: 'comercial', nome: 'Comercial', ativo: true,

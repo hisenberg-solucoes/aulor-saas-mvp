@@ -32,3 +32,10 @@ test('editar mantém o id e o autor; liberar grava a data', () => {
   assert.equal(m.autor.nome, 'Prof');
   assert.equal(m.liberarEm, '2026-10-01');
 });
+
+test('rótulo da pílula: o mesmo nos dois portais, com a data de quem está programado', () => {
+  assert.equal(Materiais.rotulo({ liberarEm: '2026-10-28' }, '2026-10-27'), 'Libera em 28/10');
+  assert.equal(Materiais.rotulo({ liberarEm: '2026-10-27' }, '2026-10-27'), 'Liberado');
+  assert.equal(Materiais.rotulo({ liberarEm: null }, '2026-10-27'), 'Não liberado');
+  assert.match(Materiais.pilula({ liberarEm: null }, '2026-10-27'), /bg-amber-50.*Não liberado/);
+});

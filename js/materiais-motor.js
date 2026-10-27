@@ -1,7 +1,7 @@
 // ============================================================
 // Materiais das aulas (V1). O professor cadastra os materiais de cada aula da
 // turma e escolhe quando liberar; a coordenação cadastra também e acompanha o
-// que o professor cadastrou (materiais.html); o aluno vê no portal só o que
+// que o professor cadastrou (aba Aulas da turma); o aluno vê no portal só o que
 // já está liberado, mesmo que a aula seja futura.
 // A aula é a materializada em turma.aulas (js/aulas-motor.js); a tela que
 // cadastra gera as aulas da turma antes, se ainda forem só a prévia da agenda.
@@ -17,10 +17,12 @@ const Materiais = (() => {
     { id: 'arquivo', nome: 'Arquivo' },
     { id: 'link', nome: 'Link' },
   ];
+  // Tom da pílula (DESIGN.md): liberado é o estado bom; programado é informação (neutra); não liberado
+  // espera alguém liberar (aviso). Fica aqui para o administrativo e o Portal do Professor mostrarem igual.
   const SITUACOES = {
-    liberado: { nome: 'Liberado', descricao: 'O aluno já vê no portal.' },
-    programado: { nome: 'Programado', descricao: 'Libera sozinho na data marcada.' },
-    bloqueado: { nome: 'Não liberado', descricao: 'O aluno ainda não vê.' },
+    liberado: { nome: 'Liberado', descricao: 'O aluno já vê no portal.', cls: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300', ponto: 'bg-emerald-500' },
+    programado: { nome: 'Programado', descricao: 'Libera sozinho na data marcada.', cls: 'bg-slate-100 text-slate-700 dark:bg-neutral-900 dark:text-neutral-300', ponto: 'bg-slate-500 dark:bg-neutral-400' },
+    bloqueado: { nome: 'Não liberado', descricao: 'O aluno ainda não vê.', cls: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300', ponto: 'bg-amber-500' },
   };
 
   // Data local (a de UTC vira o dia seguinte às 21h no Brasil e liberaria o material um dia antes).
@@ -40,6 +42,12 @@ const Materiais = (() => {
     return m.liberarEm <= hoje ? 'liberado' : 'programado';
   }
   const liberado = (m, hoje = hojeISO()) => situacao(m, hoje) === 'liberado';
+  const rotulo = (m, hoje = hojeISO()) => (situacao(m, hoje) === 'programado' ? `Libera em ${m.liberarEm.slice(8, 10)}/${m.liberarEm.slice(5, 7)}` : SITUACOES[situacao(m, hoje)].nome);
+  // Só textos fixos e a data: dispensa escape.
+  function pilula(m, hoje = hojeISO()) {
+    const s = SITUACOES[situacao(m, hoje)];
+    return `<span title="${s.descricao}" class="pilula inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-0.5 text-xs font-medium ${s.cls}"><span class="h-1.5 w-1.5 rounded-full ${s.ponto}" aria-hidden="true"></span>${rotulo(m, hoje)}</span>`;
+  }
 
   function validar(d) {
     const erros = {};
@@ -88,7 +96,7 @@ const Materiais = (() => {
 
   return {
     CHAVE, TIPOS, SITUACOES, hojeISO,
-    carregar, validar, salvar, liberar, remover, situacao, liberado,
+    carregar, validar, salvar, liberar, remover, situacao, liberado, rotulo, pilula,
     daTurma: (turmaId, lista = carregar()) => lista.filter((m) => m.turmaId === turmaId),
     daAula: (turmaId, aulaId, lista = carregar()) => lista.filter((m) => m.turmaId === turmaId && m.aulaId === aulaId),
     // O que o aluno vê: só o liberado até hoje.

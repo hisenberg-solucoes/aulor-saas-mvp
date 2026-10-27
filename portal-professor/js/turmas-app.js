@@ -423,25 +423,15 @@
 
     // ---------- Aba Aulas: os materiais de cada aula ----------
     // O professor cadastra os materiais da aula e escolhe quando liberar (js/materiais-motor.js);
-    // o aluno vê no portal só o que já está liberado; a coordenação acompanha tudo na tela de materiais dela.
+    // o aluno vê no portal só o que já está liberado; a coordenação acompanha na aba Aulas da turma, no administrativo.
 
     const chaveAula = (a) => a.id ?? `${a.data}|${a.inicio}`;
     const svg = (path, cls = 'h-4 w-4') => `<svg class="${cls} shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">${path}</svg>`;
     const ICO_ARQUIVO = '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />';
     const ICO_LINK = '<path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />';
     const ICO_MAIS = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />';
-    // Pílula do DESIGN.md: liberado é o estado bom; programado é informação (neutra); não liberado espera o professor (aviso).
-    const PILULA_MATERIAL = {
-      liberado: { cls: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300', ponto: 'bg-emerald-500' },
-      programado: { cls: 'bg-slate-100 text-slate-700 dark:bg-neutral-900 dark:text-neutral-300', ponto: 'bg-slate-500 dark:bg-neutral-400' },
-      bloqueado: { cls: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300', ponto: 'bg-amber-500' },
-    };
     const diaMes = (iso) => data(iso).slice(0, 5);
-    function pilulaMaterial(m) {
-      const sit = Materiais.situacao(m, hoje);
-      const texto = sit === 'programado' ? `Programado para ${diaMes(m.liberarEm)}` : Materiais.SITUACOES[sit].nome;
-      return `<span title="${esc(Materiais.SITUACOES[sit].descricao)}" class="pilula inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-0.5 text-[11px] font-medium ${PILULA_MATERIAL[sit].cls}"><span class="h-1.5 w-1.5 rounded-full ${PILULA_MATERIAL[sit].ponto}"></span>${esc(texto)}</span>`;
-    }
+    const pilulaMaterial = (m) => Materiais.pilula(m, hoje);
     const descricaoAula = (a) => `${a.n ? `Aula ${a.n} · ` : ''}${data(a.data)} · ${esc(a.inicio)}–${esc(a.fim)}`;
 
     const linhaMaterial = (m) => `
