@@ -1,7 +1,7 @@
 // ============================================================
 // Motor de Eventos: regras puras (sem DOM).
 // Eventos em localStorage (fallback: EVENTOS_SEED); inscrições dos alunos
-// em chave própria. Usado pelo Portal do Aluno (calendario.html).
+// em chave própria. Usado pelo Portal do Aluno (portal-aluno/calendario.html).
 // ============================================================
 
 const Eventos = (() => {
@@ -73,17 +73,6 @@ const Eventos = (() => {
       .map((e) => ({
         ...e,
         turmas: e.publico.tipo === 'todos' ? [] : ativas.filter((m) => (e.publico.tipo === 'formacoes' ? e.publico.ids.includes(m.formacao?.id ?? m.turma?.formacaoId) : e.publico.ids.includes(m.turma?.id))),
-      }));
-  }
-
-  // Eventos visíveis para o PROFESSOR (portal-professor/calendario.html): os que alcançam alguma das turmas
-  // dele (linhas de PortalProfessor.turmas, com `turma` e `formacao`), sem restrição de idade — ele acompanha
-  // o evento mesmo quando só parte dos alunos pode ir. Cancelados ficam de fora; `turmas` = alcançadas.
-  function paraTurmas(eventos, turmas = []) {
-    return ordenar(eventos.filter((e) => e.status !== 'cancelado' && atendePublico(e, turmas)))
-      .map((e) => ({
-        ...e,
-        turmas: e.publico.tipo === 'todos' ? [] : turmas.filter((m) => (e.publico.tipo === 'formacoes' ? e.publico.ids.includes(m.formacao?.id ?? m.turma?.formacaoId) : e.publico.ids.includes(m.turma?.id))),
       }));
   }
 
@@ -198,7 +187,7 @@ const Eventos = (() => {
 
   return {
     CHAVE, CHAVE_INSCRICOES, carregar, salvar, carregarInscricoes, salvarInscricoes,
-    porId, tipoDe, statusDe, ehData, addDias, idadeEm, atendeRestricao, atendePublico, paraAluno, paraTurmas, porMes, porDia, proximos, ordenar,
+    porId, tipoDe, statusDe, ehData, addDias, idadeEm, atendeRestricao, atendePublico, paraAluno, porMes, porDia, proximos, ordenar,
     inscritos, inscrito, vagasRestantes, prazoEncerrado, impedimento, inscrever, cancelarInscricao,
     gradeDoMes, diaInteiro, fmtData, fmtMoeda, horarioTexto, publicoTexto, restricaoTexto,
     validar, incluir, atualizar, remover,

@@ -370,8 +370,6 @@ function renderColaborador() {
 
   el.innerHTML = `
     <nav aria-label="Breadcrumb" class="mb-3 flex items-center gap-1.5 text-sm text-slate-600 dark:text-neutral-400">
-      <a href="home.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Home</a>
-      <span>/</span>
       <a href="colaboradores.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Colaboradores</a>
       <span>/</span>
       <span class="font-medium text-slate-800 dark:text-neutral-100 truncate max-w-xs" aria-current="page">${esc(nomeExibido(c))}</span>

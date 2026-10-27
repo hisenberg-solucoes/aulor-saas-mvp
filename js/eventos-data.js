@@ -1,6 +1,6 @@
 // ============================================================
 // Eventos (aulões, visitas técnicas, palestras, workshops, viagens…)
-// Base compartilhada: o Portal do Aluno lê daqui (calendario.html);
+// Base compartilhada: o Portal do Aluno lê daqui (portal-aluno/calendario.html);
 // um cadastro administrativo pode nascer depois sobre a mesma chave.
 // ============================================================
 

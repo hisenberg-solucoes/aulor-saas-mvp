@@ -47,7 +47,7 @@ const STATUS_CONTRATO_INSTRUTOR = [
 const TIPOS_PAGAMENTO = [
   { id: 'curso', nome: 'Curso completo', descricao: 'Valor total de um item (turma) do contrato.' },
   { id: 'parcial', nome: 'Parcial', descricao: 'Parte do curso (ex.: metade das aulas dadas).' },
-  // Programados pela tela pagamentos-instrutores.html (motor PagamentosInstrutores):
+  // Programados pela tela de pagamentos por semana (fora da V1; motor PagamentosInstrutores):
   { id: 'aulas', nome: 'Aulas avulsas', descricao: 'Aulas realizadas escolhidas — horas × valor hora do item.' },
   { id: 'mensal', nome: 'Mensal', descricao: 'Todas as aulas realizadas na competência (mês), por contrato.' },
 ];
@@ -325,7 +325,7 @@ const INSTRUTORES_SEED = [
     porInstrutor.i3.push(pagamento('ci3-1', 'parcial', `${curso?.codigo} · ${t.codigo} — 1ª metade`, Math.round(itensI3[0].total / 2), '2026-05-30', { itemId: itensI3[0].id, nf: nf('88', '2026-05-28'), pagoEm: '2026-05-30' }));
     porInstrutor.i3.push(pagamento('ci3-1', 'parcial', `${curso?.codigo} · ${t.codigo} — 2ª metade`, itensI3[0].total - Math.round(itensI3[0].total / 2), '2026-08-30', { itemId: itensI3[0].id }));
   }
-  // Movimento para a tela de pagamentos por semana (pagamentos-instrutores.html).
+  // Movimento para a tela de pagamentos por semana (fora da V1).
   // Deixa saldo/aulas livres para testar as três formas: JVA (concluída) meio paga
   // → "conclusão da turma" paga o saldo; JVO (em andamento) com o sábado 15/08 já
   // programado como AULAS AVULSAS (em atraso) → o sábado 22/08 fica livre para

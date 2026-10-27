@@ -155,6 +155,16 @@ const COLABORADORES_SEED = [
     acesso: { usuarioId: null },
     historico: [_evento('2020-01-13', 'Admitida como recepcionista'), _evento('2026-07-06', 'Afastada — licença-maternidade (retorno previsto 02/11/2026)')],
   }),
+  // Vendedor externo: parceiro (representante comercial), não funcionário; acessa o sistema com o perfil
+  // Vendedor externo (usuário 'rafael' em js/permissoes-data.js), que só vê as vendas dele.
+  colaboradorSeed({
+    id: 'c12', matricula: '0027', nome: 'Rafael Tonin', cpf: _cpfColab('467203915'), nascimento: '1988-07-14',
+    cargo: 'Vendedor externo', departamentoId: 'comercial', admissao: '2026-06-01',
+    contato: { email: 'rafael.tonin@parceiro.com.br', celular: '47991357024' },
+    acesso: { usuarioId: 'rafael' },
+    observacoes: 'Parceiro comercial (representante), não é funcionário da escola. Vende cursos e vê só as próprias vendas.',
+    historico: [_evento('2026-06-01', 'Início da parceria como vendedor externo')],
+  }),
   colaboradorSeed({
     id: 'c11', matricula: '0016', nome: 'Rafael Santos', cpf: _cpfColab('682417530'), nascimento: '1996-03-28',
     cargo: 'Analista de suporte', departamentoId: 'suporte', admissao: '2022-09-05', status: 'desligado',
