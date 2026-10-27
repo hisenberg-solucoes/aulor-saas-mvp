@@ -26,8 +26,8 @@ Os dois portais usam o shell e os papéis do `DESIGN.md` do aulor-web, os mesmos
 
 | Portal | Como ficou |
 |---|---|
-| Aluno (`portal-aluno/`) | Início, Meus cursos, Aulas, Calendário, Materiais, Financeiro, Contratos, Meus dados e Cursos EAD (leva à Toolzz). Sem Gravações, Certificados e Suporte, nem os blocos de avaliações e gravações. O curso mostra também as aulas futuras, bloqueadas até o professor liberar os materiais |
-| Professor (`portal-professor/`) | Minhas turmas e o cadastro dos materiais de cada aula, com a escolha de quando liberar. Sem Calendário, Avaliações, Dossiês, Pagamentos e Contratos |
+| Aluno (`portal-aluno/`) | Início, Meus cursos, Aulas, Calendário, Materiais, Financeiro, Contratos, Meus dados e Cursos EAD (leva à Toolzz). Sem Gravações, Certificados e Suporte, nem os blocos de avaliações e gravações. O curso mostra também as aulas futuras, bloqueadas até o professor liberar os materiais; em Materiais e requisitos, só a lista de softwares (sem máquina e sala) |
+| Professor (`portal-professor/`) | Minhas turmas e o cadastro dos materiais de cada aula, com a escolha de quando liberar. Requisitos da turma só com a lista de softwares, como no curso (sem máquina e sala). Sem Calendário, Avaliações, Dossiês, Pagamentos e Contratos |
 
 ## Simulado no protótipo
 

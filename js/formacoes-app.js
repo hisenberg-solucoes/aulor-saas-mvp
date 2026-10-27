@@ -1215,15 +1215,12 @@ function abrirModalVerTurma(turmaId) {
 
 // ---------- Nova turma na linha do curso (RN11) ----------
 
-// A turma nasce com a cópia dos requisitos de software/máquina do curso (docs/turmas.md RN10);
+// A turma nasce com a cópia dos softwares do curso (docs/turmas.md RN10; V1 sem requisitos de máquina);
 // depois cada turma anda sozinha (coordenação na turma, instrutor no Portal do Professor).
 function textoRequisitosDoCurso(curso) {
   const r = Turmas.requisitosDoCurso(curso);
-  if (!r.softwares.length && !r.requisitosMaquina) return 'os requisitos do curso — que ainda estão vazios (o instrutor pode definir no portal dele)';
-  const partes = [];
-  if (r.softwares.length) partes.push(`<strong>${plural(r.softwares.length, 'software')}</strong>`);
-  if (r.requisitosMaquina) partes.push('os requisitos de máquina');
-  return `${partes.join(' e ')} do curso`;
+  if (!r.softwares.length) return 'a lista de softwares do curso — que ainda está vazia (o instrutor pode definir no portal dele)';
+  return `<strong>${plural(r.softwares.length, 'software')}</strong> do curso`;
 }
 
 function abrirModalNovaTurma(cursoId) {

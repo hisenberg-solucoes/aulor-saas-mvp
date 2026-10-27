@@ -363,16 +363,14 @@
       const requisitos = `
         <div class="cartao p-5 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           ${dado('Pré-requisitos', preReq ? `${d.preRequisitos.length ? `<ol class="list-decimal list-inside space-y-0.5">${d.preRequisitos.map((c) => `<li>${esc(c.nome)} <span class="font-mono text-xs text-slate-400">${esc(c.codigo)}</span></li>`).join('')}</ol>` : ''}${req?.preRequisitosTexto ? `<p class="${d.preRequisitos.length ? 'mt-1.5 ' : ''}text-slate-600 dark:text-neutral-300">${esc(req.preRequisitosTexto)}</p>` : ''}` : '<span class="text-slate-500 dark:text-neutral-400">Nenhum — o curso não exige conhecimento prévio.</span>')}
-          ${dado('Máquina', req?.infraestrutura?.requisitosMaquina ? esc(req.infraestrutura.requisitosMaquina) : '<span class="text-slate-500 dark:text-neutral-400">Sem requisito específico.</span>')}
           ${dado('Público-alvo', req?.publicoAlvo ? esc(req.publicoAlvo) : '—')}
-          ${dado('Sala', req?.infraestrutura?.sala ? esc(SALAS.find((s) => s.id === req.infraestrutura.sala)?.nome ?? req.infraestrutura.sala) : '—')}
         </div>`;
       return `
         <div class="space-y-6">
           <section><h3 class="titulo-secao mb-3">Softwares requeridos <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${d.softwares.length}</span></h3>${softwares}<p class="text-xs text-slate-500 dark:text-neutral-400 mt-2">Nos laboratórios da ProWay tudo já vem instalado; a lista é para quem quer praticar em casa ou assiste online.</p></section>
           <section><h3 class="titulo-secao mb-3">Materiais do curso <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${d.materiais.length}</span></h3>${materiais}</section>
           <section><h3 class="titulo-secao mb-3">Materiais das aulas <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${materiaisAulas.length}</span></h3>${daAulas}</section>
-          <section><h3 class="titulo-secao mb-3">Pré-requisitos e infraestrutura</h3>${requisitos}</section>
+          <section><h3 class="titulo-secao mb-3">Pré-requisitos e público-alvo</h3>${requisitos}</section>
         </div>`;
     }
 

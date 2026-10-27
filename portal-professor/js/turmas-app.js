@@ -648,8 +648,8 @@
     });
 
     // ---------- Aba Requisitos ----------
-    // Softwares e máquina da SUA turma: nasceram do catálogo do curso e daqui em diante são
-    // desta turma. O que você mexe vale para a sua turma na hora; marcando "sugerir para o
+    // Softwares da SUA turma (V1: sem máquina nem sala, como no curso e na turma do administrativo):
+    // nasceram do catálogo do curso e daqui em diante são desta turma. O que você mexe vale para a sua turma na hora; marcando "sugerir para o
     // curso", a coordenação decide se entra no catálogo (e vale para as próximas turmas).
 
     const catalogoDe = (item) => (item.softwareId && typeof softwareDoCatalogo === 'function' ? softwareDoCatalogo(item.softwareId) : null);
@@ -678,8 +678,10 @@
       const cmp = Turmas.comparacaoRequisitos(d.turma, d.curso);
       const doCurso = Turmas.requisitosDoCurso(d.curso);
       const itens = r.softwares.map((item) => ({ item, cat: catalogoDe(item), chave: Turmas.chaveSoftware(item) }));
-      const pendentes = d.curso ? Cursos.sugestoesRequisitos(d.curso, 'pendente').filter((sg) => sg.instrutorId === instrutor.id) : [];
-      const respondidas = d.curso ? Cursos.sugestoesRequisitos(d.curso).filter((sg) => sg.instrutorId === instrutor.id && sg.status !== 'pendente') : [];
+      // Sugestões de máquina, de antes da V1, não aparecem (o administrativo também as ignora).
+      const minhas = d.curso ? Cursos.sugestoesRequisitos(d.curso).filter((sg) => sg.instrutorId === instrutor.id && sg.tipo !== 'maquina') : [];
+      const pendentes = minhas.filter((sg) => sg.status === 'pendente');
+      const respondidas = minhas.filter((sg) => sg.status !== 'pendente');
 
       const linha = ({ item, cat, chave }) => `
         <li class="flex items-center gap-3 px-5 py-2.5">
@@ -694,7 +696,7 @@
 
       return `
         <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <p class="text-sm text-slate-500 dark:text-neutral-400">O que precisa estar instalado nas máquinas e o que a máquina precisa ter para as suas aulas${r.herdado ? ` — hoje, o que está no catálogo de <strong>${esc(d.curso?.nome ?? 'curso')}</strong>` : ''}. O suporte instala por esta lista; peça com antecedência.</p>
+          <p class="text-sm text-slate-500 dark:text-neutral-400">O que precisa estar instalado nas máquinas para as suas aulas${r.herdado ? ` — hoje, o que está no catálogo de <strong>${esc(d.curso?.nome ?? 'curso')}</strong>` : ''}. O suporte instala por esta lista; peça com antecedência.</p>
           ${pendentes.length ? `<p class="text-xs text-amber-700 dark:text-amber-400">${plural(pendentes.length, 'sugestão sua esperando a coordenação', 'sugestões suas esperando a coordenação')}</p>` : ''}
         </div>
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
@@ -715,23 +717,11 @@
           </section>
           <div class="space-y-5">
             <section class="cartao">
-              <div class="px-5 py-3.5 border-b border-slate-100 dark:border-neutral-900 flex items-center justify-between gap-3">
-                <p class="titulo-secao">Máquina e sala</p>
-                <button type="button" id="btn-req-maquina" class="botao-sec shrink-0">Editar</button>
-              </div>
-              <div class="p-5 space-y-4">
-                <div><p class="rotulo">Requisitos de máquina (hardware)</p><p class="text-sm text-slate-800 dark:text-neutral-100 mt-0.5 whitespace-pre-line">${r.requisitosMaquina ? esc(r.requisitosMaquina) : '<span class="text-slate-400">sem requisitos</span>'}</p></div>
-                <div><p class="rotulo">Sala</p><p class="text-sm text-slate-800 dark:text-neutral-100 mt-0.5">${d.sala ? esc(d.sala.nome) : d.turma.meetLink ? 'Google Meet — máquina do aluno' : '<span class="text-slate-400">a definir</span>'}</p></div>
-                <div><p class="rotulo">Formato</p><p class="text-sm text-slate-800 dark:text-neutral-100 mt-0.5">${esc(FORMATO[d.turma.formato] ?? d.turma.formato ?? '—')}</p></div>
-              </div>
-            </section>
-            <section class="cartao">
               <div class="px-5 py-3.5 border-b border-slate-100 dark:border-neutral-900">
                 <p class="titulo-secao">No catálogo do curso <span class="text-sm font-normal text-slate-400 tabular-nums">${doCurso.softwares.length}</span></p>
                 <p class="text-xs text-slate-500 dark:text-neutral-400">O que a coordenação definiu para toda turma deste curso.</p>
               </div>
               <div class="p-5 text-sm">
-                <p class="mb-2"><span class="rotulo mr-2">Máquina</span>${doCurso.requisitosMaquina ? esc(doCurso.requisitosMaquina) : '<span class="text-slate-400">sem requisitos</span>'}</p>
                 ${doCurso.softwares.length ? `<div class="flex flex-wrap gap-1.5">${doCurso.softwares.map((sw) => {
                   const naTurma = r.softwares.some((x) => Turmas.chaveSoftware(x) === Turmas.chaveSoftware(sw));
                   return `<span title="${naTurma ? 'Também está na sua turma' : 'Está no curso, mas não na sua turma'}" class="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${naTurma ? 'border-slate-200 dark:border-neutral-700 bg-slate-100 dark:bg-neutral-900 text-slate-500 dark:text-neutral-400' : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'}">${esc(sw.nome)}</span>`;
@@ -759,7 +749,6 @@
       const opts = () => ({ curso: d.curso, autor: instrutor.nome });
       el.querySelector('#btn-req-catalogo')?.addEventListener('click', modalAdicionarSoftwares);
       el.querySelector('#btn-req-livre')?.addEventListener('click', modalSoftwareLivre);
-      el.querySelector('#btn-req-maquina')?.addEventListener('click', modalMaquina);
       el.querySelector('#btn-trazer-curso')?.addEventListener('click', () => {
         const faltando = Turmas.comparacaoRequisitos(d.turma, d.curso).faltando;
         salvarRequisitos((lista) => {
@@ -921,36 +910,6 @@
           (lista) => Turmas.removerSoftwareRequisito(lista, d.turma.id, chave, { curso: d.curso, autor: instrutor.nome }),
           `"${item.nome}" fora da lista da sua turma.`,
           sugerir ? { tipo: 'remover', softwareId: item.softwareId, nome: item.nome } : null,
-        );
-      });
-    }
-
-    function modalMaquina() {
-      const r = reqDaTurma();
-      const doCurso = Turmas.requisitosDoCurso(d.curso).requisitosMaquina;
-      abrirModal(`${cabecalhoModal('Requisitos de máquina', `Hardware que as máquinas da <strong>${esc(d.turma.codigo)}</strong> precisam ter.`)}
-        <form id="form-req-maquina" novalidate>
-          <div class="p-5 space-y-4">
-            <div>
-              <label class="rotulo" for="f-requisitosMaquina">Requisitos de máquina (hardware)</label>
-              <textarea id="f-requisitosMaquina" name="requisitosMaquina" rows="3" maxlength="300" placeholder="Ex.: 16 GB de RAM, virtualização ligada na BIOS, 30 GB livres" class="campo mt-1">${esc(r.requisitosMaquina)}</textarea>
-              <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">No curso: ${doCurso ? esc(doCurso) : 'sem requisitos'}.</p>
-            </div>
-            ${caixaSugerir('Sugerir este texto para o curso — vale para as próximas turmas.', false)}
-          </div>
-          ${rodapeModal('Salvar')}
-        </form>`, 'max-w-md');
-      const form = $('form-req-maquina');
-      $('f-requisitosMaquina').focus();
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const texto = form.requisitosMaquina.value;
-        const sugerir = form.querySelector('[name="sugerir"]').checked;
-        fecharModal();
-        salvarRequisitos(
-          (lista) => Turmas.definirRequisitosMaquina(lista, d.turma.id, texto, { curso: d.curso, autor: instrutor.nome }),
-          'Requisitos de máquina salvos.',
-          sugerir ? { tipo: 'maquina', texto: String(texto).trim() } : null,
         );
       });
     }
