@@ -747,20 +747,6 @@ const Clientes = (() => {
       })
       .sort((a, b) => b.contrato.criadoEm.localeCompare(a.contrato.criadoEm));
   }
-  // Calendário do aluno: aulas (agendadas ou prévia da agenda) das turmas em que ele está matriculado/concluído.
-  // Precisa de Turmas/Aulas carregados; sem eles, vazio. Matrículas canceladas/desistência ficam de fora.
-  function aulasDoAluno(dados, alunoId) {
-    if (typeof Turmas === 'undefined') return { turmas: [], aulas: [] };
-    const turmasVistas = new Map();
-    matriculasDoAluno(dados, alunoId).forEach((m) => {
-      if (!m.turma || m.turma.status === 'cancelada') return;
-      if (!['matriculado', 'concluido'].includes(m.matricula.status)) return;
-      if (!turmasVistas.has(m.turma.id)) turmasVistas.set(m.turma.id, { turma: m.turma, curso: m.curso, contrato: m.contrato, matricula: m.matricula });
-    });
-    const turmas = [...turmasVistas.values()].sort((a, b) => a.turma.inicio.localeCompare(b.turma.inicio));
-    const aulas = turmas.flatMap((tt) => Turmas.aulas(tt.turma).map((a) => ({ ...a, turma: tt.turma, curso: tt.curso })));
-    return { turmas, aulas: aulas.sort((a, b) => a.data.localeCompare(b.data) || a.inicio.localeCompare(b.inicio)) };
-  }
 
   return {
     carregar, salvar, normalizar, digitos, porId,
@@ -774,6 +760,6 @@ const Clientes = (() => {
     validarInadimplencia, marcarDevedor, regularizar, validarNecessidades, atualizarNecessidades, temNecessidades,
     gerarConvite, alunoPorToken, urlConvite, validarPreenchimentoAluno, preencherPeloAluno,
     gerarCadastroEmpresa, empresaPorTokenCadastro, urlCadastroEmpresa, validarPreenchimentoEmpresa, preencherPelaEmpresa,
-    gerarConviteEmpresa, alterarConviteEmpresa, empresaPorToken, usosRestantes, conviteEmpresaAberto, urlConviteEmpresa, cadastrarPeloLinkEmpresa, cadastrarAlunoPublico, matriculasDoAluno, contratosDaEmpresa, contratosDoAluno, contratosDetalhadosDoAluno, aulasDoAluno, contextoContratos, debitoDoAluno, debitosPorPagador,
+    gerarConviteEmpresa, alterarConviteEmpresa, empresaPorToken, usosRestantes, conviteEmpresaAberto, urlConviteEmpresa, cadastrarPeloLinkEmpresa, cadastrarAlunoPublico, matriculasDoAluno, contratosDaEmpresa, contratosDoAluno, contratosDetalhadosDoAluno, contextoContratos, debitoDoAluno, debitosPorPagador,
   };
 })();

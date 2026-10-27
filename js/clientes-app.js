@@ -15,7 +15,6 @@ const estado = {
   tipo: LISTA_DE[TIPO_PAGINA], // lista desta página
   selecionado: null, // { tipo: 'empresa'|'aluno'|'responsavel', id }
   aba: 'dados',
-  mesCalendario: null, // 'AAAA-MM' exibido na aba Calendário do aluno (null = mês de hoje ou o 1º com aula)
   filtros: { empresas: { busca: '', visao: '', segmento: '', financeiro: '' }, alunos: { busca: '', visao: '', empresaId: '', pagador: '', financeiro: '' }, responsaveis: { busca: '', visao: '', papel: '', vinculo: '' } },
 };
 
@@ -25,22 +24,13 @@ const ABAS_EMPRESA = [
   { id: 'contatos', titulo: 'Contatos' },
   { id: 'alunos', titulo: 'Alunos' },
   { id: 'historico', titulo: 'Vendas' },
-  { id: 'spc', titulo: 'SPC' },
 ];
 // Endereço, pagamento, empresa e LGPD viraram cartões de Dados (?aba=cobranca|vinculo cai em Dados).
-// Acompanhamento tem partes; cada parte guarda o próprio id na URL (?aba=frequencia segue abrindo a parte certa).
+// Fora da V1: Acompanhamento, Ocorrências e SPC (?aba= delas cai em Dados).
 const ABAS_ALUNO = [
   { id: 'dados', titulo: 'Dados' },
   { id: 'responsaveis', titulo: 'Responsáveis' },
-  { id: 'historico', titulo: 'Acompanhamento', partes: [
-    { id: 'historico', titulo: 'Cursos' },
-    { id: 'calendario', titulo: 'Calendário' },
-    { id: 'frequencia', titulo: 'Frequência' },
-    { id: 'dossies', titulo: 'Dossiês' },
-  ] },
-  { id: 'ocorrencias', titulo: 'Ocorrências' },
   { id: 'contratos', titulo: 'Vendas' },
-  { id: 'spc', titulo: 'SPC' },
 ];
 const ABAS_RESPONSAVEL = [
   { id: 'dados', titulo: 'Dados' },
@@ -141,6 +131,16 @@ const cadastroEmpresaPendente = (e) => Boolean(e.cadastro && !e.cadastro.preench
 const pilulaCadastroEmpresa = (e) => (cadastroEmpresaPendente(e) ? pilula(PILULA.ambar, 'Aguardando empresa', `Link enviado em ${Clientes.fmtData(e.cadastro.criadoEm)} — a empresa ainda não preencheu`, ICONE.link) : '');
 const pilulaNecessidades = (a, texto = 'Necessidades') => (Clientes.temNecessidades(a) ? pilula(PILULA.rosa, texto, resumoNecessidades(a)) : '');
 
+// Etiqueta de categoria (.etiqueta-* em styles.css, DESIGN.md › Chips e tags): cor e ícone fixos, sempre com o texto.
+const ICONE_ETIQUETA = {
+  legal: 'M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z',
+  financeiro: 'M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3',
+  emergencia: 'M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z',
+  menor: 'M4.5 20.25h15v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 13.5v6.75ZM4.5 16c2.5 1.5 5 1.5 7.5 0s5-1.5 7.5 0M12 11.25V7.5M12 3.75c.75.9.75 1.6 0 2.1-.75-.5-.75-1.2 0-2.1Z',
+};
+const etiqueta = (categoria, texto, titulo = '') => `<span title="${esc(titulo)}" class="etiqueta etiqueta-${categoria}"><svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="${ICONE_ETIQUETA[categoria]}"/></svg>${esc(texto)}</span>`;
+const etiquetaMenor = (idade) => etiqueta('menor', 'Menor de idade', `${idade} anos`);
+
 // ---------- Helpers ----------
 
 function pilula(classe, texto, titulo = '', icone = '') {
@@ -167,6 +167,9 @@ const iniciais = (nome) => nome.split(' ').filter(Boolean).map((p) => p[0]).slic
 const nomeEmpresa = (e) => e.nomeFantasia || e.razaoSocial;
 const empresaDe = (id) => Clientes.porId(estado.dados.empresas, id);
 const linkWhats = (celular) => (celular ? `<a href="https://wa.me/55${celular}" target="_blank" rel="noopener" title="WhatsApp ${esc(Clientes.fmtTelefone(celular))}" class="inline-flex items-center justify-center h-7 w-7 rounded-md text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition">${ICONE.whatsapp}</a>` : '');
+
+// Cabeçalho do registro: uma ação à vista + "Mais" (DESIGN.md › Layout); o WhatsApp vai para o "Mais".
+const itemWhats = (celular) => (celular ? [{ nome: 'WhatsApp', detalhe: Clientes.fmtTelefone(celular), acao: () => window.open(`https://wa.me/55${celular}`, '_blank', 'noopener') }] : []);
 
 function persistir() {
   Clientes.salvar(estado.dados);
@@ -255,10 +258,11 @@ function faixaFinanceira(tipo, x, f) {
     </div>`;
 }
 
-// Cartão de aluno e empresa: as três fontes lado a lado — nenhuma "em dia" sozinha esconde as outras.
+// Cartão de aluno e empresa: as duas fontes lado a lado — nenhuma "em dia" sozinha esconde a outra.
+// V1: marcar devedor só na empresa; no aluno a marcação é só leitura (SPC e "marcar devedor" do aluno saíram).
 function cartaoFinanceiro(tipo, x, f) {
   const i = x.inadimplencia;
-  const spc = ultimaSpc(tipo, x.id);
+  const marca = tipo === 'empresa';
   const ruim = (t) => `<span class="font-medium text-red-700 dark:text-red-300">${t}</span>`;
   const atencao = (t) => `<span class="font-medium text-amber-800 dark:text-amber-300">${t}</span>`;
   const ir = (aba, rotulo) => ` <button type="button" data-ir-aba="${aba}" class="${BOTAO_LINK} ml-1">${rotulo}</button>`;
@@ -268,16 +272,15 @@ function cartaoFinanceiro(tipo, x, f) {
   ].join('');
   return `
       <section class="${f.devedor ? CARTAO_DEVEDOR : CARTAO}">
-        ${cabecalhoSecao('Situação financeira com a ProWay', 'Marcação do financeiro, parcelas vencidas nas vendas e última consulta ao SPC.', i.devedor ? 'btn-editar-devedor' : 'btn-marcar-devedor', i.devedor ? 'Editar' : 'Marcar devedor')}
+        ${cabecalhoSecao('Situação financeira com a ProWay', 'Marcação do financeiro e parcelas vencidas nas vendas.', marca ? (i.devedor ? 'btn-editar-devedor' : 'btn-marcar-devedor') : '', i.devedor ? 'Editar' : 'Marcar devedor')}
         <div class="p-4 grid grid-cols-2 gap-4">
           ${i.devedor ? `
           ${campo('Marcação do financeiro', ruim(`${esc(nomeMotivoInad(i.motivo) || 'Devedor')}${i.desde ? ` desde ${esc(Clientes.fmtData(i.desde))}` : ''}`))}
           ${campo('Valor marcado', i.valor != null ? `<span class="tabular-nums">${esc(fmtMoeda(i.valor))}</span>` : vazio('', '—'))}
           ${i.observacoes ? campo('Observações', `<p class="whitespace-pre-line">${esc(i.observacoes)}</p>`, 'col-span-2') : ''}` : campo('Marcação do financeiro', 'Sem marcação.', 'col-span-2')}
           ${f.debito ? campo('Vendas', `${contratos || 'Nenhuma parcela vencida.'}${contratos ? ir(ABA_CONTRATOS[tipo], 'Ver vendas') : ''}`, 'col-span-2') : ''}
-          ${dadosSpc ? campo('SPC', spc ? `${spc.resultado.situacao === 'restricao' ? ruim(`Com restrição · ${plural(spc.resultado.pendencias.length, 'pendência')} · ${esc(fmtMoeda(spc.resultado.totalPendente))}`) : 'Nada consta'} — consultado ${haDias(Spc.diasDesde(spc.data))}${ir('spc', 'Ver SPC')}` : `Nunca consultado.${ir('spc', 'Ver SPC')}`, 'col-span-2') : ''}
         </div>
-        ${i.devedor ? `<div class="px-4 pb-4"><div class="pt-3 border-t border-slate-200 dark:border-neutral-800"><button type="button" id="btn-regularizar" class="${BOTAO_SEC}">${ICONE.check} Regularizar marcação</button></div></div>` : ''}
+        ${marca && i.devedor ? `<div class="px-4 pb-4"><div class="pt-3 border-t border-slate-200 dark:border-neutral-800"><button type="button" id="btn-regularizar" class="${BOTAO_SEC}">${ICONE.check} Regularizar marcação</button></div></div>` : ''}
       </section>`;
 }
 
@@ -469,7 +472,7 @@ function renderListaAlunos() {
           nome: a.nomeSocial || a.nome,
           marcas: [
             pilulaInativo(a),
-            idade != null && idade < 18 ? pilula(PILULA.ambar, 'Menor', `${idade} anos`) : '',
+            idade != null && idade < 18 ? etiquetaMenor(idade) : '',
             pilulaFinanceira(a, fin.get(a.id)),
             pilulaConvite(a),
             Clientes.temNecessidades(a) ? pilulaNecessidades(a, a.necessidades.tipos.length === 1 ? nomeNecessidade(a.necessidades.tipos[0]).split(' /')[0].split(' (')[0] : 'Necessidades') : '',
@@ -515,8 +518,6 @@ function cabecalhoRegistro({ voltar, tipoLista, avatar, titulo, pilulas, chips, 
       class="h-7 px-2.5 rounded-md text-[12.5px] font-medium whitespace-nowrap transition ${p.id === estado.aba ? 'bg-[color:var(--f-elevado)] text-[color:var(--f-tinta)] shadow-[0_1px_2px_rgb(7_30_44/0.08)]' : 'text-[color:var(--f-tinta-2)] hover:text-[color:var(--f-tinta)]'}">${p.titulo}${p.id !== ativa.id && contadores[p.id] != null ? ` <span class="ml-1 ${CONTA_ABA}">${contadores[p.id]}</span>` : ''}</button>`;
   el.innerHTML = `
     <nav aria-label="Breadcrumb" class="mb-3 flex items-center gap-1.5 text-sm text-slate-600 dark:text-neutral-400">
-      <a href="home.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Home</a>
-      <span>/</span>
       <a href="${urlLista(tipoLista)}" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">${voltar}</a>
       <span>/</span>
       <span class="font-medium text-slate-800 dark:text-neutral-100 truncate max-w-xs" aria-current="page">${titulo}</span>
@@ -562,7 +563,7 @@ function renderEmpresa() {
     avatar: `<div class="h-12 w-12 shrink-0 rounded-xl bg-petrol-800/10 dark:bg-sky-950/60 text-petrol-800 dark:text-sky-300 grid place-items-center font-display font-semibold">${esc(iniciais(nomeEmpresa(e)))}</div>`,
     titulo: esc(nomeEmpresa(e)),
     // Só exceções: "Ativa" e o segmento (está em Dados) não se anunciam.
-    pilulas: `${pilulaInativo(e)}${e.cobranca.exigePedidoCompra ? pilula(PILULA.ambar, 'Exige PO', 'Exige pedido de compra para faturar') : ''}${e.convite ? pilula(Clientes.conviteEmpresaAberto(e) ? PILULA.petrol : PILULA.neutra, `Link: ${e.convite.usos.length}${e.convite.limite ? `/${e.convite.limite}` : ''} cadastro${e.convite.usos.length === 1 ? '' : 's'}`, Clientes.conviteEmpresaAberto(e) ? 'Link de cadastro aberto para colaboradores' : 'Link de cadastro desativado ou esgotado', ICONE.link) : ''}${pilulaSpc('empresa', e.id)}`,
+    pilulas: `${pilulaInativo(e)}${e.cobranca.exigePedidoCompra ? pilula(PILULA.ambar, 'Exige PO', 'Exige pedido de compra para faturar') : ''}${e.convite ? pilula(Clientes.conviteEmpresaAberto(e) ? PILULA.petrol : PILULA.neutra, `Link: ${e.convite.usos.length}${e.convite.limite ? `/${e.convite.limite}` : ''} cadastro${e.convite.usos.length === 1 ? '' : 's'}`, Clientes.conviteEmpresaAberto(e) ? 'Link de cadastro aberto para colaboradores' : 'Link de cadastro desativado ou esgotado', ICONE.link) : ''}`,
     chips: `
       ${e.nomeFantasia ? `<span class="text-sm text-slate-600 dark:text-neutral-400 mr-1">${esc(e.razaoSocial)}</span>` : ''}
       ${chip(ICONE.predio, `<span class="font-mono">${esc(Clientes.fmtCnpj(e.cnpj))}</span>`, 'CNPJ')}
@@ -572,7 +573,7 @@ function renderEmpresa() {
     acoes: `
       <button type="button" id="btn-editar" class="${BOTAO_SEC}">${ICONE.lapis} Editar dados</button>
       <button type="button" id="btn-mais" class="${BOTAO_SEC}" aria-haspopup="menu" aria-expanded="false">Mais ${ICONE.abaixo}</button>`,
-    abas: ABAS_EMPRESA, contadores: { contatos: e.contatos.length, alunos: alunos.length, spc: contagemSpc('empresa', e.id), historico: hist.length },
+    abas: ABAS_EMPRESA, contadores: { contatos: e.contatos.length, alunos: alunos.length, historico: hist.length },
   });
   el.querySelector('#faixa').innerHTML = faixaFinanceira('empresa', e, financeiroDoPagador('empresa', e, Clientes.debitosPorPagador(estado.dados))) + faixaCadastroEmpresa(e) + (e.status === 'ativo' ? faixaPendencias(pend, 'contrato, boleto e nota fiscal', cadastroEmpresaPendente(e) ? '' : `<button type="button" id="btn-faixa-link-cadastro" class="${BOTAO_LINK} shrink-0">Pedir para a empresa preencher</button>`) : '');
   el.querySelector('#btn-editar').addEventListener('click', () => abrirDrawerEmpresa(e.id));
@@ -590,7 +591,7 @@ function renderEmpresa() {
     { nome: 'Excluir empresa', perigo: true, desabilitado: hist.length > 0, detalhe: hist.length ? 'Tem histórico de turmas — inative em vez de excluir' : '', acao: () => confirmarExclusaoEmpresa(e.id) },
   ]));
   ligarIrAba(el, 'empresa', e.id);
-  ({ dados: renderEmpresaDados, contatos: renderEmpresaContatos, alunos: renderEmpresaAlunos, spc: () => renderSpcCliente('empresa'), historico: renderEmpresaHistorico })[estado.aba]();
+  ({ dados: renderEmpresaDados, contatos: renderEmpresaContatos, alunos: renderEmpresaAlunos, historico: renderEmpresaHistorico })[estado.aba]();
 }
 
 function renderEmpresaDados() {
@@ -801,7 +802,7 @@ function renderAluno() {
     avatar: `<div class="h-12 w-12 shrink-0 rounded-full bg-petrol-800 text-white grid place-items-center font-display font-semibold overflow-hidden">${a.foto ? `<img src="${esc(a.foto)}" alt="" class="h-full w-full object-cover">` : esc(iniciais(a.nome))}</div>`,
     titulo: esc(a.nomeSocial || a.nome),
     // Só exceções: "Ativo" e "paga: o próprio aluno" são o caso comum e não se anunciam.
-    pilulas: `${pilulaInativo(a)}${a.pagador !== 'proprio' ? pilula(a.pagador === 'empresa' ? PILULA.petrol : PILULA.violeta, `Paga: ${nomeDe(PAGADORES, a.pagador).toLowerCase()}`) : ''}${idade != null && idade < 18 ? pilula(PILULA.ambar, 'Menor de idade', `${idade} anos`) : ''}${pilulaSpc('aluno', a.id)}`,
+    pilulas: `${pilulaInativo(a)}${a.pagador !== 'proprio' ? pilula(a.pagador === 'empresa' ? PILULA.petrol : PILULA.violeta, `Paga: ${nomeDe(PAGADORES, a.pagador).toLowerCase()}`) : ''}${idade != null && idade < 18 ? etiquetaMenor(idade) : ''}`,
     chips: `
       ${a.nomeSocial ? `<span class="text-sm text-slate-600 dark:text-neutral-400 mr-1">${esc(a.nome)}</span>` : ''}
       ${chip(ICONE.pessoa, `<span class="font-mono">${esc(Clientes.fmtCpf(a.cpf))}</span>${idade != null ? ` · ${idade} anos` : ''}`, 'CPF · idade')}
@@ -810,15 +811,15 @@ function renderAluno() {
       ${a.endereco.cidade ? chip(ICONE.local, `${esc(a.endereco.cidade)}/${esc(a.endereco.uf)}`, 'Cidade') : ''}
       ${emp ? chip(ICONE.predio, `${esc(nomeEmpresa(emp))}${a.cargo ? ` · ${esc(a.cargo)}` : ''}`, 'Empresa') : ''}`,
     acoes: `
-      ${linkWhats(a.celular)}
       <button type="button" id="btn-editar" class="${BOTAO_SEC}">${ICONE.lapis} Editar dados</button>
       <button type="button" id="btn-mais" class="${BOTAO_SEC}" aria-haspopup="menu" aria-expanded="false">Mais ${ICONE.abaixo}</button>`,
-    abas: ABAS_ALUNO, contadores: { responsaveis: a.responsaveis.length || null, calendario: Clientes.aulasDoAluno(estado.dados, a.id).turmas.length || null, frequencia: frequenciasDoAluno(a)?.geral.emRisco || null, dossies: contadorDossies(a), ocorrencias: contadorOcorrencias(a), contratos: hist.length, spc: contagemSpc('aluno', a.id), historico: Clientes.matriculasDoAluno(estado.dados, a.id).length },
+    abas: ABAS_ALUNO, contadores: { responsaveis: a.responsaveis.length || null, contratos: hist.length },
   });
   el.querySelector('#faixa').innerHTML = faixaFinanceira('aluno', a, financeiroDoAluno(a)) + faixaConvite(a) + faixaNecessidades(a) + (a.status === 'ativo' ? faixaPendencias(pend, 'contrato e boleto') : '');
   el.querySelector('#btn-faixa-link')?.addEventListener('click', () => abrirModalLinkAluno(a.id));
   el.querySelector('#btn-editar').addEventListener('click', () => abrirDrawerAluno(a.id));
   el.querySelector('#btn-mais').addEventListener('click', (ev) => abrirMenu(ev.currentTarget, [
+    ...itemWhats(a.celular),
     { nome: 'Link para o aluno', detalhe: 'Ele mesmo completa o cadastro', acao: () => abrirModalLinkAluno(a.id) },
     { nome: 'Declaração de matrícula', detalhe: 'Carteirinha de estudante, meia-entrada', acao: () => abrirModalDeclaracao(a.id) },
     'sep',
@@ -831,7 +832,7 @@ function renderAluno() {
     { nome: 'Excluir aluno', perigo: true, desabilitado: hist.length > 0, detalhe: hist.length ? 'Tem histórico de matrículas — inative em vez de excluir' : '', acao: () => confirmarExclusaoAluno(a.id) },
   ]));
   ligarIrAba(el, 'aluno', a.id);
-  ({ dados: renderAlunoDados, responsaveis: renderAlunoResponsaveis, calendario: renderAlunoCalendario, frequencia: renderAlunoFrequencia, dossies: renderAlunoDossies, ocorrencias: renderAlunoOcorrencias, contratos: renderAlunoContratos, spc: () => renderSpcCliente('aluno'), historico: renderAlunoHistorico })[estado.aba]();
+  ({ dados: renderAlunoDados, responsaveis: renderAlunoResponsaveis, contratos: renderAlunoContratos })[estado.aba]();
 }
 
 function renderAlunoDados() {
@@ -874,7 +875,6 @@ function renderAlunoDados() {
   document.getElementById('btn-editar-dados').addEventListener('click', () => abrirDrawerAluno(a.id));
   document.getElementById('btn-editar-dados-2').addEventListener('click', () => abrirDrawerAluno(a.id));
   document.getElementById('btn-editar-necessidades').addEventListener('click', () => abrirDrawerNecessidades());
-  ligarSituacaoFinanceira('aluno', a, renderAluno);
   cob.ligar(); vin.ligar();
 }
 
@@ -990,398 +990,6 @@ function cartoesVinculoAluno(a) {
   };
 }
 
-function renderAlunoHistorico() {
-  const a = atual();
-  const hist = Clientes.matriculasDoAluno(estado.dados, a.id);
-  const frequencias = frequenciasDoAluno(a);
-  const frequenciaPorMatricula = new Map((frequencias?.linhas ?? []).map((m) => [m.matricula.id, m.frequencia]));
-  const corMat = { matriculado: PILULA.petrol, congelada: PILULA.violeta, concluido: PILULA.ativo, desistiu: PILULA.ambar, cancelada: PILULA.inativo };
-
-  const elegibilidadeDe = (m) => {
-    const regra = m.curso?.certificado;
-    const fq = frequenciaPorMatricula.get(m.matricula.id) ?? null;
-    if (m.vinculo.situacao !== 'aprovado') return { id: 'aguardando', texto: 'Matrícula não aprovada', detalhe: 'A elegibilidade só é calculada depois da aprovação da matrícula.', classe: PILULA.neutra };
-    if (m.matricula.status === 'desistiu' || m.matricula.status === 'cancelada') return { id: 'encerrada', texto: 'Não elegível', detalhe: 'Matrícula encerrada antes da conclusão.', classe: PILULA.inativo };
-    if (!m.curso) return { id: 'sem_curso', texto: 'Curso não encontrado', detalhe: 'Não há regra de certificado disponível para esta matrícula.', classe: PILULA.ambar };
-    if (!regra?.emite) return { id: 'nao_emite', texto: 'Não se aplica', detalhe: 'Este curso não emite certificado próprio.', classe: PILULA.neutra };
-    if (m.matricula.status !== 'concluido') {
-      const minimo = regra.frequenciaMinima ?? FREQUENCIA_MINIMA;
-      return { id: 'em_curso', texto: 'Em andamento', detalhe: `A conclusão e a frequência mínima de ${minimo}% ainda serão verificadas${regra.exigeAprovacao ? '; o curso também exige aprovação' : ''}.`, classe: PILULA.petrol };
-    }
-    if (!fq || fq.percentual == null) return { id: 'sem_frequencia', texto: 'Frequência sem registro', detalhe: 'Não há chamadas suficientes para verificar o mínimo do curso.', classe: PILULA.ambar };
-    if (fq.percentual < fq.minimo) return { id: 'frequencia', texto: 'Abaixo da frequência mínima', detalhe: `${fq.percentual}% de frequência; o curso exige ${fq.minimo}%.`, classe: PILULA.vermelha };
-    if (regra.exigeAprovacao) return { id: 'sem_aprovacao', texto: 'Aprovação não registrada', detalhe: `A frequência atende ao mínimo, mas o protótipo não registra a aprovação${regra.notaMinima != null ? ` por nota mínima ${regra.notaMinima}` : ''}.`, classe: PILULA.ambar };
-    return { id: 'atende', texto: 'Requisitos conhecidos atendidos', detalhe: 'Conclusão e frequência atendidas. A emissão do certificado não é registrada neste protótipo.', classe: PILULA.ativo };
-  };
-
-  const elegibilidades = hist.map((m) => ({ matricula: m, certificado: elegibilidadeDe(m) }));
-  const turmasAtuais = new Set(hist
-    .filter((m) => m.vinculo.situacao === 'aprovado' && m.turma && m.matricula.status === 'matriculado' && !['concluida', 'cancelada'].includes(Turmas.situacao(m.turma)))
-    .map((m) => m.turma.id)).size;
-  const concluidos = hist.filter((m) => m.vinculo.situacao === 'aprovado' && m.matricula.status === 'concluido').length;
-  const requisitosAtendidos = elegibilidades.filter((x) => x.certificado.id === 'atende').length;
-  const urlAba = (aba) => urlDetalhe('aluno', a.id, aba);
-  const cartaoResumo = (rotulo, valor, detalhe, href = '') => {
-    const tag = href ? 'a' : 'div';
-    const atributo = href ? ` href="${href}"` : '';
-    return `<${tag}${atributo} class="${CARTAO} block p-4 ${href ? 'hover:border-petrol-800 dark:hover:border-sky-400 transition' : ''}">
-      <p class="text-xs font-medium text-slate-500 dark:text-neutral-400">${rotulo}</p>
-      <p class="font-display text-2xl font-semibold tabular-nums leading-none mt-1 text-slate-800 dark:text-neutral-100">${valor}</p>
-      <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1.5">${detalhe}</p>
-    </${tag}>`;
-  };
-  const linha = ({ matricula: m, certificado }) => {
-    const fq = frequenciaPorMatricula.get(m.matricula.id) ?? null;
-    const situacaoMatricula = m.vinculo.situacao === 'aprovado'
-      ? pilula(corMat[m.matricula.status] ?? PILULA.neutra, nomeDe(STATUS_MATRICULA, m.matricula.status))
-      : pilula(m.vinculo.situacao === 'aguardando' ? PILULA.ambar : m.vinculo.situacao === 'recusado' ? PILULA.inativo : PILULA.neutra, nomeDe(SITUACOES_VINCULO, m.vinculo.situacao), m.vinculo.recusa?.motivo ? `Motivo: ${m.vinculo.recusa.motivo}` : '');
-    const nomeCurso = m.curso?.nome ?? m.rotulo;
-    return `
-      <tr class="${m.matricula.status === 'cancelada' || m.matricula.status === 'desistiu' || m.vinculo.situacao === 'recusado' ? 'linha-apagada' : ''}">
-        <td class="${TD}">
-          ${m.turma ? `<a href="turma.html?id=${encodeURIComponent(m.turma.id)}" class="font-medium text-slate-800 dark:text-neutral-100 hover:underline"><span class="font-mono text-xs text-slate-400 mr-1.5">${esc(m.turma.codigo)}</span>${esc(nomeCurso)}</a>` : `<span class="font-medium text-slate-800 dark:text-neutral-100">${esc(nomeCurso)}</span>`}
-          <p class="text-xs text-slate-400 mt-0.5">${esc(m.tipo)} · ${esc(Clientes.fmtData(m.inicio))}</p>
-        </td>
-        <td class="${TH}"><div class="flex flex-wrap gap-1.5">${situacaoMatricula}</div><p class="font-mono text-xs text-slate-400 mt-1">${esc(m.matricula.codigo)}</p></td>
-        <td class="${TH}">${fq ? `${PresencasUi.situacaoHtml(fq)}<p class="text-xs text-slate-400 mt-1 tabular-nums">${fq.validas} de ${fq.dadas} aulas</p>` : '<span class="text-slate-400">—</span>'}</td>
-        <td class="${TH}">${pilula(certificado.classe, certificado.texto, certificado.detalhe)}<p class="text-xs text-slate-400 mt-1 max-w-xs">${esc(certificado.detalhe)}</p></td>
-        <td class="${TH} text-right"><div class="inline-flex flex-wrap justify-end gap-x-3 gap-y-1">
-          ${m.turma ? `<a href="turma.html?id=${encodeURIComponent(m.turma.id)}" class="${BOTAO_LINK}">Turma</a><a href="turma.html?id=${encodeURIComponent(m.turma.id)}&aba=presencas" class="${BOTAO_LINK}">Presenças</a><a href="turma.html?id=${encodeURIComponent(m.turma.id)}&aba=avaliacoes" class="${BOTAO_LINK}">Avaliações da turma</a>` : ''}
-        </div></td>
-      </tr>`;
-  };
-
-  document.getElementById('acoes-aba').innerHTML = '';
-  document.getElementById('conteudo-aba').innerHTML = `
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-      ${cartaoResumo('Turmas atuais', turmasAtuais, hist.length ? `${plural(hist.length, 'matrícula')} no histórico` : 'nenhuma matrícula', urlAba('calendario'))}
-      ${cartaoResumo('Frequência geral', PresencasUi.pct(frequencias?.geral.percentual ?? null), frequencias?.linhas.length ? (frequencias.abaixo ? `${plural(frequencias.abaixo, 'turma abaixo', 'turmas abaixo')} do mínimo` : `${plural(frequencias.linhas.length, 'turma')} acompanhada${frequencias.linhas.length === 1 ? '' : 's'}`) : 'nenhuma chamada registrada', urlAba('frequencia'))}
-      ${cartaoResumo('Cursos concluídos', concluidos, hist.length ? `de ${plural(hist.length, 'matrícula')}` : 'nenhuma matrícula')}
-      ${cartaoResumo('Certificação', requisitosAtendidos, 'com requisitos conhecidos atendidos · emissão não registrada')}
-    </div>
-    <section id="cursos-certificacao">
-      <div class="mb-3">
-        <h3 class="font-display font-semibold text-slate-800 dark:text-neutral-100">Cursos e certificação</h3>
-        <p class="text-sm text-slate-600 dark:text-neutral-400 mt-0.5">A elegibilidade usa somente matrícula, conclusão e frequência. Avaliações são mostradas no contexto da turma; emissão de certificado e aprovação por nota não existem neste protótipo.</p>
-      </div>
-      ${tabela(['Curso / turma', 'Matrícula', 'Frequência', 'Certificação', 'Abrir'], elegibilidades.map(linha), 'Nenhuma matrícula ainda.', `${plural(hist.length, 'matrícula')} · elegibilidade conhecida, não emissão de certificado`)}
-    </section>`;
-}
-
-// ---------- Aba Frequência (aluno) ----------
-// Presenças pela chamada do professor (Portal do Professor), uma linha por turma do aluno.
-// Precisa de Turmas + Presencas carregados na página (aluno.html); sem eles, aba com aviso.
-
-function frequenciasDoAluno(a) {
-  if (typeof Presencas === 'undefined' || typeof Turmas === 'undefined') return null;
-  const ref = Turmas.hoje();
-  const vistas = new Set();
-  const linhas = [];
-  Clientes.matriculasDoAluno(estado.dados, a.id).forEach((m) => {
-    if (!m.turma || m.turma.status === 'cancelada' || vistas.has(m.turma.id)) return;
-    if (!['matriculado', 'concluido', 'desistiu'].includes(m.matricula.status)) return;
-    vistas.add(m.turma.id);
-    const concluido = Turmas.situacao(m.turma) === 'concluida' || m.matricula.status !== 'matriculado';
-    const minimo = PresencasUi.minimoDe(m.curso);
-    linhas.push({ ...m, frequencia: Presencas.frequencia(m.turma.id, a.id, Turmas.aulas(m.turma), ref, { concluido, minimo }) });
-  });
-  linhas.sort((x, y) => (y.turma.inicio ?? '').localeCompare(x.turma.inicio ?? ''));
-  const geral = Presencas.consolidar(linhas.map((l) => l.frequencia));
-  return { linhas, geral, abaixo: geral.emRisco + geral.reprovados };
-}
-
-function renderAlunoFrequencia() {
-  const a = atual();
-  const acoes = document.getElementById('acoes-aba');
-  const el = document.getElementById('conteudo-aba');
-  acoes.innerHTML = '';
-  const r = frequenciasDoAluno(a);
-  if (!r) { el.innerHTML = '<p class="text-sm text-slate-500 dark:text-neutral-400">Módulo de presenças não carregado nesta página.</p>'; return; }
-  const g = r.geral;
-  const pctUi = PresencasUi.pct;
-  const cartao = (rotulo, valor, sub) => `
-    <div class="${CARTAO} p-4">
-      <p class="text-xs font-medium text-slate-500 dark:text-neutral-400">${rotulo}</p>
-      <p class="font-display text-2xl font-semibold tabular-nums leading-none mt-1 text-slate-800 dark:text-neutral-100">${valor}</p>
-      <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1.5">${sub}</p>
-    </div>`;
-  const sGeral = Presencas.statusFrequenciaDe(g.status);
-  const linha = (l) => {
-    const fq = l.frequencia;
-    const abaixo = fq.abaixoDoMinimo;
-    const previstas = Turmas.aulas(l.turma).filter((x) => x.status !== 'cancelada').length;
-    return `
-      <tr class="${l.matricula.status === 'desistiu' ? 'linha-apagada' : ''}">
-        <td class="${TD}">
-          <a href="turma.html?id=${l.turma.id}&aba=presencas" target="_blank" class="font-medium text-slate-800 dark:text-neutral-100 hover:underline"><span class="font-mono text-xs text-slate-400 mr-1.5">${esc(l.turma.codigo)}</span>${esc(l.curso?.nome ?? l.rotulo)}</a>
-          ${l.matricula.status !== 'matriculado' ? `<p class="text-xs text-slate-400">${l.matricula.status === 'concluido' ? 'Concluído' : 'Desistiu'}</p>` : ''}
-        </td>
-        <td class="${TD} tabular-nums whitespace-nowrap text-xs">${esc(Clientes.fmtData(l.turma.inicio))} → ${esc(Clientes.fmtData(l.turma.fim))}</td>
-        <td class="${TD} tabular-nums text-right">${fq.dadas}<span class="text-xs text-slate-400"> / ${previstas}</span></td>
-        <td class="${TD} tabular-nums text-right">${fq.dadas ? fq.validas : '—'}</td>
-        <td class="${TD} tabular-nums text-right">${fq.dadas ? (fq.faltas ? `<span class="text-red-600 dark:text-red-400">${fq.faltas}</span>` : '0') : '—'}</td>
-        <td class="${TD} tabular-nums text-right font-medium ${abaixo ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-neutral-100'}">${pctUi(fq.percentual)}</td>
-        <td class="${TH}">${PresencasUi.situacaoHtml(fq, { comPercentual: false })}</td>
-      </tr>`;
-  };
-  el.innerHTML = `
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-      ${cartao('Frequência geral', pctUi(g.percentual), r.abaixo ? `<span class="inline-flex items-center gap-1.5 font-medium text-[color:var(--f-ruim)]"><span class="h-2 w-2 rounded-full bg-[color:var(--f-ruim)]"></span>${plural(r.abaixo, 'turma abaixo', 'turmas abaixo')} do mínimo</span>` : g.dadas ? `<span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full ${sGeral?.ponto ?? 'bg-slate-400'}"></span>${esc(sGeral?.nome ?? '')}</span>` : 'nenhuma aula realizada ainda')}
-      ${cartao('Aulas dadas', g.dadas, `em ${g.cursos} de ${r.linhas.length} turma${r.linhas.length === 1 ? '' : 's'}`)}
-      ${cartao('Presenças', g.validas, 'atraso e falta justificada contam')}
-      ${cartao('Faltas', g.faltas, g.faltas ? `${g.ausentes} registrada${g.ausentes === 1 ? '' : 's'}${g.faltas - g.ausentes ? ` · ${g.faltas - g.ausentes} sem registro` : ''}` : 'nenhuma falta')}
-    </div>
-    <p class="text-sm text-slate-500 dark:text-neutral-400 mb-3">Chamada registrada pelo professor no Portal do Professor. Aula dada sem registro conta como falta; o mínimo de frequência é o do certificado de cada curso.</p>
-    ${tabela(['Curso / turma', 'Período', 'Aulas dadas', 'Presenças', 'Faltas', '%', 'Situação'], r.linhas.map(linha), 'Nenhuma matrícula em turma ainda — a frequência aparece quando o aluno entra numa turma por uma venda.',
-      r.abaixo ? `<span class="text-red-600 dark:text-red-400 font-medium">${r.abaixo} turma${r.abaixo === 1 ? '' : 's'} abaixo do mínimo de frequência.</span>` : '')}`;
-}
-
-// ---------- Aba Dossiês (aluno) ----------
-// Dossiê por período de cada turma (js/dossies-motor.js): frequência do período, professores que preencheram e situação.
-// Só leitura aqui; o detalhe é dossie.html. Precisa de Dossies carregado (aluno.html); sem ele, aba com aviso.
-
-let cacheDossiesAluno = { alunoId: null, dados: null, ctx: null, itens: [] };
-function dossiesDoAluno(a) {
-  if (typeof Dossies === 'undefined') return null;
-  if (cacheDossiesAluno.alunoId !== a.id || cacheDossiesAluno.dados !== estado.dados) {
-    const ctx = Dossies.contexto();
-    cacheDossiesAluno = { alunoId: a.id, dados: estado.dados, ctx, itens: Dossies.listar(ctx, { alunoId: a.id }) };
-  }
-  return cacheDossiesAluno;
-}
-function contadorDossies(a) {
-  const d = dossiesDoAluno(a);
-  return d ? d.itens.filter((i) => i.situacao === 'pendente' || i.situacao === 'parcial').length || null : null;
-}
-
-function renderAlunoDossies() {
-  const a = atual();
-  const acoes = document.getElementById('acoes-aba');
-  const el = document.getElementById('conteudo-aba');
-  const d = dossiesDoAluno(a);
-  if (!d) { acoes.innerHTML = ''; el.innerHTML = '<p class="text-sm text-slate-500 dark:text-neutral-400">Módulo de dossiês não carregado nesta página.</p>'; return; }
-  const E = DossiesUi.ESTILO;
-  const itens = [...d.itens].sort((x, y) => y.periodo.inicio.localeCompare(x.periodo.inicio) || (x.turma.codigo ?? '').localeCompare(y.turma.codigo ?? '', 'pt-BR'));
-  const urlDossie = (i) => `dossie.html?turma=${encodeURIComponent(i.turma.id)}&aluno=${encodeURIComponent(a.id)}&periodo=${encodeURIComponent(i.periodo.id)}`;
-  const professores = (i) => {
-    const pre = i.esperados.filter((e) => e.preencheu).length;
-    const titulo = i.esperados.length ? i.esperados.map((e) => `${e.nome}${e.preencheu ? ' (preencheu)' : ''}`).join(', ') : 'Nenhum professor com aula no período';
-    return `<span class="tabular-nums ${pre === i.esperados.length && pre ? 'text-emerald-600 dark:text-emerald-400' : pre ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-neutral-400'}" title="${esc(titulo)}">${pre}/${i.esperados.length}</span>`;
-  };
-  const linha = (i) => `
-    <tr>
-      <td class="${TD} whitespace-nowrap">${esc(i.periodo.rotulo)}${i.periodo.encerrado ? '' : ' <span class="text-xs text-slate-400">em curso</span>'}</td>
-      <td class="${TD}">${esc(i.curso?.nome ?? '')}${i.formacao ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(i.formacao.nome)}</p>` : ''}</td>
-      <td class="${TD}"><a href="turma.html?id=${encodeURIComponent(i.turma.id)}&aba=dossies" target="_blank" class="font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline">${esc(i.turma.codigo)}</a></td>
-      <td class="${TD}">${i.frequencia ? (typeof PresencasUi !== 'undefined' ? PresencasUi.situacaoHtml(i.frequencia) : `${i.frequencia.percentual ?? '—'}%`) : '<span class="text-slate-400">—</span>'}</td>
-      <td class="${TD}">${professores(i)}</td>
-      <td class="${TD}">${DossiesUi.situacaoHtml(i.situacao)}</td>
-      <td class="${TD} text-right whitespace-nowrap"><a href="${urlDossie(i)}" class="${ICONE_BOTAO}" title="Abrir dossiê">${DossiesUi.ICONE.olho}</a></td>
-    </tr>`;
-  const pend = itens.filter((i) => i.situacao === 'pendente' || i.situacao === 'parcial').length;
-  acoes.innerHTML = `
-    <a href="dossies.html?aluno=${encodeURIComponent(a.id)}" class="${BOTAO_SEC}">Painel de dossiês ${ICONE.externo ?? ''}</a>
-    <button type="button" id="btn-documento-dossies" class="${BOTAO_SEC}" ${itens.length ? '' : 'disabled'} title="Documento A4 com todos os períodos do aluno (capa + uma página por período)">${DossiesUi.ICONE.imprimir} Documento do aluno</button>`;
-  el.innerHTML = `
-    <p class="text-sm text-slate-500 dark:text-neutral-400 mb-3">Um dossiê por período de cada turma: frequência do período, conteúdo trabalhado e o registro dos professores (preenchido no Portal do Professor). A secretaria consolida, fecha e envia à empresa pelo painel de dossiês.</p>
-    ${tabela(['Período', 'Curso', 'Turma', 'Frequência no período', `<span title="Professores que preencheram / esperados">Professores</span>`, 'Situação', ''], itens.map(linha), 'Nenhum dossiê ainda — eles aparecem quando o aluno está matriculado numa turma com modelo de dossiê ativo.',
-      itens.length ? `${plural(itens.length, 'dossiê')}${pend ? ` · <span class="text-amber-600 dark:text-amber-400 font-medium">${pend} sem preenchimento completo</span>` : ''}` : '')}`;
-  document.getElementById('btn-documento-dossies')?.addEventListener('click', () => {
-    Dossies.imprimir(Dossies.htmlDocumento([...itens].reverse(), { titulo: 'Dossiê consolidado', subtitulo: a.nomeSocial || a.nome, capa: true, empresa: itens.find((i) => i.empresa)?.empresa ?? null }));
-  });
-}
-
-// ---------- Aba Ocorrências (aluno) ----------
-// Registro da coordenação/pedagógico sobre o aluno (js/ocorrencias-motor.js + js/ocorrencias-ui.js).
-// Separado do dossiê (que é do professor) e invisível nos portais. Precisa de Ocorrencias carregado (aluno.html).
-
-const temOcorrencias = () => typeof Ocorrencias !== 'undefined' && typeof OcorrenciasUi !== 'undefined';
-let listaOcorrencias = null;
-const ocorrencias = () => { if (!listaOcorrencias) listaOcorrencias = Ocorrencias.carregar(); return listaOcorrencias; };
-function contadorOcorrencias(a) {
-  return temOcorrencias() ? Ocorrencias.contarPorAluno(ocorrencias(), a.id) || null : null;
-}
-// Turmas em que o aluno tem/teve matrícula (qualquer situação), mais recente primeiro — opções do modal.
-function turmasDoAlunoParaOcorrencia(alunoId) {
-  const vistas = new Map();
-  Clientes.matriculasDoAluno(estado.dados, alunoId).forEach((m) => { if (m.turma && !vistas.has(m.turma.id)) vistas.set(m.turma.id, { id: m.turma.id, codigo: m.turma.codigo, curso: m.curso?.nome ?? '', inicio: m.turma.inicio ?? '' }); });
-  return [...vistas.values()].sort((x, y) => y.inicio.localeCompare(x.inicio));
-}
-const responsaveisDoAlunoParaOcorrencia = (alunoId) => {
-  const a = Clientes.porId(estado.dados.alunos, alunoId);
-  return (a?.responsaveis ?? []).map((v) => Clientes.porId(estado.dados.responsaveis, v.responsavelId)).filter(Boolean).map((r) => ({ id: r.id, nome: r.nome }));
-};
-const turmaParaOcorrencia = (id) => {
-  if (typeof Turmas === 'undefined') return null;
-  const t = Turmas.porId(Turmas.carregar(), id);
-  return t ? { id: t.id, codigo: t.codigo, curso: (typeof Cursos !== 'undefined' ? Cursos.porId(Cursos.carregar(), t.cursoId)?.nome : '') ?? '' } : null;
-};
-
-function renderAlunoOcorrencias() {
-  const a = atual();
-  const acoes = document.getElementById('acoes-aba');
-  const el = document.getElementById('conteudo-aba');
-  if (!temOcorrencias()) { acoes.innerHTML = ''; el.innerHTML = '<p class="text-sm text-slate-500 dark:text-neutral-400">Módulo de ocorrências não carregado nesta página.</p>'; return; }
-  const itens = Ocorrencias.porAluno(ocorrencias(), a.id);
-  acoes.innerHTML = `
-    <div class="ml-auto flex items-center gap-2">
-      <a href="ocorrencias.html?aluno=${encodeURIComponent(a.id)}" class="${BOTAO_SEC}" title="Lista geral de ocorrências, filtrada por este aluno">Todas as ocorrências ${ICONE.externo}</a>
-      <button type="button" id="btn-nova-ocorrencia" class="${BOTAO_PRI}">${ICONE.mais} Nova ocorrência</button>
-    </div>`;
-  el.innerHTML = OcorrenciasUi.linhaTempoHtml(itens, { turmaDe: turmaParaOcorrencia, responsavelDe: (id) => Clientes.porId(estado.dados.responsaveis, id) });
-  document.getElementById('btn-nova-ocorrencia').addEventListener('click', () => abrirModalOcorrencia(a.id));
-  el.querySelectorAll('[data-oc-editar]').forEach((b) => b.addEventListener('click', () => abrirModalOcorrencia(a.id, Ocorrencias.porId(ocorrencias(), b.dataset.ocEditar))));
-  el.querySelectorAll('[data-oc-excluir]').forEach((b) => b.addEventListener('click', () => {
-    const registro = Ocorrencias.porId(ocorrencias(), b.dataset.ocExcluir);
-    OcorrenciasUi.confirmarExclusao({ registro, nomeAluno: a.nomeSocial || a.nome, aoConfirmar: () => {
-      listaOcorrencias = Ocorrencias.excluir(ocorrencias(), registro.id);
-      Ocorrencias.salvar(listaOcorrencias); renderAluno();
-      toast('Ocorrência excluída.');
-    } });
-  }));
-}
-
-// `inicial` = { tipo, turmaId } vindo da URL (?nova=&turma=): única situação em que o modal abre pré-preenchido.
-function abrirModalOcorrencia(alunoId, registro = null, inicial = {}) {
-  const a = Clientes.porId(estado.dados.alunos, alunoId);
-  const turmas = turmasDoAlunoParaOcorrencia(alunoId);
-  const pre = { ...inicial };
-  if (pre.turmaId && !turmas.some((t) => t.id === pre.turmaId)) pre.turmaId = '';
-  OcorrenciasUi.abrirFormulario({
-    registro, inicial: pre, aluno: a,
-    turmasDe: () => turmas,
-    responsaveisDe: responsaveisDoAlunoParaOcorrencia,
-    aoSalvar: (dados) => {
-      const r = registro ? Ocorrencias.editar(ocorrencias(), registro.id, dados) : Ocorrencias.registrar(ocorrencias(), { ...dados, alunoId });
-      if (r.erros) return r.erros;
-      listaOcorrencias = r.lista;
-      Ocorrencias.salvar(listaOcorrencias);
-      estado.aba = 'ocorrencias'; atualizarUrl(); renderAluno();
-      toast(registro ? 'Ocorrência atualizada.' : `Ocorrência registrada para ${a.nomeSocial || a.nome}.`);
-    },
-  });
-}
-
-// ---------- Aba Calendário (aluno) ----------
-// Aulas das turmas em que o aluno está matriculado, mês a mês. Só leitura: remarcar/cancelar é em aulas.html.
-const CORES_TURMA_CAL = [
-  { bloco: 'bg-petrol-800/10 text-petrol-800 dark:bg-sky-950/60 dark:text-sky-300', ponto: 'bg-petrol-800 dark:bg-sky-400' },
-  { bloco: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300', ponto: 'bg-emerald-500' },
-  { bloco: 'bg-violet-50 text-violet-800 dark:bg-violet-950/60 dark:text-violet-300', ponto: 'bg-violet-500' },
-  { bloco: 'bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300', ponto: 'bg-amber-500' },
-  { bloco: 'bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300', ponto: 'bg-rose-500' },
-  { bloco: 'bg-cyan-50 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300', ponto: 'bg-cyan-500' },
-];
-const MESES_NOME = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-const hojeIso = () => (typeof Turmas !== 'undefined' ? Turmas.hoje() : new Date().toISOString().slice(0, 10));
-const somarMes = (ym, n) => { const [y, m] = ym.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
-const nomeMes = (ym) => { const [y, m] = ym.split('-').map(Number); return `${MESES_NOME[m - 1]} de ${y}`; };
-const fmtH = (h) => `${Number.isInteger(h) ? h : h.toFixed(1).replace('.', ',')} h`;
-
-function renderAlunoCalendario() {
-  const a = atual();
-  const acoes = document.getElementById('acoes-aba');
-  const el = document.getElementById('conteudo-aba');
-  if (typeof Turmas === 'undefined') { acoes.innerHTML = ''; el.innerHTML = '<p class="text-sm text-slate-500 dark:text-neutral-400">Módulo de turmas não carregado nesta página.</p>'; return; }
-  const { turmas, aulas } = Clientes.aulasDoAluno(estado.dados, a.id);
-  const hoje = hojeIso();
-  if (!estado.mesCalendario) {
-    const mesHoje = hoje.slice(0, 7);
-    const temNoMesHoje = aulas.some((x) => x.data.slice(0, 7) === mesHoje);
-    const proxima = aulas.find((x) => x.data >= hoje);
-    estado.mesCalendario = temNoMesHoje ? mesHoje : (proxima?.data ?? aulas[aulas.length - 1]?.data ?? hoje).slice(0, 7);
-  }
-  const ym = estado.mesCalendario;
-  const corDe = (turmaId) => CORES_TURMA_CAL[turmas.findIndex((t) => t.turma.id === turmaId) % CORES_TURMA_CAL.length] ?? CORES_TURMA_CAL[0];
-  const salas = typeof Salas !== 'undefined' ? Salas.carregar() : [];
-  const nomeSala = (id) => (id ? Salas.porId(salas, id)?.nome ?? '' : '');
-  const nomeInstrutor = (id, turma) => (typeof INSTRUTORES !== 'undefined' ? INSTRUTORES.find((i) => i.id === (id ?? turma.instrutorId))?.nome ?? '' : '');
-
-  acoes.innerHTML = `
-    <div class="flex items-center gap-1">
-      <button type="button" id="cal-ant" class="${BOTAO_SEC} !px-2" title="Mês anterior"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg></button>
-      <button type="button" id="cal-prox" class="${BOTAO_SEC} !px-2" title="Próximo mês"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></button>
-      <button type="button" id="cal-hoje" class="${BOTAO_SEC}">Hoje</button>
-    </div>
-    <h3 class="font-display font-semibold text-lg text-slate-800 dark:text-neutral-100 capitalize">${nomeMes(ym)}</h3>
-    <p class="ml-auto text-sm text-slate-500 dark:text-neutral-400">Aulas das turmas em que o aluno está matriculado. Para remarcar ou cancelar, abra a turma.</p>`;
-  acoes.querySelector('#cal-ant').addEventListener('click', () => { estado.mesCalendario = somarMes(ym, -1); renderAlunoCalendario(); });
-  acoes.querySelector('#cal-prox').addEventListener('click', () => { estado.mesCalendario = somarMes(ym, 1); renderAlunoCalendario(); });
-  acoes.querySelector('#cal-hoje').addEventListener('click', () => { estado.mesCalendario = hoje.slice(0, 7); renderAlunoCalendario(); });
-
-  if (!turmas.length) {
-    el.innerHTML = `
-      <div class="${CARTAO} px-4 py-12 text-center">
-        <p class="text-sm text-slate-500 dark:text-neutral-400">Nenhuma turma ativa para este aluno — o calendário aparece quando houver matrícula numa venda.</p>
-        <a href="contratos.html?novo=1" class="${BOTAO_PRI} mt-4">${ICONE.mais} Nova venda</a>
-      </div>`;
-    return;
-  }
-
-  const [y, mo] = ym.split('-').map(Number);
-  const nDias = new Date(y, mo, 0).getDate();
-  const offset = (new Date(y, mo - 1, 1).getDay() + 6) % 7; // segunda = 0
-  const doMes = aulas.filter((x) => x.data.slice(0, 7) === ym);
-  const horasMes = doMes.reduce((s, x) => s + Aulas.horas(x), 0);
-  const celulas = [];
-  for (let i = 0; i < offset; i += 1) celulas.push('<div class="min-h-24 bg-slate-50/60 dark:bg-neutral-925"></div>');
-  for (let d = 1; d <= nDias; d += 1) {
-    const iso = `${ym}-${String(d).padStart(2, '0')}`;
-    const doDia = doMes.filter((x) => x.data === iso);
-    const ehHoje = iso === hoje;
-    const fer = Aulas.feriado(iso);
-    celulas.push(`
-      <div class="min-h-24 p-1.5 flex flex-col gap-1 bg-white dark:bg-neutral-950 ${ehHoje ? 'ring-2 ring-inset ring-emerald-500' : ''} ${iso < hoje ? 'opacity-80' : ''}">
-        <div class="flex items-center justify-between">
-          <span class="text-xs tabular-nums ${ehHoje ? 'font-bold text-emerald-700 dark:text-emerald-400' : 'text-slate-700 dark:text-neutral-200'}">${d}</span>
-          ${fer ? `<span class="text-[10px] text-amber-700 dark:text-amber-400 truncate" title="Feriado: ${esc(fer)}">${esc(fer)}</span>` : ''}
-        </div>
-        ${doDia.map((x) => `
-          <a href="turma.html?id=${x.turma.id}" class="block rounded px-1.5 py-1 text-[11px] leading-tight ${corDe(x.turma.id).bloco} hover:opacity-80 transition" title="${esc(`${x.inicio}–${x.fim} · ${x.curso?.nome ?? ''} · ${x.turma.codigo}${nomeSala(x.salaId ?? x.turma.salaId) ? ` · ${nomeSala(x.salaId ?? x.turma.salaId)}` : ''}`)}">
-            <span class="font-semibold tabular-nums">${esc(x.inicio)}</span> <span class="truncate">${esc(x.curso?.nome ?? x.turma.codigo)}</span>
-          </a>`).join('')}
-      </div>`);
-  }
-
-  const proximas = aulas.filter((x) => x.data >= hoje).slice(0, 5);
-  el.innerHTML = `
-    <div class="grid grid-cols-1 xl:grid-cols-[1fr_20rem] gap-4">
-      <div class="${CARTAO} overflow-hidden">
-        <div class="grid grid-cols-7 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800">${Agenda.DIAS.map((dd) => `<div class="px-2 py-1.5">${dd.curto}</div>`).join('')}</div>
-        <div class="grid grid-cols-7 gap-px bg-slate-200 dark:bg-neutral-800">${celulas.join('')}</div>
-        <div class="px-4 py-2 border-t border-slate-100 dark:border-neutral-900 text-xs text-slate-500 dark:text-neutral-400 tabular-nums">${plural(doMes.length, 'aula')} no mês · ${fmtH(horasMes)}${doMes.some((x) => x.origem === 'agenda' && !Array.isArray(x.turma.aulas)) ? ' · <span class="text-amber-700 dark:text-amber-400">prévia pela agenda (turma ainda sem aulas geradas)</span>' : ''}</div>
-      </div>
-      <div class="space-y-4">
-        <section class="${CARTAO}">
-          <div class="px-4 py-3 border-b border-slate-200 dark:border-neutral-800"><h3 class="font-display font-semibold text-slate-800 dark:text-neutral-100">Turmas <span class="text-xs font-normal text-slate-400">· ${turmas.length}</span></h3></div>
-          <ul class="divide-y divide-slate-100 dark:divide-neutral-900">
-            ${turmas.map(({ turma: t, curso, contrato, matricula }) => `
-            <li class="px-4 py-2.5 text-sm">
-              <div class="flex items-center gap-2 min-w-0">
-                <span class="inline-block h-2.5 w-2.5 rounded-full shrink-0 ${corDe(t.id).ponto}"></span>
-                <a href="turma.html?id=${t.id}" class="font-medium text-petrol-800 dark:text-sky-300 hover:underline truncate">${esc(curso?.nome ?? t.codigo)}</a>
-                <span class="font-mono text-xs text-slate-400 shrink-0">${esc(t.codigo)}</span>
-              </div>
-              <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(Clientes.fmtData(t.inicio))} – ${esc(Clientes.fmtData(t.fim))}${nomeInstrutor(null, t) ? ` · ${esc(nomeInstrutor(null, t))}` : ''} · <span title="${esc(Turmas.situacaoDe(Turmas.situacao(t))?.descricao ?? '')}">${esc(Turmas.situacaoDe(Turmas.situacao(t))?.nome ?? Turmas.situacao(t))}</span>${matricula.status === 'concluido' ? ' · concluído' : ''}</p>
-              <p class="text-xs text-slate-400 mt-0.5">Venda <a href="contrato.html?id=${contrato.id}" class="font-mono hover:underline">${esc(contrato.codigo)}</a></p>
-            </li>`).join('')}
-          </ul>
-        </section>
-        <section class="${CARTAO}">
-          <div class="px-4 py-3 border-b border-slate-200 dark:border-neutral-800"><h3 class="font-display font-semibold text-slate-800 dark:text-neutral-100">Próximas aulas</h3></div>
-          ${proximas.length ? `<ul class="divide-y divide-slate-100 dark:divide-neutral-900">
-            ${proximas.map((x) => `
-            <li class="px-4 py-2 text-sm flex items-center gap-3">
-              <span class="tabular-nums text-xs text-slate-500 dark:text-neutral-400 whitespace-nowrap">${esc(Clientes.fmtData(x.data))} · ${esc(x.inicio)}–${esc(x.fim)}</span>
-              <span class="truncate text-slate-700 dark:text-neutral-200">${esc(x.curso?.nome ?? x.turma.codigo)}</span>
-              ${nomeSala(x.salaId ?? x.turma.salaId) ? `<span class="ml-auto text-xs text-slate-400 whitespace-nowrap">${esc(nomeSala(x.salaId ?? x.turma.salaId))}</span>` : ''}
-            </li>`).join('')}
-          </ul>` : '<p class="px-4 py-6 text-sm text-center text-slate-500 dark:text-neutral-400">Nenhuma aula futura.</p>'}
-        </section>
-      </div>
-    </div>`;
-}
-
 // ---------- Aba Contratos (aluno) ----------
 function renderAlunoContratos() {
   const a = atual();
@@ -1407,119 +1015,6 @@ function renderAlunoContratos() {
   document.getElementById('conteudo-aba').innerHTML = `
     <p class="text-sm text-slate-600 dark:text-neutral-400 mb-3">Vendas em que este aluno está, seja ele o contratante ou incluído por uma empresa. O valor é só da parte dele; abra a venda para itens, boletos e NF.</p>
     ${tabela(['Venda', 'Pacote', 'Situação na venda', 'Contratante', 'Quem paga', 'Valor do aluno', 'Status'], lista.map(linha), 'Nenhuma venda com este aluno ainda.')}`;
-}
-
-// ---------- Aba SPC (aluno e empresa) ----------
-// Só leitura aqui: a consulta em si acontece em spc.html (tem custo e fica na auditoria).
-const dadosSpc = typeof Spc !== 'undefined' ? Spc.carregar(estado.dados) : null;
-const PILULA_SPC = {
-  regular: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
-  restricao: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800',
-  indisponivel: PILULA.neutra,
-};
-const nomeSituacaoSpc = (id) => nomeDe(SITUACOES_SPC, id);
-const nomeOperadorSpc = (id) => nomeDe(OPERADORES_SPC, id) || id;
-const haDias = (n) => (n === 0 ? 'hoje' : n === 1 ? 'ontem' : `há ${n} dias`);
-
-function contagemSpc(clienteTipo, clienteId) {
-  return dadosSpc ? Spc.consultasDoCliente(dadosSpc, clienteTipo, clienteId).length || null : null;
-}
-
-// Última consulta com resultado do documento principal (aluno/empresa); null se nunca consultado.
-function ultimaSpc(clienteTipo, clienteId) {
-  if (!dadosSpc) return null;
-  const ultima = Spc.ultimaConsulta(dadosSpc, Spc.alvoDe(estado.dados, clienteTipo, clienteId));
-  return ultima && ultima.resultado.situacao !== 'indisponivel' ? ultima : null;
-}
-
-// Pílula do cabeçalho: só restrição (exceção). "Nada consta" fica na aba SPC e no cartão financeiro.
-function pilulaSpc(clienteTipo, clienteId) {
-  const ultima = ultimaSpc(clienteTipo, clienteId);
-  if (ultima?.resultado.situacao !== 'restricao') return '';
-  const dias = Spc.diasDesde(ultima.data);
-  return pilula(PILULA_SPC[ultima.resultado.situacao], `SPC: ${nomeSituacaoSpc(ultima.resultado.situacao)}`, `Consultado ${haDias(dias)} por ${nomeOperadorSpc(ultima.operadorId)}`);
-}
-
-function urlConsultaSpc(clienteTipo, clienteId, alvoTipo = null) {
-  return `spc.html?tipo=${clienteTipo}&id=${clienteId}${alvoTipo === 'responsavel' ? '&alvo=responsavel' : ''}&origem=${clienteTipo}`;
-}
-
-function renderSpcCliente(clienteTipo) {
-  const c = atual();
-  const acoes = document.getElementById('acoes-aba');
-  const el = document.getElementById('conteudo-aba');
-  if (!dadosSpc) { acoes.innerHTML = ''; el.innerHTML = '<p class="text-sm text-slate-500 dark:text-neutral-400">Módulo SPC não carregado nesta página.</p>'; return; }
-  const situacoes = Spc.situacaoDoCliente(dadosSpc, estado.dados, clienteTipo, c.id);
-  const hist = Spc.consultasDoCliente(dadosSpc, clienteTipo, c.id);
-  acoes.innerHTML = `
-    <p class="text-sm text-slate-600 dark:text-neutral-400">Situação de crédito no SPC. Cada consulta tem custo e fica registrada na auditoria — use antes de fechar venda, renegociação ou cobrança.</p>
-    <div class="ml-auto"><a href="${urlConsultaSpc(clienteTipo, c.id)}" class="${BOTAO_PRI}">${ICONE.lupa} Consultar no SPC</a></div>`;
-  el.innerHTML = `
-    <div class="grid grid-cols-1 ${situacoes.length > 1 ? 'xl:grid-cols-2' : ''} gap-4 mb-4">
-      ${situacoes.map(({ alvo, ultima }) => `
-      <section class="${CARTAO}">
-        <div class="px-4 py-3 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <h3 class="font-display font-semibold text-slate-800 dark:text-neutral-100">${alvo.tipo === 'responsavel' ? 'Responsável financeiro' : alvo.tipo === 'empresa' ? 'Empresa' : 'Aluno'} <span class="text-xs font-normal text-slate-400">· ${alvo.tipo === 'responsavel' ? 'quem paga' : alvo.docTipo}</span></h3>
-            <p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(alvo.nome)} · <span class="font-mono">${esc(Spc.fmtDocumento(alvo))}</span></p>
-          </div>
-          ${ultima ? `<span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${PILULA_SPC[ultima.resultado.situacao]}">${esc(nomeSituacaoSpc(ultima.resultado.situacao))}</span>` : pilula(PILULA.neutra, 'Nunca consultado')}
-        </div>
-        ${ultima ? `
-        <div class="p-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          ${campo('Consultado', `${esc(Spc.fmtDataHora(ultima.data))} <span class="text-xs text-slate-400">· ${haDias(Spc.diasDesde(ultima.data))}</span>`)}
-          ${campo('Por', `${esc(nomeOperadorSpc(ultima.operadorId))} <span class="text-xs text-slate-400">· ${esc(nomeDe(MOTIVOS_SPC, ultima.motivo)).toLowerCase()}</span>`)}
-          ${campo('Score', ultima.resultado.score != null ? `<span class="tabular-nums">${ultima.resultado.score}</span> <span class="text-xs text-slate-400">/ 1000</span>` : vazio('', '—'))}
-          ${campo('Pendências', ultima.resultado.pendencias.length ? `<span class="text-red-700 dark:text-red-400">${plural(ultima.resultado.pendencias.length, 'pendência')} · ${esc(Spc.fmtMoeda(ultima.resultado.totalPendente))}</span>` : 'nenhuma')}
-        </div>
-        <div class="px-4 pb-3 flex items-center gap-3">
-          <button type="button" data-ver-spc="${ultima.id}" class="${BOTAO_LINK}">Ver resultado completo</button>
-          ${Spc.diasDesde(ultima.data) > 30 ? `<a href="${urlConsultaSpc(clienteTipo, c.id, alvo.tipo)}" class="${BOTAO_LINK}">Consultar de novo</a>` : ''}
-        </div>` : `
-        <div class="p-4 flex items-center justify-between gap-3">
-          <p class="text-sm text-slate-500 dark:text-neutral-400">Sem consulta registrada para este documento.</p>
-          <a href="${urlConsultaSpc(clienteTipo, c.id, alvo.tipo)}" class="${BOTAO_SEC}">Consultar</a>
-        </div>`}
-      </section>`).join('')}
-    </div>
-    ${tabela(['Data e hora', 'Documento', 'Por', 'Motivo', 'Resultado', ''], hist.map((h) => `
-      <tr>
-        <td class="${TD} tabular-nums whitespace-nowrap">${esc(Spc.fmtDataHora(h.data))}</td>
-        <td class="${TD}"><span class="font-medium text-slate-800 dark:text-neutral-100">${esc(h.alvo.tipo === 'responsavel' ? 'Responsável' : h.alvo.tipo === 'empresa' ? 'Empresa' : 'Aluno')}</span> <span class="font-mono text-xs text-slate-400">${esc(Spc.fmtDocumento(h.alvo))}</span></td>
-        <td class="${TD}">${esc(nomeOperadorSpc(h.operadorId))}</td>
-        <td class="${TD}">${esc(nomeDe(MOTIVOS_SPC, h.motivo))}${h.justificativa ? `<span class="block text-xs text-slate-400 truncate max-w-[16rem]">“${esc(h.justificativa)}”</span>` : ''}</td>
-        <td class="${TD}">${pilula(PILULA_SPC[h.resultado.situacao], nomeSituacaoSpc(h.resultado.situacao))}${h.resultado.score != null ? ` <span class="text-xs text-slate-400 tabular-nums">${h.resultado.score}</span>` : ''}</td>
-        <td class="${TD} text-right"><button type="button" data-ver-spc="${h.id}" class="${BOTAO_LINK}">Detalhes</button></td>
-      </tr>`), 'Nenhuma consulta ao SPC ainda.', `${plural(hist.length, 'consulta')} · histórico completo na <a href="spc-auditoria.html" class="text-petrol-800 dark:text-sky-300 hover:underline">auditoria</a>`)}`;
-  el.querySelectorAll('[data-ver-spc]').forEach((b) => b.addEventListener('click', () => abrirModalConsultaSpc(dadosSpc.consultas.find((x) => x.id === b.dataset.verSpc))));
-}
-
-function abrirModalConsultaSpc(h) {
-  if (!h) return;
-  const r = h.resultado;
-  abrirModal(`
-    <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-start justify-between gap-3">
-      <div class="min-w-0">
-        <h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Consulta SPC de ${esc(Spc.fmtDataHora(h.data))}</h3>
-        <p class="text-xs text-slate-500 dark:text-neutral-400">${esc(h.alvo.nome)} · <span class="font-mono">${esc(Spc.fmtDocumento(h.alvo))}</span> · por ${esc(nomeOperadorSpc(h.operadorId))} · ${esc(nomeDe(MOTIVOS_SPC, h.motivo))}${h.justificativa ? ` — “${esc(h.justificativa)}”` : ''}</p>
-      </div>
-      <button type="button" data-fechar-modal class="text-slate-400 hover:text-slate-700 dark:hover:text-neutral-200">${ICONE.fechar}</button>
-    </div>
-    <div class="overflow-y-auto">
-      <div class="px-5 pt-4 flex items-center gap-2">${pilula(PILULA_SPC[r.situacao], nomeSituacaoSpc(r.situacao))}${r.score != null ? `<span class="text-xs text-slate-500 dark:text-neutral-400 tabular-nums">score ${r.score} / 1000</span>` : ''}<span class="text-xs text-slate-500 dark:text-neutral-400">protocolo <span class="font-mono">${esc(r.protocolo)}</span></span></div>
-      ${r.pendencias.length ? `
-      <div class="px-5 py-4 overflow-x-auto">
-        <table class="w-full text-left">
-          <thead class="text-xs font-medium text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900">
-            <tr><th class="${TH}">Tipo</th><th class="${TH}">Credor</th><th class="${TH}">Inclusão</th><th class="${TH} text-right">Valor</th></tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-neutral-900">
-            ${r.pendencias.map((p) => `<tr><td class="${TD}">${esc(nomeDe(TIPOS_PENDENCIA_SPC, p.tipo))}</td><td class="${TD} font-medium text-slate-800 dark:text-neutral-100">${esc(p.credor)}</td><td class="${TD} tabular-nums">${esc(Spc.fmtData(p.inclusao))}</td><td class="${TD} text-right tabular-nums">${esc(Spc.fmtMoeda(p.valor))}</td></tr>`).join('')}
-          </tbody>
-          <tfoot><tr><td colspan="3" class="${TD} text-right font-medium">Total pendente</td><td class="${TD} text-right font-semibold text-red-700 dark:text-red-400 tabular-nums">${esc(Spc.fmtMoeda(r.totalPendente))}</td></tr></tfoot>
-        </table>
-      </div>` : `<p class="px-5 py-4 text-sm text-slate-500 dark:text-neutral-400">${r.situacao === 'indisponivel' ? 'O bureau não respondeu; a tentativa ficou registrada sem cobrança.' : 'Nenhuma restrição ativa no documento.'}</p>`}
-    </div>`, 'max-w-2xl');
 }
 
 // ---------- Drawer genérico ----------
@@ -2404,9 +1899,9 @@ function confirmarExclusaoAluno(id) {
 // ---------- Responsáveis: lista, detalhe, aba do aluno e vínculos ----------
 
 const nomeParentesco = (id) => nomeDe(PARENTESCOS, id);
-const PILULA_PAPEL = { legal: PILULA.ambar, financeiro: PILULA.violeta, contato: PILULA.petrol };
+const CATEGORIA_PAPEL = { legal: 'legal', financeiro: 'financeiro', contato: 'emergencia' };
 const ROTULO_PAPEL = { legal: 'Legal', financeiro: 'Financeiro', contato: 'Emergência' };
-const pilulasPapeis = (papeis) => PAPEIS_RESPONSAVEL.filter((p) => papeis.includes(p.id)).map((p) => pilula(PILULA_PAPEL[p.id], ROTULO_PAPEL[p.id], p.nome)).join(' ');
+const pilulasPapeis = (papeis) => PAPEIS_RESPONSAVEL.filter((p) => papeis.includes(p.id)).map((p) => etiqueta(CATEGORIA_PAPEL[p.id], ROTULO_PAPEL[p.id], p.nome)).join('');
 const avatarResponsavel = (r, tam = 'h-9 w-9 text-xs') => `<div class="${tam} shrink-0 rounded-full bg-violet-700 dark:bg-violet-600 text-white grid place-items-center font-semibold">${esc(iniciais(r.nome))}</div>`;
 
 function renderListaResponsaveis() {
@@ -2434,7 +1929,7 @@ function renderListaResponsaveis() {
         <td class="${TD}"><span class="block truncate">${r.email ? esc(r.email) : '<span class="text-slate-400">sem e-mail</span>'}</span><span class="block truncate text-xs text-slate-400">${r.celular ? esc(Clientes.fmtTelefone(r.celular)) : 'sem celular'}</span></td>
         <td class="${TD} ${SO_LARGO} truncate">${r.endereco.cidade ? `${esc(r.endereco.cidade)}/${esc(r.endereco.uf)}` : '<span class="text-slate-400">—</span>'}</td>
         <td class="${TD}">${alunos.length ? alunos.map((x) => `<span class="block truncate">${esc(x.aluno.nomeSocial || x.aluno.nome)} <span class="text-xs text-slate-400">· ${esc(nomeParentesco(x.vinculo.parentesco) || 'responsável')}</span></span>`).join('') : '<span class="text-slate-400">nenhum aluno</span>'}</td>
-        <td class="${TH}"><div class="flex flex-wrap items-center gap-1">${pilulasPapeis(papeis) || '<span class="text-xs text-slate-400">—</span>'}</div></td>
+        <td class="${TH}"><div class="flex flex-wrap items-center gap-1.5">${pilulasPapeis(papeis) || '<span class="text-xs text-slate-400">—</span>'}</div></td>
       </tr>`;
   };
   el.innerHTML = `
@@ -2469,13 +1964,13 @@ function tabelaVinculos(lado, itens, vazioTxt) {
           <div class="flex items-center gap-3">
             ${avatar}
             <div class="min-w-0">
-              <p class="text-sm font-medium text-slate-800 dark:text-neutral-100 truncate">${esc(pessoa.nomeSocial || pessoa.nome)}${v.principal ? ` <span class="inline-flex items-center text-laranja" title="Responsável principal">${ICONE.estrela}</span>` : ''}${pessoa.status === 'inativo' ? ` ${pilula(PILULA.inativo, 'Inativo')}` : ''}${idade != null && idade < 18 ? ` ${pilula(PILULA.ambar, 'Menor', `${idade} anos`)}` : ''}</p>
+              <p class="text-sm font-medium text-slate-800 dark:text-neutral-100 truncate">${esc(pessoa.nomeSocial || pessoa.nome)}${v.principal ? ` <span class="inline-flex items-center text-laranja" title="Responsável principal">${ICONE.estrela}</span>` : ''}${pessoa.status === 'inativo' ? ` ${pilula(PILULA.inativo, 'Inativo')}` : ''}${idade != null && idade < 18 ? ` ${etiquetaMenor(idade)}` : ''}</p>
               <p class="text-xs text-slate-500 dark:text-neutral-400 truncate"><span class="font-mono">${esc(Clientes.fmtCpf(pessoa.cpf))}</span>${idade != null ? ` · ${idade} anos` : ''}${lado === 'aluno' && pessoa.profissao ? ` · ${esc(pessoa.profissao)}` : ''}</p>
             </div>
           </div>
         </td>
         <td class="${TD} whitespace-nowrap">${esc(nomeParentesco(v.parentesco)) || '<span class="text-slate-400">—</span>'}${lado === 'aluno' ? '' : '<br><span class="text-xs text-slate-400">do aluno</span>'}</td>
-        <td class="${TH}"><div class="flex flex-wrap items-center gap-1">${pilulasPapeis(v.papeis)}</div></td>
+        <td class="${TH}"><div class="flex flex-wrap items-center gap-1.5">${pilulasPapeis(v.papeis)}</div></td>
         <td class="${TD}">${pessoa.email ? esc(pessoa.email) : '<span class="text-slate-400">sem e-mail</span>'}<br><span class="text-xs text-slate-400">${pessoa.celular ? esc(Clientes.fmtTelefone(pessoa.celular)) : 'sem celular'}</span></td>
         <td class="${TH}">
           <div class="flex items-center justify-end gap-1">
@@ -2547,7 +2042,6 @@ function renderResponsavel() {
       ${r.endereco.cidade ? chip(ICONE.local, `${esc(r.endereco.cidade)}/${esc(r.endereco.uf)}`, 'Cidade') : ''}
       ${alunos.length ? chip(ICONE.pessoa, alunos.map((x) => `${esc(x.aluno.nomeSocial || x.aluno.nome)} (${esc(nomeParentesco(x.vinculo.parentesco) || 'responsável')})`).join(' · '), 'Alunos') : ''}`,
     acoes: `
-      ${linkWhats(r.celular)}
       <button type="button" id="btn-editar" class="${BOTAO_SEC}">${ICONE.lapis} Editar dados</button>
       <button type="button" id="btn-mais" class="${BOTAO_SEC}" aria-haspopup="menu" aria-expanded="false">Mais ${ICONE.abaixo}</button>`,
     abas: ABAS_RESPONSAVEL, contadores: { alunos: alunos.length },
@@ -2556,6 +2050,7 @@ function renderResponsavel() {
     + (r.status === 'ativo' && papeis.includes('financeiro') ? faixaPendencias(pend, 'contrato e boleto no nome do responsável') : '');
   el.querySelector('#btn-editar').addEventListener('click', () => abrirDrawerResponsavel(r.id));
   el.querySelector('#btn-mais').addEventListener('click', (ev) => abrirMenu(ev.currentTarget, [
+    ...itemWhats(r.celular),
     { nome: r.status === 'ativo' ? 'Inativar responsável' : 'Ativar responsável', acao: () => {
       const novo = r.status === 'ativo' ? 'inativo' : 'ativo';
       estado.dados = Clientes.alterarStatus(estado.dados, 'responsavel', r.id, novo);
@@ -2829,9 +2324,6 @@ function renderTudo() {
   estado.selecionado = { tipo: TIPO_PAGINA, id: id || '' };
   estado.aba = abas.flatMap((x) => [x.id, ...(x.partes ?? []).map((p) => p.id)]).includes(aba) ? aba : 'dados';
   renderTudo();
-  // aluno.html?id=&aba=ocorrencias&nova=<tipo>&turma=<turmaId>: abre o modal já com tipo e turma (vem de uma ação do usuário, ex. alerta de frequência).
-  const nova = TIPO_PAGINA === 'aluno' && estado.aba === 'ocorrencias' && temOcorrencias() ? Ocorrencias.parametrosNova(location.search) : null;
-  if (nova && atual()) abrirModalOcorrencia(id, null, nova);
   // Recém-criado: já oferece o link para o aluno completar o cadastro.
   if (sessionStorage.getItem('clientes-abrir-link') === id) {
     sessionStorage.removeItem('clientes-abrir-link');
