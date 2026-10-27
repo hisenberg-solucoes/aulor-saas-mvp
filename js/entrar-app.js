@@ -2,9 +2,10 @@
 // Entrada (entrar.html): login, escolha do portal, primeiro acesso e
 // recuperação de senha para a equipe, os professores e os alunos.
 // Quem é quem vem dos cadastros: colaborador com usuário de acesso (perfis em
-// js/permissoes-data.js), instrutor e aluno, pelo e-mail. Quem tem mais de um
-// acesso escolhe por onde entrar. ?portal=aluno|professor limita ao portal
-// (as páginas de login dos portais trazem para cá); ?saiu=1 diz que a pessoa saiu.
+// js/permissoes-data.js), instrutor e aluno, pelo e-mail. A pessoa escolhe
+// primeiro o portal (administrativo, aluno ou professor) e entra só nele:
+// ?portal=equipe|aluno|professor (as páginas de login dos portais trazem para
+// cá); sem ele, a entrada abre na escolha. ?saiu=1 diz que a pessoa saiu.
 // Senha: a do protótipo (123456) até a pessoa criar a dela no primeiro acesso
 // ou na recuperação; as criadas ficam neste navegador. Só demonstra: na V1
 // real, autenticação e permissões são do back-end.
@@ -89,8 +90,12 @@ const Entrada = (() => {
 
 (function () {
   const params = new URLSearchParams(location.search);
-  const PORTAL = ['aluno', 'professor'].includes(params.get('portal')) ? params.get('portal') : null;
-  const PORTAIS = { equipe: 'Equipe ProWay', professor: 'Portal do Professor', aluno: 'Portal do Aluno' };
+  const PORTAIS = {
+    equipe: { nome: 'Portal administrativo', apoio: 'Equipe da escola' },
+    aluno: { nome: 'Portal do Aluno', apoio: 'Seus cursos, aulas e materiais' },
+    professor: { nome: 'Portal do Professor', apoio: 'Suas turmas e os materiais das aulas' },
+  };
+  const PORTAL = Object.hasOwn(PORTAIS, params.get('portal') ?? '') ? params.get('portal') : null;
   const tela = document.getElementById('tela');
   const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -104,9 +109,9 @@ const Entrada = (() => {
   const ICONE_ERRO = '<svg class="h-3.5 w-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>';
   const SETA = '<svg class="h-4 w-4 shrink-0 text-slate-500 dark:text-neutral-400" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>';
 
-  let estado = { modo: 'entrar', email: '', contas: [], aviso: params.get('saiu') ? 'Você saiu.' : '' };
+  let estado = { modo: PORTAL ? 'entrar' : 'portal', email: '', contas: [], aviso: params.get('saiu') ? 'Você saiu.' : '' };
 
-  const contasDoPortal = (email) => Entrada.contas(email).filter((c) => !PORTAL || c.portal === PORTAL);
+  const contasDoPortal = (email) => Entrada.contas(email).filter((c) => c.portal === PORTAL);
   const emailValido = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
   const mascarar = (e) => e.replace(/^(.)[^@]*(@.*)$/, '$1***$2');
 
@@ -151,12 +156,22 @@ const Entrada = (() => {
     const ins = Instrutores.carregar().find((i) => i.status !== 'inativo' && i.contato?.email);
     const alu = Clientes.carregar().alunos.find((a) => a.status !== 'inativo' && a.email);
     return [...porPerfil, ins && { nome: ins.nome, email: ins.contato.email, papel: 'Professor', portal: 'professor' }, alu && { nome: alu.nome, email: alu.email, papel: 'Aluno', portal: 'aluno' }]
-      .filter((x) => x && (!PORTAL || x.portal === PORTAL));
+      .filter((x) => x && x.portal === PORTAL);
+  }
+
+  // Primeiro passo: para qual portal a pessoa vai (lista contornada, uma linha-botão por portal, como a escolha de unidade).
+  function renderPortal() {
+    tela.innerHTML = cartao('Para onde você quer ir?', 'Escolha o portal e entre com o e-mail que a escola cadastrou.', `
+      <ul class="divide-y divide-slate-200 dark:divide-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-800">
+        ${Object.entries(PORTAIS).map(([id, p]) => `
+        <li><a href="?portal=${id}" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-neutral-900">
+          <span><span class="block font-medium text-slate-900 dark:text-neutral-100">${p.nome}</span><span class="block text-xs text-slate-500 dark:text-neutral-400">${p.apoio}</span></span>${SETA}
+        </a></li>`).join('')}
+      </ul>`);
   }
 
   function renderEntrar() {
-    const titulo = PORTAL ? `Entrar no ${PORTAIS[PORTAL]}` : 'Entrar no Aulor';
-    tela.innerHTML = cartao(titulo, 'Use o e-mail que a escola cadastrou.', `
+    tela.innerHTML = cartao(`Entrar no ${PORTAIS[PORTAL].nome}`, 'Use o e-mail que a escola cadastrou.', `
       <form novalidate class="space-y-4" data-form>
         ${campo('email', 'E-mail', 'email', `autocomplete="username" value="${esc(estado.email)}"`)}
         ${campo('senha', 'Senha', 'password', 'autocomplete="current-password"')}
@@ -167,6 +182,7 @@ const Entrada = (() => {
         <button type="button" class="${LINK}" data-ir="primeiro">Primeiro acesso</button>
         <button type="button" class="${LINK}" data-ir="recuperar">Esqueci a senha</button>
       </div>`, `
+      <a href="entrar.html" class="mt-4 inline-block ${LINK}">Trocar de portal</a>
       <details class="mt-4 text-sm text-slate-500 dark:text-neutral-400">
         <summary class="cursor-pointer select-none hover:text-slate-700 dark:hover:text-neutral-200">Contas de demonstração (senha ${Entrada.SENHA_PROTOTIPO})</summary>
         <ul class="mt-2 divide-y divide-slate-200 dark:divide-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-950">
@@ -193,25 +209,9 @@ const Entrada = (() => {
         falha.textContent = 'E-mail ou senha incorretos.'; falha.classList.remove('hidden');
         return;
       }
-      estado = { ...estado, email, contas, aviso: '' };
-      if (contas.length === 1) location.href = Entrada.entrar(contas[0], email);
-      else { estado.modo = 'escolher'; render(); }
+      // Um acesso por portal (Entrada.contas), e o portal já foi escolhido.
+      location.href = Entrada.entrar(contas[0], email);
     });
-  }
-
-  // A pessoa tem mais de um acesso: escolhe por onde entrar (lista com uma linha-botão por portal).
-  function renderEscolher() {
-    tela.innerHTML = cartao('Por onde você quer entrar?', esc(estado.contas[0].nome), `
-      <ul class="divide-y divide-slate-200 dark:divide-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-800">
-        ${estado.contas.map((c, i) => `
-        <li><button type="button" data-conta="${i}" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-neutral-900">
-          <span><span class="block font-medium text-slate-900 dark:text-neutral-100">${PORTAIS[c.portal]}</span>${c.perfis ? `<span class="block text-xs text-slate-500 dark:text-neutral-400">${esc(c.perfis.map((p) => p.nome).join(', '))}</span>` : ''}</span>${SETA}
-        </button></li>`).join('')}
-      </ul>
-      <button type="button" class="${LINK} mt-4" data-ir="entrar">Voltar</button>`);
-    tela.querySelectorAll('[data-conta]').forEach((b) => b.addEventListener('click', () => {
-      location.href = Entrada.entrar(estado.contas[Number(b.dataset.conta)], estado.email);
-    }));
   }
 
   // Primeiro acesso e recuperação: e-mail → código ou link → nova senha.
@@ -266,15 +266,14 @@ const Entrada = (() => {
       if (ok.includes(false)) return form.querySelector('[aria-invalid="true"]').focus();
       Entrada.gravarSenha(estado.email, form.nova.value);
       if (!comCodigo) { estado = { ...estado, modo: 'entrar', aviso: 'Senha alterada. Entre com a nova senha.' }; return render(); }
-      if (estado.contas.length === 1) location.href = Entrada.entrar(estado.contas[0], estado.email);
-      else { estado.modo = 'escolher'; render(); }
+      location.href = Entrada.entrar(estado.contas[0], estado.email);
     });
   }
 
   function render() {
     ({
+      portal: renderPortal,
       entrar: renderEntrar,
-      escolher: renderEscolher,
       primeiro: () => renderPedirEmail(true),
       recuperar: () => renderPedirEmail(false),
       enviado: renderEnviado,

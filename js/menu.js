@@ -226,7 +226,7 @@ const UNIDADE = 'ProWay';
       menu.style.top = `${r.bottom + 4}px`;
       menu.style.right = `${innerWidth - r.right}px`;
     });
-    menu.querySelector('[data-sair]').addEventListener('click', () => { Sessao.sair(); location.href = 'entrar.html?saiu=1'; });
+    menu.querySelector('[data-sair]').addEventListener('click', () => { Sessao.sair(); location.href = 'entrar.html?portal=equipe&saiu=1'; });
   }
 
   function iniciar() {

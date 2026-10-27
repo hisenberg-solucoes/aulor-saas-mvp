@@ -1,7 +1,8 @@
 // ============================================================
-// Menu lateral do Portal do Professor. Na V1 o portal é só "Minhas turmas"
+// Menu do Portal do Professor. Na V1 o portal é só "Minhas turmas"
 // (turmas.html, a entrada do portal); a página de detalhe (turma.html) herda
-// o destaque do item via MENU_ALIAS. Carregar com `defer` depois de tooltip.js.
+// o destaque do item via MENU_ALIAS. Quem desenha a sidebar e a barra de
+// contexto é o shell comum dos portais (../js/menu-portal.js, depois deste).
 // ============================================================
 
 const MENU_FIXOS = [
@@ -16,26 +17,11 @@ const MENU_ALIAS = {
   'turma.html': 'turmas.html',
 };
 
-(function () {
-  const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const pagina = () => (location.pathname.split('/').pop() || 'turmas.html').toLowerCase();
+const MENU_GRUPOS = [];
 
-  const item = (it, ativo) => `
-        <a href="${it.href}" class="nav-item${ativo ? ' nav-item-ativo' : ''}"${ativo ? ' aria-current="page"' : ''}>
-          <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">${it.icone}</svg>
-          <span class="truncate">${esc(it.nome)}</span>
-        </a>`;
-
-  function iniciar() {
-    const nav = document.querySelector('aside[data-sidebar] nav');
-    if (!nav) return;
-    nav.className = 'flex-1 min-h-0 overflow-y-auto py-4 px-3 space-y-1 text-sm';
-    const p = pagina();
-    const atual = MENU_ALIAS[p] ?? p;
-    nav.innerHTML = MENU_FIXOS.map((it) => item(it, it.href === atual)).join('');
-    // O nav estático de cada página vem com visibility:hidden para não piscar
-    // antes da troca pelo menu definitivo; revela só depois do render.
-    nav.style.visibility = '';
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
-})();
+// Quem está no portal (lida depois que a página carregou o motor) e para onde Sair leva.
+const MENU_PORTAL = {
+  id: 'professor', nome: 'Portal do Professor', papel: 'Professor',
+  pessoa: () => { const i = PortalProfessor.instrutorLogado(); return i && { nome: i.nome, email: i.contato?.email }; },
+  sair: () => { PortalProfessor.sair(); location.href = '../entrar.html?portal=professor&saiu=1'; },
+};

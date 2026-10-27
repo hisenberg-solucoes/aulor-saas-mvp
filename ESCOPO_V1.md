@@ -18,9 +18,11 @@ Como cada decisão do documento "Aulor – Escopo da primeira versão (V1)" (26/
 | Centros de receita | `centros-receita.html` | Cria e agrupa os centros de receita (B2B, B2C, Orion), escolhidos no lançamento da venda e na turma; as parcelas da venda levam o centro, e a tela mostra o recebido e o a receber de cada um |
 | Pessoas | `instrutores.html`, `instrutor.html`, `colaboradores.html`, `colaborador.html` | Instrutor com cadastro (e cadastro pelo link) e só a aba Dados; colaboradores como equipe e usuários |
 | Perfis de acesso | `perfis.html`, `perfil.html` | Catálogo das telas da V1 e o perfil Vendedor externo, que vê só as vendas dele, confirma os alunos pelos quais responde e não acessa Alunos |
-| Entrada (nova) | `entrar.html` | Login, primeiro acesso e recuperação de senha para equipe, professores e alunos |
+| Entrada (nova) | `entrar.html` | Primeiro a escolha do portal (administrativo, aluno ou professor), depois login, primeiro acesso e recuperação de senha naquele portal |
 
 ## Portais
+
+Os dois portais usam o shell e os papéis do `DESIGN.md` do aulor-web, os mesmos do administrativo (sidebar e barra de contexto em azul profundo, Atkinson Hyperlegible Next, cartões brancos sobre o fundo frio). O "hoje" vai em petróleo e o cobre fica só no que espera a pessoa. As telas são as do `snorlax-jornada`, recortadas para a V1.
 
 | Portal | Como ficou |
 |---|---|

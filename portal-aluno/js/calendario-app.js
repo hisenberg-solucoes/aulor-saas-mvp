@@ -20,22 +20,6 @@
     setTimeout(() => el.remove(), 3200);
   }
 
-  // ---------- Cabeçalho (igual ao home) ----------
-
-  $('avatar').innerHTML = PortalAluno.avatarHtml(aluno);
-  $('nome-usuario').textContent = aluno.nome;
-  const menu = $('menu-usuario');
-  const lista = $('menu-usuario-lista');
-  const fecharMenu = () => { lista.classList.add('hidden'); menu.setAttribute('aria-expanded', 'false'); };
-  menu.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const abrir = lista.classList.contains('hidden');
-    lista.classList.toggle('hidden', !abrir);
-    menu.setAttribute('aria-expanded', String(abrir));
-  });
-  document.addEventListener('click', fecharMenu);
-  document.querySelectorAll('[data-em-breve]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); toast(`"${el.textContent.trim()}" ainda não foi desenhada no protótipo.`); }));
-  $('sair').addEventListener('click', () => { PortalAluno.sair(); location.replace('login.html'); });
 
   // ---------- Dados ----------
 
@@ -123,7 +107,7 @@
       const borda = `${i % 7 ? 'border-l' : ''} ${i >= 7 ? 'border-t' : ''} border-slate-100 dark:border-neutral-900`;
       const fundo = !d.doMes ? 'bg-slate-50/70 dark:bg-neutral-925' : fimSemana ? 'bg-slate-50/40 dark:bg-neutral-950' : 'bg-white dark:bg-neutral-950';
       const numero = ehHoje
-        ? 'h-6 w-6 rounded-full bg-laranja text-white font-semibold grid place-items-center'
+        ? 'h-6 w-6 rounded-full bg-petrol-800 text-white dark:bg-areia dark:text-petrol-800 font-semibold grid place-items-center'
         : `${d.doMes ? 'text-slate-700 dark:text-neutral-200' : 'text-slate-400 dark:text-neutral-600'} ${feriado ? 'font-semibold' : ''}`;
       return `
         <div data-celula="${d.iso}" class="${borda} ${fundo} min-h-[6.5rem] p-1.5 flex flex-col gap-1 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-neutral-900/70 transition ${d.doMes ? '' : 'opacity-70'}">
@@ -152,7 +136,7 @@
   // ---------- Próximos eventos ----------
 
   function estadoInscricao(e) {
-    if (!e.inscricao.necessaria) return { texto: e.obrigatorio ? 'Presença obrigatória' : 'Sem inscrição', classe: e.obrigatorio ? 'text-laranja-escuro dark:text-laranja' : 'text-slate-500 dark:text-neutral-400' };
+    if (!e.inscricao.necessaria) return { texto: e.obrigatorio ? 'Presença obrigatória' : 'Sem inscrição', classe: e.obrigatorio ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500 dark:text-neutral-400' };
     if (Eventos.inscrito(inscricoes, aluno.id, e.id)) return { texto: 'Inscrito', classe: 'text-emerald-600 dark:text-emerald-400' };
     const imp = Eventos.impedimento(inscricoes, aluno.id, e, hoje);
     if (imp) return { texto: imp.replace(/\.$/, ''), classe: 'text-slate-500 dark:text-neutral-400' };
@@ -172,9 +156,9 @@
       const st = estadoInscricao(e);
       return `
         <button type="button" data-dia="${e.data}" class="w-full flex items-center gap-4 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition">
-          <div class="shrink-0 w-12 text-center rounded-lg ${e.data === hoje ? 'bg-laranja/15 text-laranja-escuro dark:text-laranja' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
+          <div class="shrink-0 w-12 text-center rounded-lg ${e.data === hoje ? 'bg-petrol-800 text-white dark:bg-areia dark:text-petrol-800' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
             <p class="text-lg font-display font-semibold leading-none tabular-nums">${d.getDate()}</p>
-            <p class="text-[10px] uppercase tracking-wider mt-0.5">${MESES[d.getMonth()].slice(0, 3)}</p>
+            <p class="text-[11px] mt-0.5">${MESES[d.getMonth()].slice(0, 3)}</p>
           </div>
           <div class="min-w-0 flex-1">
             <p class="flex items-center gap-1.5 text-[11px]"><span class="h-2 w-2 rounded-full ${t.ponto}"></span><span class="text-slate-500 dark:text-neutral-400">${esc(t.nome)}${e.status === 'previsto' ? ' · a confirmar' : ''}</span></p>
@@ -191,7 +175,7 @@
   let diaAberto = null;
 
   function fecharModal() { $('modal-root').innerHTML = ''; diaAberto = null; }
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { fecharMenu(); if ($('modal-root').firstChild) fecharModal(); } });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('modal-root').firstChild) fecharModal(); });
 
   const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
   const horasTexto = (h) => (Number.isInteger(h) ? `${h} h` : `${String(h.toFixed(1)).replace('.', ',')} h`);
@@ -199,7 +183,7 @@
   // Situação da aula para o aluno: futura / hoje / realizada.
   function situacaoAulaHtml(a) {
     if (a.data > hoje) return ponto('bg-sky-500', 'Prevista');
-    if (a.data === hoje) return ponto('bg-laranja', 'Hoje');
+    if (a.data === hoje) return ponto('bg-petrol-800 dark:bg-sky-300', 'Hoje');
     return ponto('bg-emerald-500', 'Realizada');
   }
 
@@ -260,7 +244,7 @@
     let acao = '';
     if (insc.necessaria) {
       if (inscrito) acao = `<button type="button" data-cancelar="${e.id}" class="rounded-lg border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-950/40 transition">Cancelar inscrição</button>`;
-      else acao = `<button type="button" data-inscrever="${e.id}" class="rounded-lg bg-laranja hover:bg-laranja-escuro text-white text-sm font-medium px-3 py-1.5 transition">Inscrever-se</button>`;
+      else acao = `<button type="button" data-inscrever="${e.id}" class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition">Inscrever-se</button>`;
     }
     return `
       <div class="flex gap-3 px-5 py-3">
@@ -289,7 +273,7 @@
         <div role="dialog" aria-modal="true" aria-labelledby="modal-titulo" class="cartao modal-anim w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
           <div class="px-5 py-4 border-b border-slate-100 dark:border-neutral-900 flex items-start justify-between gap-3">
             <div>
-              <p id="modal-titulo" class="font-display font-semibold text-slate-900 dark:text-neutral-100">${esc(titulo)}${iso === hoje ? ' <span class="text-laranja text-sm">· hoje</span>' : ''}</p>
+              <p id="modal-titulo" class="font-display font-semibold text-slate-900 dark:text-neutral-100">${esc(titulo)}${iso === hoje ? ' <span class="text-petrol-800 dark:text-sky-300 text-sm">· hoje</span>' : ''}</p>
               <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(PortalAluno.fmtData(iso))}${feriado ? ` · ${esc(feriado)}` : ''}</p>
             </div>
             <button type="button" data-fechar title="Fechar" class="p-1.5 -mr-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-neutral-200 hover:bg-slate-100 dark:hover:bg-neutral-900 transition">

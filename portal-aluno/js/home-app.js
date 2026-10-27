@@ -24,28 +24,13 @@
     setTimeout(() => el.remove(), 3200);
   }
 
-  // ---------- Cabeçalho ----------
+  // ---------- Saudação ----------
 
-  $('avatar').innerHTML = PortalAluno.avatarHtml(aluno);
-  $('nome-usuario').textContent = aluno.nome;
   const hora = new Date().getHours();
   const periodo = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
   $('saudacao').textContent = `${periodo}, ${PortalAluno.primeiroNome(aluno.nome)}`;
   $('data-hoje').textContent = PortalAluno.fmtDataLonga(hoje).replace(/^./, (c) => c.toUpperCase());
 
-  const menu = $('menu-usuario');
-  const lista = $('menu-usuario-lista');
-  const fecharMenu = () => { lista.classList.add('hidden'); menu.setAttribute('aria-expanded', 'false'); };
-  menu.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const abrir = lista.classList.contains('hidden');
-    lista.classList.toggle('hidden', !abrir);
-    menu.setAttribute('aria-expanded', String(abrir));
-  });
-  document.addEventListener('click', fecharMenu);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharMenu(); });
-  document.querySelectorAll('[data-em-breve]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); toast(`"${el.textContent.trim()}" ainda não foi desenhada no protótipo.`); }));
-  $('sair').addEventListener('click', () => { PortalAluno.sair(); location.replace('login.html'); });
 
   // ---------- Dados ----------
 
@@ -73,7 +58,7 @@
   function cartaoDestaque({ rotulo, titulo, texto, acao, tom = 'neutro' }) {
     const tons = {
       neutro: 'cartao',
-      laranja: 'rounded-xl border border-laranja/40 bg-laranja/10 dark:bg-laranja/10 shadow-sm',
+      hoje: 'rounded-xl bg-[var(--f-selecao)]',
       vermelho: 'rounded-xl border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/40 shadow-sm',
     };
     return `
@@ -96,8 +81,8 @@
       rotulo: hojeMesmo ? 'Aula de hoje' : 'Próxima aula',
       titulo: `${esc(m.curso?.nome ?? m.turma.codigo)}`,
       texto: `${esc(PortalAluno.rotuloDia(a.data, hoje))} · ${esc(a.inicio)}–${esc(a.fim)}${local ? ` · ${esc(local)}` : ''}${m.instrutor ? `<br>com ${esc(m.instrutor.nome)}` : ''}`,
-      acao: `${meet ? `<a href="${esc(m.turma.meetLink)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-lg bg-petrol-800 dark:bg-sky-600 text-white text-sm font-medium px-3 py-1.5 hover:bg-petrol-900 dark:hover:bg-sky-500 transition">${ICONE_CAMERA}Entrar no Meet</a> ` : ''}<a href="aula.html?turma=${encodeURIComponent(m.turma.id)}&data=${encodeURIComponent(a.data)}" class="link${meet ? ' ml-2' : ''}">Ver aula</a>`,
-      tom: hojeMesmo ? 'laranja' : 'neutro',
+      acao: `${meet ? `<a href="${esc(m.turma.meetLink)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition">${ICONE_CAMERA}Entrar no Meet</a> ` : ''}<a href="aula.html?turma=${encodeURIComponent(m.turma.id)}&data=${encodeURIComponent(a.data)}" class="link${meet ? ' ml-2' : ''}">Ver aula</a>`,
+      tom: hojeMesmo ? 'hoje' : 'neutro',
     });
   }
 
@@ -147,7 +132,7 @@
         </div>
         <div class="flex items-center gap-2 shrink-0">
           <button type="button" id="copiar-meet" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-neutral-700 text-sm text-slate-700 dark:text-neutral-200 px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-neutral-900 transition">Copiar link</button>
-          <a href="${esc(url)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-lg bg-petrol-800 dark:bg-sky-600 text-white text-sm font-medium px-3 py-1.5 hover:bg-petrol-900 dark:hover:bg-sky-500 transition">${ICONE_CAMERA}Abrir</a>
+          <a href="${esc(url)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition">${ICONE_CAMERA}Abrir</a>
         </div>
       </div>`;
     $('copiar-meet').addEventListener('click', async () => {
@@ -241,9 +226,9 @@
       const local = localDe(a, m);
       return `
         <div class="flex items-center gap-4 px-5 py-3">
-          <div class="shrink-0 w-12 text-center rounded-lg ${a.data === hoje ? 'bg-laranja/15 text-laranja-escuro dark:text-laranja' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
+          <div class="shrink-0 w-12 text-center rounded-lg ${a.data === hoje ? 'bg-petrol-800 text-white dark:bg-areia dark:text-petrol-800' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
             <p class="text-lg font-display font-semibold leading-none tabular-nums">${d.getDate()}</p>
-            <p class="text-[10px] uppercase tracking-wider mt-0.5">${esc(PortalAluno.diaSemana(a.data).slice(0, 3))}</p>
+            <p class="text-[11px] mt-0.5">${esc(PortalAluno.diaSemana(a.data).slice(0, 3))}</p>
           </div>
           <div class="min-w-0 flex-1">
             <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(m.curso?.nome ?? m.turma.codigo)}</p>

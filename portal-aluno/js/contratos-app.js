@@ -44,23 +44,7 @@
     setTimeout(() => el.remove(), 3200);
   }
 
-  // ---------- Cabeçalho (igual à home) ----------
-
-  $('avatar').innerHTML = PortalAluno.avatarHtml(aluno);
-  $('nome-usuario').textContent = aluno.nome;
-  const menu = $('menu-usuario');
-  const listaMenu = $('menu-usuario-lista');
-  const fecharMenu = () => { listaMenu.classList.add('hidden'); menu.setAttribute('aria-expanded', 'false'); };
-  menu.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const abrir = listaMenu.classList.contains('hidden');
-    listaMenu.classList.toggle('hidden', !abrir);
-    menu.setAttribute('aria-expanded', String(abrir));
-  });
-  document.addEventListener('click', fecharMenu);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { fecharMenu(); fecharModal(); } });
-  document.querySelectorAll('[data-em-breve]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); toast(`"${el.textContent.trim()}" ainda não foi desenhada no protótipo.`); }));
-  $('sair').addEventListener('click', () => { PortalAluno.sair(); location.replace('login.html'); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharModal(); });
 
   // ---------- Modal centralizado ----------
 
@@ -330,7 +314,7 @@
             <p class="text-sm text-slate-600 dark:text-neutral-300">${b.totalAtivos ? `${b.concluidos} de ${b.totalAtivos} cursos concluídos` : 'Nenhuma matrícula ativa'}</p>
           </div>
           <div class="px-5 pt-4">
-            <div class="h-2.5 rounded-full bg-slate-200 dark:bg-neutral-800 overflow-hidden"><div class="h-full rounded-full bg-laranja" style="width:${pctCursos}%"></div></div>
+            <div class="h-2.5 rounded-full bg-slate-200 dark:bg-neutral-800 overflow-hidden"><div class="h-full rounded-full bg-slate-900 dark:bg-neutral-100" style="width:${pctCursos}%"></div></div>
             <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1.5">${pctCursos}% dos cursos concluídos${ativas.some((m) => m.situacao === 'em_andamento') ? ` · ${plural(ativas.filter((m) => m.situacao === 'em_andamento').length, 'curso')} em andamento` : ''}${ativas.some((m) => m.situacao === 'a_iniciar') ? ` · ${ativas.filter((m) => m.situacao === 'a_iniciar').length} a iniciar` : ''}</p>
           </div>
           <div class="p-5 overflow-x-auto"><table class="tabela w-full">
@@ -416,7 +400,7 @@
         <p><strong>Contratante / responsável financeiro:</strong> ${contratanteTxt}.</p>
         <p><strong>Objeto:</strong> ${esc(b.descricao)}, conforme os pacotes e vagas abaixo:</p>
         <table class="w-full text-sm">
-          <thead class="text-left text-[11px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 border-b border-slate-200 dark:border-neutral-800"><tr><th class="py-1 pr-3 font-semibold">Pacote e itens</th><th class="py-1 px-3 text-right font-semibold">Valor unitário</th><th class="py-1 px-3 text-right font-semibold">Vagas</th><th class="py-1 pl-3 text-right font-semibold">Subtotal</th></tr></thead>
+          <thead class="text-left text-xs text-slate-500 dark:text-neutral-400 border-b border-slate-200 dark:border-neutral-800"><tr><th class="py-1 pr-3 font-semibold">Pacote e itens</th><th class="py-1 px-3 text-right font-semibold">Valor unitário</th><th class="py-1 px-3 text-right font-semibold">Vagas</th><th class="py-1 pl-3 text-right font-semibold">Subtotal</th></tr></thead>
           <tbody class="divide-y divide-slate-100 dark:divide-neutral-900">${t.porPacote.length ? t.porPacote.map(linhaPacote).join('') : '<tr><td colspan="4" class="py-2 text-slate-400">—</td></tr>'}</tbody>
         </table>
         <p><strong>Valor total:</strong> ${moeda(t.final)}${t.desconto > 0 ? ` (valor de tabela ${moeda(t.base)}, desconto de ${moeda(t.desconto)})` : ''}, em ${c.cobranca.parcelas} parcela(s) via ${esc(nomeDe(FORMAS_COBRANCA, c.cobranca.forma)).toLowerCase()}${c.cobranca.primeiroVencimento ? `, a primeira em ${data(c.cobranca.primeiroVencimento)}` : ''}.</p>
@@ -459,7 +443,7 @@
     renderDetalhe(b);
   }
 
-  const passos = (atual, nomes) => `<ol class="flex items-center gap-2 text-xs px-5 pt-4">${nomes.map((n, i) => `<li class="flex items-center gap-1.5 ${i + 1 === atual ? 'text-slate-900 dark:text-neutral-100 font-medium' : 'text-slate-400'}"><span class="h-5 w-5 rounded-full grid place-items-center text-[11px] ${i + 1 < atual ? 'bg-emerald-500 text-white' : i + 1 === atual ? 'bg-laranja text-white' : 'bg-slate-200 dark:bg-neutral-800'}">${i + 1 < atual ? '✓' : i + 1}</span>${esc(n)}</li>${i < nomes.length - 1 ? '<li class="w-6 h-px bg-slate-200 dark:bg-neutral-800"></li>' : ''}`).join('')}</ol>`;
+  const passos = (atual, nomes) => `<ol class="flex items-center gap-2 text-xs px-5 pt-4">${nomes.map((n, i) => `<li class="flex items-center gap-1.5 ${i + 1 === atual ? 'text-slate-900 dark:text-neutral-100 font-medium' : 'text-slate-400'}"><span class="h-5 w-5 rounded-full grid place-items-center text-[11px] ${i + 1 < atual ? 'bg-slate-900 text-white dark:bg-neutral-100 dark:text-black' : i + 1 === atual ? 'bg-petrol-800 text-white dark:bg-areia dark:text-petrol-800' : 'bg-slate-200 dark:bg-neutral-800'}">${i + 1 < atual ? '✓' : i + 1}</span>${esc(n)}</li>${i < nomes.length - 1 ? '<li class="w-6 h-px bg-slate-200 dark:bg-neutral-800"></li>' : ''}`).join('')}</ol>`;
 
   // Corpo da simulação da rescisão (regras, tabela, totais e faixa de saldo). Usado no passo 2 do pedido de
   // cancelamento (com o select de destino do saldo) e no modal avulso "Quanto custaria cancelar hoje" (sem ele).

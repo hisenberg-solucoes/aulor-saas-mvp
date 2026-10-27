@@ -24,7 +24,7 @@
   const FORMATO = { presencial: 'Presencial', online: 'Online ao vivo', hibrido: 'Híbrido', ead: 'EAD' };
   const AULA = {
     realizada: { nome: 'Realizada', ponto: 'bg-slate-400' },
-    hoje: { nome: 'Hoje', ponto: 'bg-laranja' },
+    hoje: { nome: 'Hoje', ponto: 'bg-petrol-800 dark:bg-sky-300' },
     futura: { nome: 'Futura', ponto: 'bg-sky-500' },
     cancelada: { nome: 'Cancelada', ponto: 'bg-red-500' },
   };
@@ -113,23 +113,6 @@
       </span>
     </label>`;
 
-  // ---------- Cabeçalho (igual à home) ----------
-
-  $('avatar').innerHTML = PortalProfessor.avatarHtml(instrutor);
-  $('nome-usuario').textContent = instrutor.nome;
-  const menu = $('menu-usuario');
-  const lista = $('menu-usuario-lista');
-  const fecharMenu = () => { lista.classList.add('hidden'); menu.setAttribute('aria-expanded', 'false'); };
-  menu.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const abrir = lista.classList.contains('hidden');
-    lista.classList.toggle('hidden', !abrir);
-    menu.setAttribute('aria-expanded', String(abrir));
-  });
-  document.addEventListener('click', fecharMenu);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharMenu(); });
-  document.querySelectorAll('[data-em-breve]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); toast(`"${el.textContent.trim()}" ainda não foi desenhada no protótipo.`); }));
-  $('sair').addEventListener('click', () => { PortalProfessor.sair(); location.replace('login.html'); });
 
   // ---------- Dados / modo ----------
 
@@ -380,9 +363,9 @@
     const dado = (r, v) => `<div><p class="rotulo">${esc(r)}</p><div class="text-sm text-slate-800 dark:text-neutral-100 mt-0.5">${v}</div></div>`;
     const linhaAulaCurta = (a) => `
       <a href="${linkTurma(d)}&aba=aulas" data-aba-link="aulas" class="flex items-center gap-4 px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition">
-        <div class="shrink-0 w-12 text-center rounded-lg ${a.situacaoAula === 'hoje' ? 'bg-laranja/15 text-laranja-escuro dark:text-laranja' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
+        <div class="shrink-0 w-12 text-center rounded-lg ${a.situacaoAula === 'hoje' ? 'bg-petrol-800 text-white dark:bg-areia dark:text-petrol-800' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
           <p class="text-lg font-display font-semibold leading-none tabular-nums">${new Date(`${a.data}T12:00:00`).getDate()}</p>
-          <p class="text-[10px] uppercase tracking-wider mt-0.5">${esc(PortalProfessor.diaSemana(a.data).slice(0, 3))}</p>
+          <p class="text-[11px] mt-0.5">${esc(PortalProfessor.diaSemana(a.data).slice(0, 3))}</p>
         </div>
         <div class="min-w-0 flex-1">
           <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(PortalProfessor.rotuloDia(a.data, hoje))} · ${esc(a.inicio)}–${esc(a.fim)}${a.n ? ` · aula ${a.n} de ${total}` : ''}</p>
@@ -395,7 +378,7 @@
       const semConteudo = d.todas.filter((a) => a.situacaoAula !== 'cancelada' && !a.conteudo && !a.modulos.length).length;
       const horas = Turmas.horasAulas(d.aulas);
       const pend = d.pendencias.length
-        ? `<ul class="space-y-1.5">${d.pendencias.map((p) => `<li class="flex items-start gap-2 text-sm"><span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-laranja shrink-0"></span><a href="${esc(p.href)}" class="hover:underline">${esc(p.texto)}</a></li>`).join('')}</ul>`
+        ? `<ul class="space-y-1.5">${d.pendencias.map((p) => `<li class="flex items-start gap-2 text-sm"><span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0"></span><a href="${esc(p.href)}" class="hover:underline">${esc(p.texto)}</a></li>`).join('')}</ul>`
         : `<p class="text-sm text-slate-500 dark:text-neutral-400">${ponto('bg-emerald-500', 'Tudo em dia')}</p>`;
       return `
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
@@ -491,11 +474,11 @@
           const conteudo = a.conteudo || a.modulos.join(' · ');
           const ms = a.id ? Materiais.daAula(d.turma.id, a.id) : [];
           return `
-          <div data-aula="${esc(chaveAula(a))}" class="px-5 py-4 ${cancelada ? 'linha-apagada' : a.situacaoAula === 'hoje' ? 'bg-laranja/10 dark:bg-laranja/10' : ''}">
+          <div data-aula="${esc(chaveAula(a))}" class="px-5 py-4 ${cancelada ? 'linha-apagada' : ''}">
             <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <div class="shrink-0 w-12 text-center rounded-lg ${a.situacaoAula === 'hoje' ? 'bg-laranja/15 text-laranja-escuro dark:text-laranja' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
+              <div class="shrink-0 w-12 text-center rounded-lg ${a.situacaoAula === 'hoje' ? 'bg-petrol-800 text-white dark:bg-areia dark:text-petrol-800' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
                 <p class="text-lg font-display font-semibold leading-none tabular-nums">${new Date(`${a.data}T12:00:00`).getDate()}</p>
-                <p class="text-[10px] uppercase tracking-wider mt-0.5">${esc(PortalProfessor.diaSemana(a.data).slice(0, 3))}</p>
+                <p class="text-[11px] mt-0.5">${esc(PortalProfessor.diaSemana(a.data).slice(0, 3))}</p>
               </div>
               <div class="min-w-0 flex-1">
                 <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 tabular-nums ${cancelada ? 'line-through' : ''}">${descricaoAula(a)}${a.local ? ` · ${esc(a.local)}` : ''}</p>

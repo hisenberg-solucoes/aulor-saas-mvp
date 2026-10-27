@@ -29,7 +29,7 @@ const Acesso = (() => {
     const p = pagina();
     if (LIVRES.includes(p)) return;
     const s = sessao();
-    if (!s?.acesso) { location.replace('entrar.html'); return; }
+    if (!s?.acesso) { location.replace('entrar.html?portal=equipe'); return; }
     if (p !== 'home.html' && !pode(tela(p), 'visualizar', s)) location.replace(`home.html?sem-acesso=${encodeURIComponent(tela(p))}`);
   })();
 
