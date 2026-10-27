@@ -1,110 +1,160 @@
 // ============================================================
-// Catálogo de permissões e perfis padrão do Aulor MVP.
-// Mesma estrutura do protótipo original (PORTAL → MÓDULO → TELA → AÇÕES),
-// com o catálogo reduzido ao escopo do MVP. "visualizar" dá acesso à tela;
-// as demais ações liberam botões dentro dela.
+// Catálogo de permissões da V1 e perfis padrão.
+// Em produção, tudo aqui viria do backend, que é quem aplica as regras
+// (dados pessoais e financeiros); o protótipo só esconde menu e telas.
 //
-// Chave de permissão no backend: `<tela>.<ação>` (ex.: "matriculas.criar"),
-// no mesmo formato do PermissionCatalog do módulo Platform ("users.view").
-// Os dados de usuários e perfis ficam salvos em localStorage
-// (Acessos.CHAVE, em js/shell.js); este arquivo é só a semente.
+// Hierarquia: PORTAL → MÓDULO → TELA → AÇÕES. A ação "visualizar" é o que
+// dá acesso à tela; as demais são os níveis de ação dentro dela. No portal
+// administrativo, o id da tela é o arquivo da lista (contratos → contratos.html),
+// e os módulos são os grupos do menu (js/menu.js).
 // ============================================================
 
-const TIPOS_USUARIO = [
-  { id: 'colaborador', nome: 'Equipe', plural: 'Equipe da escola', descricao: 'Direção, secretaria, financeiro e coordenação. Usa o sistema da escola.', portal: 'escola', cadastro: 'colaborador.html?id=', lista: 'Colaboradores' },
-  { id: 'instrutor', nome: 'Instrutor', plural: 'Instrutores', descricao: 'Dá aulas nas turmas. Vê as próprias aulas e registra chamada e diário.', portal: 'escola', cadastro: 'instrutor.html?id=', lista: 'Instrutores' },
-];
-
 const PORTAIS = [
-  { id: 'escola', nome: 'Sistema da escola' },
+  { id: 'administrativo', nome: 'Portal Administrativo' },
+  { id: 'professor', nome: 'Portal do Professor' },
+  { id: 'aluno', nome: 'Portal do Aluno' },
 ];
 
 const MODULOS = [
-  // Mesmos grupos do menu lateral (js/shell.js).
-  { id: 'visao', portal: 'escola', nome: 'Visão geral' },
-  { id: 'comercial', portal: 'escola', nome: 'Comercial' },
-  { id: 'pedagogico', portal: 'escola', nome: 'Pedagógico' },
-  { id: 'financeiro', portal: 'escola', nome: 'Financeiro' },
-  { id: 'pessoas', portal: 'escola', nome: 'Pessoas' },
-  { id: 'configuracoes', portal: 'escola', nome: 'Configurações' },
+  { id: 'comercial', portal: 'administrativo', nome: 'Comercial' },
+  { id: 'pedagogico', portal: 'administrativo', nome: 'Pedagógico' },
+  { id: 'financeiro', portal: 'administrativo', nome: 'Financeiro' },
+  { id: 'pessoas', portal: 'administrativo', nome: 'Pessoas' },
+  { id: 'configuracoes', portal: 'administrativo', nome: 'Configurações' },
+  { id: 'prof-turmas', portal: 'professor', nome: 'Turmas e materiais' },
+  { id: 'aluno-estudos', portal: 'aluno', nome: 'Meus estudos' },
+  { id: 'aluno-servicos', portal: 'aluno', nome: 'Serviços' },
 ];
 
-const ACAO_ = (id, nome) => ({ id, nome });
-const VER = ACAO_('visualizar', 'Visualizar');
+const VER = { id: 'visualizar', nome: 'Visualizar' };
+const CRIAR = { id: 'criar', nome: 'Criar' };
+const EDITAR = { id: 'editar', nome: 'Editar' };
 
 const FEATURES = [
-  { id: 'painel', modulo: 'visao', nome: 'Painel da escola', acoes: [VER] },
+  // ---------- Comercial ----------
+  {
+    id: 'contratos', modulo: 'comercial', nome: 'Vendas',
+    acoes: [
+      VER, CRIAR, EDITAR,
+      // Sem esta ação, a pessoa vê só as vendas em que é a vendedora (perfil Vendedor externo).
+      { id: 'ver-todas', nome: 'Ver as vendas de todos os vendedores' },
+      { id: 'confirmar-alunos', nome: 'Confirmar o cadastro dos alunos' },
+      { id: 'adm-ok', nome: 'Dar o Adm OK' },
+      { id: 'cancelar', nome: 'Cancelar' },
+    ],
+  },
+  { id: 'alunos', modulo: 'comercial', nome: 'Alunos', acoes: [VER, CRIAR, EDITAR] },
+  { id: 'responsaveis', modulo: 'comercial', nome: 'Responsáveis', acoes: [VER, CRIAR, EDITAR] },
+  { id: 'empresas', modulo: 'comercial', nome: 'Empresas', acoes: [VER, CRIAR, EDITAR] },
 
-  { id: 'alunos', modulo: 'comercial', nome: 'Alunos', acoes: [VER, ACAO_('criar', 'Cadastrar'), ACAO_('editar', 'Editar')] },
-  { id: 'matriculas', modulo: 'comercial', nome: 'Vendas', acoes: [VER, ACAO_('criar', 'Vender'), ACAO_('trocar', 'Trocar de turma'), ACAO_('cancelar', 'Cancelar venda')] },
+  // ---------- Pedagógico ----------
+  { id: 'cursos', modulo: 'pedagogico', nome: 'Cursos', acoes: [VER, CRIAR, EDITAR] },
+  { id: 'formacoes', modulo: 'pedagogico', nome: 'Formações', acoes: [VER, CRIAR, EDITAR] },
+  { id: 'turmas', modulo: 'pedagogico', nome: 'Turmas', acoes: [VER, CRIAR, EDITAR, { id: 'gerar-aulas', nome: 'Gerar e remarcar aulas' }] },
+  { id: 'feriados', modulo: 'pedagogico', nome: 'Feriados', acoes: [VER, EDITAR] },
+  { id: 'materiais', modulo: 'pedagogico', nome: 'Materiais das aulas', acoes: [VER, { id: 'publicar', nome: 'Cadastrar e liberar' }] },
 
-  { id: 'cursos', modulo: 'pedagogico', nome: 'Cursos', acoes: [VER, ACAO_('criar', 'Criar'), ACAO_('editar', 'Editar')] },
-  { id: 'turmas', modulo: 'pedagogico', nome: 'Turmas', acoes: [VER, ACAO_('criar', 'Criar'), ACAO_('editar', 'Editar'), ACAO_('concluir', 'Concluir turma')] },
+  // ---------- Financeiro ----------
+  {
+    id: 'financeiro', modulo: 'financeiro', nome: 'Financeiro',
+    acoes: [
+      VER,
+      { id: 'lancar', nome: 'Lançar contas' },
+      { id: 'baixar', nome: 'Dar baixa' },
+      { id: 'emitir-nf', nome: 'Emitir NF' },
+      { id: 'conciliar', nome: 'Conciliar com o Asaas' },
+      { id: 'sacar', nome: 'Configurar o saque automático' },
+    ],
+  },
+  { id: 'contas-bancarias', modulo: 'financeiro', nome: 'Contas bancárias', acoes: [VER, EDITAR] },
+  { id: 'centros-custo', modulo: 'financeiro', nome: 'Centros de custo', acoes: [VER, EDITAR] },
+  { id: 'centros-receita', modulo: 'financeiro', nome: 'Centros de receita', acoes: [VER, EDITAR] },
 
-  { id: 'frequencia', modulo: 'pedagogico', nome: 'Frequência de todas as turmas', acoes: [VER, ACAO_('registrar', 'Lançar e corrigir chamada e notas')] },
-  { id: 'minhas-aulas', modulo: 'pedagogico', nome: 'Portal do Professor', acoes: [VER, ACAO_('registrar', 'Fazer chamada, diário e nota final')] },
+  // ---------- Pessoas ----------
+  { id: 'instrutores', modulo: 'pessoas', nome: 'Instrutores', acoes: [VER, CRIAR, EDITAR] },
+  { id: 'colaboradores', modulo: 'pessoas', nome: 'Colaboradores', acoes: [VER, CRIAR, EDITAR, { id: 'dar-acesso', nome: 'Dar acesso ao sistema' }] },
 
-  { id: 'certificados', modulo: 'pedagogico', nome: 'Certificados', acoes: [VER, ACAO_('emitir', 'Emitir'), ACAO_('cancelar', 'Cancelar certificado')] },
+  // ---------- Configurações ----------
+  { id: 'perfis', modulo: 'configuracoes', nome: 'Perfis de acesso', acoes: [VER, EDITAR] },
+  { id: 'modelos-contrato', modulo: 'configuracoes', nome: 'Modelos de contrato', acoes: [VER, EDITAR] },
 
-  { id: 'receber', modulo: 'financeiro', nome: 'Contas a receber', acoes: [VER, ACAO_('registrar', 'Registrar recebimento'), ACAO_('estornar', 'Estornar')] },
-  { id: 'pagar', modulo: 'financeiro', nome: 'Contas a pagar', acoes: [VER, ACAO_('lancar', 'Lançar conta'), ACAO_('pagar', 'Registrar pagamento')] },
+  // ================= Portal do Professor =================
+  { id: 'minhas-turmas', modulo: 'prof-turmas', nome: 'Minhas turmas', acoes: [VER] },
+  { id: 'materiais-aula', modulo: 'prof-turmas', nome: 'Materiais das aulas', acoes: [VER, { id: 'publicar', nome: 'Cadastrar e liberar' }] },
 
-  { id: 'colaboradores', modulo: 'pessoas', nome: 'Colaboradores', acoes: [VER, ACAO_('gerenciar', 'Cadastrar, editar e dar acesso')] },
-  { id: 'instrutores', modulo: 'pessoas', nome: 'Instrutores', acoes: [VER, ACAO_('gerenciar', 'Cadastrar, editar, contratos e pagamentos')] },
-  { id: 'usuarios', modulo: 'pessoas', nome: 'Usuários', acoes: [VER, ACAO_('convidar', 'Convidar'), ACAO_('editar', 'Editar'), ACAO_('inativar', 'Inativar')] },
-  { id: 'perfis-acesso', modulo: 'configuracoes', nome: 'Perfis de acesso', acoes: [VER, ACAO_('gerenciar', 'Gerenciar')] },
-  { id: 'configuracoes', modulo: 'configuracoes', nome: 'Configurações da escola', acoes: [VER, ACAO_('editar', 'Editar')] },
+  // ================= Portal do Aluno =================
+  { id: 'meus-cursos', modulo: 'aluno-estudos', nome: 'Meus cursos', acoes: [VER] },
+  { id: 'minhas-aulas', modulo: 'aluno-estudos', nome: 'Aulas e calendário', acoes: [VER, { id: 'acessar-online', nome: 'Acessar aula online' }] },
+  { id: 'materiais-aluno', modulo: 'aluno-estudos', nome: 'Materiais', acoes: [VER] },
+  { id: 'financeiro-aluno', modulo: 'aluno-servicos', nome: 'Meu financeiro', acoes: [VER, { id: 'gerar-boleto', nome: '2ª via de boleto' }, { id: 'pagar-online', nome: 'Pagar online' }] },
+  { id: 'contratos-aluno', modulo: 'aluno-servicos', nome: 'Meus contratos', acoes: [VER, { id: 'assinar', nome: 'Assinar' }] },
+  { id: 'meus-dados', modulo: 'aluno-servicos', nome: 'Meus dados', acoes: [VER, EDITAR] },
 ];
 
+// Concede todas as ações de todas as features (usado no perfil Administrador).
 function todasAsPermissoes() {
   return Object.fromEntries(FEATURES.map((f) => [f.id, f.acoes.map((a) => a.id)]));
 }
 
-// Administrador é protegido (como o AccessProfile.IsProtected do backend):
-// sempre tem tudo e não pode ser editado, inativado nem excluído.
+const tudo = (...ids) => Object.fromEntries(ids.map((id) => [id, FEATURES.find((f) => f.id === id).acoes.map((a) => a.id)]));
+const ver = (...ids) => Object.fromEntries(ids.map((id) => [id, ['visualizar']]));
+
+// Perfis: { featureId: [acaoIds ativas] }. Feature ausente = sem acesso.
+// "ativo: false" desativa o perfil inteiro sem perder a configuração.
 const PERFIS = [
-  { id: 'administrador', nome: 'Administrador', tipos: ['colaborador'], ativo: true, protegido: true, permissoes: todasAsPermissoes() },
+  { id: 'admin', nome: 'Administrador', ativo: true, permissoes: todasAsPermissoes() },
   {
-    id: 'secretaria', nome: 'Secretaria', tipos: ['colaborador'], ativo: true,
+    id: 'coordenador', nome: 'Coordenador pedagógico', ativo: true,
+    permissoes: { ...tudo('cursos', 'formacoes', 'turmas', 'feriados', 'materiais', 'instrutores'), ...ver('alunos', 'responsaveis', 'contratos') },
+  },
+  {
+    id: 'comercial', nome: 'Comercial', ativo: true,
     permissoes: {
-      painel: ['visualizar'], alunos: ['visualizar', 'criar', 'editar'], matriculas: ['visualizar', 'criar', 'trocar', 'cancelar'],
-      cursos: ['visualizar'], turmas: ['visualizar'], instrutores: ['visualizar'], frequencia: ['visualizar'],
-      certificados: ['visualizar', 'emitir'], receber: ['visualizar', 'registrar'],
+      ...tudo('alunos', 'responsaveis', 'empresas'),
+      contratos: ['visualizar', 'criar', 'editar', 'ver-todas', 'confirmar-alunos', 'cancelar'],
+      ...ver('cursos', 'formacoes', 'turmas', 'modelos-contrato'),
     },
   },
   {
-    id: 'financeiro', nome: 'Financeiro', tipos: ['colaborador'], ativo: true,
-    permissoes: {
-      painel: ['visualizar'], alunos: ['visualizar'], matriculas: ['visualizar'],
-      receber: ['visualizar', 'registrar', 'estornar'], pagar: ['visualizar', 'lancar', 'pagar'],
-    },
+    // Escopo da V1: vê só as vendas dele, cria venda por link e confirma os alunos pelos quais responde;
+    // não acessa Alunos. A relação com o perfil Comercial está a definir.
+    id: 'vendedor_externo', nome: 'Vendedor externo', ativo: true,
+    permissoes: { contratos: ['visualizar', 'criar', 'confirmar-alunos'] },
   },
   {
-    id: 'coordenacao', nome: 'Coordenação pedagógica', tipos: ['colaborador'], ativo: true,
+    id: 'financeiro', nome: 'Financeiro', ativo: true,
     permissoes: {
-      painel: ['visualizar'], alunos: ['visualizar', 'editar'], matriculas: ['visualizar', 'trocar'],
-      cursos: ['visualizar', 'criar', 'editar'], turmas: ['visualizar', 'criar', 'editar', 'concluir'], instrutores: ['visualizar', 'gerenciar'],
-      frequencia: ['visualizar', 'registrar'], certificados: ['visualizar', 'emitir', 'cancelar'],
+      ...tudo('financeiro', 'contas-bancarias', 'centros-custo', 'centros-receita'),
+      contratos: ['visualizar', 'ver-todas', 'adm-ok'],
+      ...ver('alunos', 'responsaveis', 'empresas', 'instrutores'),
     },
   },
-  {
-    id: 'professor', nome: 'Professor', tipos: ['instrutor'], ativo: true,
-    permissoes: { 'minhas-aulas': ['visualizar', 'registrar'] },
-  },
+  { id: 'professor', nome: 'Professor', ativo: true, permissoes: tudo('minhas-turmas', 'materiais-aula') },
+  { id: 'aluno', nome: 'Aluno', ativo: true, permissoes: tudo('meus-cursos', 'minhas-aulas', 'materiais-aluno', 'financeiro-aluno', 'contratos-aluno', 'meus-dados') },
 ];
 
-// status: ativo | convidado (convite enviado, ainda sem acesso) | inativo.
-// vinculos: colaborador aponta para o cadastro na equipe (c*); instrutor, para o cadastro do instrutor (pr*).
-// Quem é das duas coisas (Sérgio) tem um usuário só com os dois vínculos.
+// Usuários, os perfis em que estão incluídos e permissões EXTRAS
+// individuais ({ featureId: [acaoIds] }), concedidas além dos perfis.
+// As permissões efetivas são: união dos perfis ATIVOS + extras do usuário.
 const USUARIOS = [
-  { id: 'u1', nome: 'Marina Azevedo', email: 'marina@escolaatlas.com.br', cargo: 'Diretora', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'c1' }], perfis: ['administrador'], extras: {} },
-  { id: 'u2', nome: 'Paula Ribeiro', email: 'paula@escolaatlas.com.br', cargo: 'Secretária', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'c2' }], perfis: ['secretaria'], extras: {} },
-  { id: 'u3', nome: 'Renato Siqueira', email: 'renato@escolaatlas.com.br', cargo: 'Financeiro', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'c3' }], perfis: ['financeiro'], extras: {} },
-  { id: 'u4', nome: 'Camila Duarte', email: 'camila@escolaatlas.com.br', cargo: 'Coordenadora pedagógica', status: 'ativo', vinculos: [{ tipo: 'colaborador', id: 'c4' }], perfis: ['coordenacao'], extras: { matriculas: ['criar'] } },
-  { id: 'u5', nome: 'Carlos Mendes', email: 'carlos.mendes@escolaatlas.com.br', cargo: 'Professor', status: 'ativo', vinculos: [{ tipo: 'instrutor', id: 'pr1' }], perfis: ['professor'], extras: {} },
-  { id: 'u6', nome: 'Juliana Prado', email: 'juliana.prado@escolaatlas.com.br', cargo: 'Professora', status: 'ativo', vinculos: [{ tipo: 'instrutor', id: 'pr2' }], perfis: ['professor'], extras: {} },
-  { id: 'u7', nome: 'Rafael Teixeira', email: 'rafael.teixeira@escolaatlas.com.br', cargo: 'Professor', status: 'ativo', vinculos: [{ tipo: 'instrutor', id: 'pr3' }], perfis: ['professor'], extras: {} },
-  { id: 'u8', nome: 'Beatriz Nogueira', email: 'beatriz.nogueira@escolaatlas.com.br', cargo: 'Professora', status: 'ativo', vinculos: [{ tipo: 'instrutor', id: 'pr4' }], perfis: ['professor'], extras: {} },
-  { id: 'u9', nome: 'Sérgio Albuquerque', email: 'sergio.albuquerque@escolaatlas.com.br', cargo: 'Professor', status: 'ativo', vinculos: [{ tipo: 'instrutor', id: 'pr5' }, { tipo: 'colaborador', id: 'c5' }], perfis: ['professor'], extras: {} },
-  { id: 'u10', nome: 'Lucas Fernandes', email: 'lucas@escolaatlas.com.br', cargo: 'Auxiliar administrativo', status: 'convidado', vinculos: [{ tipo: 'colaborador', id: 'c6' }], perfis: ['secretaria'], extras: {} },
+  // Colaboradores (js/colaboradores-data.js)
+  { id: 'ana', nome: 'Ana Souza', perfis: ['admin'], extras: {} },
+  { id: 'bruno', nome: 'Bruno Lima', perfis: ['coordenador'], extras: {} },
+  { id: 'diego', nome: 'Diego Rocha', perfis: ['financeiro'], extras: {} },
+  { id: 'elisa', nome: 'Elisa Martins', perfis: [], extras: {} },
+  { id: 'fernanda', nome: 'Fernanda Alves', perfis: ['comercial'], extras: {} },
+  { id: 'gustavo', nome: 'Gustavo Prado', perfis: [], extras: {} },
+  // Vendedor externo (representante parceiro, não é da equipe): vê só as vendas dele.
+  { id: 'rafael', nome: 'Rafael Tonin', perfis: ['vendedor_externo'], extras: {} },
+  // Professores (js/instrutores-data.js)
+  // André é professor, mas recebeu acesso extra para ver as turmas no administrativo.
+  { id: 'andre', nome: 'André Fontoura Bastos', perfis: ['professor'], extras: { turmas: ['visualizar'] } },
+  { id: 'tatiana', nome: 'Tatiana Bezerra Sartori', perfis: ['professor'], extras: {} },
+  // Otávio dá aulas e também coordena: dois perfis, dois portais.
+  { id: 'otavio', nome: 'Otávio Rangel Delgado', perfis: ['professor', 'coordenador'], extras: {} },
+  { id: 'adriana', nome: 'Adriana Vilela Moraes', perfis: [], extras: {} },
+  // Alunos (js/clientes-data.js)
+  { id: 'gustavo-queiroz', nome: 'Gustavo Fellipe Queiroz', perfis: ['aluno'], extras: {} },
+  { id: 'angeli', nome: 'Angeli Yasmim Teixeira', perfis: ['aluno'], extras: {} },
+  { id: 'enzo', nome: 'Enzo Eduardo Nogueira', perfis: [], extras: {} },
 ];

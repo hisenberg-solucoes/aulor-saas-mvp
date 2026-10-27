@@ -1,23 +1,11 @@
 // ============================================================
 // UI de gestão do permissionamento. Toda operação passa pelo
 // motor (Permissoes.*) — a UI apenas reflete o resultado.
-// Visual: Ficha em cartões (DESIGN.md do original), com as classes claras
-// e o par dark: lado a lado nas constantes abaixo.
-// Reaproveitado do protótipo original. Ajustes do Aulor MVP: chave de
-// armazenamento compartilhada com o shell (Acessos.CHAVE), tipos de usuário
-// (equipe e professor, com o vínculo ao cadastro de origem), Administrador
-// protegido e modo só leitura sem a permissão "Perfis de acesso › Gerenciar".
+// Visual: Ficha em cartões (DESIGN.md), como clientes e turmas:
+// classes claras com o par dark: ao lado nas constantes abaixo.
 // ============================================================
 
-const STORAGE_KEY = Acessos.CHAVE; // a mesma de js/shell.js
-const SOMENTE_LEITURA = typeof Shell !== 'undefined' && !Shell.pode('perfis-acesso', 'gerenciar');
-
-// Barra mudanças que o perfil logado não pode fazer ou que tocariam no perfil protegido.
-function bloqueado(perfilId = null) {
-  if (SOMENTE_LEITURA) { toast('Seu perfil só pode consultar os perfis de acesso.', 'alerta'); return true; }
-  if (perfilId && Permissoes.getPerfil(perfilId)?.protegido) { toast('O Administrador é protegido: tem acesso a tudo e não pode ser alterado. Duplique-o para criar uma variação.', 'alerta'); return true; }
-  return false;
-}
+const STORAGE_KEY = 'aulor-v1-permissionamento-v6';
 
 // Páginas: perfis.html (lista + matrizes + validação) e perfil.html?id= (detalhe,
 // body[data-modo="detalhe"]). O mesmo app.js atende às duas pelo MODO.
@@ -36,11 +24,8 @@ const estado = {
   usuarioInspecionadoId: null, // validação abre sem usuário pré-selecionado
   buscaUsuarios: '',
   filtroUsuarios: 'todos', // 'todos' | 'incluidos' | 'fora'
-  tipoUsuarios: 'todos', // 'todos' | tipoId — filtro por tipo na aba Usuários
-  tipoMatrizUsuarios: 'todos', // idem na matriz Usuários × perfis
   visao: 'perfis', // 'perfis' | 'matriz-permissoes' | 'matriz-usuarios' | 'validacao' (só na lista)
   buscaLista: '',
-  tipoLista: 'todos', // filtro da lista de perfis por tipo de usuário
   statusLista: 'todos', // 'todos' | 'ativos' | 'inativos'
   buscaMatriz: '',
   buscaMatrizUsuarios: '',
@@ -99,10 +84,10 @@ const D = {
   expandir: 'M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9',
   recolher: 'M4.5 15.75l7.5-7.5 7.5 7.5',
   copiar: 'M16.5 8.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v8.25A2.25 2.25 0 006 16.5h2.25m8.25-8.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-7.5A2.25 2.25 0 018.25 18v-7.5a2.25 2.25 0 012.25-2.25h6z',
+  lixo: 'M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0',
   tela: 'M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25',
   acao: 'M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59',
   usuarios: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z',
-  publico: 'M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3zM6 6h.008v.008H6V6z',
 };
 
 function icone(d, classe = 'h-4 w-4', traco = 1.75) {
@@ -117,7 +102,6 @@ const BOTAO_FANTASMA = 'inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md t
 const BOTAO_FANTASMA_FUNDO = BOTAO_FANTASMA.replace('text-slate-500', 'text-slate-600'); // fantasma direto sobre o fundo (6,93:1)
 const BOTAO_ICONE = 'inline-grid place-items-center h-8 w-8 rounded-md text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
 const CAMPO = 'h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-500 dark:placeholder:text-neutral-400 transition focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20 dark:focus:ring-sky-400/20 aria-[invalid=true]:border-red-500';
-const SELECT_FILTRO = 'h-9 max-w-full rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-2.5 text-sm text-slate-700 dark:text-neutral-200 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400';
 const CARTAO = 'bg-white dark:bg-neutral-950 rounded-xl border border-slate-200/80 dark:border-neutral-800 shadow-[0_1px_2px_rgb(7_30_44/0.05)]';
 const POPOVER = 'absolute top-full mt-1 rounded-[10px] border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-[0_12px_32px_-12px_rgba(0,0,0,.28)] p-1.5';
 const ITEM_POPOVER = 'w-full flex items-center gap-2 px-2 rounded-md text-left text-sm transition hover:bg-slate-100 dark:hover:bg-neutral-900';
@@ -134,24 +118,17 @@ const PILULA = {
   neutra: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
   extra: 'bg-petrol-800/10 text-petrol-900 dark:bg-sky-950/60 dark:text-sky-200',
 };
-// Faixa neutra: o registro suspenso ou travado que muda o que a tela mostra.
-const FAIXA_NEUTRA = 'mb-4 flex items-center gap-3 rounded-lg px-4 py-3 text-sm bg-slate-200/70 dark:bg-neutral-900 text-slate-700 dark:text-neutral-300';
 // Chips de ação: liberada em seleção petróleo com ✓ (Chips do DESIGN), livre em contorno.
 const CHIP = 'inline-flex items-center gap-1 h-7 px-2.5 rounded-md border text-[12.5px] font-medium transition';
 const CHIP_LIGADO = 'bg-petrol-800/10 border-petrol-800/40 text-petrol-900 hover:border-petrol-800 dark:bg-sky-950/60 dark:border-sky-400/40 dark:text-sky-200 dark:hover:border-sky-400';
 const CHIP_LIVRE = 'bg-white border-slate-300 text-slate-600 hover:border-petrol-800 hover:text-petrol-800 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-sky-400 dark:hover:text-sky-300';
 const CHECK = icone(D.check, 'h-3.5 w-3.5 text-petrol-800 dark:text-sky-300', 2.5);
-// Tag (tipo de usuário): etiqueta com texto etiqueta-tinta; pendência em cobre a 15% com texto cobre-tinta.
-const TAG = 'inline-flex items-center h-6 px-1.5 rounded text-xs font-medium whitespace-nowrap';
-const TAG_TIPO = `${TAG} bg-[color:var(--f-etiqueta)] text-[color:var(--f-etiqueta-tinta)]`;
-const TAG_PENDENTE = `${TAG} bg-laranja/15 ${COBRE_TINTA}`;
 
 function pilula(classe, texto, titulo = '') {
   return `<span ${titulo ? `title="${esc(titulo)}"` : ''} class="pilula inline-flex items-center whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs font-medium ${classe}">${esc(texto)}</span>`;
 }
 
 const PILULA_INATIVO = pilula(PILULA.neutra, 'Inativo', 'Perfil inativo: não concede nada até ser reativado');
-const PILULA_PROTEGIDO = pilula(PILULA.neutra, 'Protegido', 'Tem acesso a tudo e não pode ser editado, inativado nem excluído');
 
 function campoBusca(id, valor, placeholder, largura = 'w-72') {
   return `
@@ -169,7 +146,7 @@ function segmentado(opcoes, ativo, atributo, rotulo) {
         <button type="button" ${atributo}="${o.id}" aria-pressed="${o.id === ativo}"
           class="inline-flex items-center gap-1 h-7 px-2.5 rounded-md text-[12.5px] font-medium whitespace-nowrap transition
             ${o.id === ativo ? 'bg-[color:var(--f-elevado)] text-[color:var(--f-tinta)] shadow-[0_1px_2px_rgb(7_30_44/0.08)]' : 'text-[color:var(--f-tinta-2)] hover:text-[color:var(--f-tinta)]'}">
-          ${esc(o.rotulo)}${o.contagem === undefined ? '' : `<span class="ml-0.5 text-xs tabular-nums text-[color:var(--f-tinta-2)]">${o.contagem}</span>`}
+          ${esc(o.rotulo)}${o.contagem === undefined ? '' : `<span class="ml-0.5 text-xs tabular-nums text-[color:var(--f-tinta-3)]">${o.contagem}</span>`}
         </button>`).join('')}
     </div>`;
 }
@@ -229,73 +206,6 @@ function membrosDoPerfil(perfilId) {
 
 // Cobre = "é com você": usuário que existe mas não acessa nada.
 const TAG_SEM_PERFIL = `<span class="shrink-0 rounded px-1.5 text-[11.5px] leading-5 font-semibold ${COBRE_TINTA} bg-laranja/15">sem perfil</span>`;
-
-// ---------- Tipos de usuário (equipe / professor) ----------
-
-// Tags dos tipos do usuário; cada uma abre o cadastro de origem (vínculo).
-function tiposUsuarioHtml(usuario, { link = true } = {}) {
-  const vinculos = usuario.vinculos || [];
-  if (!vinculos.length) return `<span class="${TAG_PENDENTE}" title="Usuário sem cadastro de origem">sem vínculo</span>`;
-  return vinculos.map((v) => {
-    const tipo = Permissoes.getTipo(v.tipo);
-    if (!tipo) return '';
-    return link
-      ? `<a href="${tipo.cadastro}${encodeURIComponent(v.id)}" title="Abrir cadastro em ${esc(tipo.lista)}" class="${TAG_TIPO} hover:underline underline-offset-2">${esc(tipo.nome)}</a>`
-      : `<span class="${TAG_TIPO}">${esc(tipo.nome)}</span>`;
-  }).join('');
-}
-
-// Os mesmos tipos em texto, para a segunda linha da matriz.
-function tiposUsuarioTexto(usuario) {
-  return (usuario.vinculos || []).map((v) => Permissoes.getTipo(v.tipo)?.nome).filter(Boolean).join(' · ');
-}
-
-function tiposPerfilTexto(perfil) {
-  const tipos = Permissoes.tiposDoPerfil(perfil);
-  return tipos.length ? tipos.map((t) => t.plural).join(' · ') : 'Ninguém (sem tipo definido)';
-}
-
-// Cartões-checkbox "para quem é o perfil" (modal de criação/edição); marcado em seleção petróleo.
-function htmlCartoesTipos(selecionados = []) {
-  return `
-    <div class="grid gap-2 mt-1.5" data-cartoes-tipos>
-      ${TIPOS_USUARIO.map((t) => `
-        <label class="flex items-start gap-3 px-3.5 py-3 rounded-lg border cursor-pointer transition
-          border-slate-200 dark:border-neutral-800 hover:border-slate-300 dark:hover:border-neutral-700
-          has-[:checked]:border-petrol-800/40 has-[:checked]:bg-petrol-800/10 dark:has-[:checked]:border-sky-400/40 dark:has-[:checked]:bg-sky-950/60">
-          <input type="checkbox" name="tipo" value="${t.id}" ${selecionados.includes(t.id) ? 'checked' : ''} class="check mt-0.5">
-          <span class="min-w-0">
-            <span class="block text-sm font-medium ${VALOR}">${esc(t.plural)}</span>
-            <span class="block text-xs ${APOIO} mt-0.5">${esc(t.descricao)}</span>
-          </span>
-        </label>`).join('')}
-    </div>`;
-}
-
-function tiposMarcados(root) {
-  return [...root.querySelectorAll('[data-cartoes-tipos] input:checked')].map((i) => i.value);
-}
-
-// <select> de tipo usado como filtro nas listas de usuários.
-function selectTipoHtml(id, valor, tiposDisponiveis = TIPOS_USUARIO) {
-  return `
-    <select id="${id}" aria-label="Filtrar por tipo de usuário" class="${SELECT_FILTRO}">
-      <option value="todos" ${valor === 'todos' ? 'selected' : ''}>Todos os tipos</option>
-      ${tiposDisponiveis.map((t) => `<option value="${t.id}" ${valor === t.id ? 'selected' : ''}>${esc(t.plural)}</option>`).join('')}
-    </select>`;
-}
-
-// Usuário que é só aluno (sem vínculo de colaborador/instrutor).
-function somenteAluno(usuario) {
-  const v = usuario.vinculos || [];
-  return v.length > 0 && v.every((x) => x.tipo === 'aluno');
-}
-
-const TIPOS_MATRIZ = TIPOS_USUARIO.filter((t) => t.id !== 'aluno');
-
-function usuarioTemTipo(usuario, tipoId) {
-  return tipoId === 'todos' || (usuario.vinculos || []).some((v) => v.tipo === tipoId);
-}
 
 // ---------- Toasts ----------
 
@@ -384,17 +294,16 @@ function confirmar({ titulo, mensagem, rotulo, aoConfirmar, tom = 'perigo' }) {
   });
 }
 
-// Modal de um campo de nome (criar e duplicar perfil); `extraHtml` entra abaixo do campo.
-function abrirModalNome({ titulo, subtitulo, rotuloCampo, valor = '', placeholder = '', extraHtml = '', rotuloBotao, aoSalvar }) {
+// Modal de um campo de nome (criar e duplicar perfil).
+function abrirModalNome({ titulo, subtitulo, rotuloCampo, valor = '', placeholder = '', rotuloBotao, aoSalvar }) {
   abrirModal(`
-    <div class="px-5 pt-5 pb-4 overflow-y-auto">
+    <div class="px-5 pt-5 pb-4">
       ${cabecalhoModal(titulo, subtitulo)}
       <label class="block mt-4">
         <span class="block text-xs font-medium ${APOIO} mb-1">${esc(rotuloCampo)}</span>
         <input data-campo-nome type="text" value="${esc(valor)}" placeholder="${esc(placeholder)}" autocomplete="off"
           aria-describedby="erro-modal-nome" class="${CAMPO} w-full">
       </label>
-      ${extraHtml}
       <p id="erro-modal-nome" class="hidden mt-1.5 text-xs text-red-700 dark:text-red-400" role="alert"></p>
     </div>
     <div class="${MODAL_RODAPE}">
@@ -407,7 +316,7 @@ function abrirModalNome({ titulo, subtitulo, rotuloCampo, valor = '', placeholde
   const erro = root.querySelector('#erro-modal-nome');
 
   const enviar = () => {
-    const resultado = aoSalvar(input.value, root);
+    const resultado = aoSalvar(input.value);
     if (resultado.erro) {
       erro.textContent = resultado.erro;
       erro.classList.remove('hidden');
@@ -430,126 +339,25 @@ function abrirModalNome({ titulo, subtitulo, rotuloCampo, valor = '', placeholde
 }
 
 function abrirModalNovoPerfil() {
-  if (bloqueado()) return;
   abrirModalNome({
     titulo: 'Novo perfil de acesso',
     subtitulo: 'O perfil é criado sem nenhuma permissão — ative as ações em seguida.',
     rotuloCampo: 'Nome do perfil',
     placeholder: 'Ex.: Secretaria acadêmica',
-    extraHtml: `
-      <div class="mt-4">
-        <p class="text-xs font-medium ${APOIO}">Para quem é este perfil</p>
-        <p class="text-xs ${APOIO} mt-0.5">Só usuários desses tipos poderão receber o perfil.</p>
-        ${htmlCartoesTipos()}
-      </div>`,
     rotuloBotao: 'Criar perfil',
-    aoSalvar: (nome, root) => Permissoes.criarPerfil(nome, tiposMarcados(root)),
+    aoSalvar: (nome) => Permissoes.criarPerfil(nome),
   });
 }
 
 function abrirModalDuplicarPerfil(perfilOrigem) {
-  if (bloqueado()) return;
   abrirModalNome({
     titulo: `Duplicar perfil "${esc(perfilOrigem.nome)}"`,
-    subtitulo: `Todas as permissões e o público (${esc(tiposPerfilTexto(perfilOrigem).toLowerCase())}) serão copiados. Os usuários vinculados <strong class="font-medium ${VALOR}">não</strong> são copiados.`,
+    subtitulo: `Todas as permissões serão copiadas. Os usuários vinculados <strong class="font-medium ${VALOR}">não</strong> são copiados.`,
     rotuloCampo: 'Nome do novo perfil',
     valor: `Cópia de ${perfilOrigem.nome}`,
     rotuloBotao: 'Duplicar perfil',
     aoSalvar: (nome) => Permissoes.duplicarPerfil(perfilOrigem.id, nome),
   });
-}
-
-function abrirModalTiposPerfil(perfil) {
-  if (bloqueado(perfil.id)) return;
-  abrirModal(`
-    <div class="px-5 pt-5 pb-4 overflow-y-auto">
-      ${cabecalhoModal(`Para quem é o perfil "${esc(perfil.nome)}"`, 'Usuários de um tipo que for desmarcado saem do perfil.')}
-      ${htmlCartoesTipos(perfil.tipos || [])}
-      <p id="aviso-tipos-perfil" class="hidden mt-3 rounded-lg px-3.5 py-2.5 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200"></p>
-      <p id="erro-tipos-perfil" class="hidden mt-1.5 text-xs text-red-700 dark:text-red-400" role="alert"></p>
-    </div>
-    <div class="${MODAL_RODAPE}">
-      <button type="button" data-cancelar class="${BOTAO_CANCELAR}">Cancelar</button>
-      <button type="button" data-salvar class="${BOTAO_PRI}">Salvar</button>
-    </div>`, { rotulo: `Para quem é o perfil ${perfil.nome}` });
-
-  const root = document.getElementById('modal-root');
-  const aviso = root.querySelector('#aviso-tipos-perfil');
-  const erro = root.querySelector('#erro-tipos-perfil');
-
-  const atualizarAviso = () => {
-    const sairiam = Permissoes.usuariosQueSairiam(perfil.id, tiposMarcados(root));
-    aviso.classList.toggle('hidden', !sairiam.length);
-    if (sairiam.length) {
-      aviso.textContent = `${sairiam.length === 1 ? '1 usuário sairá' : `${sairiam.length} usuários sairão`} do perfil: ${sairiam.map((u) => u.nome).join(', ')}.`;
-    }
-  };
-  root.querySelectorAll('[data-cartoes-tipos] input').forEach((i) => i.addEventListener('change', atualizarAviso));
-
-  root.querySelector('[data-cancelar]').addEventListener('click', fecharModal);
-  root.querySelector('[data-salvar]').addEventListener('click', () => {
-    const resultado = Permissoes.definirTiposPerfil(perfil.id, tiposMarcados(root));
-    if (resultado.erro) {
-      erro.textContent = resultado.erro;
-      erro.classList.remove('hidden');
-      return;
-    }
-    salvar();
-    fecharModal();
-    toast(`Perfil "${perfil.nome}" agora é para ${tiposPerfilTexto(perfil).toLowerCase()}${resultado.removidos ? ` · ${plural(resultado.removidos, 'usuário removido', 'usuários removidos')}` : ''}`, resultado.removidos ? 'alerta' : 'ok');
-    renderTudo();
-  });
-}
-
-// ---------- Menu "Mais" do cabeçalho (o mesmo de js/menu-mais.js do original) ----------
-
-// Esc, Tab ou clique fora fecham; setas andam. Item desabilitado continua focável para o motivo (`detalhe`) ser lido.
-let menuAberto = null;
-function fecharMenu() {
-  if (!menuAberto) return;
-  const { el, gatilho, fora, tecla } = menuAberto;
-  menuAberto = null;
-  el.remove();
-  gatilho.setAttribute('aria-expanded', 'false');
-  document.removeEventListener('mousedown', fora, true);
-  document.removeEventListener('keydown', tecla, true);
-  window.removeEventListener('scroll', fecharMenu, true);
-  window.removeEventListener('resize', fecharMenu);
-}
-function abrirMenu(gatilho, itens) {
-  if (menuAberto?.gatilho === gatilho) { fecharMenu(); return; }
-  fecharMenu();
-  const el = document.createElement('div');
-  el.setAttribute('role', 'menu');
-  el.className = 'fixed z-50 w-64 rounded-[10px] border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.28)] p-1.5';
-  el.innerHTML = itens.map((it, i) => (it === 'sep' ? '<div role="separator" class="my-1 border-t border-slate-100 dark:border-neutral-900"></div>' : `
-    <button type="button" role="menuitem" data-i="${i}" ${it.desabilitado ? 'aria-disabled="true"' : ''}
-      class="block w-full text-left px-2.5 py-1.5 rounded-md text-sm transition focus:outline-none ${it.desabilitado ? 'cursor-not-allowed text-slate-400 dark:text-neutral-500 focus:bg-slate-100 dark:focus:bg-neutral-900' : it.perigo ? 'text-red-700 dark:text-red-400 hover:bg-red-50 focus:bg-red-50 dark:hover:bg-red-950/40 dark:focus:bg-red-950/40' : 'text-slate-700 dark:text-neutral-200 hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-neutral-900 dark:focus:bg-neutral-900'}">
-      ${esc(it.nome)}${it.detalhe ? `<span class="block text-xs text-slate-500 dark:text-neutral-400">${esc(it.detalhe)}</span>` : ''}
-    </button>`)).join('');
-  // Posição e largura inline: o Tailwind do CDN só gera classe nova depois que ela entra no DOM, e a medida abaixo vem antes.
-  el.style.position = 'fixed';
-  el.style.width = '16rem';
-  document.body.appendChild(el);
-  const r = gatilho.getBoundingClientRect();
-  el.style.left = `${Math.max(8, Math.min(r.right - el.offsetWidth, window.innerWidth - el.offsetWidth - 8))}px`;
-  el.style.top = `${r.bottom + el.offsetHeight + 8 > window.innerHeight && r.top > el.offsetHeight ? r.top - el.offsetHeight - 4 : r.bottom + 4}px`;
-  const botoes = [...el.querySelectorAll('[data-i]')];
-  // O foco volta ao gatilho antes da ação: o modal que ela abrir devolve o foco para ele ao fechar.
-  botoes.forEach((b) => b.addEventListener('click', () => { const it = itens[Number(b.dataset.i)]; if (it.desabilitado) return; fecharMenu(); gatilho.focus(); it.acao(); }));
-  const fora = (e) => { if (!el.contains(e.target) && !gatilho.contains(e.target)) fecharMenu(); };
-  const tecla = (e) => {
-    if (e.key === 'Escape') { e.stopPropagation(); fecharMenu(); gatilho.focus(); }
-    else if (e.key === 'Tab') { e.preventDefault(); fecharMenu(); gatilho.focus(); }
-    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); const i = botoes.indexOf(document.activeElement); botoes[(i + (e.key === 'ArrowDown' ? 1 : -1) + botoes.length) % botoes.length].focus(); }
-  };
-  document.addEventListener('mousedown', fora, true);
-  document.addEventListener('keydown', tecla, true);
-  window.addEventListener('scroll', fecharMenu, true);
-  window.addEventListener('resize', fecharMenu);
-  gatilho.setAttribute('aria-expanded', 'true');
-  menuAberto = { el, gatilho, fora, tecla };
-  botoes[0]?.focus({ preventScroll: true });
 }
 
 // ---------- Componentes ----------
@@ -619,11 +427,8 @@ function htmlListaPerfilPopover() {
     const membros = membrosDoPerfil(perfil.id).length;
     const selecionado = perfil.id === estado.perfilSelecionadoId;
     return `
-      <button type="button" data-escolher-perfil="${perfil.id}" class="${ITEM_POPOVER} py-1.5 ${selecionado ? 'bg-slate-100 dark:bg-neutral-900' : ''}">
-        <span class="flex-1 min-w-0">
-          <span class="block truncate ${perfil.ativo ? VALOR : APOIO}">${esc(perfil.nome)}${perfil.ativo ? '' : ' (inativo)'}</span>
-          <span class="block text-xs truncate ${APOIO}">${esc(tiposPerfilTexto(perfil))}</span>
-        </span>
+      <button type="button" data-escolher-perfil="${perfil.id}" class="${ITEM_POPOVER} h-8 ${selecionado ? 'bg-slate-100 dark:bg-neutral-900' : ''}">
+        <span class="flex-1 min-w-0 truncate ${perfil.ativo ? VALOR : APOIO}">${esc(perfil.nome)}${perfil.ativo ? '' : ' (inativo)'}</span>
         <span class="text-xs ${APOIO} shrink-0 tabular-nums">${plural(membros, 'usuário', 'usuários')}</span>
         ${selecionado ? CHECK : '<span class="w-3.5"></span>'}
       </button>`;
@@ -636,7 +441,6 @@ function perfisFiltrados() {
   const termo = estado.buscaLista.trim().toLowerCase();
   return PERFIS.filter((p) => {
     if (termo && !p.nome.toLowerCase().includes(termo)) return false;
-    if (estado.tipoLista !== 'todos' && !(p.tipos || []).includes(estado.tipoLista)) return false;
     if (estado.statusLista === 'ativos' && !p.ativo) return false;
     if (estado.statusLista === 'inativos' && p.ativo) return false;
     return true;
@@ -657,8 +461,8 @@ function renderListaPerfis() {
     container.innerHTML = cartaoVazio(`
       <p class="font-display text-[15px] font-semibold ${TITULO}">Nenhum perfil de acesso ainda</p>
       <p class="mt-1 max-w-md mx-auto">Os perfis definem o que cada grupo de usuários pode ver e fazer no sistema. Comece criando o primeiro.</p>
-      ${SOMENTE_LEITURA ? '' : `<button type="button" data-criar-primeiro class="${BOTAO_PRI} mt-4">${icone(D.mais, 'h-4 w-4', 2)} Criar primeiro perfil</button>`}`);
-    container.querySelector('[data-criar-primeiro]')?.addEventListener('click', abrirModalNovoPerfil);
+      <button type="button" data-criar-primeiro class="${BOTAO_PRI} mt-4">${icone(D.mais, 'h-4 w-4', 2)} Criar primeiro perfil</button>`);
+    container.querySelector('[data-criar-primeiro]').addEventListener('click', abrirModalNovoPerfil);
     return;
   }
 
@@ -672,7 +476,6 @@ function renderListaPerfis() {
   container.innerHTML = `
     <div class="${BARRA}">
       ${campoBusca('busca-lista', estado.buscaLista, 'Buscar perfil pelo nome…')}
-      ${selectTipoHtml('tipo-lista', estado.tipoLista)}
       ${segmentado(opcoesStatus, estado.statusLista, 'data-status-lista', 'Status')}
     </div>
     <div id="tabela-perfis"></div>`;
@@ -682,8 +485,6 @@ function renderListaPerfis() {
   };
   const busca = container.querySelector('#busca-lista');
   busca.addEventListener('input', () => { estado.buscaLista = busca.value; atualizar(); });
-  const tipo = container.querySelector('#tipo-lista');
-  tipo.addEventListener('change', () => { estado.tipoLista = tipo.value; atualizar(); });
   container.querySelectorAll('[data-status-lista]').forEach((el) => {
     el.addEventListener('click', () => { estado.statusLista = el.dataset.statusLista; renderListaPerfis(); });
   });
@@ -691,7 +492,6 @@ function renderListaPerfis() {
   container.querySelector('#tabela-perfis').addEventListener('click', (e) => {
     if (e.target.closest('[data-limpar-filtros]')) {
       estado.buscaLista = '';
-      estado.tipoLista = 'todos';
       estado.statusLista = 'todos';
       renderListaPerfis();
       return;
@@ -718,7 +518,7 @@ function htmlPilhaMembros(membros) {
 function htmlCobertura(n, total) {
   const pct = total ? Math.round((n / total) * 100) : 0;
   return `
-    <span class="inline-flex items-center gap-2.5 tabular-nums whitespace-nowrap">
+    <span class="inline-flex items-center gap-2.5 tabular-nums">
       <span>${n} <span class="${APOIO}">de ${total}</span></span>
       <span class="h-1.5 w-14 rounded-full bg-[color:var(--f-etiqueta)] overflow-hidden" aria-hidden="true"><span class="block h-full rounded-full bg-petrol-950 dark:bg-areia" style="width:${pct}%"></span></span>
     </span>`;
@@ -735,10 +535,9 @@ function htmlTabelaPerfis(perfis) {
         <thead class="${THEAD} border-b border-slate-200 dark:border-neutral-800">
           <tr>
             <th scope="col" class="${th}">Perfil</th>
-            <th scope="col" class="${th} w-[170px]" title="Tipos de usuário que podem receber o perfil">Para</th>
-            <th scope="col" class="${th} w-[140px]">Usuários</th>
-            <th scope="col" class="${th} w-[170px]" title="Telas com a ação Visualizar liberada">Telas liberadas</th>
-            <th scope="col" class="${th} w-[130px] text-right">Ações liberadas</th>
+            <th scope="col" class="${th} w-[180px]">Usuários</th>
+            <th scope="col" class="${th} w-[200px]" title="Telas com a ação Visualizar liberada">Telas liberadas</th>
+            <th scope="col" class="${th} w-[140px] text-right">Ações liberadas</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-neutral-900">
@@ -749,17 +548,15 @@ function htmlTabelaPerfis(perfis) {
                 <td class="${th}">
                   <span class="flex items-center gap-2 min-w-0">
                     <a href="${urlDetalhe(p.id)}" class="truncate text-sm font-medium ${VALOR} hover:underline underline-offset-2">${esc(p.nome)}</a>
-                    ${p.protegido ? PILULA_PROTEGIDO : ''}
                     ${p.ativo ? '' : PILULA_INATIVO}
                   </span>
                 </td>
-                <td class="${td} ${(p.tipos || []).length ? '' : COBRE_TINTA}">${esc(tiposPerfilTexto(p))}</td>
                 <td class="${td}">${htmlPilhaMembros(membrosDoPerfil(p.id))}</td>
                 <td class="${td}">${htmlCobertura(telas, FEATURES.length)}</td>
                 <td class="${td} text-right tabular-nums">${acoes}</td>
               </tr>`;
           }).join('') : `
-            <tr><td colspan="5" class="px-4 py-10 text-center text-sm ${APOIO}">
+            <tr><td colspan="4" class="px-4 py-10 text-center text-sm ${APOIO}">
               Nenhum perfil encontrado com esse filtro. <button type="button" data-limpar-filtros class="${LINK} ml-1">Limpar filtros</button>
             </td></tr>`}
         </tbody>
@@ -785,7 +582,6 @@ function chipHtml(d, conteudo, titulo = '') {
 }
 
 function alternarAtivo(perfil) {
-  if (bloqueado(perfil.id)) return;
   Permissoes.alternarPerfilAtivo(perfil.id);
   salvar();
   toast(`Perfil "${perfil.nome}" ${perfil.ativo ? 'reativado' : 'inativado'}`, perfil.ativo ? 'ok' : 'alerta');
@@ -793,7 +589,6 @@ function alternarAtivo(perfil) {
 }
 
 function confirmarExclusaoPerfil(perfil, membros) {
-  if (bloqueado(perfil.id)) return;
   confirmar({
     titulo: `Excluir o perfil "${perfil.nome}"?`,
     mensagem: membros.length
@@ -827,27 +622,22 @@ function renderDetalhe() {
 
   const membros = membrosDoPerfil(perfil.id);
   const { telas: telasLiberadas, acoes: totalAcoes } = contagemPermissoes(perfil);
-  const tipos = Permissoes.tiposDoPerfil(perfil);
   const indice = PERFIS.indexOf(perfil);
   const sep = '<span aria-hidden="true">/</span>';
   const linkTrilha = 'hover:text-petrol-800 dark:hover:text-sky-300 transition';
 
-  // Uma ação à vista (Duplicar); público, inativar e excluir no "Mais", com o efeito de cada um na segunda linha.
-  // O que não pode acontecer fica travado com o motivo escrito (e ainda passa por bloqueado()).
-  const travado = SOMENTE_LEITURA ? 'Seu perfil só consulta os perfis de acesso' : perfil.protegido ? 'O Administrador é protegido' : '';
+  // Uma ação à vista (Duplicar); inativar e excluir no "Mais", com o efeito de cada um na segunda linha.
   const itensMais = [
-    { nome: 'Alterar para quem é', detalhe: travado || `Hoje: ${tiposPerfilTexto(perfil).toLowerCase()}`, desabilitado: !!travado, acao: () => abrirModalTiposPerfil(perfil) },
-    'sep',
     perfil.ativo
-      ? { nome: 'Inativar perfil', detalhe: travado || 'Suspende as permissões sem perder a configuração', desabilitado: !!travado, acao: () => alternarAtivo(perfil) }
-      : { nome: 'Reativar perfil', detalhe: travado || 'As permissões voltam a valer para os usuários', desabilitado: !!travado, acao: () => alternarAtivo(perfil) },
+      ? { nome: 'Inativar perfil', detalhe: 'Suspende as permissões sem perder a configuração', acao: () => alternarAtivo(perfil) }
+      : { nome: 'Reativar perfil', detalhe: 'As permissões voltam a valer para os usuários', acao: () => alternarAtivo(perfil) },
     'sep',
-    { nome: 'Excluir perfil', perigo: !travado, detalhe: travado || (membros.length ? `${plural(membros.length, 'usuário perde', 'usuários perdem')} estas permissões` : 'Nenhum usuário vinculado'), desabilitado: !!travado, acao: () => confirmarExclusaoPerfil(perfil, membros) },
+    { nome: 'Excluir perfil', perigo: true, detalhe: membros.length ? `${plural(membros.length, 'usuário perde', 'usuários perdem')} estas permissões` : 'Nenhum usuário vinculado', acao: () => confirmarExclusaoPerfil(perfil, membros) },
   ];
 
   container.innerHTML = `
     <nav aria-label="Trilha" class="mb-3 flex items-center gap-1.5 text-sm ${APOIO_FUNDO}">
-      <a href="${Shell.primeiraPagina()}" class="${linkTrilha}">Início</a>
+      <a href="home.html" class="${linkTrilha}">Home</a>
       ${sep}
       <a href="${URL_LISTA}" class="${linkTrilha}">Perfis de acesso</a>
       ${sep}
@@ -879,28 +669,19 @@ function renderDetalhe() {
             ${chipHtml(D.tela, `<span class="tabular-nums">${telasLiberadas} de ${FEATURES.length}</span> telas liberadas`, 'Telas com a ação Visualizar liberada')}
             ${chipHtml(D.acao, `<span class="tabular-nums">${plural(totalAcoes, 'ação liberada', 'ações liberadas')}</span>`)}
             ${chipHtml(D.usuarios, `<span class="tabular-nums">${plural(membros.length, 'usuário', 'usuários')}</span>`)}
-            ${chipHtml(D.publico, tipos.length ? `Para ${esc(tiposPerfilTexto(perfil).toLowerCase())}` : `<span class="${COBRE_TINTA}">Para ninguém — defina o público</span>`, 'Só usuários desses tipos podem receber o perfil')}
           </div>
         </div>
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <button type="button" id="btn-duplicar" title="Copia as permissões e o público para um perfil novo, sem os usuários" class="${BOTAO_SEC}">${icone(D.copiar)} Duplicar</button>
+        <button type="button" id="btn-duplicar" title="Copia as permissões para um perfil novo, sem os usuários" class="${BOTAO_SEC}">${icone(D.copiar)} Duplicar</button>
         <button type="button" id="btn-mais" class="${BOTAO_SEC}" aria-haspopup="menu" aria-expanded="false">Mais ${icone(D.baixo, 'h-3.5 w-3.5', 2)}</button>
       </div>
     </div>
 
-    ${perfil.protegido ? `
-      <div class="${FAIXA_NEUTRA}">
-        <p class="min-w-0 flex-1"><span class="font-medium">Perfil protegido</span> — o Administrador sempre tem acesso a todas as telas, inclusive as que forem criadas depois. Não pode ser editado, inativado nem excluído; duplique-o para criar uma variação.</p>
-      </div>` : ''}
-    ${SOMENTE_LEITURA ? `
-      <div class="${FAIXA_NEUTRA}">
-        <p class="min-w-0 flex-1"><span class="font-medium">Somente consulta</span> — seu perfil não gerencia perfis de acesso.</p>
-      </div>` : ''}
     ${perfil.ativo ? '' : `
-      <div class="${FAIXA_NEUTRA}">
+      <div class="mb-4 flex items-center gap-3 rounded-lg px-4 py-3 text-sm bg-slate-200/70 dark:bg-neutral-900 text-slate-700 dark:text-neutral-300">
         <p class="min-w-0 flex-1"><span class="font-medium">Perfil inativo</span> — as permissões abaixo estão suspensas e voltam a valer quando o perfil for reativado.</p>
-        ${SOMENTE_LEITURA ? '' : '<button type="button" data-reativar class="shrink-0 font-medium hover:underline underline-offset-2">Reativar perfil</button>'}
+        <button type="button" data-reativar class="shrink-0 font-medium hover:underline underline-offset-2">Reativar perfil</button>
       </div>`}
 
     ${abasHtml([
@@ -976,13 +757,6 @@ function renderDetalhe() {
       wireListaUsuarios(perfil);
     });
 
-    const selectTipo = container.querySelector('#tipo-usuarios');
-    selectTipo?.addEventListener('change', () => {
-      estado.tipoUsuarios = selectTipo.value;
-      document.getElementById('lista-usuarios-perfil').innerHTML = htmlListaUsuarios(perfil);
-      wireListaUsuarios(perfil);
-    });
-
     container.querySelectorAll('[data-filtro-usuarios]').forEach((el) => {
       el.addEventListener('click', () => {
         estado.filtroUsuarios = el.dataset.filtroUsuarios;
@@ -1000,7 +774,6 @@ function wireListaUsuarios(perfil) {
   });
   document.querySelectorAll('#lista-usuarios-perfil [data-usuario]').forEach((el) => {
     el.addEventListener('click', () => {
-      if (bloqueado()) return;
       const usuario = Permissoes.getUsuario(el.dataset.usuario);
       const resultado = Permissoes.alternarUsuarioNoPerfil(usuario.id, perfil.id);
       if (resultado.erro) {
@@ -1014,7 +787,7 @@ function wireListaUsuarios(perfil) {
   });
 }
 
-// ---------- Aba Permissões (módulos em cartões recolhíveis) ----------
+// ---------- Aba Permissões (módulos em grupos recolhíveis) ----------
 
 function htmlAbaPermissoes() {
   const perfil = Permissoes.getPerfil(estado.perfilSelecionadoId);
@@ -1026,7 +799,7 @@ function htmlAbaPermissoes() {
   }));
   return `
     <div class="${BARRA}">
-      ${portais.length > 1 ? segmentado(portais, estado.portalAtivo, 'data-portal', 'Portal') : ''}
+      ${segmentado(portais, estado.portalAtivo, 'data-portal', 'Portal')}
       ${campoBusca('busca-permissoes', estado.busca, 'Buscar tela ou ação — ex.: estornar, certificado, aula…', 'flex-1 min-w-56 max-w-md')}
       <button type="button" id="btn-expandir-modulos" data-expandir="${!todosAbertos}" class="${BOTAO_FANTASMA_FUNDO} ml-auto">
         ${icone(todosAbertos ? D.recolher : D.expandir, 'h-4 w-4', 2)}
@@ -1121,7 +894,6 @@ function wireModulos(perfil) {
 
   raiz.querySelectorAll('[data-modulo-tudo]').forEach((el) => {
     el.addEventListener('click', () => {
-      if (bloqueado(perfil.id)) return;
       const modulo = Permissoes.getModulo(el.dataset.moduloTudo);
       const { ativas, total } = Permissoes.contagemAcoes(perfil, Permissoes.featuresDoModulo(modulo.id));
       if (ativas === total) {
@@ -1146,7 +918,6 @@ function wireModulos(perfil) {
 
   raiz.querySelectorAll('[data-modulo-nenhum]').forEach((el) => {
     el.addEventListener('click', () => {
-      if (bloqueado(perfil.id)) return;
       const modulo = Permissoes.getModulo(el.dataset.moduloNenhum);
       const { ativas } = Permissoes.contagemAcoes(perfil, Permissoes.featuresDoModulo(modulo.id));
       if (!ativas) {
@@ -1169,7 +940,6 @@ function wireModulos(perfil) {
 
   raiz.querySelectorAll('[data-feature][data-acao]').forEach((el) => {
     el.addEventListener('click', () => {
-      if (bloqueado(perfil.id)) return;
       Permissoes.alternarPermissao(perfil.id, el.dataset.feature, el.dataset.acao);
       salvar();
       renderTudo();
@@ -1179,34 +949,25 @@ function wireModulos(perfil) {
 
 // ---------- Aba Usuários ----------
 
-// Só aparecem os usuários dos tipos a que o perfil se destina (os outros não podem recebê-lo).
 function htmlAbaUsuarios(perfil, membros) {
-  const compativeis = Permissoes.usuariosCompativeis(perfil.id);
-  const tiposPerfil = Permissoes.tiposDoPerfil(perfil);
-  const foraDoPublico = USUARIOS.length - compativeis.length;
-  if (!TIPOS_USUARIO.some((t) => t.id === estado.tipoUsuarios) || !tiposPerfil.some((t) => t.id === estado.tipoUsuarios)) estado.tipoUsuarios = 'todos';
   const filtros = [
-    { id: 'todos', rotulo: 'Todos', contagem: compativeis.length },
+    { id: 'todos', rotulo: 'Todos', contagem: USUARIOS.length },
     { id: 'incluidos', rotulo: 'No perfil', contagem: membros.length },
-    { id: 'fora', rotulo: 'Fora do perfil', contagem: compativeis.length - membros.length },
+    { id: 'fora', rotulo: 'Fora do perfil', contagem: USUARIOS.length - membros.length },
   ];
   return `
     <div class="${BARRA}">
-      ${campoBusca('busca-usuarios', estado.buscaUsuarios, 'Buscar usuário pelo nome…', 'w-64')}
-      ${tiposPerfil.length > 1 ? selectTipoHtml('tipo-usuarios', estado.tipoUsuarios, tiposPerfil) : ''}
+      ${campoBusca('busca-usuarios', estado.buscaUsuarios, 'Buscar usuário pelo nome…')}
       ${segmentado(filtros, estado.filtroUsuarios, 'data-filtro-usuarios', 'Filtrar usuários')}
-      <span class="ml-auto text-sm ${APOIO_FUNDO}">${tiposPerfil.length
-        ? `Perfil para <span class="font-medium text-slate-700 dark:text-neutral-200">${esc(tiposPerfil.map((t) => t.plural.toLowerCase()).join(' e '))}</span>${foraDoPublico ? ` · ${plural(foraDoPublico, 'usuário de outro tipo não aparece', 'usuários de outros tipos não aparecem')}` : ''}`
-        : `<span class="${COBRE_TINTA}">Defina para quem é o perfil para incluir usuários</span>`}</span>
+      <span class="ml-auto text-sm ${APOIO_FUNDO}">Use o interruptor para incluir ou remover do perfil.</span>
     </div>
     <div id="lista-usuarios-perfil">${htmlListaUsuarios(perfil)}</div>`;
 }
 
 function htmlListaUsuarios(perfil) {
   const termo = estado.buscaUsuarios.trim().toLowerCase();
-  const filtrados = Permissoes.usuariosCompativeis(perfil.id).filter((usuario) => {
+  const filtrados = USUARIOS.filter((usuario) => {
     const incluido = usuario.perfis.includes(perfil.id);
-    if (!usuarioTemTipo(usuario, estado.tipoUsuarios)) return false;
     if (estado.filtroUsuarios === 'incluidos' && !incluido) return false;
     if (estado.filtroUsuarios === 'fora' && incluido) return false;
     return !termo || usuario.nome.toLowerCase().includes(termo);
@@ -1226,7 +987,7 @@ function htmlListaUsuarios(perfil) {
           <li class="group flex items-center gap-3 px-4 h-14 transition-colors ${LINHA_HOVER}">
             ${avatarHtml(usuario, 'h-8 w-8 text-[11px]')}
             <div class="min-w-0 flex-1">
-              <p class="flex items-center gap-2 min-w-0 text-sm font-medium ${VALOR}"><span class="truncate">${esc(usuario.nome)}</span>${tiposUsuarioHtml(usuario)}</p>
+              <p class="text-sm font-medium ${VALOR} truncate">${esc(usuario.nome)}</p>
               <p class="text-xs ${APOIO} truncate">${outros.length ? `Também em: ${esc(outros.join(', '))}` : 'Sem outros perfis'}</p>
             </div>
             ${botaoExtrasHtml(usuario)}
@@ -1373,13 +1134,12 @@ const MATRIZ_TD = 'border-b border-slate-100 dark:border-neutral-900';
 const MATRIZ_FIXA = 'sticky left-0 bg-white dark:bg-neutral-950 group-hover:bg-slate-50 dark:group-hover:bg-neutral-900 transition-colors';
 const MATRIZ_CELULA = `px-2 text-center border-l ${MATRIZ_TD} transition-colors group-hover:bg-slate-50 dark:group-hover:bg-neutral-900`;
 
-// Cabeçalho de coluna das matrizes: nome do perfil (link para o detalhe), um dado e, se houver, o público.
-function thPerfilHtml(perfil, detalhe, z = 'z-20', publico = '') {
+// Cabeçalho de coluna das matrizes: nome do perfil (link para o detalhe) e um dado.
+function thPerfilHtml(perfil, detalhe, z = 'z-20') {
   return `
     <th scope="col" class="${MATRIZ_TH} ${z} px-2 pt-2.5 pb-2 border-l text-center align-bottom min-w-[100px] font-normal">
       <a href="${urlDetalhe(perfil.id)}" class="text-[12.5px] font-medium leading-tight ${perfil.ativo ? VALOR : APOIO} hover:underline underline-offset-2">${esc(perfil.nome)}</a>
       <span class="block mt-0.5 text-[11.5px] ${APOIO} tabular-nums">${perfil.ativo ? detalhe : 'inativo'}</span>
-      ${publico ? `<span class="block text-[11.5px] leading-tight ${APOIO}">${esc(publico)}</span>` : ''}
     </th>`;
 }
 
@@ -1388,13 +1148,10 @@ const SEM_COLUNAS = cartaoVazio('Nenhum perfil selecionado — escolha as coluna
 // ---------- Matriz: Usuários × Perfis ----------
 
 function renderMatrizUsuarios() {
-  if (estado.tipoMatrizUsuarios === 'aluno') estado.tipoMatrizUsuarios = 'todos';
   const container = document.getElementById('visao-matriz');
   container.innerHTML = `
     <div class="${BARRA}">
       ${campoBusca('busca-matriz-usuarios', estado.buscaMatrizUsuarios, 'Buscar usuário pelo nome…')}
-      ${selectTipoHtml('tipo-matriz-usuarios', estado.tipoMatrizUsuarios, TIPOS_MATRIZ)}
-      <span class="text-sm ${APOIO_FUNDO}" title="Alunos não aparecem aqui: a matriz é só da equipe e dos professores">Só equipe e professores.</span>
       <div class="ml-auto">${htmlSeletorColunas()}</div>
     </div>
     <div id="tabela-matriz" class="flex-1 min-h-0 flex flex-col">${htmlTabelaMatrizUsuarios()}</div>`;
@@ -1404,12 +1161,6 @@ function renderMatrizUsuarios() {
   const inputBusca = container.querySelector('#busca-matriz-usuarios');
   inputBusca.addEventListener('input', () => {
     estado.buscaMatrizUsuarios = inputBusca.value;
-    atualizarTabelaMatriz(htmlTabelaMatrizUsuarios());
-  });
-
-  const selectTipo = container.querySelector('#tipo-matriz-usuarios');
-  selectTipo.addEventListener('change', () => {
-    estado.tipoMatrizUsuarios = selectTipo.value;
     atualizarTabelaMatriz(htmlTabelaMatrizUsuarios());
   });
 
@@ -1428,7 +1179,6 @@ function renderMatrizUsuarios() {
     }
     const botao = e.target.closest('[data-mu-usuario]');
     if (!botao) return;
-    if (bloqueado()) return;
     const usuario = Permissoes.getUsuario(botao.dataset.muUsuario);
     const perfil = Permissoes.getPerfil(botao.dataset.muPerfil);
     const resultado = Permissoes.alternarUsuarioNoPerfil(usuario.id, perfil.id);
@@ -1445,8 +1195,7 @@ function renderMatrizUsuarios() {
 
 function htmlTabelaMatrizUsuarios() {
   const termo = estado.buscaMatrizUsuarios.trim().toLowerCase();
-  // Alunos ficam fora da matriz: só equipe (colaboradores) e professores.
-  const usuarios = USUARIOS.filter((u) => !somenteAluno(u) && usuarioTemTipo(u, estado.tipoMatrizUsuarios) && (!termo || u.nome.toLowerCase().includes(termo)));
+  const usuarios = USUARIOS.filter((u) => !termo || u.nome.toLowerCase().includes(termo));
   const colunas = perfisExibidos();
 
   if (!colunas.length) return SEM_COLUNAS;
@@ -1458,42 +1207,31 @@ function htmlTabelaMatrizUsuarios() {
         <thead>
           <tr>
             <th scope="col" class="${MATRIZ_TH} left-0 z-30 pl-4 pr-3 pb-2 text-left align-bottom text-xs font-medium ${APOIO} min-w-[256px]">Usuário</th>
-            ${colunas.map((perfil) => thPerfilHtml(perfil, plural(membrosDoPerfil(perfil.id).length, 'usuário', 'usuários'), 'z-20', tiposPerfilTexto(perfil))).join('')}
+            ${colunas.map((perfil) => thPerfilHtml(perfil, plural(membrosDoPerfil(perfil.id).length, 'usuário', 'usuários'))).join('')}
           </tr>
         </thead>
         <tbody>
-          ${usuarios.map((usuario) => {
-            const tiposTexto = tiposUsuarioTexto(usuario);
-            return `
+          ${usuarios.map((usuario) => `
             <tr class="group">
-              <td class="${MATRIZ_FIXA} ${MATRIZ_TD} z-10 h-12 pl-4 pr-2">
+              <td class="${MATRIZ_FIXA} ${MATRIZ_TD} z-10 h-11 pl-4 pr-2">
                 <div class="relative flex items-center gap-1.5 min-w-0">
                   <button type="button" data-validar-usuario="${usuario.id}" title="Ver o acesso consolidado de ${esc(usuario.nome)}"
-                    class="group/nome flex items-center gap-2 min-w-0 rounded-md text-left">
+                    class="flex items-center gap-2 min-w-0 rounded-md text-left hover:underline underline-offset-2">
                     ${avatarHtml(usuario, 'h-6 w-6 text-[10px]')}
-                    <span class="min-w-0">
-                      <span class="block font-medium ${VALOR} truncate group-hover/nome:underline underline-offset-2">${esc(usuario.nome)}</span>
-                      <span class="block text-xs truncate ${tiposTexto ? APOIO : COBRE_TINTA}">${tiposTexto ? esc(tiposTexto) : 'sem vínculo'}</span>
-                    </span>
+                    <span class="font-medium ${VALOR} truncate">${esc(usuario.nome)}</span>
                   </button>
                   ${usuario.perfis.length ? '' : TAG_SEM_PERFIL}
                   ${botaoExtrasHtml(usuario, { sobreposto: true })}
                 </div>
               </td>
               ${colunas.map((perfil) => {
-                if (!Permissoes.perfilAplicaA(perfil, usuario)) {
-                  return `
-                  <td class="h-12 ${MATRIZ_CELULA} text-slate-400 dark:text-neutral-600 select-none"
-                    title="Perfil para ${esc(tiposPerfilTexto(perfil).toLowerCase())} — não se aplica a ${esc(usuario.nome)}">—</td>`;
-                }
                 const incluido = usuario.perfis.includes(perfil.id);
                 return `
-                  <td class="h-12 ${MATRIZ_CELULA} ${perfil.ativo ? '' : 'opacity-50'}">
+                  <td class="h-11 ${MATRIZ_CELULA} ${perfil.ativo ? '' : 'opacity-50'}">
                     ${miniSwitchHtml(incluido, `data-mu-usuario="${usuario.id}" data-mu-perfil="${perfil.id}"`, `${incluido ? 'Remover' : 'Incluir'} ${usuario.nome} — ${perfil.nome}`)}
                   </td>`;
               }).join('')}
-            </tr>`;
-          }).join('')}
+            </tr>`).join('')}
         </tbody>
       </table>
     </div>`;
@@ -1505,7 +1243,7 @@ function renderMatrizPermissoes() {
   const container = document.getElementById('visao-matriz');
   container.innerHTML = `
     <div class="${BARRA}">
-      ${PORTAIS.length > 1 ? segmentado(PORTAIS.map((p) => ({ id: p.id, rotulo: p.nome })), estado.portalAtivo, 'data-portal-matriz', 'Portal') : ''}
+      ${segmentado(PORTAIS.map((p) => ({ id: p.id, rotulo: p.nome })), estado.portalAtivo, 'data-portal-matriz', 'Portal')}
       ${campoBusca('busca-matriz', estado.buscaMatriz, 'Buscar tela ou ação…')}
       <div class="ml-auto">${htmlSeletorColunas()}</div>
     </div>
@@ -1529,11 +1267,10 @@ function renderMatrizPermissoes() {
 
   container.querySelector('#tabela-matriz').addEventListener('click', (e) => {
     const botao = e.target.closest('[data-mx-acao]');
-    if (!botao || bloqueado(botao.dataset.mxPerfil)) return;
+    if (!botao) return;
     Permissoes.alternarPermissao(botao.dataset.mxPerfil, botao.dataset.mxFeature, botao.dataset.mxAcao);
     salvar();
     atualizarTabelaMatriz(htmlTabelaMatrizPermissoes());
-    renderConteudoValidacao();
   });
 }
 
@@ -1681,7 +1418,7 @@ function htmlListaUsuariosValidacao() {
         class="${ITEM_POPOVER} gap-2.5 py-1.5 ${selecionado ? 'bg-slate-100 dark:bg-neutral-900' : ''}">
         ${avatarHtml(usuario, 'h-6 w-6 text-[10px]')}
         <span class="flex-1 min-w-0">
-          <span class="flex items-center gap-1.5 min-w-0 ${VALOR}"><span class="truncate">${esc(usuario.nome)}</span>${tiposUsuarioHtml(usuario, { link: false })}</span>
+          <span class="block truncate ${VALOR}">${esc(usuario.nome)}</span>
           <span class="block text-xs truncate ${perfis.length ? APOIO : COBRE_TINTA}">${perfis.length ? esc(perfis.join(', ')) : 'sem perfil'}</span>
         </span>
         ${selecionado ? CHECK : ''}
@@ -1713,7 +1450,7 @@ function abrirModalExtras(usuarioId) {
     <div class="flex items-start gap-3 ${MODAL_TOPO}">
       ${avatarHtml(usuario, 'h-9 w-9 text-xs')}
       <div class="min-w-0 flex-1">
-        <h3 class="flex flex-wrap items-center gap-x-2 gap-y-1 font-display text-base font-semibold ${TITULO}">Permissões extras · ${esc(usuario.nome)} ${tiposUsuarioHtml(usuario)}</h3>
+        <h3 class="font-display text-base font-semibold ${TITULO}">Permissões extras · ${esc(usuario.nome)}</h3>
         <p class="mt-0.5 ${APOIO}">Perfis: ${nomesPerfis.length ? esc(nomesPerfis.join(', ')) : `<span class="font-medium ${COBRE_TINTA}">nenhum</span>`}</p>
       </div>
       <button type="button" data-fechar-modal-extras title="Fechar" aria-label="Fechar" class="${BOTAO_ICONE} -mr-2 -mt-1">${icone(D.fechar)}</button>
@@ -1741,7 +1478,7 @@ function abrirModalExtras(usuarioId) {
 
   root.querySelector('#conteudo-extras').addEventListener('click', (e) => {
     const botao = e.target.closest('[data-ex-acao]');
-    if (!botao || bloqueado()) return;
+    if (!botao) return;
     const concedida = Permissoes.alternarPermissaoExtra(usuario.id, botao.dataset.exFeature, botao.dataset.exAcao);
     salvar();
     const feature = Permissoes.getFeature(botao.dataset.exFeature);
@@ -1891,10 +1628,7 @@ function renderConteudoValidacao() {
     <div class="mb-4 flex items-center gap-3">
       ${avatarHtml(usuario, 'h-10 w-10 text-[13px]')}
       <div class="min-w-0">
-        <div class="flex flex-wrap items-center gap-2">
-          <h3 class="font-registro text-[22px] leading-tight font-semibold tracking-[-0.01em] ${TITULO}">${esc(usuario.nome)}</h3>
-          ${tiposUsuarioHtml(usuario)}
-        </div>
+        <h3 class="font-registro text-[22px] leading-tight font-semibold tracking-[-0.01em] ${TITULO}">${esc(usuario.nome)}</h3>
         <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-slate-600 dark:text-neutral-300">
           <span>Perfis: ${perfisHtml.length ? perfisHtml.join(', ') : `<span class="font-medium ${COBRE_TINTA}">nenhum</span>`}</span>
           ${extras ? `<span class="tabular-nums">${plural(extras, 'permissão extra', 'permissões extras')}</span>` : ''}
@@ -1903,7 +1637,7 @@ function renderConteudoValidacao() {
       </div>
     </div>
     ${secoes.length ? `<div class="space-y-4">${secoes.join('')}</div>` : cartaoVazio('Este usuário não tem acesso a nenhuma tela.')}
-    ${secoes.length && semAcesso.length ? `<p class="mt-4 text-sm ${APOIO_FUNDO}">Sem acesso: ${esc(semAcesso.join(', '))}</p>` : ''}`;
+    ${secoes.length && semAcesso.length ? `<p class="mt-4 text-sm ${APOIO}">Sem acesso: ${esc(semAcesso.join(', '))}</p>` : ''}`;
 }
 
 // ---------- Bootstrap ----------
@@ -1923,9 +1657,7 @@ function renderTudo() {
   visaoMatriz.hidden = mostrarPerfis;
   // As matrizes ocupam a altura restante e rolam dentro do cartão (cabeçalho e primeira coluna congelados);
   // a validação cresce com o conteúdo e rola com a página.
-  const matriz = estado.visao.startsWith('matriz');
-  visaoMatriz.className = matriz ? 'flex-1 min-h-[420px] flex flex-col' : '';
-  visaoMatriz.parentElement.classList.toggle('min-h-0', matriz); // coluna de perfis-pagina.js: só trava a altura nas matrizes
+  visaoMatriz.className = estado.visao.startsWith('matriz') ? 'flex-1 min-h-[420px] flex flex-col' : '';
 
   if (mostrarPerfis) {
     renderListaPerfis();
@@ -1947,14 +1679,14 @@ function iniciar() {
     estado.perfilSelecionadoId = id;
     if (parametroUrl('aba') === 'usuarios') estado.aba = 'usuarios';
   } else {
-    // URL antiga (permissoes.html?perfil=) → detalhe.
+    // URL antiga (perfis.html?perfil=) → detalhe.
     const antigo = parametroUrl('perfil') || parametroUrl('id');
     if (antigo) { location.replace(urlDetalhe(antigo)); return; }
     const aba = parametroUrl('aba');
     if (VISOES.some((v) => v.id === aba)) estado.visao = aba;
     if (estado.visao === 'validacao') estado.usuarioInspecionadoId = parametroUrl('usuario') || null;
 
-    document.getElementById('resumo-perfis')?.addEventListener('click', (e) => {
+    document.getElementById('resumo-perfis').addEventListener('click', (e) => {
       const link = e.target.closest('[data-ir-visao]');
       if (link) irParaVisao(link.dataset.irVisao);
     });

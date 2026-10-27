@@ -87,7 +87,7 @@ function render() {
   const quem = estado.instrutor.apelido || estado.instrutor.nome;
   document.getElementById('tela').innerHTML = `
     <div class="mb-5">
-      <h1 class="font-display text-2xl font-semibold text-slate-900 dark:text-neutral-100">Cadastro de instrutor da ${esc(Aulor.escola().nome)}</h1>
+      <h1 class="font-display text-2xl font-semibold text-slate-900 dark:text-neutral-100">Cadastro de instrutor da ProWay</h1>
       <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">Olá, ${esc(quem.split(' ')[0])}! Etapa ${i + 1} de ${PASSOS.length} · ${esc(PASSOS[i].titulo)}. Seu progresso fica salvo neste navegador até você enviar.</p>
     </div>
     ${cabecalhoPassos()}
@@ -146,14 +146,14 @@ function enviar(form) {
   Instrutores.salvar(Instrutores.preencherPeloInstrutor(atuais, estado.token, montar(estado.d)));
   sessionStorage.removeItem(chaveRascunho());
   window.scrollTo({ top: 0 });
-  telaAviso('Cadastro enviado. Obrigado!', `A ${Aulor.escola().nome} já recebeu seus dados. O próximo passo é o contrato de prestação de serviço, que chega para assinatura no Clicksign.`, 'ok');
+  telaAviso('Cadastro enviado. Obrigado!', 'A ProWay já recebeu seus dados. O próximo passo é o contrato de prestação de serviço, que chega para assinatura no Clicksign.', 'ok');
 }
 
 (function iniciar() {
   const token = new URLSearchParams(location.search).get('token');
   const lista = Instrutores.carregar();
   const i = Instrutores.porTokenCadastro(lista, token);
-  if (!i) { telaAviso('Link inválido ou expirado', `Peça um novo link para a ${Aulor.escola().nome} pelo WhatsApp ou e-mail.`); return; }
+  if (!i) { telaAviso('Link inválido ou expirado', 'Peça um novo link para a ProWay pelo WhatsApp ou e-mail.'); return; }
   if (i.cadastro.preenchidoEm) { telaAviso('Cadastro já enviado', `Recebemos seus dados em ${esc(Instrutores.fmtData(i.cadastro.preenchidoEm.slice(0, 10)))}. Se precisar corrigir algo, fale com a coordenação.`, 'ok'); return; }
   estado.instrutor = i; estado.token = token;
   const rascunho = lerRascunho();

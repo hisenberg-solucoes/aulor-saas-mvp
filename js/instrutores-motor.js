@@ -1,22 +1,27 @@
 // ============================================================
 // Regras da tela "Instrutores". Funções puras sobre a lista de instrutores.
-// Trazido do protótipo original (snorlax-jornada). No MVP o instrutor é o
-// registro de `professores` da base única (js/aulor.js): carregar/salvar leem
-// e gravam lá, e as turmas apontam `turma.professorId`. Turmas e cursos chegam
-// por `Cursos` (js/pessoas-mvp.js); Formacoes é opcional (o MVP não tem).
+// Persistência em localStorage — trocar o sufixo da chave força reset.
+// Depende de: INSTRUTORES_SEED (instrutores-data), Cursos (cursos-motor) para
+// turmas/cursos; Formacoes é opcional (nome da formação nos contratos).
 // ============================================================
 
 const Instrutores = (() => {
-  const carregar = () => clonar(Aulor.professores());
+  const CHAVE = 'aulor-v1-instrutores-v5';
+
+  function carregar() {
+    try {
+      const salvo = localStorage.getItem(CHAVE);
+      if (salvo) return JSON.parse(salvo);
+    } catch (_) { /* volta para a semente */ }
+    return clonar(INSTRUTORES_SEED);
+  }
 
   function salvar(lista) {
-    Aulor.carregar().professores = clonar(lista);
-    Aulor.sincronizarPagamentosInstrutores(); // pagamento programado/pago/removido → conta a pagar
-    Aulor.salvar();
+    localStorage.setItem(CHAVE, JSON.stringify(lista));
   }
 
   const clonar = (x) => JSON.parse(JSON.stringify(x));
-  const hoje = () => Aulor.hoje();
+  const hoje = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10); // data local do navegador
   const anoAtual = () => Number(hoje().slice(0, 4));
   const normalizar = (s) => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   const digitos = (v) => String(v ?? '').replace(/\D/g, '');
@@ -437,7 +442,7 @@ const Instrutores = (() => {
   function instrutorNovo(dados) {
     return {
       status: 'ativo', remuneracao: 'pj', colaboradorId: null, foto: null, apelido: '', nascimento: '', cpf: '', rg: '', especialidade: '', bio: '',
-      endereco: { cep: '', logradouro: '', numero: '', complemento: '', bairro: '', cidade: Aulor.escola().cidade, uf: Aulor.escola().uf },
+      endereco: { cep: '', logradouro: '', numero: '', complemento: '', bairro: '', cidade: '', uf: 'SC' },
       contato: { email: '', whatsapp: '', emergencia: { nome: '', telefone: '' } },
       empresa: null, contaPessoal: null, custoHoraReferencia: null, valoresHora: [], contratos: [], pagamentos: [], antecedentes: [], lgpd: null, cadastro: null,
       tagEstacionamento: { possui: false, identificacao: '', cedidaEm: '', devolvidaEm: '' },
@@ -449,7 +454,7 @@ const Instrutores = (() => {
     return { nome: String(dados.nome).trim(), apelido: String(dados.apelido).trim(), nascimento: dados.nascimento, cpf: digitos(dados.cpf), rg: String(dados.rg).trim(), especialidade: String(dados.especialidade ?? '').trim(), bio: String(dados.bio ?? '').trim(), ...(dados.status ? { status: dados.status } : {}), ...(dados.remuneracao ? { remuneracao: dados.remuneracao } : {}), ...('custoHoraReferencia' in dados ? { custoHoraReferencia: dados.remuneracao === 'folha' && Number(dados.custoHoraReferencia) > 0 ? Number(dados.custoHoraReferencia) : null } : {}) };
   }
   function incluir(lista, dados) {
-    const i = registrar(instrutorNovo({ id: novoId(lista, 'pr'), ...limparDados(dados) }), 'Cadastro criado');
+    const i = registrar(instrutorNovo({ id: novoId(lista, 'i'), ...limparDados(dados) }), 'Cadastro criado');
     return { lista: [...lista, i], instrutor: i };
   }
   const atualizarDados = (lista, id, dados) => atualizarInstrutor(lista, id, (i) => ({ ...i, ...limparDados(dados) }));
@@ -483,7 +488,7 @@ const Instrutores = (() => {
     const existente = instrutorDoColaborador(lista, c.id);
     if (existente) return { lista, instrutor: existente };
     const i = registrar(instrutorNovo({
-      id: novoId(lista, 'pr'), colaboradorId: c.id, remuneracao, nome: c.nome, apelido: (c.nomeSocial || c.nome).split(/\s+/)[0],
+      id: novoId(lista, 'i'), colaboradorId: c.id, remuneracao, nome: c.nome, apelido: (c.nomeSocial || c.nome).split(/\s+/)[0],
       contato: { email: c.contato?.email ?? '', whatsapp: digitos(c.contato?.celular), emergencia: { nome: '', telefone: '' } },
     }), `Papel de instrutor adicionado ao colaborador ${c.nome}`);
     return { lista: [...lista, i], instrutor: i };
@@ -518,7 +523,7 @@ const Instrutores = (() => {
   function convidar(lista, d) {
     const nome = String(d.nome).trim();
     const i = registrar(instrutorNovo({
-      id: novoId(lista, 'pr'),
+      id: novoId(lista, 'i'),
       nome,
       apelido: String(d.apelido ?? '').trim() || nome.split(/\s+/)[0],
       especialidade: String(d.especialidade ?? '').trim(),
@@ -554,7 +559,7 @@ const Instrutores = (() => {
   }
 
   return {
-    carregar, salvar, normalizar, porId, numero, digitos, hoje, anoAtual,
+    CHAVE, carregar, salvar, normalizar, porId, numero, digitos, hoje, anoAtual,
     cpfValido, cnpjValido, fmtCpf, fmtCnpj, fmtCep, fmtTelefone, fmtData, fmtMoeda, idade, iniciais,
     cursoDe, turmaDe, formacaoDe, formacoes, turmasDoInstrutor, cursosHabilitados, turmasContratadas,
     valorHoraPara, faixaPadrao, descricaoFaixa, especificidade,

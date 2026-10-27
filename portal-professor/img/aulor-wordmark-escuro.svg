@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 160" width="720" height="160" role="img" aria-labelledby="title">
+  <title id="title">Aulor — wordmark customizado escuro</title>
+  
+  <defs><path id="aulor-symbol" d="M8 116L50 18C53 10 60 6 69 6C78 6 85 10 88 18L132 116C134 121 131 124 126 124H110C106 124 103 122 101 118L73 49C72 46 70 44 68 44C66 44 64 46 63 49L35 118C33 122 30 124 26 124H14C9 124 6 121 8 116Z"/>
+  <path id="letter-a" d="M4 92L40 8L76 92"/>
+  <path id="letter-u" d="M110 8V58C110 81 125 94 149 94C173 94 188 81 188 58V8"/>
+  <path id="letter-l" d="M224 8V92H292"/>
+  <path id="letter-o" d="M374 8C338 8 320 24 320 50C320 78 338 92 374 92C410 92 428 78 428 50C428 24 410 8 374 8Z"/>
+  <path id="letter-r-bowl" d="M462 92V8H504C533 8 550 21 550 42C550 62 533 73 506 73"/>
+  <path id="letter-r-leg" d="M506 73L556 94"/></defs><g fill="none" stroke="#071E2C" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" transform="translate(70 28) scale(1.04)"><use href="#letter-a"/><use href="#letter-u"/><use href="#letter-l"/><use href="#letter-o"/><use href="#letter-r-bowl"/><use href="#letter-r-leg"/></g>
+</svg>

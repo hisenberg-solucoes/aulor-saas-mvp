@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Aulor · Entrar</title>
+  <link rel="icon" type="image/svg+xml" href="../img/aulor-favicon.svg">
+  <!-- A entrada é uma só para a equipe e os portais: login, primeiro acesso e recuperação de senha. -->
+  <script>location.replace('../entrar.html?portal=aluno' + (new URLSearchParams(location.search).has('saiu') ? '&saiu=1' : ''));</script>
+</head>
+</html>

@@ -17,7 +17,7 @@ function dadosIniciais(i) {
     email: i.contato.email, whatsapp: Instrutores.fmtTelefone(i.contato.whatsapp),
     emergenciaNome: i.contato.emergencia?.nome ?? '', emergenciaTelefone: Instrutores.fmtTelefone(i.contato.emergencia?.telefone),
     cep: Instrutores.fmtCep(i.endereco.cep), logradouro: i.endereco.logradouro, numero: i.endereco.numero, complemento: i.endereco.complemento,
-    bairro: i.endereco.bairro, cidade: i.endereco.cidade, uf: i.endereco.uf || Aulor.escola().uf,
+    bairro: i.endereco.bairro, cidade: i.endereco.cidade, uf: i.endereco.uf || 'SC',
     cnpj: Instrutores.fmtCnpj(e.cnpj), razaoSocial: e.razaoSocial, banco: e.banco, agencia: e.agencia, conta: e.conta, pix: e.pix,
     antecedentesArquivo: Instrutores.antecedentesDoAno(i)?.arquivo ?? '',
     foto: i.foto ?? null,
@@ -97,7 +97,7 @@ const secaoEndereco = (d) => secao('Endereço', 'Vai no contrato de prestação 
     ${campoSelect('uf', 'UF', UFS.map((u) => ({ id: u, nome: u })), d.uf)}
   </div>`);
 
-const secaoEmpresa = (d) => secao('Empresa para pagamento', `A ${Aulor.escola().nome} paga instrutor por nota fiscal — informe o CNPJ pelo qual você emite e a conta que recebe.`, `
+const secaoEmpresa = (d) => secao('Empresa para pagamento', 'A ProWay paga instrutor por nota fiscal — informe o CNPJ pelo qual você emite e a conta que recebe.', `
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
     ${campoTexto('cnpj', 'CNPJ', d.cnpj, { placeholder: '00.000.000/0000-00', max: 18, mascara: 'cnpj' })}
     ${campoTexto('razaoSocial', 'Razão social', d.razaoSocial, { placeholder: 'Como consta no CNPJ', max: 150 })}

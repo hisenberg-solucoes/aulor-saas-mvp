@@ -1,12 +1,10 @@
-# Aulor SaaS — protótipo do MVP comercial
+# Aulor — protótipo da V1
 
-Protótipo navegável de um ERP para escolas de cursos livres. Usa uma escola fictícia, a Atlas Cursos Profissionalizantes. É um clone independente do protótipo `snorlax-jornada`, que continua intacto.
+Protótipo navegável da primeira versão do Aulor, no escopo que a ProWay aprovou em 26/10/2026 ("Aulor – Escopo da primeira versão (V1)"). As telas vêm do protótipo [`snorlax-jornada`](https://github.com/hisenberg-solucoes/snorlax-jornada), de onde o escopo foi tirado, cortadas tela a tela para a V1, no visual do `DESIGN.md` do [`aulor-web`](https://github.com/hisenberg-solucoes/aulor-web) ("Ficha em cartões"). Os dados são os do protótipo original.
 
-- [MVP_SCOPE.md](MVP_SCOPE.md): o que foi reaproveitado, simplificado e adiado, o escopo do MVP e as decisões.
-- [ROTEIRO_DEMO.md](ROTEIRO_DEMO.md): demonstração comercial de 10 minutos.
-- [BACKLOG.md](BACKLOG.md): backlog até o SaaS real, riscos e decisões pendentes.
+- [ESCOPO_V1.md](ESCOPO_V1.md): o que entrou, onde está cada decisão do documento e os pontos em aberto.
 
-**Demonstração online:** https://hisenberg-solucoes.github.io/aulor-saas-mvp/ (os dados ficam no navegador de quem abre; use *Demonstração › Restaurar dados iniciais* para recomeçar).
+**Demonstração online:** https://hisenberg-solucoes.github.io/aulor-saas-mvp/ (os dados ficam no navegador de quem abre).
 
 ## Rodar localmente
 
@@ -16,9 +14,7 @@ Na raiz deste diretório:
 python3 -m http.server 8770
 ```
 
-Abra `http://localhost:8770/` e escolha com quem entrar. Não há build nem dependências: HTML estático, Tailwind v4 pelo CDN e JavaScript sem framework, no mesmo padrão do original.
-
-O visual é a direção "Ficha em cartões" do protótipo original: cartões brancos sobre o fundo neutro frio, shell em azul profundo nos dois modos, petróleo na ação e cobre só no que espera por você, Atkinson Hyperlegible Next na interface e Source Serif 4 só no nome do registro aberto.
+Abra `http://localhost:8770/`. A entrada lista as contas de demonstração (senha `123456`): administradora, comercial, vendedor externo, coordenação, financeiro, professor e aluno. Não há build nem dependências: HTML estático, Tailwind v4 pelo CDN e JavaScript sem framework.
 
 ## Testes
 
@@ -26,26 +22,21 @@ O visual é a direção "Ficha em cartões" do protótipo original: cartões bra
 node --test tests/*.mjs
 ```
 
-Os testes cobrem as regras do motor (parcelas, matrícula → financeiro → turma, chamada, conclusão, certificado, planos e permissões), Pessoas (remuneração PJ/RPA/folha, quem é da equipe e dá aula, acesso do colaborador, cadastro pelo link) e a coerência da semente em várias datas.
+`tests/links.test.mjs` acusa qualquer página ou script citado que não existe; os outros cobrem os motores (vendas, turmas e aulas, feriados, financeiro, centros de receita, instrutores, materiais e modelos de contrato).
 
 ## Estrutura
 
+Cada tela é um `.html` com o shell, os dados (`js/*-data.js`), as regras (`js/*-motor.js`) e a tela (`js/*-app.js`), no padrão do protótipo original. O que é da V1:
+
 | Arquivo | Papel |
 |---|---|
-| `js/aulor.js` | Base única da escola e todas as regras de negócio |
-| `js/semente.js` | Escola fictícia gerada a partir da data de hoje (determinística) |
-| `js/planos.js` | Catálogo comercial: módulos por plano, alunos incluídos, faixas (hipótese) |
-| `js/permissoes-data.js` | Catálogo de permissões `tela.ação` e perfis padrão |
-| `js/permissoes-motor.js`, `js/permissoes-app.js` | Motor e telas de perfis, reaproveitados do original |
-| `js/estilo.js`, `styles.css` | Tokens e classes de componente (cartão, botões, campo, abas, tabela); papéis `--f-*` e o shell, nos dois modos |
-| `js/shell.js` | Menu por módulos (os mesmos grupos do original), barra de contexto, sessão de demonstração e controle de acesso (permissão + plano) |
-| `js/base.js`, `js/ui-form.js`, `js/formularios.js` | Peças de tela (trilha, cabeçalho da ficha, cartão, faixa, pílula, indicador, menu "Mais"), modais e formulários compartilhados |
-| `js/certificado.js` | Render e impressão do certificado a partir de um modelo (CSS do original) |
-| `js/modelos-certificado-ui.js` | Peças comuns da lista e do editor de modelos de certificado |
-| `js/colaboradores-*.js`, `js/instrutores-*.js`, `js/calendario-instrutor-ui.js`, `js/cadastro-instrutor-*.js`, `js/cadastro-publico-ui.js`, `js/menu-mais.js` | Pessoas, trazidas do original como estão: colaboradores (equipe e acesso) e instrutores (dados, calendário, empresa e valor hora, contratos, pagamentos, documentos e o cadastro pelo link) |
-| `js/pessoas-mvp.js` | Liga os motores de Pessoas à base única: o instrutor é o registro de `professores`, as turmas chegam por `Cursos` e o calendário lê as aulas do MVP |
-| `js/pessoas-ui.js`, `js/pessoas-pagina.js` | Helpers de tela do original e a marcação que as telas de Pessoas esperam (drawer, modo só leitura, cabeçalho do cadastro público) |
-| `js/*-app.js` | Uma por página |
-| `_tools/gerar_paginas.py` | Gera os `.html` (mesmo esqueleto; o layout vem do `shell.js`). Para criar uma tela, acrescente-a em `PAGINAS` e em `Shell.MENU`. Rode de novo depois de mudar qualquer JS ou o CSS: o `?v=` dos scripts muda e o navegador não mistura versões |
+| `styles.css` | Shell e papéis do `DESIGN.md` do aulor-web. As telas usam as classes do Tailwind do protótipo, e as variáveis dessas cores passam a valer os papéis (tinta, apoio, elevado, linha, acento, estado), com o escuro em degraus sobre o azul profundo |
+| `js/menu.js` | Menu com os módulos da V1, unidade, Início, nome do módulo na barra e o menu da pessoa; `Sessao` |
+| `js/acesso.js` | No `<head>` de cada tela do administrativo: sem sessão vai para a entrada; tela fora do perfil volta ao Início |
+| `entrar.html`, `js/entrar-app.js` | Entrada única: login, escolha do portal, primeiro acesso e recuperação de senha |
+| `js/permissoes-data.js` | Catálogo de permissões das telas da V1 e os perfis, com o Vendedor externo |
+| `js/centros-receita.js` | Centros de receita (B2B, B2C, Orion), lidos por Vendas e Turmas |
+| `js/materiais-motor.js` | Materiais das aulas: cadastro e liberação por data |
+| `js/modelos-contrato.js` | Modelos de contrato e o preenchimento com os dados da venda |
 
-Os dados ficam no `localStorage` deste navegador (`aulor-mvp-dados-v4` e `aulor-mvp-acessos-v2`). Em **Demonstração › Restaurar dados iniciais**, a escola é gerada de novo. Isso existe só para demonstrar: não é isolamento entre escolas nem segurança.
+Os dados ficam no `localStorage` com chaves `aulor-v1-*`, separadas das do protótipo original (no GitHub Pages os dois dividem a origem). Login e permissões só demonstram: na V1 real, quem autentica e aplica as permissões é o back-end.
