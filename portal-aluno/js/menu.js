@@ -5,7 +5,7 @@
 // colapsáveis (estado em localStorage['aulor-v1-portal-aluno-menus']); só
 // muda o destaque do item ativo — o grupo dele abre nesta visita, sem gravar
 // estado. Busca no topo filtra itens/grupos; o scroll da sidebar persiste
-// entre páginas. Páginas de detalhe (aula, curso, contrato, certificado)
+// entre páginas. Páginas de detalhe (aula, curso, contrato)
 // herdam o item da lista via MENU_ALIAS. Carregar com `defer` depois de
 // tooltip.js. O script só troca o conteúdo do <nav>; cabeçalho e rodapé da
 // sidebar ficam no HTML de cada página.
@@ -35,12 +35,13 @@ const MENU_GRUPOS = [
         icone: '<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5M8.25 12.75h.008v.008H8.25v-.008zm3.75 0h.008v.008H12v-.008zm3.75 0h.008v.008h-.008v-.008zM8.25 16.5h.008v.008H8.25V16.5zm3.75 0h.008v.008H12V16.5z" />',
       },
       {
-        href: 'gravacoes.html', nome: 'Gravações',
-        icone: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />',
-      },
-      {
         href: 'materiais.html', nome: 'Materiais',
         icone: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />',
+      },
+      {
+        // Os cursos EAD ficam na Toolzz (plataforma externa): abre em nova aba.
+        href: 'https://www.toolzz.com.br', nome: 'Cursos EAD', externo: 'na Toolzz',
+        icone: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />',
       },
     ],
   },
@@ -54,14 +55,6 @@ const MENU_GRUPOS = [
       {
         href: 'contratos.html', nome: 'Contratos',
         icone: '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />',
-      },
-      {
-        href: 'certificados.html', nome: 'Certificados',
-        icone: '<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" />',
-      },
-      {
-        href: 'suporte.html', nome: 'Suporte',
-        icone: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />',
       },
     ],
   },
@@ -81,7 +74,6 @@ const MENU_ALIAS = {
   'aula.html': 'aulas.html',
   'curso.html': 'cursos.html',
   'contrato.html': 'contratos.html',
-  'certificado.html': 'certificados.html',
 };
 
 (function () {
@@ -92,9 +84,10 @@ const MENU_ALIAS = {
   const pagina = () => (location.pathname.split('/').pop() || 'home.html').toLowerCase();
 
   const item = (it, ativo) => `
-        <a href="${it.href}"${it.id ? ` id="${esc(it.id)}"` : ''} class="nav-item${ativo ? ' nav-item-ativo' : ''}"${ativo ? ' aria-current="page"' : ''}>
+        <a href="${it.href}"${it.id ? ` id="${esc(it.id)}"` : ''} class="nav-item${ativo ? ' nav-item-ativo' : ''}"${ativo ? ' aria-current="page"' : ''}${it.externo ? ' target="_blank" rel="noopener"' : ''}>
           <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">${it.icone}</svg>
-          <span class="truncate">${esc(it.nome)}</span>
+          <span class="truncate">${esc(it.nome)}</span>${it.externo ? `
+          <span class="ml-auto shrink-0 inline-flex items-center gap-1 text-[11px] text-slate-500">${esc(it.externo)}<svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg></span>` : ''}
         </a>`;
 
   // Mesma sidebar em todas as telas: Início + todos os grupos colapsáveis (estado

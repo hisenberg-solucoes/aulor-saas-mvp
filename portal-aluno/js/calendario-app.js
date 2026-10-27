@@ -1,5 +1,5 @@
 // Portal do Aluno — calendário (UI): aulas das matrículas + eventos disponíveis para o aluno.
-// Só a inscrição em eventos grava (prototipo-eventos-inscricoes-v1); o resto é leitura.
+// Só a inscrição em eventos grava (aulor-v1-eventos-inscricoes-v1); o resto é leitura.
 (() => {
   const aluno = PortalAluno.alunoLogado();
   if (!aluno) { PortalAluno.sair(); location.replace('login.html'); return; }
@@ -56,10 +56,9 @@
     if (m.turma.meetLink) return 'Google Meet';
     return m.sala?.nome ?? FORMATO[m.turma.formato] ?? '';
   };
-  // Como na home: qualquer turma com link mostra o Meet (presenciais também transmitem/gravam por ele).
+  // Como na home: qualquer turma com link mostra o Meet (presenciais também transmitem por ele).
   const meetDe = (m) => m.turma.meetLink || null;
   const instrutores = typeof Instrutores !== 'undefined' ? Instrutores.carregar() : [];
-  const temPresencas = typeof Presencas !== 'undefined';
   const ICONE_CAMERA = '<svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" /></svg>';
 
   const turmaBate = (turmaId, ev) => !turmaId || ev.publico.tipo === 'todos' || ev.turmas.some((m) => m.turma.id === turmaId);
@@ -132,7 +131,7 @@
             <span class="text-xs tabular-nums ${numero}">${Number(d.iso.slice(8))}</span>
             ${feriado ? `<span class="text-[10px] text-slate-400 dark:text-neutral-500 truncate" title="${esc(feriado)}">${esc(feriado)}</span>` : ''}
           </div>
-          ${visiveis.map((x) => x.html).join('')}
+          ${visiveis.map(({ html }) => html).join('')}
           ${extra ? `<button type="button" data-dia="${d.iso}" class="text-left text-[11px] font-medium text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 px-1.5">+${extra} ${extra === 1 ? 'item' : 'itens'}</button>` : ''}
         </div>`;
     }).join('');
@@ -197,17 +196,11 @@
   const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
   const horasTexto = (h) => (Number.isInteger(h) ? `${h} h` : `${String(h.toFixed(1)).replace('.', ',')} h`);
 
-  // Situação da aula para o aluno: futura / hoje / realizada (+ presença registrada, quando há chamada).
-  function situacaoAulaHtml(a, m) {
+  // Situação da aula para o aluno: futura / hoje / realizada.
+  function situacaoAulaHtml(a) {
     if (a.data > hoje) return ponto('bg-sky-500', 'Prevista');
     if (a.data === hoje) return ponto('bg-laranja', 'Hoje');
-    const base = ponto('bg-emerald-500', 'Realizada');
-    if (!temPresencas) return base;
-    const reg = Presencas.registroDe(m.turma.id, aluno.id, a);
-    if (!reg) return `${base}<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Chamada ainda não lançada</p>`;
-    const st = Presencas.statusDe(reg.status);
-    const extra = reg.status === 'atraso' && reg.minutos ? ` (${reg.minutos} min)` : '';
-    return `${base}<p class="text-xs mt-0.5">${ponto(st?.ponto ?? 'bg-slate-400', `${st?.nome ?? reg.status}${extra}`)}</p>`;
+    return ponto('bg-emerald-500', 'Realizada');
   }
 
   function linhaAula(a) {
@@ -221,21 +214,14 @@
     const n = ordenadas.findIndex((x) => x.data === a.data && x.inicio === a.inicio) + 1;
     const total = ordenadas.length;
     const modulos = (a.moduloIds ?? []).map((id) => (m.curso?.modulos ?? []).find((mod) => mod.id === id)).filter(Boolean);
-    const gravacoes = (typeof Turmas !== 'undefined' ? Turmas.gravacoes(m.turma) : (m.turma.gravacoes ?? [])).filter((g) => g.data === a.data);
     const realizada = a.data < hoje;
     const linkAula = `aula.html?turma=${encodeURIComponent(m.turma.id)}&data=${encodeURIComponent(a.data)}`;
     const celula = (rotulo, valor, cls = '') => `<div class="${cls}"><p class="rotulo">${rotulo}</p><div class="text-sm text-slate-800 dark:text-neutral-100 mt-0.5">${valor}</div></div>`;
     const conteudo = a.conteudo || modulos.length
       ? `${a.conteudo ? esc(a.conteudo) : esc(modulos.map((x) => x.titulo).join(' · '))}${a.conteudo && modulos.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(modulos.map((x) => x.titulo).join(' · '))}</p>` : ''}`
       : '<span class="text-slate-400">a definir</span>';
-    const gravacaoHtml = gravacoes.length
-      ? gravacoes.map((g) => `<a href="${esc(g.url)}" target="_blank" rel="noopener" class="link inline-flex items-center gap-1">${ICONE_CAMERA}${esc(g.titulo || 'Gravação')}${g.duracaoMin && typeof Turmas !== 'undefined' ? ` <span class="text-xs font-normal text-slate-400">· ${esc(Turmas.duracaoTexto(g.duracaoMin))}</span>` : ''}</a>`).join('<br>')
-      : realizada ? '<span class="text-slate-400">sem gravação</span>' : '<span class="text-slate-400">disponível após a aula</span>';
     const botaoPri = 'inline-flex items-center gap-1.5 rounded-lg bg-petrol-800 dark:bg-sky-600 hover:bg-petrol-900 dark:hover:bg-sky-500 text-white text-sm font-medium px-3 py-1.5 transition';
-    const acaoPrincipal = realizada && gravacoes.length
-      ? `<a href="${esc(gravacoes[0].url)}" target="_blank" rel="noopener" class="${botaoPri}">${ICONE_CAMERA}Assistir gravação</a>`
-      : meet && !realizada ? `<a href="${esc(meet)}" target="_blank" rel="noopener" class="${botaoPri}">${ICONE_CAMERA}Entrar no Meet</a>` : '';
-    const acaoMeet = meet && realizada && gravacoes.length ? `<a href="${esc(meet)}" target="_blank" rel="noopener" class="link">Abrir o Meet</a>` : '';
+    const acaoPrincipal = meet && !realizada ? `<a href="${esc(meet)}" target="_blank" rel="noopener" class="${botaoPri}">${ICONE_CAMERA}Entrar no Meet</a>` : '';
     return `
       <div class="flex gap-3 px-5 py-4">
         <div class="shrink-0 w-1 rounded-full bg-petrol-800 dark:bg-sky-400"></div>
@@ -246,12 +232,11 @@
             ${celula('Horário', `<span class="tabular-nums">${esc(a.inicio)}–${esc(a.fim)}</span> <span class="text-xs text-slate-500 dark:text-neutral-400">· ${esc(horasTexto(Turmas.horasAula(a)))}</span>`)}
             ${celula('Local', `${esc(local)}${formato ? ` <span class="text-xs text-slate-500 dark:text-neutral-400">(${esc(formato)})</span>` : ''}`)}
             ${celula('Professor', instrutor ? esc(instrutor.nome) : '<span class="text-slate-400">a definir</span>')}
-            ${celula('Situação', situacaoAulaHtml(a, m))}
+            ${celula('Situação', situacaoAulaHtml(a))}
             ${celula('Conteúdo', conteudo, 'col-span-2')}
-            ${celula('Gravação', gravacaoHtml, 'col-span-2')}
           </div>
           <div class="mt-3 flex flex-wrap items-center gap-3">
-            ${acaoPrincipal}${acaoMeet}<a href="${linkAula}" class="link">Ver aula</a>
+            ${acaoPrincipal}<a href="${linkAula}" class="link">Ver aula</a>
           </div>
         </div>
       </div>`;

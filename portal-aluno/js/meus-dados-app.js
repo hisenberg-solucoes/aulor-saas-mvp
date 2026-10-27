@@ -1,6 +1,6 @@
 // Portal do Aluno — Meus dados (UI). O aluno vê o próprio cadastro e edita só o que é dele
 // (contato, endereço, necessidades, consentimentos); identificação é só leitura e pede correção
-// à secretaria por chamado. Tudo grava pelo motor Clientes, na mesma chave do administrativo
+// à secretaria. Tudo grava pelo motor Clientes, na mesma chave do administrativo
 // (../aluno.html?id= enxerga a alteração). Senha e preferências são simulação do protótipo.
 (() => {
   const aluno0 = PortalAluno.alunoLogado();
@@ -44,7 +44,7 @@
   }
   const TIPOS_PRIVACIDADE = { exportacao: 'Exportação dos meus dados', exclusao: 'Exclusão do cadastro' };
 
-  // ---------- Cabeçalho (igual ao suporte) ----------
+  // ---------- Cabeçalho (igual às outras telas do portal) ----------
 
   const menu = $('menu-usuario');
   const listaMenu = $('menu-usuario-lista');
@@ -266,7 +266,7 @@
             ${item('Profissão', vazio(a.profissao, 'Não informada'))}
             ${empresa ? item('Empresa', `${esc(empresa.nomeFantasia || empresa.razaoSocial)}${a.cargo ? ` <span class="text-slate-500 dark:text-neutral-400">· ${esc(a.cargo)}</span>` : ''}`) : ''}
           </dl>
-          <p class="text-sm text-slate-500 dark:text-neutral-400 mt-5">Nome, CPF e data de nascimento saem no contrato e no certificado. Para alterar, fale com a secretaria.</p>`,
+          <p class="text-sm text-slate-500 dark:text-neutral-400 mt-5">Nome, CPF e data de nascimento saem no contrato. Para alterar, fale com a secretaria.</p>`,
           '<button type="button" data-acao="corrigir" class="botao-sec">Solicitar correção</button>')}
       </div>`;
   }
@@ -480,7 +480,7 @@
           </dl>`, '<button type="button" data-acao="senha" class="botao-sec">Alterar senha</button>')}
         ${cartaoSecao('Avisos', `
           <div class="divide-y divide-slate-100 dark:divide-neutral-900 -my-3">
-            ${toggle('email', 'Avisos por e-mail', 'Respostas do suporte, boletos, gravações liberadas e lembretes de aula.', p.email)}
+            ${toggle('email', 'Avisos por e-mail', 'Boletos, materiais liberados e lembretes de aula.', p.email)}
             ${toggle('whatsapp', 'Avisos por WhatsApp', `Lembrete da aula no dia e boleto perto do vencimento${a.celular ? ` — ${esc(C.fmtTelefone(a.celular))}` : ''}.`, p.whatsapp)}
           </div>`)}
       </div>`;
@@ -530,8 +530,8 @@
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
         ${cartaoSecao('Uso dos seus dados', `
           <div class="text-sm text-slate-600 dark:text-neutral-300 space-y-2">
-            <p>A ProWay usa seus dados para matrícula, contrato, cobrança, emissão de certificado e comunicação sobre as aulas. Necessidades e informações de saúde são tratadas como dado sensível e ficam restritas à secretaria e ao instrutor da sua turma.</p>
-            <p>Você pode pedir uma cópia de tudo o que temos sobre você ou a exclusão do cadastro. Dados exigidos por lei (contratos, notas fiscais e certificados emitidos) são mantidos pelo prazo legal mesmo após a exclusão.</p>
+            <p>A ProWay usa seus dados para matrícula, contrato, cobrança e comunicação sobre as aulas. Necessidades e informações de saúde são tratadas como dado sensível e ficam restritas à secretaria e ao instrutor da sua turma.</p>
+            <p>Você pode pedir uma cópia de tudo o que temos sobre você ou a exclusão do cadastro. Dados exigidos por lei (contratos e notas fiscais) são mantidos pelo prazo legal mesmo após a exclusão.</p>
           </div>
           <dl class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4 mt-5">
             ${item('Termo aceito em', vazio(c.termoAceiteEm ? C.fmtData(c.termoAceiteEm) : '', 'Ainda não aceito'))}
@@ -578,7 +578,7 @@
     abrirModal(`${cabecalhoModal('Exportar meus dados')}
       <form id="form-exportacao" novalidate>
         <div class="p-5 text-sm text-slate-600 dark:text-neutral-300 space-y-2">
-          <p>Você receberá em <strong class="text-slate-800 dark:text-neutral-100">${esc(aluno().email)}</strong> um arquivo com os dados do seu cadastro, matrículas, contratos, presenças e certificados.</p>
+          <p>Você receberá em <strong class="text-slate-800 dark:text-neutral-100">${esc(aluno().email)}</strong> um arquivo com os dados do seu cadastro, matrículas e contratos.</p>
           <p>Prazo: até 15 dias.</p>
         </div>
         ${rodapeModal('Solicitar exportação')}
@@ -600,9 +600,9 @@
       </div>
       <form id="form-exclusao" novalidate>
         <div class="p-5 space-y-4 text-sm text-slate-600 dark:text-neutral-300">
-          <p>A secretaria vai analisar o pedido e confirmar com você antes de excluir. Você perde o acesso ao portal, às gravações e aos materiais dos cursos.</p>
+          <p>A secretaria vai analisar o pedido e confirmar com você antes de excluir. Você perde o acesso ao portal e aos materiais dos cursos.</p>
           ${ativos ? `<p class="text-red-700 dark:text-red-300">Você tem ${ativos === 1 ? '1 matrícula ativa' : `${ativos} matrículas ativas`}. A exclusão só é concluída depois do encerramento ou cancelamento dos contratos.</p>` : ''}
-          <p>Contratos, notas fiscais e certificados já emitidos são mantidos pelo prazo legal.</p>
+          <p>Contratos e notas fiscais já emitidos são mantidos pelo prazo legal.</p>
           <div>
             <label class="rotulo" for="f-motivo">Motivo <span class="normal-case font-normal tracking-normal text-slate-400">(opcional)</span></label>
             <textarea id="f-motivo" name="motivo" rows="2" class="campo mt-1"></textarea>
@@ -630,11 +630,10 @@
     toast('Pedido cancelado.');
   }
 
-  // ---------- Solicitar correção de dados pessoais → chamado no suporte ----------
+  // ---------- Solicitar correção de dados pessoais → pedido à secretaria (simulação) ----------
 
   function modalCorrecao() {
-    const a = aluno();
-    abrirModal(`${cabecalhoModal('Solicitar correção', 'Vira um chamado para a secretaria, que você acompanha em Suporte.')}
+    abrirModal(`${cabecalhoModal('Solicitar correção', 'O pedido vai para a secretaria.')}
       <form id="form-correcao" novalidate>
         <div class="p-5 space-y-4">
           <div>
@@ -663,12 +662,8 @@
       if (!campo) erros.push({ campo: 'campo', mensagem: 'Escolha o dado a corrigir.' });
       if (!descricao) erros.push({ campo: 'descricao', mensagem: 'Diga como deve ficar.' });
       if (mostrarErros(form, erros)) return;
-      if (typeof Chamados === 'undefined') { fecharModal(); toast('Pedido registrado (simulação).'); return; }
-      const lista = Chamados.carregar();
-      const r = PortalAluno.abrirChamadoAluno(lista, a, PortalAluno.matriculas(a.id), { assuntoId: 'outro', turmaId: '', titulo: `Correção de cadastro: ${campo}`, descricao: `Dado a corrigir: ${campo}.\n${descricao}`, softwareId: '', sistemaOperacional: '', anexos: [] });
-      Chamados.salvar(r.lista);
       fecharModal();
-      toast(`Chamado ${r.chamado.numero} aberto — acompanhe em Suporte.`);
+      toast('Pedido enviado à secretaria (simulação).');
     });
   }
 

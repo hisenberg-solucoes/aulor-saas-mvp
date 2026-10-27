@@ -1,5 +1,5 @@
 // Portal do Aluno — Aulas (UI). Só leitura: as aulas vêm das turmas das matrículas ativas do aluno
-// (agendadas em turma.aulas ou prévia da agenda), com presença (Presencas) e gravações (turma.gravacoes).
+// (agendadas em turma.aulas ou prévia da agenda); no detalhe, os materiais que o professor liberou (Materiais).
 // Lista (aulas.html) com abas Próximas / Realizadas / Todas + detalhe em página separada
 // (aula.html?turma=<turmaId>&data=<iso>[&inicio=HH:MM]). A URL antiga aulas.html?turma=&data= redireciona.
 (() => {
@@ -14,7 +14,6 @@
   const diaCurto = (iso) => PortalAluno.diaSemana(iso).slice(0, 3);
   const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
   const nomeMes = (ym) => { const [y, m] = ym.split('-').map(Number); return `${MESES[m - 1]} de ${y}`; };
-  const temPresencas = typeof Presencas !== 'undefined';
 
   const SITUACAO = {
     realizada: { nome: 'Realizada', ponto: 'bg-slate-400' },
@@ -77,7 +76,7 @@
   // ---------- Consulta (local desta tela; não mexe no portal-aluno-motor.js) ----------
   // Todas as aulas das matrículas ativas (em andamento, a iniciar, concluídas), inclusive canceladas
   // quando a turma já tem agendamento. Cada aula: { ...aula, matricula, turma, curso, situacaoAula,
-  // reposicao, sala, instrutor, gravacoes, presenca, modulos, horas, ambigua, chave }.
+  // reposicao, sala, instrutor, modulos, horas, ambigua, chave }.
   function montarAulas() {
     const ms = PortalAluno.todasMatriculas(aluno.id, hoje).filter((m) => ['em_andamento', 'a_iniciar', 'concluida'].includes(m.situacaoAluno));
     const salas = typeof Salas !== 'undefined' ? Salas.carregar() : [];
@@ -86,7 +85,6 @@
     ms.forEach((m) => {
       const agendadas = Turmas.aulasAgendadas(m.turma);
       const base = agendadas ?? m.aulas;
-      const gravs = Turmas.gravacoes(m.turma);
       base.forEach((a) => {
         const situacaoAula = a.status === 'cancelada' ? 'cancelada' : a.data < hoje ? 'realizada' : a.data === hoje ? 'hoje' : 'prevista';
         todas.push({
@@ -96,8 +94,6 @@
           reposicao: a.origem === 'reposicao',
           sala: (a.salaId ? salas.find((s) => s.id === a.salaId) : null) ?? m.sala,
           instrutor: (a.instrutorId ? instrutores.find((i) => i.id === a.instrutorId) : null) ?? m.instrutor,
-          gravacoes: gravs.filter((g) => g.data === a.data),
-          presenca: temPresencas && situacaoAula === 'realizada' ? Presencas.registroDe(m.turma.id, aluno.id, a) : null,
           modulos: (a.moduloIds ?? []).map((id) => (m.curso?.modulos ?? []).find((mod) => mod.id === id)).filter(Boolean),
           horas: Turmas.horasAula(a),
           ambigua: base.filter((b) => b.data === a.data).length > 1,
@@ -116,24 +112,13 @@
   const linkMeet = (a, cls = 'link inline-flex items-center gap-1 !text-xs') => (a.turma.meetLink
     ? `<a href="${esc(a.turma.meetLink)}" target="_blank" rel="noopener" data-parar class="${cls}" title="Abrir a sala da turma no Google Meet">${ICONE_CAMERA}Meet</a>`
     : '');
-  const presencaTexto = (a) => {
-    if (!temPresencas || a.situacaoAula !== 'realizada') return traco;
-    if (!a.presenca) return ponto('bg-slate-300', 'Sem registro');
-    const s = Presencas.statusDe(a.presenca.status);
-    const extra = a.presenca.status === 'atraso' && a.presenca.minutos ? ` (${a.presenca.minutos} min)` : '';
-    const hor = Presencas.horarioTexto(a.presenca);
-    return `${ponto(s?.ponto ?? 'bg-slate-400', `${s?.nome ?? a.presenca.status}${extra}`)}${hor ? `<span class="text-xs text-slate-500 dark:text-neutral-400"> · ${esc(hor)}</span>` : ''}`;
-  };
   const situacaoTexto = (a) => {
-    if (a.situacaoAula === 'realizada') return presencaTexto(a) === traco ? ponto(SITUACAO.realizada.ponto, 'Realizada') : `${ponto(SITUACAO.realizada.ponto, 'Realizada')}<p class="text-xs mt-0.5">${presencaTexto(a)}</p>`;
+    if (a.situacaoAula === 'realizada') return ponto(SITUACAO.realizada.ponto, 'Realizada');
     if (a.situacaoAula === 'cancelada') return ponto(SITUACAO.cancelada.ponto, 'Cancelada');
     if (a.reposicao) return ponto('bg-violet-500', a.situacaoAula === 'hoje' ? 'Hoje · Reposição' : 'Reposição');
     const s = SITUACAO[a.situacaoAula];
     return ponto(s.ponto, s.nome);
   };
-  const gravacoesLinks = (a, bloco = false) => (a.gravacoes.length
-    ? a.gravacoes.map((g) => `<a href="${esc(g.url)}" target="_blank" rel="noopener" data-parar class="link inline-flex items-center gap-1 ${bloco ? '' : '!text-xs'}" title="Abrir a gravação em nova aba">${ICONE_CAMERA}${esc(bloco ? g.titulo : 'Gravação')}${g.duracaoMin ? ` <span class="text-xs font-normal text-slate-400">· ${esc(Turmas.duracaoTexto(g.duracaoMin))}</span>` : ''}</a>`).join(bloco ? '' : '<br>')
-    : traco);
 
   // ============================================================
   // LISTA
@@ -149,7 +134,6 @@
     const proxima = aulas.find((a) => (a.situacaoAula === 'hoje' || a.situacaoAula === 'prevista'));
     const validas = aulas.filter((a) => a.situacaoAula !== 'cancelada');
     const realizadas = validas.filter((a) => a.situacaoAula === 'realizada');
-    const freq = PortalAluno.presencaResumo(aluno.id, hoje);
     const cartao = (rotulo, corpo) => `<div class="cartao p-5"><p class="rotulo">${esc(rotulo)}</p>${corpo}</div>`;
     const cartaoProxima = proxima
       ? `<div class="mt-1.5 flex items-start justify-between gap-3">
@@ -166,13 +150,7 @@
       <p class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100 mt-1.5 tabular-nums">${realizadas.length} <span class="text-sm font-sans font-normal text-slate-500 dark:text-neutral-400">de ${validas.length}</span></p>
       <div class="barra-progresso mt-2"><div class="h-full rounded-full bg-petrol-800 dark:bg-sky-400" style="width:${pct}%"></div></div>
       <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">${validas.length ? `${pct}% das aulas · ${plural(matriculas.length, 'curso', 'cursos')}` : 'Nenhuma aula agendada'}</p>`;
-    const s = freq && freq.dadas ? Presencas.statusFrequenciaDe(freq.status) : null;
-    const cartaoFreq = s
-      ? `<p class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100 mt-1.5 tabular-nums">${freq.percentual}% <span class="text-sm font-sans font-normal">${ponto(s.ponto, s.nome)}</span></p>
-         <div class="barra-progresso mt-2"><div class="h-full rounded-full ${s.ponto}" style="width:${freq.percentual}%"></div></div>
-         <p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">${plural(freq.faltas, 'falta', 'faltas')} em ${plural(freq.dadas, 'aula dada', 'aulas dadas')}${freq.alertas?.length ? ` · ${plural(freq.alertas.length, 'curso em atenção', 'cursos em atenção')}` : ''}</p>`
-      : `<p class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100 mt-1.5">—</p><p class="text-sm text-slate-500 dark:text-neutral-400 mt-1">Nenhuma aula dada ainda.</p>`;
-    $('totais').innerHTML = [cartao('Próxima aula', cartaoProxima), cartao('Aulas realizadas', cartaoRealizadas), cartao('Frequência geral', cartaoFreq)].join('');
+    $('totais').innerHTML = [cartao('Próxima aula', cartaoProxima), cartao('Aulas realizadas', cartaoRealizadas)].join('');
 
     if (!aulas.length) {
       $('abas').innerHTML = '';
@@ -220,7 +198,6 @@
         <td class="whitespace-nowrap">${esc(localTexto(a))}${!cancelada && a.turma.meetLink ? ` <span class="ml-1">${linkMeet(a)}</span>` : ''}</td>
         <td>${a.instrutor ? esc(a.instrutor.nome) : traco}</td>
         <td>${situacaoTexto(a)}</td>
-        <td>${gravacoesLinks(a)}</td>
       </tr>`;
     }
 
@@ -238,7 +215,7 @@
         : 'Nenhuma aula com esses filtros.';
       $('tabela').innerHTML = ordenadas.length
         ? `<div class="cartao overflow-hidden"><div class="overflow-x-auto"><table class="tabela w-full">
-            <thead><tr><th>Data</th><th>Horário</th><th>Curso</th><th>Conteúdo</th><th>Local</th><th>Instrutor</th><th>Situação</th><th>Gravação</th></tr></thead>
+            <thead><tr><th>Data</th><th>Horário</th><th>Curso</th><th>Conteúdo</th><th>Local</th><th>Instrutor</th><th>Situação</th></tr></thead>
             <tbody>${ordenadas.map(linha).join('')}</tbody>
           </table></div></div>
           <p class="text-xs text-slate-500 dark:text-neutral-400 mt-2">${plural(ordenadas.length, 'aula', 'aulas')}${estado.aba === 'realizadas' ? ', da mais recente para a mais antiga' : ', em ordem cronológica'}. Clique na linha para ver a aula.</p>`
@@ -339,23 +316,10 @@
         ${dado(a.sala ? 'Local' : 'Local / Meet', local)}
         ${dado('Instrutor', a.instrutor ? `${esc(a.instrutor.nome)}${a.instrutor.especialidade ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(a.instrutor.especialidade)}</p>` : ''}` : traco)}
         ${dado('Situação', `${situacaoTexto(a)}${a.reposicao ? '<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Aula de reposição</p>' : a.origem === 'extra' ? '<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Aula extra, fora da agenda</p>' : ''}`)}
-        ${dado('Presença', presencaDetalhe())}
         ${dado('Matrícula', `<span class="font-mono">${esc(m.codigoMatricula || '—')}</span>`)}
       </div>`;
 
-    function presencaDetalhe() {
-      if (cancelada) return '<span class="text-slate-500 dark:text-neutral-400">Não se aplica.</span>';
-      if (a.situacaoAula === 'hoje') return '<span class="text-slate-500 dark:text-neutral-400">A chamada é feita durante a aula.</span>';
-      if (a.situacaoAula === 'prevista') return '<span class="text-slate-500 dark:text-neutral-400">Aula ainda não aconteceu.</span>';
-      if (!temPresencas) return traco;
-      if (!a.presenca) return `${ponto('bg-slate-300', 'Sem registro')}<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">A chamada desta aula ainda não foi lançada — conta como falta até lá.</p>`;
-      const obs = a.presenca.observacao ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(a.presenca.observacao)}</p>` : '';
-      const f = m.frequencia;
-      const geral = f && f.dadas ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">No curso: ${f.percentual}% · ${esc(Presencas.statusFrequenciaDe(f.status)?.nome ?? '')}</p>` : '';
-      return `${presencaTexto(a)}${obs}${geral}`;
-    }
-
-    // ----- Corpo: conteúdo, gravações, materiais -----
+    // ----- Corpo: conteúdo, materiais do curso, materiais da aula -----
     const temAgendamento = Turmas.temAgendamento(a.turma);
     const conteudoHtml = (() => {
       if (!a.modulos.length && !a.conteudo) {
@@ -378,14 +342,15 @@
         ${a.observacoes ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-3">${esc(a.observacoes)}</p>` : ''}`;
     })();
 
-    const gravacoesHtml = a.gravacoes.length
-      ? `<div class="divide-y divide-slate-100 dark:divide-neutral-900">${a.gravacoes.map((g) => `
+    // Materiais desta aula (js/materiais-motor.js): só os liberados abrem; antes disso a aula fica bloqueada.
+    const daAula = typeof Materiais !== 'undefined' && a.id != null ? Materiais.daAula(a.turma.id, a.id).filter((x) => Materiais.liberado(x, hoje)) : [];
+    const daAulaHtml = daAula.length
+      ? `<div class="divide-y divide-slate-100 dark:divide-neutral-900">${daAula.map((mt) => `
           <div class="py-3 first:pt-0 last:pb-0 flex items-center gap-3">
-            <div class="shrink-0 h-9 w-9 rounded-lg bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300 grid place-items-center">${ICONE_CAMERA}</div>
-            <div class="min-w-0 flex-1"><p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(g.titulo)}</p><p class="text-xs text-slate-500 dark:text-neutral-400">${[g.duracaoMin ? Turmas.duracaoTexto(g.duracaoMin) : '', g.observacoes].filter(Boolean).map(esc).join(' · ') || 'Gravação do Meet'}</p></div>
-            <a href="${esc(g.url)}" target="_blank" rel="noopener" class="link shrink-0">Assistir</a>
+            <div class="min-w-0 flex-1"><p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(mt.titulo)}</p>${mt.descricao ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(mt.descricao)}</p>` : ''}</div>
+            ${mt.tipo === 'link' ? `<a href="${esc(mt.url)}" target="_blank" rel="noopener" class="link shrink-0">Abrir</a>` : `<button type="button" data-acao="baixar-material" data-nome="${esc(mt.arquivo || mt.titulo)}" class="link shrink-0">Baixar</button>`}
           </div>`).join('')}</div>`
-      : `<p class="text-sm text-slate-500 dark:text-neutral-400">${a.situacaoAula === 'realizada' ? (a.turma.meetLink ? 'Nenhuma gravação publicada para esta aula.' : 'Esta turma não é transmitida pelo Meet; não há gravação.') : cancelada ? 'Aula cancelada — sem gravação.' : 'A gravação fica disponível depois da aula.'}</p>`;
+      : `<p class="text-sm text-slate-500 dark:text-neutral-400">${cancelada ? 'Aula cancelada.' : 'O professor ainda não liberou materiais para esta aula.'}</p>`;
 
     const todosMateriais = (m.curso?.materiais ?? []).filter((x) => !Cursos.materialPendente(x));
     const idsModulos = new Set(a.modulos.map((x) => x.id));
@@ -416,7 +381,7 @@
           ${secao(`Materiais <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${materiaisLista.length}</span>`, materiaisHtml, `${notaMateriais}${notaMateriais ? ' ' : ''}<a href="materiais.html" class="link !text-xs">Todos os materiais</a>`)}
         </div>
         <div class="space-y-5">
-          ${secao(`Gravações <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${a.gravacoes.length}</span>`, gravacoesHtml, a.gravacoes.length ? '<a href="gravacoes.html" class="link !text-xs">Todas as gravações</a>' : '')}
+          ${secao(`Materiais da aula <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${daAula.length}</span>`, daAulaHtml)}
           ${secao('Nesta turma', `
             <div class="space-y-3 text-sm">
               ${anterior ? `<a href="${urlAula(anterior)}" class="block rounded-lg border border-slate-200 dark:border-neutral-800 px-3 py-2 hover:bg-slate-50 dark:hover:bg-neutral-900 transition"><p class="rotulo">Aula anterior</p><p class="text-slate-800 dark:text-neutral-100 mt-0.5">${data(anterior.data)} <span class="text-xs text-slate-500 dark:text-neutral-400">${esc(diaCurto(anterior.data))} · ${esc(anterior.inicio)}–${esc(anterior.fim)}</span></p>${anterior.conteudo || anterior.modulos.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(anterior.conteudo || anterior.modulos.map((x) => x.titulo).join(' · '))}</p>` : ''}</a>` : '<p class="text-xs text-slate-500 dark:text-neutral-400">Esta é a primeira aula da turma.</p>'}

@@ -24,27 +24,6 @@
   const TIPO_MATERIAL = { video: 'Vídeo', arquivo: 'Arquivo', link: 'Link' };
   const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
   const situacao = (id) => ponto(PONTO[id] ?? 'bg-slate-400', SIT[id]?.nome ?? id);
-  // Presença: "92% · Em dia" com ponto colorido (STATUS_FREQUENCIA / STATUS_PRESENCA vêm de js/presencas-data.js).
-  const temPresencas = typeof Presencas !== 'undefined';
-  const freqStatus = (f) => (temPresencas ? Presencas.statusFrequenciaDe(f?.status ?? 'sem_aulas') : null);
-  const presencaTexto = (f, { curto = false } = {}) => {
-    if (!f || !temPresencas) return '<span class="text-slate-400">—</span>';
-    const s = freqStatus(f);
-    if (f.status === 'sem_aulas') return ponto(s.ponto, curto ? '—' : 'Sem aulas dadas');
-    return `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${s.ponto} shrink-0"></span><span class="tabular-nums">${f.percentual}%</span><span class="text-slate-400">·</span>${esc(s.nome)}</span>`;
-  };
-  const barraPresenca = (f) => {
-    const cor = { ok: 'bg-emerald-500', atencao: 'bg-amber-500', risco: 'bg-red-500', reprovado_frequencia: 'bg-red-500', sem_aulas: 'bg-slate-300' }[f?.status] ?? 'bg-slate-300';
-    return `<div class="barra-progresso"><div class="h-full rounded-full ${cor}" style="width:${Math.max(0, Math.min(100, f?.percentual ?? 0))}%"></div></div>`;
-  };
-  const presencaAula = (a) => {
-    if (!temPresencas || a.situacaoAula !== 'realizada') return '<span class="text-slate-400">—</span>';
-    if (!a.presenca) return ponto('bg-slate-300', 'Sem registro');
-    const s = Presencas.statusDe(a.presenca.status);
-    const extra = a.presenca.status === 'atraso' && a.presenca.minutos ? ` (${a.presenca.minutos} min)` : '';
-    const hor = Presencas.horarioTexto(a.presenca);
-    return `${ponto(s?.ponto ?? 'bg-slate-400', `${s?.nome ?? a.presenca.status}${extra}`)}${hor ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(hor)}</p>` : ''}${a.presenca.observacao ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(a.presenca.observacao)}</p>` : ''}`;
-  };
   const barra = (pct, concluido = false) => `<div class="barra-progresso"><div class="h-full rounded-full ${concluido ? 'bg-slate-400 dark:bg-neutral-600' : 'bg-petrol-800 dark:bg-sky-400'}" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
   const chipArea = (area) => {
     if (!area) return '';
@@ -151,14 +130,13 @@
         <td class="whitespace-nowrap">${esc(FORMATO[m.turma.formato] ?? m.turma.formato ?? '—')}</td>
         <td>${esc(m.instrutor?.nome ?? '—')}</td>
         <td class="min-w-36"><div class="flex items-center gap-2"><div class="flex-1">${barra(total ? (feitas / total) * 100 : 0, concluido)}</div><span class="text-xs tabular-nums text-slate-500 dark:text-neutral-400 shrink-0">${feitas}/${total}</span></div></td>
-        <td>${presencaTexto(m.frequencia)}</td>
         <td>${situacao(m.situacaoAluno)}</td>
         <td class="text-right"><a href="curso.html?turma=${encodeURIComponent(m.turma.id)}" class="botao-sec !py-1">Abrir</a></td>
       </tr>`;
     }
 
     const tabela = (itens, mostrarContrato) => `<div class="overflow-x-auto"><table class="tabela w-full">
-      <thead><tr><th>Nº</th><th>Curso</th><th>Período</th><th>Horário</th><th>Formato</th><th>Instrutor</th><th>Aulas</th><th>Presença</th><th>Situação</th><th></th></tr></thead>
+      <thead><tr><th>Nº</th><th>Curso</th><th>Período</th><th>Horário</th><th>Formato</th><th>Instrutor</th><th>Aulas</th><th>Situação</th><th></th></tr></thead>
       <tbody>${itens.map((m, i) => linha(m, i, mostrarContrato)).join('')}</tbody>
     </table></div>`;
 
@@ -185,7 +163,6 @@
             <div class="flex items-center gap-4 shrink-0 pr-5 py-4">
               <div class="text-right hidden sm:block">
                 <p class="text-sm text-slate-600 dark:text-neutral-300">${situacao(g.situacao)}</p>
-                ${g.frequencia && g.frequencia.dadas ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">Presença ${presencaTexto(g.frequencia)}</p>` : ''}
                 ${f ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">${esc(g.contratante)} · <a href="contrato.html?id=${encodeURIComponent(g.contrato.id)}" class="link !text-xs">Ver contrato</a></p>` : ''}
               </div>
               <button type="button" data-acao="alternar" data-grupo="${esc(g.chave)}" title="${aberto ? 'Minimizar' : 'Expandir'}" class="p-1 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-900"><svg class="h-5 w-5 transition ${aberto ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg></button>
@@ -251,12 +228,13 @@
   // ============================================================
 
   function renderDetalhe(d) {
+    // Materiais de aula já liberados pelo professor (js/materiais-motor.js), na ordem das aulas.
+    const materiaisAulas = d.aulas.flatMap((a) => a.materiaisLiberados.map((mt) => ({ mt, aula: a })));
     const ABAS = [
       { id: 'visao', titulo: 'Visão geral' },
       { id: 'aulas', titulo: 'Aulas', n: d.aulas.length },
       { id: 'conteudo', titulo: 'Conteúdo', n: d.modulos.length },
-      { id: 'materiais', titulo: 'Materiais e requisitos', n: d.materiais.length + d.softwares.length },
-      { id: 'certificado', titulo: 'Certificado' },
+      { id: 'materiais', titulo: 'Materiais e requisitos', n: d.materiais.length + materiaisAulas.length + d.softwares.length },
     ];
     const abaUrl = params.get('aba');
     const estado = { aba: ABAS.some((x) => x.id === abaUrl) ? abaUrl : 'visao' };
@@ -269,30 +247,7 @@
     const sep = '<svg class="h-3.5 w-3.5 text-slate-300 dark:text-neutral-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>';
     bc.innerHTML = `<a href="cursos.html" class="hover:underline">Meus cursos</a>${d.formacao ? `${sep}<span>${esc(d.formacao.nome)}</span>` : `${sep}<span>Cursos avulsos</span>`}${sep}<span class="text-slate-800 dark:text-neutral-100 font-medium">${esc(nomeCurso)}</span>`;
 
-    // Avaliações que este aluno respondeu em avaliacao-aluno.html, nesta turma.
-    const envios = PortalAluno.enviosAvaliacao(aluno.id).filter((e) => e.turmaId === d.turma.id);
-    const envioFinal = envios.find((e) => e.modalidade === 'final') ?? null;
-    const envioDiaria = (iso) => envios.find((e) => e.modalidade === 'diaria' && e.data === iso) ?? null;
-    const linkAvaliar = (modalidade, texto, cls = 'botao-pri') => `<a href="../avaliacao-aluno.html?turma=${encodeURIComponent(d.turma.id)}&modalidade=${modalidade}" class="${cls}">${texto}</a>`;
-
-    // Ações do topo: contrato + avaliação (final quando concluído; diária quando há aula hoje); respondida vira texto.
-    const acoes = [`<a href="contrato.html?id=${encodeURIComponent(d.contrato.id)}" class="botao-sec">Ver contrato</a>`];
-    if (d.situacaoAluno === 'concluida') acoes.push(envioFinal ? `<span class="text-sm text-slate-600 dark:text-neutral-300">${ponto('bg-emerald-500', `Avaliação do curso respondida em ${PortalAluno.fmtData(envioFinal.data)}`)}</span>` : linkAvaliar('final', 'Avaliar o curso'));
-    else if (d.situacaoAluno === 'em_andamento' && d.aulaHoje) acoes.push(envioDiaria(hoje) ? `<span class="text-sm text-slate-600 dark:text-neutral-300">${ponto('bg-emerald-500', 'Avaliação de hoje respondida')}</span>` : linkAvaliar('diaria', 'Avaliar a aula de hoje'));
-    $('acoes-topo').innerHTML = acoes.join('');
-
-    // Situação das avaliações para a visão geral.
-    function avaliacoesTexto() {
-      const aulasDadas = d.aulas.filter((a) => a.situacaoAula === 'realizada' || a.situacaoAula === 'hoje');
-      const diarias = aulasDadas.filter((a) => envioDiaria(a.data)).length;
-      const linhas = [];
-      if (aulasDadas.length) linhas.push(`<p>${ponto(diarias === aulasDadas.length ? 'bg-emerald-500' : diarias ? 'bg-amber-500' : 'bg-slate-400', `Diárias: ${diarias} de ${aulasDadas.length} ${aulasDadas.length === 1 ? 'aula avaliada' : 'aulas avaliadas'}`)}</p>`);
-      if (d.situacaoAluno === 'concluida') linhas.push(envioFinal
-        ? `<p>${ponto('bg-emerald-500', `Final: respondida em ${PortalAluno.fmtData(envioFinal.data)}`)}</p>`
-        : `<p>${ponto('bg-amber-500', 'Final: pendente')} · ${linkAvaliar('final', 'Responder agora', 'link')}</p>`);
-      else linhas.push(`<p class="text-xs text-slate-500 dark:text-neutral-400">A avaliação final abre quando o curso terminar.</p>`);
-      return linhas.join('');
-    }
+    $('acoes-topo').innerHTML = `<a href="contrato.html?id=${encodeURIComponent(d.contrato.id)}" class="botao-sec">Ver contrato</a>`;
 
     // Resumo fixo acima das abas.
     const concluido = d.situacaoAluno === 'concluida';
@@ -302,25 +257,8 @@
       <div class="cartao p-5 flex flex-wrap items-center gap-x-8 gap-y-3">
         <div class="flex items-center gap-3">${chipArea(d.area)}<p class="text-sm text-slate-600 dark:text-neutral-300">${situacao(d.situacaoAluno)}</p></div>
         <div class="flex-1 min-w-56 flex items-center gap-3"><div class="flex-1">${barra(total ? (feitas / total) * 100 : 0, concluido)}</div><p class="text-xs tabular-nums text-slate-500 dark:text-neutral-400 shrink-0">${feitas}/${total} aulas · ${esc(horas(d.horasConcluidas))} de ${esc(horas(d.horas))}</p></div>
-        ${d.frequencia && d.frequencia.dadas ? `<div class="min-w-48 flex items-center gap-3"><div class="flex-1">${barraPresenca(d.frequencia)}</div><p class="text-xs text-slate-500 dark:text-neutral-400 shrink-0">Presença ${presencaTexto(d.frequencia)}</p></div>` : ''}
         <p class="text-sm text-slate-500 dark:text-neutral-400">Matrícula <span class="font-mono text-slate-800 dark:text-neutral-100">${esc(d.codigoMatricula || '—')}</span></p>
       </div>`;
-
-    // Presença na visão geral: percentual + situação + contagens + mínimo.
-    function presencaDetalhe() {
-      const f = d.frequencia;
-      if (!f) return '<span class="text-slate-500 dark:text-neutral-400">Não disponível.</span>';
-      if (!f.dadas) return `<span class="text-slate-500 dark:text-neutral-400">Nenhuma aula dada ainda.</span><p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Frequência mínima de ${f.minimo}%.</p>`;
-      const partes = [`${plural(f.presentes, 'presença', 'presenças')}`];
-      if (f.atrasos) partes.push(`${plural(f.atrasos, 'atraso', 'atrasos')}`);
-      if (f.justificadas) partes.push(`${plural(f.justificadas, 'falta justificada', 'faltas justificadas')}`);
-      partes.push(`${plural(f.ausentes, 'falta', 'faltas')}`);
-      if (f.semRegistro) partes.push(`${f.semRegistro} sem registro`);
-      const nota = f.status === 'risco' ? `Abaixo do mínimo de ${f.minimo}% — ainda dá para recuperar nas próximas aulas.`
-        : f.status === 'reprovado_frequencia' ? `Abaixo do mínimo de ${f.minimo}% — o certificado não é emitido.`
-          : f.status === 'atencao' ? `Perto do mínimo de ${f.minimo}%.` : `Mínimo de ${f.minimo}% para o certificado.`;
-      return `<p class="font-medium">${presencaTexto(f)}</p><p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(partes.join(' · '))} em ${plural(f.dadas, 'aula dada', 'aulas dadas')}</p><p class="text-xs text-slate-500 dark:text-neutral-400">${esc(nota)}</p>`;
-    }
 
     const dado = (r, v) => `<div><p class="rotulo">${esc(r)}</p><div class="text-sm text-slate-800 dark:text-neutral-100 mt-0.5">${v}</div></div>`;
 
@@ -342,11 +280,20 @@
           ${dado('Matrícula', `<span class="font-mono">${esc(d.codigoMatricula || '—')}</span>`)}
           ${dado('Contrato', `<a href="contrato.html?id=${encodeURIComponent(d.contrato.id)}" class="link">${esc(d.contrato.codigo)}</a><p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(d.contratante)}</p>`)}
           ${dado('Situação', situacao(d.situacaoAluno))}
-          ${dado('Presença', presencaDetalhe())}
-          ${dado('Avaliações', avaliacoesTexto())}
         </div>
         ${d.curso?.resumo ? `<div class="cartao p-5 mt-5"><p class="rotulo mb-1.5">Sobre o curso</p><p class="text-sm text-slate-700 dark:text-neutral-200">${esc(d.curso.descricao || d.curso.resumo)}</p></div>` : ''}`;
     }
+
+    // Materiais da aula (js/materiais-motor.js): só os liberados abrem; aula futura sem nada liberado fica bloqueada.
+    const CADEADO = '<svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>';
+    const acaoMaterialAula = (mt, rotulo, cls = 'link block text-left') => (mt.tipo === 'link'
+      ? `<a href="${esc(mt.url)}" target="_blank" rel="noopener" class="${cls}">${rotulo}</a>`
+      : `<button type="button" data-acao="baixar-material" data-nome="${esc(mt.arquivo || mt.titulo)}" class="${cls}">${rotulo}</button>`);
+    const materiaisAula = (a) => {
+      if (a.materiaisLiberados.length) return a.materiaisLiberados.map((mt) => acaoMaterialAula(mt, esc(mt.titulo))).join('');
+      if (a.situacaoAula === 'prevista') return `<span class="inline-flex items-center gap-1 text-slate-400 whitespace-nowrap" title="O professor libera o acesso aos materiais desta aula.">${CADEADO}Bloqueado</span>`;
+      return '<span class="text-slate-400">—</span>';
+    };
 
     function abaAulas() {
       if (!d.aulas.length) return vazio('As aulas desta turma ainda não foram agendadas.');
@@ -355,7 +302,7 @@
       return `
         ${estimadas ? '<p class="text-sm text-slate-500 dark:text-neutral-400 mb-3">Datas previstas pela agenda da turma; o conteúdo de cada aula aparece quando a secretaria confirmar o agendamento.</p>' : ''}
         <div class="cartao overflow-hidden"><div class="overflow-x-auto"><table class="tabela w-full">
-          <thead><tr><th>Nº</th><th>Data</th><th>Horário</th><th>Conteúdo</th><th>Sala</th><th>Status</th><th>Presença</th><th>Avaliação</th><th>Gravação</th></tr></thead>
+          <thead><tr><th>Nº</th><th>Data</th><th>Horário</th><th>Conteúdo</th><th>Sala</th><th>Status</th><th>Materiais</th></tr></thead>
           <tbody>${d.aulas.map((a) => {
             const s = AULA[a.situacaoAula];
             const mods = nomeModulos(a);
@@ -364,12 +311,10 @@
               <td class="tabular-nums text-slate-500 dark:text-neutral-400">${a.n ?? '—'}</td>
               <td class="whitespace-nowrap tabular-nums">${data(a.data)} <span class="text-xs text-slate-500 dark:text-neutral-400">${esc(PortalAluno.diaSemana(a.data).slice(0, 3))}</span></td>
               <td class="whitespace-nowrap tabular-nums">${esc(a.inicio)}–${esc(a.fim)}</td>
-              <td>${conteudo ? esc(conteudo) : '<span class="text-slate-400">—</span>'}${a.conteudo && mods.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(mods.join(' · '))}</p>` : ''}${a.status === 'cancelada' && a.motivo ? `<p class="text-xs text-red-600 dark:text-red-400">${esc(Aulas.MOTIVOS?.find((x) => x.id === a.motivo)?.nome ?? a.motivo)}</p>` : ''}</td>
+              <td>${conteudo ? esc(conteudo) : '<span class="text-slate-400">—</span>'}${a.conteudo && mods.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(mods.join(' · '))}</p>` : ''}${a.status === 'cancelada' && a.motivo ? `<p class="text-xs text-red-600 dark:text-red-400">${esc(typeof a.motivo === 'string' ? Aulas.motivoDe(a.motivo) : [Aulas.motivoDe(a.motivo.tipo), a.motivo.texto].filter(Boolean).join(' — '))}</p>` : ''}</td>
               <td>${a.sala ? esc(a.sala.nome) : d.turma.meetLink ? 'Google Meet' : '—'}${a.situacaoAula === 'hoje' && meetOnline(d) ? ` <a href="${esc(d.turma.meetLink)}" target="_blank" rel="noopener" class="link text-xs whitespace-nowrap ml-1">Entrar no Meet</a>` : ''}</td>
               <td>${ponto(s.ponto, s.nome)}</td>
-              <td>${presencaAula(a)}</td>
-              <td>${a.situacaoAula === 'realizada' || a.situacaoAula === 'hoje' ? (envioDiaria(a.data) ? ponto('bg-emerald-500', 'Respondida') : a.situacaoAula === 'hoje' ? linkAvaliar('diaria', 'Avaliar agora', 'link') : ponto('bg-slate-400', 'Não respondida')) : '<span class="text-slate-400">—</span>'}</td>
-              <td>${a.gravacoes.length ? a.gravacoes.map((g) => `<a href="${esc(g.url)}" target="_blank" rel="noopener" class="link block">${esc(g.titulo)}${g.duracaoMin ? ` <span class="text-xs text-slate-400">· ${esc(Turmas.duracaoTexto(g.duracaoMin))}</span>` : ''}</a>`).join('') : '<span class="text-slate-400">—</span>'}</td>
+              <td>${materiaisAula(a)}</td>
             </tr>`;
           }).join('')}</tbody>
         </table></div></div>`;
@@ -411,6 +356,13 @@
             </div>`;
           }).join('')}</div>`
         : vazio('Nenhum material publicado para este curso ainda.');
+      const daAulas = materiaisAulas.length
+        ? `<div class="cartao divide-y divide-slate-100 dark:divide-neutral-900">${materiaisAulas.map(({ mt, aula }) => `<div class="px-5 py-3 flex items-center gap-4">
+              <div class="shrink-0 h-9 w-9 rounded-lg bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300 grid place-items-center"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="${iconeMaterial[mt.tipo] ?? iconeMaterial.link}" /></svg></div>
+              <div class="min-w-0 flex-1"><p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(mt.titulo)}</p><p class="text-xs text-slate-500 dark:text-neutral-400">${esc([`Aula ${aula.n ?? ''}`.trim(), PortalAluno.fmtData(aula.data), mt.descricao].filter(Boolean).join(' · '))}</p></div>
+              ${acaoMaterialAula(mt, mt.tipo === 'link' ? 'Abrir' : 'Baixar', 'link shrink-0')}
+            </div>`).join('')}</div>`
+        : vazio('Nenhum material de aula liberado ainda. O professor libera os materiais de cada aula.');
       const softwares = d.softwares.length
         ? `<div class="cartao overflow-hidden"><div class="overflow-x-auto"><table class="tabela w-full">
             <thead><tr><th>Software</th><th>Versão</th><th>Onde baixar</th><th>Observação</th></tr></thead>
@@ -435,62 +387,8 @@
         <div class="space-y-6">
           <section><h3 class="titulo-secao mb-3">Softwares requeridos <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${d.softwares.length}</span></h3>${softwares}<p class="text-xs text-slate-500 dark:text-neutral-400 mt-2">Nos laboratórios da ProWay tudo já vem instalado; a lista é para quem quer praticar em casa ou assiste online.</p></section>
           <section><h3 class="titulo-secao mb-3">Materiais do curso <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${d.materiais.length}</span></h3>${materiais}</section>
+          <section><h3 class="titulo-secao mb-3">Materiais das aulas <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${materiaisAulas.length}</span></h3>${daAulas}</section>
           <section><h3 class="titulo-secao mb-3">Pré-requisitos e infraestrutura</h3>${requisitos}</section>
-        </div>`;
-    }
-
-    function abaCertificado() {
-      const c = d.certificado;
-      const cc = c.curso;
-      const cf = c.formacao;
-      const TOM = {
-        disponivel: { cartao: 'rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 shadow-sm', ponto: 'bg-emerald-500', nome: 'Disponível' },
-        em_curso: { cartao: 'cartao', ponto: 'bg-emerald-500', nome: 'Em andamento' },
-        a_iniciar: { cartao: 'cartao', ponto: 'bg-sky-500', nome: 'A iniciar' },
-        nao_emite: { cartao: 'cartao', ponto: 'bg-slate-400', nome: 'Não se aplica' },
-        indisponivel: { cartao: 'cartao', ponto: 'bg-red-500', nome: 'Indisponível' },
-      };
-      const tom = TOM[c.situacao];
-      const regrasCurso = cc?.emite
-        ? `<ul class="list-disc list-inside space-y-1 text-sm text-slate-600 dark:text-neutral-300">
-            <li>Frequência mínima de <strong>${esc(cc.frequenciaMinima ?? 75)}%</strong> das aulas.</li>
-            ${cc.exigeAprovacao ? `<li>Aprovação na avaliação do curso com nota mínima <strong>${esc(String(cc.notaMinima ?? 7).replace('.', ','))}</strong>.</li>` : '<li>Sem prova: o certificado é de participação.</li>'}
-            <li>Emitido pela ProWay em PDF, com código de verificação.</li>
-          </ul>`
-        : '<p class="text-sm text-slate-500 dark:text-neutral-400">Este curso não emite certificado próprio.</p>';
-      const regrasFormacao = cf
-        ? (cf.emite
-          ? `<ul class="list-disc list-inside space-y-1 text-sm text-slate-600 dark:text-neutral-300">
-              <li>${cf.exigeTodosObrigatorios ? 'Concluir <strong>todos os cursos obrigatórios</strong> da formação.' : 'Concluir os cursos da formação.'}</li>
-              ${cf.minimoOptativos ? `<li>Concluir pelo menos <strong>${cf.minimoOptativos}</strong> ${cf.minimoOptativos === 1 ? 'curso optativo' : 'cursos optativos'}.</li>` : ''}
-              <li>Cada curso da formação também tem o próprio certificado.</li>
-            </ul>`
-          : '<p class="text-sm text-slate-500 dark:text-neutral-400">A formação não emite certificado próprio.</p>')
-        : '';
-      const pend = d.aulas.filter((a) => a.situacaoAula !== 'realizada' && a.situacaoAula !== 'cancelada');
-      const oQueFalta = c.situacao === 'em_curso' || c.situacao === 'a_iniciar'
-        ? `<div class="mt-4"><p class="rotulo mb-1.5">O que falta</p><ul class="list-disc list-inside space-y-1 text-sm text-slate-600 dark:text-neutral-300">
-            <li>${plural(pend.length, 'aula', 'aulas')} ${c.situacao === 'a_iniciar' ? 'a partir de' : 'até'} ${data(c.situacao === 'a_iniciar' ? d.turma.inicio : d.turma.fim)}.</li>
-            ${cc?.exigeAprovacao ? '<li>Avaliação final com nota mínima.</li>' : ''}
-            <li>${d.frequencia && d.frequencia.dadas ? `Frequência mínima de ${d.frequencia.minimo}% — hoje ${presencaTexto(d.frequencia)}.` : 'Frequência mínima confirmada pela secretaria.'}</li>
-          </ul></div>`
-        : c.motivo === 'frequencia'
-          ? `<div class="mt-4"><p class="rotulo mb-1.5">Sua frequência</p><div class="flex items-center gap-3"><div class="flex-1">${barraPresenca(d.frequencia)}</div><p class="text-xs text-slate-500 dark:text-neutral-400 shrink-0">${presencaTexto(d.frequencia)}</p></div><p class="text-xs text-slate-500 dark:text-neutral-400 mt-1.5">${plural(d.frequencia.faltas, 'falta', 'faltas')} em ${plural(d.frequencia.dadas, 'aula', 'aulas')}. Veja a aba Aulas.</p></div>`
-          : '';
-      return `
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div class="${tom.cartao} p-5 lg:col-span-1">
-            <p class="rotulo">Situação</p>
-            <p class="font-display font-semibold text-lg text-slate-900 dark:text-neutral-100 mt-1.5">${ponto(tom.ponto, tom.nome)}</p>
-            <p class="text-sm text-slate-600 dark:text-neutral-300 mt-1">${esc(c.texto)}</p>
-            ${c.situacao === 'disponivel' ? `<div class="mt-4 flex flex-wrap gap-2"><button type="button" data-acao="baixar-certificado" class="botao-pri">Baixar certificado</button><button type="button" data-acao="validar-certificado" class="botao-sec">Código de verificação</button></div>` : ''}
-            ${oQueFalta}
-          </div>
-          <div class="cartao p-5 lg:col-span-2 space-y-5">
-            <div><p class="rotulo mb-2">Regras do certificado do curso</p>${regrasCurso}</div>
-            ${cf ? `<div><p class="rotulo mb-2">Certificado da formação ${esc(d.formacao.codigo)}</p>${regrasFormacao}</div>` : ''}
-            <p class="text-xs text-slate-500 dark:text-neutral-400">Todos os certificados emitidos também ficam em Secretaria → Certificados.</p>
-          </div>
         </div>`;
     }
 
@@ -501,7 +399,7 @@
     function renderAba() {
       renderAbas();
       const q = new URLSearchParams(location.search); q.set('aba', estado.aba); history.replaceState(null, '', `?${q}`);
-      $('conteudo-aba').innerHTML = { visao: abaVisao, aulas: abaAulas, conteudo: abaConteudo, materiais: abaMateriais, certificado: abaCertificado }[estado.aba]();
+      $('conteudo-aba').innerHTML = { visao: abaVisao, aulas: abaAulas, conteudo: abaConteudo, materiais: abaMateriais }[estado.aba]();
     }
 
     document.addEventListener('click', (e) => {
@@ -509,9 +407,7 @@
       if (b) { estado.aba = b.dataset.aba; renderAba(); return; }
       const btn = e.target.closest('[data-acao]');
       if (!btn) return;
-      if (btn.dataset.acao === 'baixar-certificado') toast(`Certificado de ${nomeCurso}: o PDF fica para a integração com o emissor.`);
-      else if (btn.dataset.acao === 'validar-certificado') abrirModal(`${cabecalhoModal('Código de verificação', esc(nomeCurso))}<div class="p-5 text-sm text-slate-700 dark:text-neutral-200"><p>Quem receber o seu certificado pode conferir a autenticidade em <span class="font-mono">proway.com.br/verificar</span> com o código:</p><p class="mt-3 font-mono text-lg text-center text-slate-900 dark:text-neutral-100">${esc(`${d.codigoMatricula || 'MAT'}-${d.turma.codigo.replace(/\s+/g, '')}`)}</p><p class="text-[11px] text-slate-400 mt-3">Simulação do protótipo: a emissão real fica para a integração.</p></div>${rodapeModal()}`);
-      else if (btn.dataset.acao === 'baixar-material') toast(`"${btn.dataset.nome}": o download do arquivo fica para a integração com o armazenamento.`);
+      if (btn.dataset.acao === 'baixar-material') toast(`"${btn.dataset.nome}": o download do arquivo fica para a integração com o armazenamento.`);
     });
 
     renderAba();

@@ -1,5 +1,6 @@
-// Portal do Aluno — Materiais (UI). Só leitura: materiais e softwares vêm do cadastro de cursos do administrativo.
-// Junta os materiais de todos os cursos do aluno (matrículas ativas, a iniciar e concluídas) numa tabela única
+// Portal do Aluno — Materiais (UI). Só leitura: materiais e softwares vêm do cadastro de cursos do administrativo;
+// os materiais das aulas, do que o professor já liberou (js/materiais-motor.js).
+// Junta os materiais de todos os cursos do aluno (do curso + das aulas) (matrículas ativas, a iniciar e concluídas) numa tabela única
 // com busca + filtro por curso e por tipo; a aba "Softwares necessários" lista os programas por curso.
 (() => {
   const aluno = PortalAluno.alunoLogado();
@@ -102,8 +103,15 @@
             : dominio(mt.url);
         return { ...mt, tipoTela, modulo, detalhe, turmaId: m.turma.id };
       });
+      // Materiais das aulas já liberados (só o que Materiais.doAluno devolve), na mesma tabela dos do curso.
+      const agendadas = Turmas.aulasAgendadas(m.turma) ?? [];
+      const daAulas = (typeof Materiais !== 'undefined' ? Materiais.doAluno(m.turma.id, hoje) : []).map((mt) => {
+        const aula = agendadas.find((a) => a.id === mt.aulaId);
+        const origem = aula ? `Aula${aula.n ? ` ${aula.n}` : ''} · ${PortalAluno.fmtData(aula.data)}` : 'Material da aula';
+        return { id: mt.id, nome: mt.titulo, tipo: mt.tipo, tipoTela: mt.tipo, url: mt.url, descricao: [origem, mt.descricao].filter(Boolean).join(' · '), detalhe: mt.tipo === 'link' ? dominio(mt.url) : mt.arquivo, turmaId: m.turma.id };
+      });
       const softwares = (m.curso?.infraestrutura?.softwares ?? []).map((s) => ({ ...s, catalogo: s.softwareId ? catalogo.find((c) => c.id === s.softwareId) ?? null : null }));
-      return { matricula: m, nome: m.curso?.nome ?? m.turma.codigo, materiais, softwares };
+      return { matricula: m, nome: m.curso?.nome ?? m.turma.codigo, materiais: [...materiais, ...daAulas], softwares };
     });
     const linhas = cursos.flatMap((c) => c.materiais.map((mt) => ({ ...mt, curso: c })));
     return { cursos, linhas };
@@ -123,7 +131,7 @@
     cartaoTotal('Materiais', dados.linhas.length, dados.cursos.length ? `em ${plural(cursosComMaterial, 'curso', 'cursos')} de ${dados.cursos.length}` : 'Nenhuma matrícula'),
     cartaoTotal('Apostilas', porTipo('apostila'), 'PDF para estudar'),
     cartaoTotal('Arquivos', porTipo('arquivo'), 'exercícios, projetos, bases'),
-    cartaoTotal('Vídeos', porTipo('video'), 'gravações e aulas extras'),
+    cartaoTotal('Vídeos', porTipo('video'), 'aulas extras e tutoriais'),
     cartaoTotal('Links', porTipo('link'), 'repositórios e referências'),
     cartaoTotal('Programas', programas, cursosComSoftware ? `pedidos por ${plural(cursosComSoftware, 'curso', 'cursos')}` : 'Nenhum curso exige instalação'),
   ].join('');
@@ -243,7 +251,7 @@
     const comSoft = dados.cursos.filter((c) => c.softwares.length);
     if (!comSoft.length) return vazio('Nenhum dos seus cursos exige instalação de programas.');
     return `
-      <p class="text-sm text-slate-500 dark:text-neutral-400 mb-3">Nos laboratórios da ProWay tudo já vem instalado; a lista é para quem quer praticar em casa ou assiste online. Precisa de ajuda para instalar? <a href="suporte.html" class="link">Abra um chamado no Suporte</a>.</p>
+      <p class="text-sm text-slate-500 dark:text-neutral-400 mb-3">Nos laboratórios da ProWay tudo já vem instalado; a lista é para quem quer praticar em casa ou assiste online. Precisa de ajuda para instalar? Fale com a secretaria.</p>
       <div class="space-y-4">${comSoft.map(cartaoSoftwares).join('')}</div>`;
   }
 
@@ -281,7 +289,7 @@
     if (acao === 'alternar') { estado.aberto[btn.dataset.grupo] = !estado.aberto[btn.dataset.grupo]; renderAba(); }
     else if (acao === 'limpar') { estado.busca = ''; estado.curso = 'todos'; estado.tipo = 'todos'; renderAba(); }
     else if (acao === 'baixar') toast(`"${btn.dataset.nome}": download simulado no protótipo — o arquivo fica para a integração com o armazenamento.`);
-    else if (acao === 'sem-site') toast(`"${btn.dataset.nome}" não tem site de download cadastrado. Peça o instalador pelo Suporte.`);
+    else if (acao === 'sem-site') toast(`"${btn.dataset.nome}" não tem site de download cadastrado. Peça o instalador à secretaria.`);
     else if (acao === 'video') {
       const l = dados.linhas.find((x) => x.id === btn.dataset.id && x.turmaId === btn.dataset.turma);
       if (!l) return;

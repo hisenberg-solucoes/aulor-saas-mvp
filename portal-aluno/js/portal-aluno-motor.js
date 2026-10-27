@@ -6,7 +6,7 @@
 
 const PortalAluno = (() => {
   const CHAVE_SESSAO = 'aulor-v1-portal-aluno-sessao';
-  // Senha única do protótipo: no sistema real vem do cadastro de usuário (permissoes.html).
+  // Senha única do protótipo: no sistema real vem do cadastro de usuário (../permissoes.html).
   const SENHA_PROTOTIPO = '123456';
 
   const hoje = () => (typeof Turmas !== 'undefined' ? Turmas.hoje() : new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10));
@@ -100,37 +100,6 @@ const PortalAluno = (() => {
     return lista.sort((a, b) => a.data.localeCompare(b.data) || a.inicio.localeCompare(b.inicio)).slice(0, limite);
   }
 
-  // Avaliações que o aluno enviou em avaliacao-aluno.html (chave compartilhada;
-  // envio = { turmaId, alunoId, modalidade, questionarioId, data, … }).
-  function enviosAvaliacao(alunoId) {
-    try {
-      return JSON.parse(localStorage.getItem('aulor-v1-avaliacao-aluno-envios') ?? '[]').filter((e) => e.alunoId === alunoId);
-    } catch (_) { return []; }
-  }
-
-  // Avaliações que o aluno ainda pode responder: diária da aula de hoje (turma em andamento)
-  // e final das turmas encerradas nos últimos 7 dias. Some quando já há envio (a final vale uma vez).
-  function avaliacoesPendentes(ms, ref = hoje(), alunoId = null) {
-    const limite = new Date(`${ref}T12:00:00`); limite.setDate(limite.getDate() - 7);
-    const desde = limite.toISOString().slice(0, 10);
-    const envios = enviosAvaliacao(alunoId);
-    const enviada = (m, modalidade) => envios.some((e) => e.turmaId === m.turma.id && e.modalidade === modalidade && (modalidade === 'final' || e.data === ref));
-    const pendentes = [];
-    ms.forEach((m) => {
-      if (m.situacao === 'em_andamento' && m.aulas.some((a) => a.data === ref) && !enviada(m, 'diaria')) pendentes.push({ modalidade: 'diaria', matricula: m });
-      const ultima = m.aulas.at(-1)?.data ?? m.turma.fim;
-      if (ultima >= desde && ultima <= ref && !enviada(m, 'final')) pendentes.push({ modalidade: 'final', matricula: m });
-    });
-    return pendentes;
-  }
-
-  // Gravações do Meet mais recentes entre as turmas do aluno.
-  function gravacoesRecentes(ms, limite = 4) {
-    const lista = [];
-    ms.forEach((m) => (m.turma.gravacoes ?? []).forEach((g) => lista.push({ ...g, matricula: m })));
-    return lista.sort((a, b) => b.data.localeCompare(a.data)).slice(0, limite);
-  }
-
   // Resumo financeiro: só quando o aluno é o próprio pagador dos contratos (responsável/empresa não aparecem aqui).
   function financeiro(alunoId, ref = hoje()) {
     const contratos = Contratos.contratosDoAluno(Contratos.carregar(), alunoId).filter((c) => c.status !== 'cancelado' && c.status !== 'rascunho');
@@ -140,7 +109,7 @@ const PortalAluno = (() => {
     return { contratos: contratos.length, abertas: abertas.length, vencidas, proxima };
   }
 
-  // ---------- Financeiro (tela portal-aluno/financeiro.html) ----------
+  // ---------- Financeiro (tela financeiro.html) ----------
 
   // Contexto dos contratos (mesmo formato usado por contratos-app / clientes-motor).
   function contextoFinanceiro() {
@@ -252,7 +221,7 @@ const PortalAluno = (() => {
   }
 
 
-  // ---------- Meus cursos (tela portal-aluno/cursos.html) ----------
+  // ---------- Meus cursos (tela cursos.html) ----------
 
   // Situação da matrícula como o aluno vê: junta o status do item de contrato com a fase da turma.
   const SITUACOES_MATRICULA = {
@@ -273,28 +242,6 @@ const PortalAluno = (() => {
     if (s === 'concluida') return 'concluida';
     if (s === 'em_andamento') return 'em_andamento';
     return 'a_iniciar';
-  }
-
-  // ---- Presença (js/presencas-motor.js) ----
-  // Frequência do aluno na turma como o portal mostra; null quando o motor de presenças não está na página.
-  // Mínimo = o do certificado do curso quando definido; senão FREQUENCIA_MINIMA. Curso concluído/desistido
-  // abaixo do mínimo = "reprovado por frequência"; em andamento = "em risco".
-  function frequenciaMatricula(turma, alunoId, aulas, situacaoAluno, curso, ref = hoje()) {
-    if (typeof Presencas === 'undefined') return null;
-    const minimo = curso?.certificado?.frequenciaMinima ?? FREQUENCIA_MINIMA;
-    const concluido = situacaoAluno === 'concluida' || situacaoAluno === 'desistiu' || situacaoAluno === 'cancelada';
-    return Presencas.frequencia(turma.id, alunoId, aulas, ref, { concluido, minimo });
-  }
-
-  // Resumo de presença do aluno em todas as matrículas ativas (para a home do portal): percentual geral,
-  // pior situação, cursos em risco/atenção e o curso em andamento com a frequência.
-  function presencaResumo(alunoId, ref = hoje()) {
-    if (typeof Presencas === 'undefined') return null;
-    const ms = todasMatriculas(alunoId, ref).filter((m) => m.frequencia && m.situacaoAluno !== 'desistiu' && m.situacaoAluno !== 'cancelada' && m.situacaoAluno !== 'congelada');
-    const geral = Presencas.consolidar(ms.map((m) => m.frequencia));
-    const alertas = ms.filter((m) => ['risco', 'atencao', 'reprovado_frequencia'].includes(m.frequencia.status)).map((m) => ({ matricula: m, frequencia: m.frequencia }));
-    const emAndamento = ms.filter((m) => m.situacaoAluno === 'em_andamento').map((m) => ({ matricula: m, frequencia: m.frequencia }));
-    return { ...geral, alertas, emAndamento, matriculas: ms.length };
   }
 
   // Todas as matrículas do aluno (inclusive desistiu/cancelada), no mesmo formato de `matriculas`,
@@ -334,8 +281,6 @@ const PortalAluno = (() => {
           situacao, situacaoAluno, horas, horasConcluidas,
           codigoMatricula: Contratos.codigoMatricula(c, alunoId),
           ordem: formacao ? formacao.itens.findIndex((i) => i.cursoId === (curso?.id ?? item.cursoId)) : -1,
-          // Presença (js/presencas-motor.js, quando carregado): null sem o motor.
-          frequencia: frequenciaMatricula(turma, alunoId, aulas, situacaoAluno, curso, ref),
         });
       });
     });
@@ -365,8 +310,6 @@ const PortalAluno = (() => {
       g.fim = g.itens.map((m) => m.turma.fim).sort().pop() ?? null;
       g.turno = g.itens.find((m) => m.turma.turno)?.turma.turno ?? '';
       g.contratante = g.contrato ? Contratos.responsavelFinanceiro(ctx, g.contrato).nome : '';
-      // Presença geral do grupo (soma das aulas dadas × válidas dos cursos ativos); null sem o motor de presenças.
-      g.frequencia = typeof Presencas !== 'undefined' ? Presencas.consolidar(ativos.map((m) => m.frequencia), { concluido: ativos.length > 0 && ativos.every((m) => m.situacaoAluno === 'concluida') }) : null;
       if (!ativos.length) g.situacao = g.itens.every((m) => m.situacaoAluno === 'cancelada') ? 'cancelada' : 'desistiu';
       else if (ativos.every((m) => m.situacaoAluno === 'concluida')) g.situacao = 'concluida';
       else if (ativos.some((m) => m.situacaoAluno === 'em_andamento') || ativos.some((m) => m.situacaoAluno === 'concluida')) g.situacao = 'em_andamento';
@@ -394,23 +337,21 @@ const PortalAluno = (() => {
     };
   }
 
-  // Detalhe de um curso do aluno (turma): aulas com situação e gravações, módulos marcados como dados,
-  // softwares/materiais/pré-requisitos e situação do certificado.
+  // Detalhe de um curso do aluno (turma): todas as aulas (passadas e futuras) com situação e os materiais
+  // que o professor já liberou (js/materiais-motor.js), módulos marcados como dados e softwares/materiais/pré-requisitos.
   function detalheCurso(alunoId, turmaId, ref = hoje()) {
     const m = todasMatriculas(alunoId, ref).find((x) => x.turma.id === turmaId);
     if (!m) return null;
     const cursos = Cursos.carregar();
     const salas = typeof Salas !== 'undefined' ? Salas.carregar() : [];
     const agendadas = Turmas.aulasAgendadas(m.turma);
-    const gravs = Turmas.gravacoes(m.turma);
     const aulas = (agendadas ?? m.aulas).map((a) => ({
       ...a,
       situacaoAula: a.status === 'cancelada' ? 'cancelada' : a.data < ref ? 'realizada' : a.data === ref ? 'hoje' : 'prevista',
       sala: (a.salaId ? salas.find((s) => s.id === a.salaId) : null) ?? m.sala,
-      gravacoes: gravs.filter((g) => g.data === a.data),
       horas: Turmas.horasAula(a),
-      // Registro de presença do aluno nesta aula (null: sem motor, aula futura ou chamada não feita).
-      presenca: typeof Presencas !== 'undefined' && a.data < ref && a.status !== 'cancelada' ? Presencas.registroDe(m.turma.id, alunoId, a) : null,
+      // Materiais da aula já liberados (só aulas agendadas têm id; vazio sem o motor de materiais).
+      materiaisLiberados: typeof Materiais !== 'undefined' && a.id != null ? Materiais.daAula(m.turma.id, a.id).filter((x) => Materiais.liberado(x, ref)) : [],
     }));
     const realizadas = aulas.filter((a) => a.situacaoAula === 'realizada');
     // Módulos dados: pelos moduloIds das aulas realizadas quando o agendamento distribuiu conteúdo;
@@ -430,137 +371,16 @@ const PortalAluno = (() => {
     const softwares = (m.curso?.infraestrutura?.softwares ?? []).map((s) => ({ ...s, catalogo: s.softwareId ? catalogo.find((c) => c.id === s.softwareId) ?? null : null }));
     const preRequisitos = (m.curso?.preRequisitoCursoIds ?? []).map((id) => Cursos.porId(cursos, id)).filter(Boolean);
     const materiais = (m.curso?.materiais ?? []).filter((x) => !Cursos.materialPendente(x));
-    const certCurso = m.curso?.certificado ?? null;
-    const certFormacao = m.formacao?.certificado ?? null;
-    const pendentes = aulas.filter((a) => a.situacaoAula !== 'realizada' && a.situacaoAula !== 'cancelada').length;
-    let certificado;
-    if (!certCurso?.emite) certificado = { situacao: 'nao_emite', texto: 'Este curso não emite certificado próprio.' };
-    // Frequência abaixo do mínimo no curso concluído: sem certificado (regra do próprio curso).
-    else if (m.situacaoAluno === 'concluida' && m.frequencia?.status === 'reprovado_frequencia') certificado = { situacao: 'indisponivel', texto: `Indisponível — frequência de ${m.frequencia.percentual}%, abaixo do mínimo de ${m.frequencia.minimo}%. Fale com a secretaria sobre reposição ou justificativa das faltas.`, motivo: 'frequencia' };
-    else if (m.situacaoAluno === 'concluida') certificado = { situacao: 'disponivel', texto: 'Curso concluído — certificado disponível.' };
-    else if (m.situacaoAluno === 'em_andamento') certificado = { situacao: 'em_curso', texto: `Faltam ${pendentes} ${pendentes === 1 ? 'aula' : 'aulas'} para concluir o curso.` };
-    else if (m.situacaoAluno === 'a_iniciar') certificado = { situacao: 'a_iniciar', texto: `O curso começa em ${fmtData(m.turma.inicio)}.` };
-    else certificado = { situacao: 'indisponivel', texto: m.situacaoAluno === 'desistiu' ? 'Matrícula encerrada por desistência — sem certificado.' : 'Matrícula cancelada — sem certificado.' };
     const { ctx } = contextoFinanceiro();
     return {
       ...m, aulas, realizadasLista: realizadas, modulos, softwares, preRequisitos, materiais,
-      certificado: { ...certificado, curso: certCurso, formacao: certFormacao },
       contratante: Contratos.responsavelFinanceiro(ctx, m.contrato).nome,
-      aulaHoje: aulas.some((a) => a.situacaoAula === 'hoje'),
       formacaoItens: m.formacao ? Formacoes.cursosDe(m.formacao, cursos) : [],
     };
   }
 
 
-  // ---------- Suporte (tela portal-aluno/suporte.html) ----------
-  // Grava na mesma chave/estrutura do motor de chamados (Chamados, js/chamados-motor.js).
-  // O aluno não escolhe tipo, categoria nem prioridade: escolhe um ASSUNTO em linguagem
-  // dele, e o assunto define tipo/categoria/prioridade internos.
-
-  const ASSUNTOS_SUPORTE = [
-    { id: 'aula', nome: 'Aula / conteúdo', descricao: 'Dúvida sobre a aula, o instrutor, a presença ou o material da turma.', tipo: 'software', categoriaId: 'duvida', prioridade: 'media', pedeTurma: true },
-    { id: 'acesso', nome: 'Acesso e senha', descricao: 'Não consigo entrar no portal, no Meet ou na conta da escola.', tipo: 'software', categoriaId: 'acesso', prioridade: 'alta', pedeTurma: false },
-    { id: 'gravacoes', nome: 'Gravações e materiais', descricao: 'Gravação que não abre, aula que não foi gravada, apostila ou arquivo faltando.', tipo: 'software', categoriaId: 'duvida', prioridade: 'media', pedeTurma: true },
-    { id: 'financeiro', nome: 'Financeiro / boleto', descricao: 'Boleto, Pix, comprovante, nota fiscal ou valor da parcela.', tipo: 'software', categoriaId: 'duvida', prioridade: 'media', pedeTurma: false },
-    { id: 'certificado', nome: 'Certificado', descricao: 'Certificado não liberado, nome ou carga horária errados.', tipo: 'software', categoriaId: 'dados', prioridade: 'media', pedeTurma: true },
-    { id: 'instalacao', nome: 'Instalação de software no meu computador', descricao: 'Preciso de ajuda para instalar ou configurar um programa da aula na minha máquina.', tipo: 'software', categoriaId: 'duvida', prioridade: 'media', pedeTurma: true, pedeSoftware: true },
-    { id: 'escola', nome: 'Computador ou sala da escola', descricao: 'Máquina do laboratório, internet, projetor, ar-condicionado.', tipo: 'infra', categoriaId: 'computador', prioridade: 'media', pedeTurma: true },
-    { id: 'outro', nome: 'Outro assunto', descricao: 'Qualquer outra coisa — a secretaria encaminha para quem resolve.', tipo: 'software', categoriaId: 'outro-software', prioridade: 'media', pedeTurma: false },
-  ];
-
-  const SISTEMAS_OPERACIONAIS = [
-    { id: 'windows11', nome: 'Windows 11' },
-    { id: 'windows10', nome: 'Windows 10' },
-    { id: 'macos', nome: 'macOS' },
-    { id: 'linux', nome: 'Linux (Ubuntu ou outro)' },
-    { id: 'chromebook', nome: 'Chromebook' },
-    { id: 'nao-sei', nome: 'Não sei' },
-  ];
-
-  const CANAIS_SUPORTE = {
-    whatsapp: { numero: '(47) 99999-0000', link: 'https://wa.me/5547999990000' },
-    email: 'secretaria@proway.com.br',
-    horario: 'segunda a sexta, das 8h às 22h; sábado, das 8h às 12h',
-  };
-
-  const assuntosSuporte = () => ASSUNTOS_SUPORTE;
-  const assuntoSuporte = (id) => ASSUNTOS_SUPORTE.find((a) => a.id === id) ?? null;
-  const sistemasOperacionais = () => SISTEMAS_OPERACIONAIS;
-  const sistemaOperacional = (id) => SISTEMAS_OPERACIONAIS.find((s) => s.id === id) ?? null;
-  const canaisSuporte = () => CANAIS_SUPORTE;
-
-  // Autor do aluno no motor de chamados (snapshot, sempre como solicitante).
-  const autorAluno = (aluno) => ({ tipo: 'aluno', id: aluno.id, nome: aluno.nomeSocial || aluno.nome, papel: 'solicitante' });
-
-  const chamadosDoAluno = (lista, alunoId) => Chamados.doSolicitante(lista, 'aluno', alunoId);
-
-  // Turma pré-selecionada no formulário: só quando há UMA única matrícula em andamento.
-  function turmaPadrao(ms) {
-    const andamento = ms.filter((m) => m.situacao === 'em_andamento');
-    return andamento.length === 1 ? andamento[0].turma.id : '';
-  }
-
-  // Prazo de resposta em linguagem simples, a partir do SLA da prioridade interna.
-  function prazoRespostaSimples(prioridade) {
-    const h = Chamados.prioridadeDe(prioridade)?.slaHoras ?? 48;
-    if (h <= 2) return 'em até 2 horas';
-    if (h <= 8) return 'ainda hoje (em até 8 horas)';
-    if (h <= 48) return 'em até 2 dias úteis';
-    return 'em até 5 dias úteis';
-  }
-
-  function validarChamadoAluno(d) {
-    const erros = [];
-    const a = assuntoSuporte(d.assuntoId);
-    if (!a) erros.push({ campo: 'assuntoId', mensagem: 'Escolha sobre o que é o chamado.' });
-    if (!String(d.titulo ?? '').trim()) erros.push({ campo: 'titulo', mensagem: 'Resuma em uma linha.' });
-    else if (d.titulo.trim().length < 8) erros.push({ campo: 'titulo', mensagem: 'Resumo muito curto — descreva um pouco mais.' });
-    if (!String(d.descricao ?? '').trim()) erros.push({ campo: 'descricao', mensagem: 'Conte o que aconteceu.' });
-    if (a?.pedeSoftware) {
-      if (!d.softwareId) erros.push({ campo: 'softwareId', mensagem: 'Qual programa?' });
-      if (!sistemaOperacional(d.sistemaOperacional)) erros.push({ campo: 'sistemaOperacional', mensagem: 'Qual o sistema do seu computador?' });
-    }
-    return erros;
-  }
-
-  // Monta os dados que Chamados.abrir espera + o contexto extra do portal.
-  // `d`: { assuntoId, turmaId, titulo, descricao, softwareId, sistemaOperacional, anexos[] }
-  function montarChamadoAluno(aluno, ms, d) {
-    const a = assuntoSuporte(d.assuntoId);
-    const m = d.turmaId ? ms.find((x) => x.turma.id === d.turmaId) ?? null : null;
-    const sw = d.softwareId ? Chamados.softwareDe(d.softwareId) : null;
-    const so = sistemaOperacional(d.sistemaOperacional);
-    const linhas = [String(d.descricao ?? '').trim()];
-    const contexto = [];
-    if (m) contexto.push(`Turma: ${m.turma.codigo} · ${m.curso?.nome ?? ''}`.trim());
-    if (sw) contexto.push(`Programa: ${sw.nome}${sw.versao ? ` ${sw.versao}` : ''}`);
-    if (so) contexto.push(`Computador do aluno: ${so.nome}`);
-    if (d.anexos?.length) contexto.push(`Anexos: ${d.anexos.join(', ')}`);
-    if (contexto.length) linhas.push('', '— Informado pelo portal do aluno —', ...contexto);
-    return {
-      dados: {
-        solicitante: autorAluno(aluno), tipo: a.tipo, categoriaId: a.categoriaId, prioridade: a.prioridade,
-        titulo: String(d.titulo ?? '').trim(), descricao: linhas.join('\n'),
-        salaId: a.tipo === 'infra' ? (m?.turma.salaId ?? null) : null,
-        equipamento: sw ? `Computador pessoal${so ? ` · ${so.nome}` : ''}` : '',
-      },
-      extra: {
-        origem: 'portal-aluno',
-        contexto: { assuntoId: a.id, turmaId: m?.turma.id ?? null, turmaCodigo: m?.turma.codigo ?? null, cursoNome: m?.curso?.nome ?? null, softwareId: sw?.id ?? null, sistemaOperacional: so?.id ?? null, anexos: d.anexos ?? [] },
-      },
-    };
-  }
-
-  // Abre o chamado no motor de chamados e anexa o contexto do portal ao registro (campos extras
-  // que as telas internas ignoram). Retorna { lista, chamado }.
-  function abrirChamadoAluno(lista, aluno, ms, d) {
-    const { dados, extra } = montarChamadoAluno(aluno, ms, d);
-    const r = Chamados.abrir(lista, dados, autorAluno(aluno));
-    const chamado = { ...r.chamado, ...extra };
-    return { lista: r.lista.map((c) => (c.id === chamado.id ? chamado : c)), chamado };
-  }
-
-  // ---------- Contratos (tela portal-aluno/contratos.html) ----------
+  // ---------- Contratos (tela contratos.html) ----------
 
   // Situação do contrato como o aluno vê (o fluxo interno rascunho → aguardando → comercial OK → adm OK
   // vira Em elaboração / Aguardando assinatura / Ativo / Concluído / Cancelado).
@@ -711,13 +531,11 @@ const PortalAluno = (() => {
     CHAVE_SESSAO, SENHA_PROTOTIPO, hoje,
     sessao, entrar, sair, autenticar, alunoLogado, iniciais, primeiroNome, avatarHtml,
     fmtData, fmtDataLonga, rotuloDia, diaSemana,
-    matriculas, proximasAulas, enviosAvaliacao, avaliacoesPendentes, gravacoesRecentes, financeiro,
+    matriculas, proximasAulas, financeiro,
     contextoFinanceiro, financeiroDetalhado, situacaoParcela, linhaDigitavel, pixCopiaCola, historicoFinanceiro,
-    SITUACOES_MATRICULA, situacaoMatricula, todasMatriculas, cursosAgrupados, detalheCurso, frequenciaMatricula, presencaResumo,
-    // contratos (portal-aluno/contratos.html)
+    SITUACOES_MATRICULA, situacaoMatricula, todasMatriculas, cursosAgrupados, detalheCurso,
+    // contratos (contratos.html)
     SITUACOES_CONTRATO_PORTAL, situacaoContrato, progressoMatricula, linhaDoTempoContrato, contratacaoOnline, arrependimento, assinaturaPendenteDoAluno, turmasParaTransferencia, contratosDetalhados, simularRescisaoPortal,
     CHAVE_SOLICITACOES, TIPOS_SOLICITACAO, STATUS_SOLICITACAO, solicitacoes, solicitacoesDoAluno, solicitacaoAberta, registrarSolicitacao, desistirSolicitacao,
-    // suporte (portal-aluno/suporte.html)
-    assuntosSuporte, assuntoSuporte, sistemasOperacionais, sistemaOperacional, canaisSuporte, autorAluno, chamadosDoAluno, turmaPadrao, prazoRespostaSimples, validarChamadoAluno, montarChamadoAluno, abrirChamadoAluno,
   };
 })();

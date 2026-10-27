@@ -51,8 +51,6 @@
 
   const ms = PortalAluno.matriculas(aluno.id, hoje);
   const proximas = PortalAluno.proximasAulas(ms, hoje, 5);
-  const pendentes = PortalAluno.avaliacoesPendentes(ms, hoje, aluno.id);
-  const gravacoes = PortalAluno.gravacoesRecentes(ms, 4);
   const fin = PortalAluno.financeiro(aluno.id, hoje);
   const pagadorProprio = (aluno.pagador ?? 'proprio') === 'proprio';
 
@@ -93,27 +91,13 @@
     const m = a.matricula;
     const hojeMesmo = a.data === hoje;
     const local = localDe(a, m);
-    const meet = Boolean(m.turma.meetLink); // turmas presenciais também transmitem/gravam pelo Meet
+    const meet = Boolean(m.turma.meetLink); // turmas presenciais também transmitem pelo Meet
     return cartaoDestaque({
       rotulo: hojeMesmo ? 'Aula de hoje' : 'Próxima aula',
       titulo: `${esc(m.curso?.nome ?? m.turma.codigo)}`,
       texto: `${esc(PortalAluno.rotuloDia(a.data, hoje))} · ${esc(a.inicio)}–${esc(a.fim)}${local ? ` · ${esc(local)}` : ''}${m.instrutor ? `<br>com ${esc(m.instrutor.nome)}` : ''}`,
       acao: `${meet ? `<a href="${esc(m.turma.meetLink)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-lg bg-petrol-800 dark:bg-sky-600 text-white text-sm font-medium px-3 py-1.5 hover:bg-petrol-900 dark:hover:bg-sky-500 transition">${ICONE_CAMERA}Entrar no Meet</a> ` : ''}<a href="aula.html?turma=${encodeURIComponent(m.turma.id)}&data=${encodeURIComponent(a.data)}" class="link${meet ? ' ml-2' : ''}">Ver aula</a>`,
       tom: hojeMesmo ? 'laranja' : 'neutro',
-    });
-  }
-
-  function destaqueAvaliacoes() {
-    if (!pendentes.length) return cartaoDestaque({ rotulo: 'Avaliações', titulo: 'Tudo em dia', texto: 'Nenhuma avaliação pendente. Sua opinião ajuda a melhorar as aulas.' });
-    const p = pendentes[0];
-    const nome = p.modalidade === 'diaria' ? 'Avaliação da aula de hoje' : 'Avaliação final do curso';
-    const outras = pendentes.length - 1;
-    return cartaoDestaque({
-      rotulo: 'Avaliações',
-      titulo: esc(nome),
-      texto: `${esc(p.matricula.curso?.nome ?? p.matricula.turma.codigo)}${outras ? ` · e mais ${outras}` : ''}`,
-      acao: `<a href="../avaliacao-aluno.html?turma=${encodeURIComponent(p.matricula.turma.id)}&modalidade=${p.modalidade}" class="inline-flex items-center gap-1.5 rounded-lg bg-laranja hover:bg-laranja-escuro text-white text-sm font-medium px-3 py-1.5 transition">Responder agora</a>`,
-      tom: 'neutro',
     });
   }
 
@@ -143,7 +127,7 @@
     return cartaoDestaque({ rotulo: 'Financeiro', titulo: fin.contratos ? 'Tudo quitado' : 'Sem contratos', texto: fin.contratos ? 'Nenhuma parcela em aberto.' : 'Nenhum contrato ativo no seu nome.' });
   }
 
-  $('destaques').innerHTML = destaqueProximaAula() + destaqueAvaliacoes() + destaqueFinanceiro();
+  $('destaques').innerHTML = destaqueProximaAula() + destaqueFinanceiro();
 
   // ---------- Sala da turma no Google Meet ----------
   // Turma em andamento com link; se nenhuma, a turma da próxima aula (começa em breve). Só aparece quando existir.
@@ -271,23 +255,4 @@
   }
   renderProximas();
 
-  // ---------- Gravações ----------
-
-  function renderGravacoes() {
-    if (!gravacoes.length) {
-      $('gravacoes').innerHTML = `<div class="p-6 text-center text-sm text-slate-500 dark:text-neutral-400">Nenhuma gravação disponível ainda.</div>`;
-      return;
-    }
-    $('gravacoes').innerHTML = gravacoes.map((g) => `
-      <a href="${esc(g.url)}" target="_blank" rel="noopener" class="flex items-center gap-4 px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition">
-        <div class="shrink-0 h-9 w-9 rounded-lg bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300 grid place-items-center">
-          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" /></svg>
-        </div>
-        <div class="min-w-0 flex-1">
-          <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(g.titulo || g.matricula.curso?.nome || g.matricula.turma.codigo)}</p>
-          <p class="text-xs text-slate-500 dark:text-neutral-400">${esc(g.matricula.curso?.nome ?? '')} · ${esc(PortalAluno.fmtData(g.data))}${g.duracaoMin ? ` · ${esc(Turmas.duracaoTexto(g.duracaoMin))}` : ''}</p>
-        </div>
-      </a>`).join('');
-  }
-  renderGravacoes();
 })();
