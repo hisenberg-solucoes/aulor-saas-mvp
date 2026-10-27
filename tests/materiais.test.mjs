@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
 
 const mem = {};
 globalThis.localStorage = { getItem: (k) => mem[k] ?? null, setItem: (k, v) => { mem[k] = v; }, removeItem: (k) => { delete mem[k]; } };
@@ -31,4 +32,26 @@ test('editar mantém o id e o autor; liberar grava a data', () => {
   assert.equal(m.titulo, 'Slides v2');
   assert.equal(m.autor.nome, 'Prof');
   assert.equal(m.liberarEm, '2026-10-01');
+});
+
+test('rótulo da pílula: o mesmo nos dois portais, com a data de quem está programado', () => {
+  assert.equal(Materiais.rotulo({ liberarEm: '2026-10-28' }, '2026-10-27'), 'Libera em 28/10');
+  assert.equal(Materiais.rotulo({ liberarEm: '2026-10-27' }, '2026-10-27'), 'Liberado');
+  assert.equal(Materiais.rotulo({ liberarEm: null }, '2026-10-27'), 'Não liberado');
+  assert.match(Materiais.pilula({ liberarEm: null }, '2026-10-27'), /bg-amber-50.*Não liberado/);
+});
+
+test('semente: cada material cai numa aula gravada da PY1 N, com uma aula de cada situação', () => {
+  const guardado = {};
+  const ctx = vm.createContext({ console, localStorage: { getItem: (k) => guardado[k] ?? null, setItem: (k, v) => { guardado[k] = String(v); }, removeItem: (k) => { delete guardado[k]; } } });
+  ['js/agenda.js', 'js/softwares-data.js', 'js/cursos-data.js', 'js/cursos-motor.js', 'js/formacoes-data.js', 'js/formacoes-motor.js', 'js/aulas-motor.js', 'js/turmas-motor.js', 'js/materiais-motor.js']
+    .forEach((f) => vm.runInContext(readFileSync(new URL(`../${f}`, import.meta.url), 'utf8'), ctx, { filename: f }));
+  const { aulas, ms } = JSON.parse(vm.runInContext(`JSON.stringify((() => {
+    const t = Turmas.porId(Turmas.carregar(), 'fpsa-py1');
+    return { aulas: Turmas.aulasAgendadas(t).map((a) => a.id + ' ' + a.data), ms: Materiais.carregar().map((m) => [m.aulaId, Materiais.situacao(m, '2026-10-27')]) };
+  })())`, ctx));
+  assert.ok(!aulas.some((a) => a.endsWith('2026-11-02')), 'Finados fica de fora');
+  const ids = aulas.map((a) => a.split(' ')[0]);
+  ms.forEach(([aulaId]) => assert.ok(ids.includes(aulaId), `aula ${aulaId} existe`));
+  assert.deepEqual([...new Set(ms.map(([, s]) => s))].sort(), ['bloqueado', 'liberado', 'programado']);
 });

@@ -38,6 +38,11 @@ const Turmas = (() => {
   // (páginas sem aulas-motor seguem na prévia da agenda). Determinístico: ids iguais a cada carga.
   function semearAulas(lista) {
     if (typeof Aulas === 'undefined' || typeof AULAS_CANCELADAS_SEED === 'undefined') return lista;
+    AULAS_GRAVADAS_SEED.forEach((id) => {
+      const t = porId(lista, id);
+      const agenda = t ? agendaDe(t) : null;
+      if (agenda && !Array.isArray(t.aulas)) t.aulas = Aulas.distribuirConteudo(Aulas.gerar(t, agenda).filter((a) => !Aulas.feriado(a.data)), typeof Cursos !== 'undefined' ? Cursos.porId(Cursos.carregar(), t.cursoId) : null);
+    });
     AULAS_CANCELADAS_SEED.forEach((c) => {
       const t = porId(lista, c.turmaId);
       const agenda = t ? agendaDe(t) : null;
