@@ -1,7 +1,6 @@
 // ============================================================
 // UI da tela "Contratos" — modelo v7 (pacotes × vagas). Regras no motor (Contratos.*).
 // Navegação principal: Contratos | Por turma, com sinais operacionais acionáveis.
-// Cobranças (parcelas em aberto) fica numa página própria: cobrancas.html.
 // Contrato aberto: sub-abas petróleo (Resumo · Pacotes e alunos · Cobrança ·
 // Documentos · Histórico). O contrato vende PACOTES (molde de itens × vagas,
 // cobradas mesmo vazias); os alunos entram em UM pacote pela escola (aprovado)
@@ -11,25 +10,25 @@
 // "+ Pacote" são modais; "Duplicar" cria um rascunho escolhendo o que copiar.
 // A assinatura tem duas partes (contratante e ProWay), Clicksign simulado.
 // Lista (contratos.html) e detalhe (contrato.html?id=) são páginas separadas
-// que compartilham este arquivo; o modo vem de <body data-modo>
-// ('lista' | 'detalhe' | 'cobrancas').
+// que compartilham este arquivo; o modo vem de <body data-modo> ('lista' | 'detalhe').
+// V1: sem rescisão, sem indicadores comerciais e sem a página de cobranças; vendedor externo vê só as vendas dele.
 // ============================================================
 
-const MODO = ['detalhe', 'cobrancas', 'indicadores'].includes(document.body.dataset.modo) ? document.body.dataset.modo : 'lista';
+const MODO = document.body.dataset.modo === 'detalhe' ? 'detalhe' : 'lista';
 
 const clientesCarregados = Clientes.carregar();
 const estado = {
   lista: Contratos.carregar(),
   clientes: clientesCarregados, // dados de Clientes (atualizados ao vincular alunos / definir contratante)
   ctx: { empresas: clientesCarregados.empresas, alunos: clientesCarregados.alunos, responsaveis: clientesCarregados.responsaveis, cursos: Cursos.carregar(), formacoes: Formacoes.carregar() },
-  tipo: 'contratos', // aba padrão da lista (Contratos | Por turma); os indicadores comerciais têm página própria (comercial.html)
+  tipo: 'contratos', // aba padrão da lista (Contratos | Por turma)
   selecionado: null,
   aba: 'resumo',
   expandidos: new Set(), // alunos com os itens abertos na aba Pacotes
   pacotesRecolhidos: new Set(), // pacotes com o corpo (molde + alunos) fechado na aba Pacotes
   pacotesInit: null, // contrato em que o padrão de recolhimento já foi aplicado
   turmasAbertas: new Set(), // cartões abertos na aba Por turma (fechados por padrão)
-  filtros: { contratos: { busca: '', status: '', contratante: '', situacao: '', vendedor: '', aguardando: '', foco: '' }, turmas: { busca: '' }, indicadores: { periodo: 'mes', vendedor: '' }, cobrancas: { busca: '', so: '' } },
+  filtros: { contratos: { busca: '', status: '', contratante: '', situacao: '', vendedor: '', aguardando: '', foco: '' }, turmas: { busca: '' } },
 };
 
 const ABAS = [
@@ -108,6 +107,14 @@ const iniciais = (nome) => String(nome ?? '').split(' ').filter(Boolean).map((p)
 const alunoDe = (id) => Clientes.porId(ctx().alunos, id);
 const statusNome = (c) => Contratos.statusDe(c)?.nome ?? c.status;
 const statusCurto = (c) => Contratos.statusDe(c)?.curto ?? statusNome(c);
+
+// Quem está logado: Sessao vem de js/menu.js, carregado com defer — só ler depois do DOMContentLoaded.
+const sessao = () => Sessao.atual();
+const vendedorAtual = () => sessao()?.vendedorId ?? 'ana';
+const vendedorExterno = () => sessao()?.perfil === 'vendedor_externo';
+// Vendedor externo vê só as vendas dele (e não abre cadastros de alunos e empresas).
+const podeVer = (c) => !vendedorExterno() || c.vendedorId === vendedorAtual();
+const vendasVisiveis = () => estado.lista.filter(podeVer);
 
 function pilula(classe, texto, titulo = '') {
   return `<span title="${esc(titulo)}" class="pilula inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium whitespace-nowrap ${classe}">${esc(texto)}</span>`;
@@ -231,7 +238,7 @@ function sincronizarClientes(alunoIds, c = atual()) {
   estado.ctx.responsaveis = estado.clientes.responsaveis;
 }
 
-const linkCliente = (tipo, id, texto) => `<a href="${tipo}.html?id=${id}" class="inline-flex items-center gap-1 text-petrol-800 dark:text-sky-300 hover:underline" title="Abrir o cadastro">${esc(texto)} ${ICONE.externo}</a>`;
+const linkCliente = (tipo, id, texto) => vendedorExterno() ? esc(texto) : `<a href="${tipo}.html?id=${id}" class="inline-flex items-center gap-1 text-petrol-800 dark:text-sky-300 hover:underline" title="Abrir o cadastro">${esc(texto)} ${ICONE.externo}</a>`;
 const ROTULO_MINI = 'text-xs font-medium text-slate-500 dark:text-neutral-400';
 
 // Pílula do contratante: Empresa (petróleo) · Particular (violeta) · Sem contratante (âmbar).
@@ -261,8 +268,8 @@ function renderLista() {
       <button type="button" id="btn-novo" class="${BOTAO_PRI} shrink-0">${ICONE.mais} Nova venda</button>
     </div>
     <div class="mb-4 border-b border-slate-200 dark:border-neutral-800 flex items-center gap-6">
-      ${abaPrincipal('contratos', 'Vendas', estado.lista.length)}
-      ${abaPrincipal('turmas', 'Por turma', Contratos.porTurma(estado.lista, ctx()).length)}
+      ${abaPrincipal('contratos', 'Vendas', vendasVisiveis().length)}
+      ${abaPrincipal('turmas', 'Por turma', Contratos.porTurma(vendasVisiveis(), ctx()).length)}
     </div>
     <div id="lista"></div>`;
   el.querySelectorAll('[data-tipo]').forEach((b) => b.addEventListener('click', () => { estado.tipo = b.dataset.tipo; atualizarUrl(); renderLista(); }));
@@ -289,7 +296,8 @@ function renderListaContratos() {
     || (f.foco === 'sem-turma' && c.status !== 'cancelado' && Contratos.itensMatriculados(c).some((m) => Contratos.matriculaAtiva(m) && !m.turmaId))
     || (f.foco === 'vagas' && c.status !== 'cancelado' && Contratos.totais(c).livres > 0)
     || (f.foco === 'vencidas' && Contratos.parcelasVencidas(c).length > 0);
-  const visiveis = Contratos.filtrar(estado.lista, ctx(), f).filter(noFoco);
+  const minhas = vendasVisiveis();
+  const visiveis = Contratos.filtrar(minhas, ctx(), f).filter(noFoco);
   // Quem abre "Parcelas vencidas" vai cobrar: o atraso mais antigo primeiro.
   if (f.foco === 'vencidas') visiveis.sort((a, b) => Contratos.resumoVencido(b).dias - Contratos.resumoVencido(a).dias);
   const filtrando = f.busca || f.status || f.contratante || f.situacao || f.vendedor || f.aguardando || f.foco;
@@ -335,15 +343,15 @@ function renderListaContratos() {
         ${select('filtro-contratante', 'Contratante', [...TIPOS_CONTRATANTE.map((x) => ({ id: x.id, nome: x.nome })), { id: 'sem', nome: 'Sem contratante' }], f.contratante)}
         ${select('filtro-status', 'Status', STATUS_CONTRATO.map((s) => ({ id: s.id, nome: s.curto ?? s.nome })), f.status)}
         ${select('filtro-situacao', 'Cobrança', SITUACOES_COBRANCA, f.situacao)}
-        ${select('filtro-vendedor', 'Vendedor', VENDEDORES, f.vendedor)}
+        ${vendedorExterno() ? '' : select('filtro-vendedor', 'Vendedor', VENDEDORES, f.vendedor)}
         ${select('filtro-aguardando', 'Conferência', [{ id: '1', nome: 'Alunos aguardando' }], f.aguardando)}
         ${filtrando ? `<button type="button" id="btn-limpar" class="${BOTAO_LINK}">Limpar</button>` : ''}
       </div>
     </div>
-    ${tabela([['Código', 'w-[170px]'], ['Contratante / responsável financeiro', 'w-[24%]'], ['O que foi vendido', 'w-[17%]'], ['R$ Valor final', 'w-[116px]'], 'Próximo passo'], visiveis.map(linha), estado.lista.length ? 'Nenhuma venda corresponde aos filtros.' : 'Nenhuma venda ainda.', `<span>${plural(visiveis.length, 'venda')}${filtrando ? ` de ${estado.lista.length}` : ''}</span><span>Soma (sem cancelados): <strong>${moeda(total)}</strong></span>`)}`;
+    ${tabela([['Código', 'w-[170px]'], ['Contratante / responsável financeiro', 'w-[24%]'], ['O que foi vendido', 'w-[17%]'], ['R$ Valor final', 'w-[116px]'], 'Próximo passo'], visiveis.map(linha), minhas.length ? 'Nenhuma venda corresponde aos filtros.' : 'Nenhuma venda ainda.', `<span>${plural(visiveis.length, 'venda')}${filtrando ? ` de ${minhas.length}` : ''}</span><span>Soma (sem cancelados): <strong>${moeda(total)}</strong></span>`)}`;
   const campoBusca = el.querySelector('#busca-contrato');
   campoBusca.addEventListener('input', () => { f.busca = campoBusca.value; rerenderMantendoCursor(campoBusca, renderListaContratos); });
-  [['filtro-contratante', 'contratante'], ['filtro-status', 'status'], ['filtro-situacao', 'situacao'], ['filtro-vendedor', 'vendedor'], ['filtro-aguardando', 'aguardando']].forEach(([id, k]) => el.querySelector(`#${id}`).addEventListener('change', (e) => { f[k] = e.target.value; renderListaContratos(); }));
+  [['filtro-contratante', 'contratante'], ['filtro-status', 'status'], ['filtro-situacao', 'situacao'], ['filtro-vendedor', 'vendedor'], ['filtro-aguardando', 'aguardando']].forEach(([id, k]) => el.querySelector(`#${id}`)?.addEventListener('change', (e) => { f[k] = e.target.value; renderListaContratos(); }));
   el.querySelector('#btn-limpar')?.addEventListener('click', () => { estado.filtros.contratos = { busca: '', status: '', contratante: '', situacao: '', vendedor: '', aguardando: '', foco: '' }; atualizarUrl(); renderListaContratos(); });
   el.querySelectorAll('[data-foco]').forEach((b) => b.addEventListener('click', () => { f.foco = f.foco === b.dataset.foco ? '' : b.dataset.foco; atualizarUrl(); renderListaContratos(); }));
   // O código é o link (teclado, ⌘-clique); o resto da linha abre o mesmo contrato, a não ser que a pessoa esteja selecionando texto.
@@ -359,7 +367,7 @@ function renderListaTurmas() {
   const el = document.getElementById('lista');
   const f = estado.filtros.turmas;
   const termo = Contratos.normalizar(f.busca);
-  const grupos = Contratos.porTurma(estado.lista, ctx()).filter((g) => !termo || Contratos.normalizar(`${g.rotulo} ${g.linhas.map((l) => `${l.aluno?.nome ?? ''} ${l.matricula.codigo} ${l.contrato.codigo}`).join(' ')}`).includes(termo));
+  const grupos = Contratos.porTurma(vendasVisiveis(), ctx()).filter((g) => !termo || Contratos.normalizar(`${g.rotulo} ${g.linhas.map((l) => `${l.aluno?.nome ?? ''} ${l.matricula.codigo} ${l.contrato.codigo}`).join(' ')}`).includes(termo));
   // Cartões fechados por padrão; com termo de busca os que casam abrem sozinhos.
   const aberto = (g) => Boolean(termo) || estado.turmasAbertas.has(g.chave);
   const todosAbertos = grupos.length > 0 && grupos.every(aberto);
@@ -408,224 +416,6 @@ function renderListaTurmas() {
   el.querySelectorAll('[data-abrir]').forEach((b) => b.addEventListener('click', () => abrir(b.dataset.abrir, 'pacotes')));
 }
 
-// ---------- Indicadores comerciais (aba Indicadores) ----------
-// KPIs de vendas calculados dos contratos (Contratos.indicadoresComerciais); gráficos de js/chamados-graficos.js.
-// Vendas/criados/cancelados seguem o período; pipeline, inadimplência, vagas e ocupação são foto de hoje.
-// ---------- Indicadores comerciais (comercial.html) ----------
-// Página própria (1º item do grupo Comercial), mesmo app com MODO 'indicadores' — como cobrancas.html.
-function renderPaginaIndicadores() {
-  const el = document.getElementById('tela');
-  el.innerHTML = `
-    <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100">Indicadores comerciais</h2>
-        <p class="text-sm text-slate-600 dark:text-neutral-400 mt-0.5">KPIs calculados das <a href="${urlLista()}" class="text-petrol-800 dark:text-sky-300 hover:underline">vendas</a>: vendas fechadas, funil, ticket, ciclo, pipeline, inadimplência e ocupação das turmas. Referência das regras em docs/contratos-indicadores.md.</p>
-      </div>
-      <a href="jornada-comercial.html" class="${BOTAO_SEC}" title="Leitura executiva da venda em 6 etapas, com topo de funil, CAC e previsibilidade (dados demonstrativos)">Jornada comercial</a>
-    </div>
-    <div id="lista"></div>`;
-  renderIndicadores();
-}
-
-function renderIndicadores() {
-  const el = document.getElementById('lista');
-  const f = estado.filtros.indicadores;
-  const periodos = Contratos.periodosIndicadores(estado.lista);
-  const per = periodos.find((p) => p.id === f.periodo) ?? periodos.find((p) => p.id === 'mes');
-  const k = Contratos.indicadoresComerciais(estado.lista, ctx(), { de: per.de, ate: per.ate, vendedorId: f.vendedor });
-  const v = k.vendas;
-  const compacto = (n) => (n == null ? '—' : Contratos.fmtCompacto(n));
-  const pctTxt = (p) => (p == null ? '—' : `${p.toLocaleString('pt-BR')}%`);
-  const dias = (d) => (d == null ? '—' : `${d.toLocaleString('pt-BR')} ${d === 1 ? 'dia' : 'dias'}`);
-  const variacao = (atualV, ant) => {
-    if (!ant) return 'sem base no período anterior';
-    const d = Math.round(((atualV - ant) / ant) * 100);
-    const cor = d > 0 ? 'text-emerald-700 dark:text-emerald-400' : d < 0 ? 'text-red-700 dark:text-red-400' : '';
-    return `<span class="${cor} font-medium">${d > 0 ? '+' : ''}${d}%</span> vs. período anterior (${compacto(ant)})`;
-  };
-  const barraMeta = (pct) => {
-    const p = Math.max(0, Math.min(100, pct ?? 0));
-    const cor = pct == null ? 'bg-slate-300 dark:bg-neutral-700' : pct >= 100 ? 'bg-emerald-500' : pct >= 70 ? 'bg-amber-400' : 'bg-red-500';
-    return `<div class="h-2 rounded-full bg-white/80 dark:bg-black/40 overflow-hidden" title="${esc(`${pctTxt(pct)} da meta do período`)}"><div class="h-2 rounded-full ${cor}" style="width:${p}%"></div></div>`;
-  };
-  const secao = (titulo, sub, html) => `
-    <section class="${CARTAO} p-4 min-w-0">
-      <div class="mb-3"><h3 class="font-display text-[15px] font-semibold text-slate-900 dark:text-neutral-100">${titulo}</h3>${sub ? `<p class="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">${sub}</p>` : ''}</div>
-      ${html}
-    </section>`;
-  const vazioGraf = (txt) => `<p class="text-sm text-slate-400 py-8 text-center">${txt}</p>`;
-  const nomePeriodo = `${Contratos.fmtData(per.de)} a ${Contratos.fmtData(per.ate)}`;
-  const p = k.pipeline;
-  const barraPct = (pct, tom = 'bg-petrol-800 dark:bg-sky-400') => `<div class="h-1.5 w-24 rounded-full bg-slate-100 dark:bg-neutral-900 overflow-hidden"><div class="h-1.5 ${tom}" style="width:${Math.max(0, Math.min(100, pct ?? 0))}%"></div></div>`;
-
-  const linhaVendedor = (x) => `
-    <tr class="hover:bg-slate-50 dark:hover:bg-neutral-900 transition">
-      <td class="${TD} font-medium text-slate-800 dark:text-neutral-100">${esc(x.nome)}</td>
-      <td class="${TD} text-right tabular-nums">${x.n}</td>
-      <td class="${TD_VALOR}">${moeda(x.valor)}<br><span class="text-xs text-slate-400">${pctTxt(x.participacao)} do total</span></td>
-      <td class="${TD_VALOR}">${x.ticket == null ? '—' : moeda(x.ticket)}</td>
-      <td class="${TD} text-right tabular-nums">${pctTxt(x.desconto)}</td>
-      <td class="${TD} text-right tabular-nums">${x.ciclo == null ? '—' : dias(Math.round(x.ciclo))}</td>
-      <td class="${TD} text-right tabular-nums ${x.cancelados ? 'text-red-700 dark:text-red-400' : ''}">${x.cancelados}</td>
-      <td class="${TD_VALOR}">${x.nPipeline ? `${moeda(x.pipeline)}<br><span class="text-xs text-slate-400">${plural(x.nPipeline, 'venda')}</span>` : '<span class="text-slate-400">—</span>'}</td>
-    </tr>`;
-  const linhaOcupacao = (g) => `
-    <tr class="hover:bg-slate-50 dark:hover:bg-neutral-900 transition">
-      <td class="${TD}"><span class="font-medium text-slate-800 dark:text-neutral-100">${esc(g.nome)}</span><br><span class="text-xs text-slate-400">${g.tipo === 'formacao' ? plural(g.turmas, 'turma') : 'avulsa'} · início ${esc(Contratos.fmtData(g.inicio))}</span></td>
-      <td class="${TD} text-right tabular-nums whitespace-nowrap">${g.ocupadas} / ${g.vagas}</td>
-      <td class="${TD}"><div class="flex items-center gap-2">${barraPct(g.pct, g.pct == null ? '' : g.pct >= 80 ? 'bg-emerald-500' : g.pct >= 50 ? 'bg-amber-400' : 'bg-red-500')}<span class="tabular-nums text-xs">${pctTxt(g.pct)}</span></div></td>
-    </tr>`;
-  const linhaCancel = (c) => `
-    <tr class="hover:bg-slate-50 dark:hover:bg-neutral-900 transition">
-      <td class="${TD} whitespace-nowrap"><button type="button" data-abrir="${c.id}" class="font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline">${esc(c.codigo)}</button><br><span class="text-xs text-slate-400">${esc(Contratos.fmtData(c.em))}</span></td>
-      <td class="${TD}">${esc(c.motivo) || '<span class="text-slate-400">sem motivo registrado</span>'}</td>
-      <td class="${TD_VALOR}">${moeda(c.valor)}</td>
-    </tr>`;
-  const tabelaSimples = (colunas, linhas, vazioTxt) => `
-    <div class="overflow-x-auto -mx-4 -mb-4 border-t border-slate-200 dark:border-neutral-800">
-      <table class="w-full text-left">
-        <thead class="text-xs font-medium text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800"><tr>${colunas.map((c) => `<th class="${TH} ${c.startsWith('R$ ') || c.startsWith('# ') ? 'text-right' : ''}">${c.replace(/^(R\$|#) /, '')}</th>`).join('')}</tr></thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-neutral-900">${linhas.length ? linhas.join('') : `<tr><td colspan="${colunas.length}" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-neutral-400">${vazioTxt}</td></tr>`}</tbody>
-      </table>
-    </div>`;
-
-  el.innerHTML = `
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-      ${select('ind-periodo', 'Período', periodos, per.id).replace('<option value="">Período</option>', '')}
-      ${select('ind-vendedor', 'Todos os vendedores', VENDEDORES, f.vendedor)}
-      <span class="text-xs text-slate-600 dark:text-neutral-400">${esc(nomePeriodo)} · ${plural(k.periodo.nMeses, 'mês', 'meses')}</span>
-      <div class="ml-auto flex items-center gap-2">
-        <button type="button" id="ind-meta" class="${BOTAO_SEC}" title="Meta mensal de vendas fechadas para a escola; a meta do período é a mensal × meses do período">Meta mensal: ${compacto(k.meta.mensal)}</button>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-3">
-      ${tile({ rotulo: 'Vendas fechadas', valor: compacto(v.valor), ajuda: variacao(v.valor, k.anterior.valor), tom: 'info', fundo: true, icone: 'entrada', extraHtml: k.meta.periodo ? `${barraMeta(k.meta.pct)}<p class="text-[11px] text-sky-800/80 dark:text-sky-300/80 mt-1">${pctTxt(k.meta.pct)} da meta de ${compacto(k.meta.periodo)}</p>` : '' })}
-      ${tile({ rotulo: 'Vendas fechadas', valor: String(v.n), ajuda: `${v.b2c} particular${v.b2c === 1 ? '' : 'es'} · ${v.b2b} empresa${v.b2b === 1 ? '' : 's'} · ${plural(v.alunos, 'aluno')}`, tom: 'info', fundo: true, icone: 'resultado' })}
-      ${tile({ rotulo: 'Ticket médio', valor: compacto(v.ticket), ajuda: v.n ? `valor final ÷ ${plural(v.n, 'venda')}` : 'nenhuma venda fechada no período', tom: 'info', fundo: true })}
-      ${tile({ rotulo: 'Desconto médio', valor: pctTxt(v.descontoPct), ajuda: v.desconto ? `${compacto(v.desconto)} abaixo da tabela` : 'vendido pela tabela', tom: v.descontoPct == null ? 'neutro' : v.descontoPct > 10 ? 'alerta' : 'bom', fundo: true, icone: 'percentual' })}
-      ${tile({ rotulo: 'Ciclo de venda', valor: v.ciclo == null ? '—' : v.ciclo.toLocaleString('pt-BR'), sufixo: v.ciclo == null ? '' : 'dias', ajuda: 'da criação ao fechamento (assinatura)', tom: v.ciclo == null ? 'neutro' : v.ciclo <= 7 ? 'bom' : v.ciclo <= 30 ? 'alerta' : 'ruim', fundo: true, icone: 'relogio' })}
-      ${tile({ rotulo: 'Conversão', valor: pctTxt(k.conversao), ajuda: `${v.n} fechados · ${k.cancelamentos.n} cancelados`, tom: k.conversao == null ? 'neutro' : k.conversao >= 80 ? 'bom' : k.conversao >= 50 ? 'alerta' : 'ruim', fundo: true })}
-    </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
-      ${tile({ rotulo: 'Pipeline aberto', valor: compacto(p.valor), ajuda: `${plural(p.rascunho, 'rascunho')} · ${p.aguardando} aguardando assinatura`, tom: 'info', fundo: true, icone: 'calendario', extraHtml: `<p class="text-xs text-sky-800/80 dark:text-sky-300/80" title="${esc(`Rascunho × ${Math.round(p.pesos.rascunho * 100)}% + Aguardando × ${Math.round(p.pesos.aguardando * 100)}%`)}">Previsão ponderada: <strong class="text-petrol-800 dark:text-sky-300">${compacto(p.ponderado)}</strong></p>` })}
-      ${tile({ rotulo: 'Cancelamentos', valor: String(k.cancelamentos.n), ajuda: k.cancelamentos.n ? `${compacto(k.cancelamentos.valor)} · ${pctTxt(k.cancelamentos.taxa)} dos fechados + cancelados` : 'nenhum no período', tom: k.cancelamentos.n ? 'ruim' : 'bom', fundo: true })}
-      ${tile({ rotulo: 'Inadimplência', valor: pctTxt(k.inadimplencia.taxa), ajuda: `${k.inadimplencia.n} de ${plural(k.inadimplencia.ativos, 'venda ativa', 'vendas ativas')} · ${compacto(k.inadimplencia.valor)} vencido`, tom: k.inadimplencia.taxa == null ? 'neutro' : k.inadimplencia.taxa > 5 ? 'ruim' : k.inadimplencia.taxa > 0 ? 'alerta' : 'bom', fundo: true, icone: 'alerta' })}
-      ${tile({ rotulo: 'Ocupação das turmas', valor: pctTxt(k.ocupacaoGeral.taxa), ajuda: `${k.ocupacaoGeral.ocupadas} matrículas em ${k.ocupacaoGeral.vagas} vagas das turmas ativas`, tom: k.ocupacaoGeral.taxa == null ? 'neutro' : k.ocupacaoGeral.taxa >= 80 ? 'bom' : k.ocupacaoGeral.taxa >= 50 ? 'alerta' : 'ruim', fundo: true })}
-      ${tile({ rotulo: 'Vagas vendidas sem aluno', valor: String(k.vagas.livres), ajuda: k.vagas.livres ? `${compacto(k.vagas.valorLivres)} já vendidos · ${k.vagas.aguardando} aguardando conferência` : 'todas as vagas vendidas têm aluno', tom: k.vagas.livres ? 'alerta' : 'bom', fundo: true })}
-      ${tile({ rotulo: 'Recompra', valor: pctTxt(k.recompra.taxa), ajuda: `${k.recompra.recorrentes} de ${plural(k.recompra.contratantes, 'contratante')} voltaram a comprar`, tom: 'info', fundo: true })}
-    </div>
-
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-      ${secao('Vendas por mês', 'Valor final das vendas fechadas, pela data de fechamento; o número em cima da coluna é a quantidade.', k.serie.some((x) => x.valor) ? colunasMoeda(k.serie) : vazioGraf('Nenhuma venda fechada no período.'))}
-      ${secao('Vendas criadas × fechadas por mês', 'Criadas (pela data de criação) × fechadas (pela data de fechamento).', linhasTempo(k.serie.map((x) => ({ rotulo: x.rotulo, a: x.criados, b: x.fechados })), [{ nome: 'Criados', cor: GRAF.linha1, corFill: GRAF.serie1 }, { nome: 'Fechados', cor: GRAF.linha2, corFill: GRAF.serie2 }]))}
-      ${secao('Funil do período', `Vendas criadas no período (${k.criados}) e até onde chegaram — canceladas ficam de fora das etapas.`, k.criados ? `${barrasHorizontais(k.funilAcumulado.map((e) => ({ nome: e.nome, valor: e.n, tip: `${e.nome}: ${e.n} de ${k.criados} (${pctTxt(e.pct)})`, sufixo: ` (${pctTxt(e.pct)})` })), { max: k.criados, rotuloLargura: 150 })}<p class="text-xs text-slate-500 dark:text-neutral-400 mt-2">${k.funil.find((x) => x.status === 'cancelado')?.n ?? 0} cancelado(s) entre os criados no período · ${k.funil.find((x) => x.status === 'rascunho')?.n ?? 0} ainda em rascunho · ${k.funil.find((x) => x.status === 'aguardando')?.n ?? 0} aguardando assinatura/pagamento.</p>` : vazioGraf('Nenhuma venda criada no período.'))}
-      ${secao('Particular × Empresa', 'Valor fechado por tipo de contratante (B2C × B2B).', v.valor ? `<div class="flex flex-wrap items-center justify-center gap-8 py-2"><div class="w-48 shrink-0">${rosca([{ nome: 'Particular', valor: v.valorB2c, cor: GRAF.serie1 }, { nome: 'Empresa', valor: v.valorB2b, cor: GRAF.serie2 }], { tamanho: 190, formato: compacto, legenda: false })}</div><div class="text-sm space-y-2 min-w-0"><p><span class="inline-block h-2.5 w-2.5 rounded-sm bg-[#2a78d6] mr-1.5"></span>Particular: <strong class="tabular-nums">${moeda(v.valorB2c)}</strong> · ${plural(v.b2c, 'venda')}</p><p><span class="inline-block h-2.5 w-2.5 rounded-sm bg-[#eb6834] mr-1.5"></span>Empresa: <strong class="tabular-nums">${moeda(v.valorB2b)}</strong> · ${plural(v.b2b, 'venda')}</p><p class="text-xs text-slate-500 dark:text-neutral-400 pt-1">Alunos aprovados: ${k.origens.escola} pela escola · ${k.origens.link} pelo link do pacote.</p></div></div>` : vazioGraf('Nenhuma venda fechada no período.'))}
-      ${secao('Por vendedor', 'Vendas fechadas no período; pipeline é o que cada um tem em aberto hoje.', `${barrasHorizontais(k.porVendedor.map((x) => ({ nome: x.nome, valor: x.valor, tip: `${x.nome}\n${moeda(x.valor)} · ${plural(x.n, 'venda')}` })), { formato: compacto, rotuloLargura: 130 })}<div class="mt-3">${tabelaSimples(['Vendedor', '# Fechados', 'R$ Valor', 'R$ Ticket', '# Desconto', '# Ciclo', '# Cancel.', 'R$ Pipeline'], k.porVendedor.map(linhaVendedor), 'Sem vendedores.')}</div>`)}
-      ${secao('Mix de produto', 'Valor fechado por formação ou curso avulso (avulsos rateados pelo valor dos itens).', k.mixProduto.length ? barrasHorizontais(k.mixProduto.slice(0, 10).map((x) => ({ nome: x.nome, valor: x.valor, tip: `${x.nome}\n${moeda(x.valor)} · ${plural(x.n, 'pacote')} · ${plural(x.alunos, 'aluno')}` })), { formato: compacto, rotuloLargura: 230 }) : vazioGraf('Nenhuma venda fechada no período.'))}
-      ${secao('Ocupação das turmas ativas', 'Matrículas ativas ÷ vagas, turmas planejadas, confirmadas ou em andamento; as turmas de uma edição de formação contam uma vez. Menor ocupação primeiro.', tabelaSimples(['Turma / formação', '# Matrículas / vagas', 'Ocupação'], k.ocupacao.map(linhaOcupacao), 'Nenhuma turma ativa.'))}
-      ${secao('Cancelamentos do período', 'Motivos registrados ao cancelar — o que fez a venda cair.', tabelaSimples(['Venda', 'Motivo', 'R$ Valor'], k.cancelamentos.motivos.map(linhaCancel), 'Nenhum cancelamento no período.'))}
-    </div>
-
-    <details class="mt-4 text-xs text-slate-600 dark:text-neutral-400">
-      <summary class="cursor-pointer hover:text-slate-700 dark:hover:text-neutral-200">Como calculamos</summary>
-      <ul class="mt-2 space-y-1 list-disc pl-5">
-        <li><strong>Fechado</strong> = Comercial OK ou Adm OK. <strong>Data de fechamento</strong> = assinatura das duas partes; sem ela, 1ª parcela paga, documento gerado ou criação.</li>
-        <li><strong>Vendas fechadas</strong>, <strong>criados</strong> e <strong>cancelados</strong> obedecem ao período. <strong>Pipeline, inadimplência, vagas, recompra e ocupação</strong> são a foto de hoje.</li>
-        <li><strong>Conversão</strong> = fechados ÷ (fechados + cancelados) no período. <strong>Desconto médio</strong> = (tabela − final) ÷ tabela. <strong>Ticket</strong> = valor final ÷ vendas.</li>
-        <li><strong>Previsão ponderada</strong> = rascunhos × ${Math.round(p.pesos.rascunho * 100)}% + aguardando × ${Math.round(p.pesos.aguardando * 100)}%. <strong>Meta do período</strong> = meta mensal × ${plural(k.periodo.nMeses, 'mês', 'meses')}.</li>
-        <li><strong>Recompra</strong> = contratantes (empresa ou responsável financeiro) com 2+ vendas fechadas no histórico inteiro.</li>
-      </ul>
-    </details>`;
-  el.querySelector('#ind-periodo').addEventListener('change', (e) => { f.periodo = e.target.value; renderIndicadores(); });
-  el.querySelector('#ind-vendedor').addEventListener('change', (e) => { f.vendedor = e.target.value; renderIndicadores(); });
-  el.querySelector('#ind-meta').addEventListener('click', abrirModalMeta);
-  el.querySelectorAll('[data-abrir]').forEach((b) => b.addEventListener('click', () => abrir(b.dataset.abrir)));
-  ligarTooltips(el);
-}
-
-// Colunas por mês com escala em R$ (uma escala por gráfico, passos "redondos"); quantidade de contratos em cima da coluna.
-function colunasMoeda(pontos, { largura = 640, altura = 220 } = {}) {
-  const mL = 56; const mR = 12; const mT = 16; const mB = 28;
-  const w = largura - mL - mR; const h = altura - mT - mB;
-  const max = Math.max(1, ...pontos.map((x) => x.valor));
-  const bruto = max / 4; const pot = 10 ** Math.floor(Math.log10(bruto)); const passo = [1, 2, 2.5, 5, 10].map((m) => m * pot).find((x) => x >= bruto) ?? pot * 10;
-  const topo = Math.ceil(max / passo) * passo;
-  const y = (val) => mT + h - (val / topo) * h;
-  const gap = Math.min(14, (w / pontos.length) * 0.3); const wCol = (w - gap * (pontos.length + 1)) / pontos.length;
-  const xDe = (i) => mL + gap + i * (wCol + gap);
-  const rotEixo = (val) => (val >= 1000 ? `${(val / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mil` : String(val));
-  const grade = []; for (let val = 0; val <= topo + 0.001; val += passo) grade.push(`<line x1="${mL}" x2="${mL + w}" y1="${y(val)}" y2="${y(val)}" class="${GRAF.grade}" stroke-width="1"/><text x="${mL - 6}" y="${y(val) + 4}" text-anchor="end" class="${GRAF.inkSec} text-[10px] tabular-nums">${rotEixo(val)}</text>`);
-  const cols = pontos.map((x, i) => { const yv = y(x.valor); return `<rect x="${xDe(i)}" y="${yv}" width="${wCol}" height="${Math.max(0, mT + h - yv)}" rx="3" class="${x.valor ? GRAF.serie1 : GRAF.neutro}" data-tip="${esc(`${x.rotulo}\n${moeda(x.valor)} · ${plural(x.fechados, 'venda fechada', 'vendas fechadas')}`)}"/>${x.fechados ? `<text x="${xDe(i) + wCol / 2}" y="${yv - 4}" text-anchor="middle" class="${GRAF.ink} text-[10px] tabular-nums">${x.fechados}</text>` : ''}`; });
-  const rotulos = pontos.map((x, i) => (pontos.length > 14 && i % 2 ? '' : `<text x="${xDe(i) + wCol / 2}" y="${altura - 8}" text-anchor="middle" class="${GRAF.inkSec} text-[10px]">${esc(x.rotulo)}</text>`));
-  return `<svg viewBox="0 0 ${largura} ${altura}" class="w-full" role="img">${grade.join('')}<line x1="${mL}" x2="${mL + w}" y1="${y(0)}" y2="${y(0)}" class="${GRAF.eixo}" stroke-width="1"/>${cols.join('')}${rotulos.join('')}</svg>${tabelaDados(['Mês', 'Vendas (R$)', 'Fechados', 'Criados', 'Cancelados'], pontos.map((x) => [x.rotulo, moeda(x.valor), x.fechados, x.criados, x.cancelados]))}`;
-}
-
-// Meta mensal de vendas fechadas [sup.]: uma para a escola inteira (Contratos.metaComercial).
-function abrirModalMeta() {
-  const meta = Contratos.metaComercial();
-  modalFormulario({
-    id: 'form-meta', titulo: 'Meta mensal de vendas', subtitulo: 'Valor de vendas fechadas por mês, para a escola inteira. A meta do período é a mensal × meses do período.', largura: 'max-w-md', rotulo: 'Salvar meta',
-    corpo: campoTexto('mensal', 'Meta mensal (R$)', meta.mensal == null ? '' : meta.mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), { placeholder: '80.000,00', extra: 'inputmode="decimal"' }),
-    aoSalvar: (fd) => { const erros = Contratos.salvarMetaComercial(fd.get('mensal')); if (erros.length) return erros; toast('Meta salva.'); renderIndicadores(); },
-    foco: '[name="mensal"]',
-  });
-}
-
-// ---------- Cobranças (cobrancas.html) ----------
-// Página própria: todas as parcelas em aberto, com as vencidas primeiro.
-// Provisória — deve ser remodelada (ou apagada) quando o financeiro ganhar tela definitiva.
-function renderPaginaCobrancas() {
-  const el = document.getElementById('tela');
-  el.innerHTML = `
-    <div class="mb-4">
-      <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100">Cobranças</h2>
-      <p class="text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Parcelas em aberto de todas as vendas, vencidas primeiro. Emita boletos e dê baixa aqui; a condição de pagamento se define em <a href="${urlLista()}" class="text-petrol-800 dark:text-sky-300 hover:underline">Vendas</a>.</p>
-    </div>
-    <div id="lista"></div>`;
-  renderListaCobrancas();
-}
-
-function renderListaCobrancas() {
-  const el = document.getElementById('lista');
-  const f = estado.filtros.cobrancas;
-  const termo = Contratos.normalizar(f.busca);
-  const todas = Contratos.cobrancas(estado.lista, ctx());
-  const visiveis = todas
-    .filter((l) => !termo || Contratos.normalizar(`${l.contrato.codigo} ${l.responsavel.nome}`).includes(termo))
-    .filter((l) => !f.so || (f.so === 'vencidas' ? l.vencida : f.so === 'emitir' ? l.parcela.status === 'prevista' : l.parcela.status === 'emitida' && !l.vencida))
-    .sort((a, b) => Number(b.vencida) - Number(a.vencida) || a.parcela.vencimento.localeCompare(b.parcela.vencimento));
-  const soma = visiveis.reduce((s, l) => s + l.parcela.valor, 0);
-  const vencidas = todas.filter((l) => l.vencida).reduce((s, l) => s + l.parcela.valor, 0);
-  const linha = (l) => `
-    <tr class="hover:bg-slate-50 dark:hover:bg-neutral-900 transition ${l.vencida ? 'bg-red-50/40 dark:bg-red-950/20' : ''}">
-      <td class="${TD} tabular-nums whitespace-nowrap ${l.vencida ? 'text-red-700 dark:text-red-400 font-medium' : ''}">${esc(Contratos.fmtData(l.parcela.vencimento))}</td>
-      <td class="${TD}"><span class="font-medium text-slate-800 dark:text-neutral-100">${esc(l.responsavel.nome)}</span><br><span class="text-xs text-slate-400">${esc(l.responsavel.email || l.responsavel.documento)}</span></td>
-      <td class="${TD}"><button type="button" data-abrir="${l.contrato.id}" class="font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</button><br><span class="text-xs text-slate-400">${esc(Contratos.descricao(ctx(), l.contrato))}</span></td>
-      <td class="${TD} tabular-nums whitespace-nowrap">${l.parcela.n}/${l.contrato.parcelas.length}</td>
-      <td class="${TD_VALOR}">${moeda(l.parcela.valor)}</td>
-      <td class="${TH}"><div class="flex flex-wrap gap-1.5">${pilula(l.vencida ? PILULA.vermelha : PILULA_PARCELA[l.parcela.status], l.vencida ? 'Vencida' : nomeDe(STATUS_PARCELA, l.parcela.status))}${l.situacao === 'recuperante' ? pilula(PILULA.laranja, 'Recuperante') : ''}${l.bloqueios.length ? `<span title="Boleto travado: ${esc(l.bloqueios.join(' · '))}" class="text-amber-600 dark:text-amber-400">${ICONE.alerta}</span>` : ''}</div></td>
-      <td class="${TH} text-right whitespace-nowrap">
-        ${l.parcela.status === 'prevista' ? `<button type="button" data-emitir="${l.contrato.id}:${l.parcela.n}" class="${BOTAO_LINK}" ${l.bloqueios.length ? 'disabled title="' + esc(l.bloqueios.join(' · ')) + '"' : ''}>Emitir boleto</button>` : `<button type="button" data-pagar="${l.contrato.id}:${l.parcela.n}" class="${BOTAO_LINK}">Marcar paga</button>`}
-      </td>
-    </tr>`;
-  el.innerHTML = `
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-      ${busca('busca-cobranca', f.busca, 'Buscar por responsável ou código', 'w-80')}
-      <div class="ml-auto flex flex-wrap items-center gap-2">
-        ${select('filtro-so', 'Todas em aberto', [{ id: 'vencidas', nome: 'Só vencidas' }, { id: 'emitir', nome: 'Só a emitir' }, { id: 'aberto', nome: 'Emitidas, a vencer' }], f.so)}
-      </div>
-    </div>
-    ${vencidas > 0 ? faixa('vermelha', `<strong>${moeda(vencidas)}</strong> em ${plural(todas.filter((l) => l.vencida).length, 'parcela vencida', 'parcelas vencidas')}. Abra a venda para cobrar ou registrar um acordo de recuperação.`) : ''}
-    ${tabela(['Vencimento', 'Responsável financeiro', 'Venda', 'Parcela', 'R$ Valor', 'Situação', ''], visiveis.map(linha), 'Nenhuma parcela em aberto.', `<span>${plural(visiveis.length, 'parcela')}</span><span>Total: <strong>${moeda(soma)}</strong></span>`)}`;
-  const campoBusca = el.querySelector('#busca-cobranca');
-  campoBusca.addEventListener('input', () => { f.busca = campoBusca.value; rerenderMantendoCursor(campoBusca, renderListaCobrancas); });
-  el.querySelector('#filtro-so').addEventListener('change', (e) => { f.so = e.target.value; renderListaCobrancas(); });
-  el.querySelectorAll('[data-abrir]').forEach((b) => b.addEventListener('click', () => abrir(b.dataset.abrir, 'cobranca')));
-  el.querySelectorAll('[data-emitir]').forEach((b) => b.addEventListener('click', () => { const [id, n] = b.dataset.emitir.split(':'); alterar((l) => Contratos.emitirBoletos(l, ctx(), id, [Number(n)])); toast(`Boleto ${n} emitido.`); renderListaCobrancas(); }));
-  el.querySelectorAll('[data-pagar]').forEach((b) => b.addEventListener('click', () => { const [id, n] = b.dataset.pagar.split(':'); abrirDrawerPagamento(id, Number(n), renderListaCobrancas); }));
-}
-
 // ---------- Contrato aberto ----------
 
 function renderContrato() {
@@ -650,8 +440,6 @@ function renderContrato() {
   ];
   el.innerHTML = `
     <nav aria-label="Breadcrumb" class="mb-3 flex items-center gap-1.5 text-sm text-slate-600 dark:text-neutral-400">
-      <a href="home.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Home</a>
-      <span>/</span>
       <a href="${urlLista()}" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Vendas</a>
       <span>/</span>
       <span class="font-medium text-slate-800 dark:text-neutral-100 truncate max-w-xs font-mono" aria-current="page">${esc(c.codigo)}</span>
@@ -698,11 +486,7 @@ function renderContrato() {
 // Faixa do topo: parcela vencida primeiro (quanto, há quanto tempo, quem paga), depois a etapa do fluxo que ainda
 // falta, com botão quando há ação direta. Última faixa (âmbar) quando há alunos aguardando conferência.
 function faixaContrato(c) {
-  if (c.status === 'cancelado') {
-    const r = c.cancelamento?.rescisao;
-    const saldoTxt = !r ? '' : r.saldo > 0 ? ` · <strong>Saldo a cobrar ${moeda(r.saldo)}</strong> até ${esc(Contratos.fmtData(r.prazo))}` : r.saldo < 0 ? ` · <strong>${r.destino === 'carta_credito' ? `Carta de crédito de ${moeda(-r.saldo)}` : `Devolver ${moeda(-r.saldo)}`}</strong>${r.destino === 'carta_credito' ? ` válida até ${esc(Contratos.fmtData(r.validadeCarta))}` : ''}` : ' · Sem saldo a cobrar ou devolver';
-    return faixa(r && r.saldo > 0 ? 'vermelha' : 'neutra', `<strong>Cancelado em ${esc(Contratos.fmtDataHora(c.cancelamento?.em))}.</strong> ${esc(c.cancelamento?.motivo ?? '')}${saldoTxt}`);
-  }
+  if (c.status === 'cancelado') return faixa('neutra', `<strong>Cancelado em ${esc(Contratos.fmtDataHora(c.cancelamento?.em))}.</strong> ${esc(c.cancelamento?.motivo ?? '')}`);
   const prox = Contratos.proximaAcao(ctx(), c);
   const rotulos = { contratante: 'Definir contratante', documento: 'Gerar documento', comercial_ok: 'Marcar Comercial OK', adm_ok: 'Marcar Adm OK', boletos: 'Emitir boletos', nf: 'Emitir NF', assinatura: 'Registrar assinatura', clicksign: 'Enviar para assinatura', recuperacao: 'Registrar acordo' };
   const linha = (tom, texto, acoes) => faixa(tom, `<div class="flex flex-wrap items-center justify-between gap-2"><span>${texto}</span>${acoes ? `<span class="flex items-center gap-2">${acoes}</span>` : ''}</div>`);
@@ -801,6 +585,7 @@ function renderResumo() {
         <div class="p-4">
           <ol class="space-y-2 text-sm">${STATUS_CONTRATO.filter((s) => !s.terminal).map(etapa).join('')}</ol>
           <dl class="mt-4 grid grid-cols-2 gap-3 text-xs">
+            <div class="col-span-2"><dt class="text-slate-500 dark:text-neutral-400">Centro de receita</dt><dd class="text-slate-800 dark:text-neutral-100">${esc(CentrosReceita.nome(c.centroReceitaId)) || '<span class="text-amber-700 dark:text-amber-300">não definido — escolha em Editar dados</span>'}</dd></div>
             <div><dt class="text-slate-500 dark:text-neutral-400">Documento</dt><dd class="text-slate-800 dark:text-neutral-100">${c.documento ? `v${c.documento.versao} · ${esc(Contratos.fmtData(c.documento.geradoEm))}` : '—'}</dd></div>
             <div><dt class="text-slate-500 dark:text-neutral-400">Conferência de alunos</dt><dd class="${t.nAguardando ? 'text-amber-700 dark:text-amber-300' : 'text-slate-800 dark:text-neutral-100'}">${t.nAguardando ? `${t.nAguardando} aguardando · ` : ''}${t.aprovados} aprovado${t.aprovados === 1 ? '' : 's'}${t.nAguardando ? ` — <button type="button" data-ir-pacotes class="underline">conferir</button>` : ''}</dd></div>
             <div><dt class="text-slate-500 dark:text-neutral-400">Assinatura · contratante</dt><dd class="text-slate-800 dark:text-neutral-100">${assinaturaHtml(PARTES_ASSINATURA[0])}</dd></div>
@@ -812,7 +597,6 @@ function renderResumo() {
           ${c.observacoes ? `<p class="mt-4 text-xs text-slate-500 dark:text-neutral-400 whitespace-pre-line"><span class="font-medium">Obs.</span> ${esc(c.observacoes)}</p>` : ''}
         </div>
       </section>
-      ${c.cancelamento?.rescisao ? `<section class="${CARTAO} xl:col-span-2">${cabecalhoSecao('Rescisão', `Pedido em ${esc(Contratos.fmtData(c.cancelamento.rescisao.data))} · 1/3 por ${esc(nomeDe(Contratos.CRITERIOS_TERCO, c.cancelamento.rescisao.criterio)).toLowerCase()} · ${c.cancelamento.rescisao.perdeDesconto ? 'valor base (desconto perdeu eficácia)' : 'valor com desconto'}${c.cancelamento.rescisao.arrependimento ? ' · arrependimento em 7 dias' : ''} · destino: ${esc(nomeDe(Contratos.DESTINOS_SALDO, c.cancelamento.rescisao.destino))}`)}<div class="p-4">${memoriaRescisaoHtml(c, c.cancelamento.rescisao)}</div></section>` : ''}
     </div>`;
   document.getElementById('btn-definir-contratante')?.addEventListener('click', abrirModalContratante);
   document.getElementById('btn-trocar-contratante')?.addEventListener('click', abrirModalContratante);
@@ -1114,7 +898,6 @@ function renderCobranca() {
   const emp = Contratos.empresaDe(ctx(), c) ?? Contratos.responsavelFinanceiro(ctx(), c).empresa;
   document.getElementById('acoes-aba').innerHTML = ativo ? `
     <button type="button" id="btn-cobranca" class="${BOTAO_SEC}">${ICONE.lapis} ${c.parcelas.length ? 'Condição de pagamento' : 'Definir parcelas'}</button>
-    ${c.pacotes.length ? `<button type="button" id="btn-simular-rescisao" class="${BOTAO_SEC}">Simular rescisão</button>` : ''}
     ${previstas.length && c.status !== 'rascunho' ? `<button type="button" id="btn-emitir" class="${BOTAO_PRI}" ${pend.length ? 'disabled' : ''} title="${pend.length ? `Travado: ${esc(pend.join(' · '))}` : ''}">Emitir ${plural(previstas.length, 'boleto')}</button>` : ''}` : '';
   const hoje = Contratos.hoje();
   const atrasos = Contratos.vencidasComEncargos(c, hoje);
@@ -1156,7 +939,6 @@ function renderCobranca() {
     ${tabela(['Parcela', 'Vencimento', 'R$ Valor', 'Situação', 'Detalhe', ''], c.parcelas.map(linha), c.status === 'rascunho' ? 'Defina a condição de pagamento para gerar as parcelas.' : 'Sem parcelas.')}
     ${c.parcelas.length && Math.abs(c.parcelas.reduce((s, p) => s + (p.status === 'cancelada' ? 0 : p.valor), 0) - t.final) > 0.01 && !Contratos.parcelasTravadas(c) && c.status !== 'cancelado' ? `<p class="mt-3 text-xs text-amber-700 dark:text-amber-300">As parcelas somam ${moeda(c.parcelas.reduce((s, p) => s + p.valor, 0))}, mas a venda vale ${moeda(t.final)}. <button type="button" id="btn-regerar" class="underline">Regerar parcelas</button>.</p>` : ''}`;
   document.getElementById('btn-cobranca')?.addEventListener('click', abrirDrawerCobranca);
-  document.getElementById('btn-simular-rescisao')?.addEventListener('click', () => abrirModalRescisao({ somenteSimular: true }));
   document.getElementById('btn-emitir')?.addEventListener('click', confirmarEmissaoBoletos);
   document.getElementById('btn-encerrar-rec')?.addEventListener('click', () => { alterar((l) => Contratos.encerrarRecuperacao(l, c.id)); toast('Recuperação encerrada.'); renderContrato(); });
   document.getElementById('btn-regerar')?.addEventListener('click', () => { alterar((l) => Contratos.regerarParcelas(l, c.id)); toast('Parcelas regeradas.'); renderContrato(); });
@@ -1569,39 +1351,27 @@ const montarPacote = (f) => {
 };
 const lerPacote = (fd) => ({ venda: fd.get('venda'), formacaoId: fd.get('formacaoId'), cursoIds: fd.getAll('cursoIds'), vagas: fd.get('vagas') });
 
-// Nova venda (RF-01, 16/10/2026): vendedor + "Para quem?" + 1º pacote. Particular já entra com o aluno numa vaga
-// e o pagador do cadastro dele; Empresa já entra com a empresa; "Definir depois" é o rascunho sem contratante de antes.
+// Nova venda (RF-01; V1: a venda nasce pelo link): "Para quem?", centro de receita e o 1º pacote. O vendedor é quem
+// está logado e não digita dado de cliente: os alunos se cadastram pelo link do pacote (cadastro-aluno*.html); em
+// Particular, o 1º aluno que entra vira o responsável financeiro. "Definir depois" é o rascunho sem contratante.
 const PARA_QUEM = [
-  { id: 'particular', nome: 'Particular', descricao: 'Um aluno; irmãos entram depois, na mesma venda. Paga o responsável financeiro do cadastro ou o próprio aluno.' },
-  { id: 'empresa', nome: 'Empresa', descricao: 'Vagas para colaboradores; os alunos entram depois, pela escola ou pelo link do pacote.' },
+  { id: 'particular', nome: 'Particular', descricao: 'O aluno se cadastra pelo link do pacote e paga; irmãos entram depois, na mesma venda.' },
+  { id: 'empresa', nome: 'Empresa', descricao: 'Vagas para colaboradores; cada um se cadastra pelo link do pacote.' },
   { id: 'depois', nome: 'Definir depois', descricao: 'Ainda não se sabe quem paga: a venda nasce como rascunho, sem contratante.' },
 ];
 function abrirModalNovo() {
   const empresas = ctx().empresas.filter((e) => e.status === 'ativo').sort((a, b) => Contratos.nomeEmpresa(a).localeCompare(Contratos.nomeEmpresa(b), 'pt-BR'));
-  const alunos = ctx().alunos.filter((a) => a.status === 'ativo').sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   const pendTxt = (n) => (n ? `⚠ ${plural(n, 'pendência')}` : '');
   modalFormulario({
-    id: 'form-novo', titulo: 'Nova venda', subtitulo: 'Para quem é e o primeiro pacote (formação ou cursos avulsos). Turmas e parcelas ficam para a venda aberta, que nasce como rascunho.', rotulo: 'Criar venda',
+    id: 'form-novo', titulo: 'Nova venda', subtitulo: 'Para quem é, o centro de receita e o primeiro pacote (formação ou cursos avulsos). Os alunos se cadastram pelo link do pacote; turmas e parcelas ficam para a venda aberta, que nasce como rascunho.', rotulo: 'Criar venda',
     corpo: `
-      ${campoSelect('vendedorId', 'Vendedor', VENDEDORES, '')}
+      <div class="grid grid-cols-2 gap-3">
+        <div>${campo('Vendedor', esc(nomeDe(VENDEDORES, vendedorAtual()) || vendedorAtual()))}${ERRO('vendedorId')}</div>
+        ${campoSelect('centroReceitaId', 'Centro de receita', CentrosReceita.ativos(), '')}
+      </div>
       <fieldset class="space-y-3 min-w-0">
         <legend class="rotulo">Para quem?</legend>
         ${cartoesRadio('para', PARA_QUEM, null, 'grid-cols-3')}
-        <div data-para="particular" class="hidden space-y-3">
-          ${cartoesRadio('alunoModo', [{ id: 'existente', nome: 'Aluno já cadastrado', descricao: 'Buscar por nome, CPF ou e-mail.' }, { id: 'novo', nome: 'Aluno novo', descricao: 'Só o essencial; o resto fica para o cadastro em Clientes.' }], 'existente')}
-          <div data-sub-aluno="existente">${listaSelecionavel('alunoId', alunos.map((a) => ({ id: a.id, nome: a.nomeSocial || a.nome, detalhe: `<span class="font-mono">${esc(Clientes.fmtCpf(a.cpf))}</span> · ${esc(a.email || 'sem e-mail')} · ${esc(nomeDe(PAGADORES, a.pagador))}`, busca: `${a.nome} ${a.nomeSocial} ${a.cpf} ${a.email}`, direita: `${financeiroDoAluno(a).tag}${pendTxt(Clientes.pendenciasAluno(a, ctx().empresas).length)}` })), { placeholder: 'Buscar aluno por nome, CPF ou e-mail', vazioTxt: 'Nenhum aluno encontrado — use "Aluno novo" acima.' })}</div>
-          <div data-sub-aluno="novo" class="hidden space-y-3">
-            ${campoTexto('nome', 'Nome completo', '', { placeholder: 'Como consta no documento', max: 120 })}
-            <div class="grid grid-cols-2 gap-3">
-              ${campoTexto('cpf', 'CPF', '', { placeholder: '000.000.000-00', max: 14, extra: 'data-mascara="cpf" inputmode="numeric"' })}
-              ${campoTexto('nascimento', 'Nascimento', '', { tipo: 'date', opcional: true })}
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              ${campoTexto('email', 'E-mail', '', { tipo: 'email', max: 120 })}
-              ${campoTexto('celular', 'Celular / WhatsApp', '', { placeholder: '(47) 90000-0000', extra: 'inputmode="tel"' })}
-            </div>
-          </div>
-        </div>
         <div data-para="empresa" class="hidden">
           ${listaSelecionavel('empresaId', empresas.map((e) => ({ id: e.id, nome: Contratos.nomeEmpresa(e), detalhe: `${esc(e.razaoSocial)} · <span class="font-mono">${esc(Clientes.fmtCnpj(e.cnpj))}</span>`, busca: `${e.nomeFantasia} ${e.razaoSocial} ${e.cnpj}`, direita: pendTxt(Clientes.pendenciasEmpresa(e).length) })), { placeholder: 'Buscar empresa por nome ou CNPJ', vazioTxt: 'Nenhuma empresa ativa encontrada.' })}
           <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">Empresa nova? Escolha "Definir depois" e cadastre em "Definir contratante", dentro da venda — lá ela mesma preenche pelo link.</p>
@@ -1610,37 +1380,22 @@ function abrirModalNovo() {
       ${corpoPacote()}`,
     aoMontar: (f) => {
       montarPacote(f);
-      const mostrar = (sel, chave, valor) => f.querySelectorAll(sel).forEach((b) => b.classList.toggle('hidden', b.dataset[chave] !== valor));
-      f.querySelectorAll('input[name="para"]').forEach((r) => r.addEventListener('change', () => { mostrar('[data-para]', 'para', r.value); f.querySelector('[data-vagas]').classList.toggle('hidden', r.value === 'particular'); }));
-      f.querySelectorAll('input[name="alunoModo"]').forEach((r) => r.addEventListener('change', () => mostrar('[data-sub-aluno]', 'subAluno', r.value)));
-      f.querySelector('[name="celular"]').addEventListener('blur', (e) => { e.target.value = Clientes.fmtTelefone(e.target.value); });
+      f.querySelectorAll('input[name="para"]').forEach((r) => r.addEventListener('change', () => {
+        f.querySelectorAll('[data-para]').forEach((b) => b.classList.toggle('hidden', b.dataset.para !== r.value));
+        f.querySelector('[data-vagas]').classList.toggle('hidden', r.value === 'particular');
+      }));
     },
     aoSalvar: (fd) => {
       const para = fd.get('para');
-      const d = { ...lerPacote(fd), vendedorId: fd.get('vendedorId'), vagas: para === 'particular' ? 1 : fd.get('vagas') };
+      const d = { ...lerPacote(fd), vendedorId: vendedorAtual(), centroReceitaId: fd.get('centroReceitaId'), contratante: para === 'particular' ? 'particular' : null, vagas: para === 'particular' ? 1 : fd.get('vagas') };
       const erros = PARA_QUEM.some((p) => p.id === para) ? [] : [{ campo: 'para', mensagem: 'Escolha para quem é a venda.' }];
-      const alunoNovo = para === 'particular' && fd.get('alunoModo') === 'novo' ? { nome: fd.get('nome'), cpf: fd.get('cpf'), nascimento: fd.get('nascimento'), email: fd.get('email'), celular: fd.get('celular') } : null;
-      if (alunoNovo) erros.push(...Clientes.validarAluno(alunoNovo, ctx().alunos));
-      else if (para === 'particular' && !fd.get('alunoId')) erros.push({ campo: 'alunoId', mensagem: 'Escolha o aluno.' });
       if (para === 'empresa') erros.push(...Contratos.validarContratante(ctx(), { contratante: 'empresa', empresaId: fd.get('empresaId') }));
       erros.push(...Contratos.validarNovo(ctx(), d));
       if (erros.length) return erros;
-      let alunoId = fd.get('alunoId');
-      if (alunoNovo) {
-        const r = Clientes.incluirAluno(estado.clientes, alunoNovo);
-        estado.clientes = r.dados; Clientes.salvar(estado.clientes); estado.ctx.alunos = estado.clientes.alunos;
-        alunoId = r.aluno.id;
-      }
       let { lista, contrato } = Contratos.incluir(estado.lista, ctx(), d);
       if (para === 'empresa') lista = Contratos.definirContratante(lista, ctx(), contrato.id, { contratante: 'empresa', empresaId: fd.get('empresaId') });
-      if (para === 'particular') {
-        const fin = Clientes.responsavelFinanceiroDoAluno(estado.clientes, alunoId);
-        lista = Contratos.definirContratante(lista, ctx(), contrato.id, { contratante: 'particular', responsavel: fin ? { tipo: 'responsavel', id: fin.responsavel.id } : { tipo: 'aluno', id: alunoId } });
-        lista = Contratos.regerarParcelas(Contratos.vincularAlunos(lista, contrato.id, contrato.pacotes[0].id, [alunoId]), contrato.id);
-        sincronizarClientes([alunoId], Contratos.porId(lista, contrato.id));
-      }
       estado.lista = lista; persistir();
-      toast(`Venda ${contrato.codigo} criada como rascunho.`);
+      toast(`Venda ${contrato.codigo} criada como rascunho — envie o link do pacote para os alunos se cadastrarem.`);
       abrir(contrato.id, 'pacotes');
     },
   });
@@ -1666,14 +1421,15 @@ function abrirModalPacote() {
 function abrirDrawerDados() {
   const c = atual();
   drawerFormulario({
-    id: 'form-dados', titulo: `Venda ${c.codigo}`, subtitulo: 'Descrição livre (sai na lista e no documento), vendedor e observações internas.', rotulo: 'Salvar',
+    id: 'form-dados', titulo: `Venda ${c.codigo}`, subtitulo: 'Descrição livre (sai na lista e no documento), vendedor, centro de receita e observações internas.', rotulo: 'Salvar',
     corpo: `
       ${campoTexto('descricao', 'Descrição', c.descricao, { placeholder: Contratos.descricao(ctx(), { ...c, descricao: '' }), opcional: true, max: 120 })}
       <p class="text-xs text-slate-500 dark:text-neutral-400 -mt-3">Vazio = descrição automática pelo que foi vendido. Use para casos como "50% da venda 2026-05-003".</p>
-      ${campoSelect('vendedorId', 'Vendedor', VENDEDORES, c.vendedorId)}
+      ${vendedorExterno() ? campo('Vendedor', esc(nomeDe(VENDEDORES, c.vendedorId))) : campoSelect('vendedorId', 'Vendedor', VENDEDORES, c.vendedorId)}
+      ${campoSelect('centroReceitaId', 'Centro de receita', CentrosReceita.ativos(), c.centroReceitaId)}
       ${campoArea('observacoes', 'Observações internas', c.observacoes, { opcional: true })}`,
     foco: '[name="descricao"]',
-    aoSalvar: (fd) => { alterar((l) => Contratos.atualizarDados(l, c.id, { descricao: fd.get('descricao'), vendedorId: fd.get('vendedorId'), observacoes: fd.get('observacoes') })); toast('Dados salvos.'); renderContrato(); },
+    aoSalvar: (fd) => { alterar((l) => Contratos.atualizarDados(l, c.id, { descricao: fd.get('descricao'), vendedorId: fd.get('vendedorId'), centroReceitaId: fd.get('centroReceitaId'), observacoes: fd.get('observacoes') })); toast('Dados salvos.'); renderContrato(); },
   });
 }
 
@@ -1713,7 +1469,7 @@ function abrirModalContratante() {
           ${cartoesRadio('responsavelTipo', TIPOS_RESPONSAVEL_CONTRATO, tipoAtual)}
           <div data-sub="responsavel" class="${tipoAtual === 'responsavel' ? '' : 'hidden'}">
             ${listaSelecionavel('responsavelId', responsaveis.map((x) => ({ id: x.id, nome: x.nome, detalhe: `<span class="font-mono">${esc(Clientes.fmtCpf(x.cpf))}</span> · ${esc(x.email || 'sem e-mail')}`, busca: `${x.nome} ${x.cpf} ${x.email}`, direita: pendTxt(Clientes.pendenciasResponsavel(x).length) })), { selecionados: tipoAtual === 'responsavel' ? [c.responsavel.id] : [], placeholder: 'Buscar responsável por nome, CPF ou e-mail', vazioTxt: 'Nenhum responsável ativo.' })}
-            <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">Não achou? <a href="responsaveis.html" class="text-petrol-800 dark:text-sky-300 hover:underline">Cadastre em Responsáveis</a>. Os alunos da venda ficam vinculados a ele com o papel financeiro.</p>
+            <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">${vendedorExterno() ? '' : 'Não achou? <a href="responsaveis.html" class="text-petrol-800 dark:text-sky-300 hover:underline">Cadastre em Responsáveis</a>. '}Os alunos da venda ficam vinculados a ele com o papel financeiro.</p>
           </div>
           <div data-sub="aluno" class="${tipoAtual === 'aluno' ? '' : 'hidden'}">
             ${listaSelecionavel('alunoRespId', alunos.map((a) => ({ id: a.id, nome: a.nomeSocial || a.nome, detalhe: `<span class="font-mono">${esc(Clientes.fmtCpf(a.cpf))}</span> · ${esc(nomeDe(PAGADORES, a.pagador))}${a.pagador === 'terceiro' && a.responsavel?.nome ? ` (${esc(a.responsavel.nome)})` : ''}`, busca: `${a.nome} ${a.nomeSocial} ${a.cpf} ${a.email}`, direita: pendTxt(Clientes.pendenciasAluno(a, ctx().empresas).length) })), { selecionados: tipoAtual === 'aluno' ? [c.responsavel.id] : [], placeholder: 'Buscar aluno por nome, CPF ou e-mail', vazioTxt: 'Nenhum aluno ativo.' })}
@@ -1841,7 +1597,7 @@ function abrirModalDuplicar() {
           ${chk('vagas', 'Vagas de cada pacote', 'Desmarcado: 1 vaga por pacote (ou o nº de alunos copiados).')}
           ${chk('condicao', 'Condição de pagamento', `${c.cobranca.parcelas}× · ${esc(nomeDe(FORMAS_COBRANCA, c.cobranca.forma))}${c.cobranca.primeiroVencimento ? ` · 1º venc. ${esc(Contratos.fmtData(c.cobranca.primeiroVencimento))}` : ''}${c.cobranca.pedidoCompra ? ` · PO ${esc(c.cobranca.pedidoCompra)}` : ''}`)}
           ${chk('descricao', 'Descrição e observações', c.descricao || c.observacoes ? esc([c.descricao, c.observacoes].filter(Boolean).join(' · ')).slice(0, 90) : 'Sem descrição/observações no original.')}
-          ${chk('vendedor', 'Vendedor', `${esc(nomeDe(VENDEDORES, c.vendedorId))}; desmarcado → Ana Souza (usuária atual).`)}
+          ${chk('vendedor', 'Vendedor', `${esc(nomeDe(VENDEDORES, c.vendedorId))}; desmarcado → ${esc(nomeDe(VENDEDORES, vendedorAtual()))} (você).`)}
           ${chk('alunos', 'Alunos vinculados', ocupantes ? `${plural(ocupantes, 'aluno')} entram como aprovados, com os itens individuais.` : 'Nenhum aluno ocupando vaga no original.', { desabilitado: !ocupantes })}
           ${chk('contratante', 'Contratante', c.contratante ? `${esc(r.nome)} (${c.contratante === 'empresa' ? 'empresa' : 'particular'}); desmarcado → definir depois.` : 'O original não tem contratante.', { desabilitado: !c.contratante })}
         </div>
@@ -1871,7 +1627,7 @@ function abrirModalDuplicar() {
   atualizarResumo();
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const { lista, contrato } = Contratos.duplicar(estado.lista, ctx(), c.id, ler(), { vendedorAtual: 'ana' });
+    const { lista, contrato } = Contratos.duplicar(estado.lista, ctx(), c.id, ler(), { vendedorAtual: vendedorAtual(), por: sessao()?.nome ?? 'Ana Souza' });
     if (!contrato) { toast('Não foi possível duplicar.'); return; }
     estado.lista = lista; persistir();
     if (contrato.contratante) { estado.selecionado = contrato.id; sincronizarClientes(Contratos.alunoIdsDe(contrato)); estado.selecionado = c.id; }
@@ -2378,7 +2134,7 @@ function abrirSeletorAlunos(pacoteId, { marcados = [] } = {}) {
         detalhe: `<span class="font-mono">${esc(Clientes.fmtCpf(a.cpf))}</span> · ${esc(a.email || 'sem e-mail')} · ${emp && !a.empresaId ? 'sem empresa — entra como colaborador' : esc(nomeDe(PAGADORES, a.pagador))}`,
         busca: `${a.nome} ${a.nomeSocial} ${a.cpf} ${a.email}${fin.get(a.id).devedor ? ' devedor' : ''}${pend.length ? ` pendência ${pend.join(' ')}` : ''}`,
         tag: fin.get(a.id).tag,
-        link: `aluno.html?id=${encodeURIComponent(a.id)}`,
+        link: vendedorExterno() ? '' : `aluno.html?id=${encodeURIComponent(a.id)}`,
         direita: pend.length ? `<span class="cursor-help border-b border-dotted border-slate-300 dark:border-neutral-600" title="${esc(`Falta no cadastro: ${pend.join(' · ')}. Não impede a matrícula — dá para completar depois em Clientes.`)}">⚠ ${plural(pend.length, 'pendência')}</span>` : '',
       };
     }),
@@ -2456,139 +2212,15 @@ function modalConfirmacao({ titulo, corpo, rotulo, tom = 'vermelho', aoConfirmar
   if (comMotivo) root.querySelector('#motivo')?.focus();
 }
 
-const SITUACAO_RESCISAO = { concluido: ['verde', 'Concluído'], em_andamento: ['petrol', 'Em andamento'], nao_iniciado: ['neutra', 'Não iniciado'], arrependimento: ['ambar', 'Arrependimento'] };
-
-// Memória de cálculo da rescisão (tabela + totais). Usada no modal (simulação
-// viva) e no Resumo do contrato cancelado (memória gravada). Um bloco por aluno
-// que ocupa vaga + um bloco "Vagas livres" (linhas com alunoId null, uma por pacote).
-function memoriaRescisaoHtml(c, sim, { scrollTabela = false } = {}) {
-  const nomePacote = (l) => l.pacote?.nome ?? Contratos.pacoteDe(c, l.pacoteId)?.nome ?? 'pacote';
-  const linha = (l) => {
-    const it = l.alunoId === null ? null : (l.itemId ? Contratos.itemDe(c, l.itemId) : l.item);
-    const [tom, nome] = SITUACAO_RESCISAO[l.situacao] ?? ['neutra', l.situacao];
-    const rotulo = l.alunoId === null ? `${plural(l.vagas ?? 0, 'vaga livre', 'vagas livres')} · ${nomePacote(l)}` : it ? Contratos.rotuloItem(ctx(), it) : '—';
-    return `
-      <tr>
-        <td class="${TD}"><span class="block">${esc(rotulo)}</span><span class="block text-xs text-slate-500 dark:text-neutral-400">${esc(l.regra)}</span></td>
-        <td class="${TH}">${pilula(PILULA[tom], nome)}</td>
-        <td class="${TD_VALOR}">${moeda(l.base)}</td>
-        <td class="${TD_VALOR}">${Math.round(l.pct * 100)}%</td>
-        <td class="${TD_VALOR} font-medium text-slate-800 dark:text-neutral-100">${moeda(l.devido)}</td>
-      </tr>`;
-  };
-  // Acordeão: fechado por padrão quando há mais de um bloco; a faixa mostra o subtotal.
-  const chaves = [...new Set(sim.linhas.map((l) => l.alunoId ?? '__livres'))].sort((a, b) => (a === '__livres') - (b === '__livres'));
-  const varios = chaves.length > 1;
-  const grupo = (chave) => {
-    const livres = chave === '__livres';
-    const a = livres ? null : alunoDe(chave);
-    const ls = sim.linhas.filter((l) => (livres ? l.alunoId === null : l.alunoId === chave));
-    const sub = ls.reduce((s, l) => s + l.devido, 0);
-    const titulo = livres ? 'Vagas livres' : (a?.nomeSocial || a?.nome || chave);
-    const detalhe = livres ? `${ls.reduce((s, l) => s + (l.vagas ?? 0), 0)} vaga(s) em ${plural(ls.length, 'pacote')} · cobradas pelo valor do pacote` : plural(ls.length, 'matrícula');
-    return `
-      <tr class="bg-slate-50 dark:bg-neutral-900 ${varios ? 'cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-neutral-800' : ''}" ${varios ? `data-toggle-rescisao="${chave}" aria-expanded="false"` : ''}>
-        <td colspan="4" class="${TH} text-xs font-medium text-slate-600 dark:text-neutral-300">${varios ? '<span class="inline-block w-4 text-slate-400 transition-transform" data-seta>▸</span>' : ''}${esc(titulo)} <span class="font-normal normal-case tracking-normal text-slate-400">· ${esc(detalhe)}${varios ? ` · <span data-dica-rescisao>clique para ver ${livres ? 'as vagas' : 'as matrículas'}</span>` : ''}</span></td>
-        <td class="${TD_VALOR} font-semibold text-xs">${moeda(sub)}</td>
-      </tr>
-      ${ls.map((l) => linha(l).replace('<tr>', `<tr data-grupo-rescisao="${chave}" class="${varios ? 'hidden' : ''}">`)).join('')}`;
-  };
-  const barra = varios ? `<div class="flex flex-wrap items-center justify-between gap-2 mb-2"><p class="text-xs text-slate-500 dark:text-neutral-400">Um bloco por aluno (e um para as vagas livres) — clique no título para ver as linhas.</p><div class="flex items-center"><button type="button" data-todos-rescisao="abrir" class="${BOTAO_LINK}">Expandir todos</button><span class="mx-1 text-slate-300">·</span><button type="button" data-todos-rescisao="fechar" class="${BOTAO_LINK}">Minimizar todos</button></div></div>` : '';
-  const venc = sim.vencidas.map((v) => ({ n: v.n ?? v.parcela?.n, valor: v.valor ?? v.parcela?.valor, dias: v.dias, encargos: v.encargos }));
-  const tot = (rot, val, extra = '') => `<div class="flex justify-between gap-4 ${extra}"><span>${rot}</span><span class="tabular-nums">${val}</span></div>`;
-  const faixaSaldo = sim.saldo > 0
-    ? faixa('vermelha', `<strong>Cobrar ${moeda(sim.saldo)} do contratante</strong> até ${esc(Contratos.fmtData(sim.prazo))} (5 dias a partir da notificação — item 15).`)
-    : sim.saldo < 0
-      ? faixa('verde', `<strong>ProWay devolve ${moeda(-sim.saldo)}</strong> em 5 dias (item 15) — ou carta de crédito válida até ${esc(Contratos.fmtData(sim.validadeCarta))} (item 16).`)
-      : faixa('neutra', '<strong>Sem saldo:</strong> o que foi pago cobre exatamente o devido.');
-  return `
-    ${barra}
-    ${scrollTabela ? `<div class="max-h-[45vh] overflow-y-auto">${tabela(['Curso / turma', 'Situação', 'R$ Valor', 'R$ %', 'R$ Devido'], chaves.map(grupo), 'Nenhuma matrícula ativa nem vaga livre — nada a calcular.')}</div>` : tabela(['Curso / turma', 'Situação', 'R$ Valor', 'R$ %', 'R$ Devido'], chaves.map(grupo), 'Nenhuma matrícula ativa nem vaga livre — nada a calcular.')}
-    <div class="grid md:grid-cols-2 gap-4 mt-4">
-      <div class="text-sm space-y-1 text-slate-700 dark:text-neutral-200">
-        ${tot('Devido pela rescisão', moeda(sim.devido))}
-        ${tot('Já pago', `− ${moeda(sim.pago)}`)}
-        ${venc.length ? tot(`Encargos de ${plural(venc.length, 'parcela vencida', 'parcelas vencidas')} <span class="text-xs text-slate-400">(2% + 1% a.m., item 23)</span>`, `+ ${moeda(sim.encargos)}`) : ''}
-        ${tot('<strong>Saldo</strong>', `<strong>${moeda(sim.saldo)}</strong>`, 'border-t border-slate-200 dark:border-neutral-800 pt-1 mt-1')}
-        ${venc.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400 pt-1">Vencidas: ${venc.map((v) => `${v.n}ª (${moeda(v.valor)}, ${v.dias} d → +${moeda(v.encargos)})`).join(' · ')}. INPC fora do protótipo.</p>` : ''}
-      </div>
-      <div>${faixaSaldo}</div>
-    </div>`;
-}
-
-// Abre/fecha os blocos por aluno da memória de rescisão (modal e Resumo) por delegação.
-document.addEventListener('click', (e) => {
-  const cab = e.target.closest('[data-toggle-rescisao]');
-  const todos = e.target.closest('[data-todos-rescisao]');
-  if (!cab && !todos) return;
-  const alternar = (linhaCab, abrir) => {
-    const id = linhaCab.dataset.toggleRescisao;
-    const tabela = linhaCab.closest('table');
-    const aberto = abrir ?? linhaCab.getAttribute('aria-expanded') !== 'true';
-    linhaCab.setAttribute('aria-expanded', String(aberto));
-    linhaCab.querySelector('[data-seta]')?.classList.toggle('rotate-90', aberto);
-    const dica = linhaCab.querySelector('[data-dica-rescisao]'); if (dica) dica.textContent = aberto ? 'clique para ocultar' : 'clique para ver as matrículas';
-    tabela.querySelectorAll(`[data-grupo-rescisao="${id}"]`).forEach((tr) => tr.classList.toggle('hidden', !aberto));
-  };
-  if (cab) alternar(cab);
-  else todos.closest('div').parentElement.nextElementSibling.querySelectorAll('[data-toggle-rescisao]').forEach((tr) => alternar(tr, todos.dataset.todosRescisao === 'abrir'));
-});
-
-function abrirModalRescisao({ somenteSimular = false } = {}) {
+// V1 sem rescisão: cancelar encerra a venda inteira, sem cálculo de valores devidos.
+function confirmarCancelamento() {
   const c = atual();
-  const params = { data: Contratos.hoje(), criterio: 'aulas', perdeDesconto: true, arrependimento: false };
-  const temTurmas = typeof Turmas !== 'undefined';
-  const root = abrirModal(`
-    <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800">
-      <h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100">${somenteSimular ? 'Simular rescisão' : 'Cancelar venda'} ${esc(c.codigo)}</h3>
-      <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Rescisão do contrato inteiro, pelos Termos Gerais: 100% do concluído · 50% ou 100% do curso em andamento (regra do 1/3, item 14) · multa de 10% sobre os não iniciados (item 11) · desconto perde eficácia (item 22).</p>
-    </div>
-    <div class="px-5 py-4 overflow-y-auto space-y-4 text-sm text-slate-700 dark:text-neutral-200">
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
-        <div><label class="rotulo" for="r-data">Data do pedido</label><input id="r-data" type="date" class="campo" value="${params.data}"></div>
-        <div><label class="rotulo" for="r-criterio">1/3 da duração por</label><select id="r-criterio" class="campo">${Contratos.CRITERIOS_TERCO.map((o) => `<option value="${o.id}" ${!temTurmas && o.id === 'aulas' ? 'disabled' : ''} title="${esc(o.descricao)}">${esc(o.nome)}</option>`).join('')}</select></div>
-        <label class="flex items-center gap-2 h-9"><input id="r-desconto" type="checkbox" class="${CHECK}" checked><span>Desconto perde eficácia <span class="text-xs text-slate-400">(item 22)</span></span></label>
-        <label class="flex items-center gap-2 h-9"><input id="r-arrependimento" type="checkbox" class="${CHECK}"><span>Contratação online <span class="text-xs text-slate-400">(7 dias, item 13)</span></span></label>
-      </div>
-      <div id="r-memoria"></div>
-      <div id="r-destino" class="hidden"><label class="rotulo" for="r-destino-sel">Saldo a favor do contratante</label><select id="r-destino-sel" class="campo">${Contratos.DESTINOS_SALDO.filter((d) => d.id === 'devolver' || d.id === 'carta_credito').map((d) => `<option value="${d.id}">${esc(d.nome)} — ${esc(d.descricao)}</option>`).join('')}</select></div>
-      ${somenteSimular ? '' : `<div><label class="rotulo" for="motivo">Motivo ${OPCIONAL}</label><textarea id="motivo" rows="2" class="campo"></textarea></div>`}
-    </div>
-    <div class="px-5 py-3 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-between gap-2">
-      <span id="r-aviso" class="text-xs text-slate-500 dark:text-neutral-400"></span>
-      <div class="flex items-center gap-2">
-        <button type="button" data-fechar-modal class="${BOTAO_CANCELAR}">${somenteSimular ? 'Fechar' : 'Voltar'}</button>
-        ${somenteSimular ? '' : `<button type="button" id="btn-confirmar" class="px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition bg-red-600 hover:bg-red-700">Cancelar venda</button>`}
-      </div>
-    </div>`, 'max-w-4xl');
-  root.querySelector('[role="dialog"]').classList.replace('max-h-full', 'max-h-[90vh]'); // pedido: no máximo 90% da tela
-  let sim = null;
-  const recalcular = () => {
-    params.data = root.querySelector('#r-data').value || Contratos.hoje();
-    params.criterio = root.querySelector('#r-criterio').value;
-    params.perdeDesconto = root.querySelector('#r-desconto').checked;
-    params.arrependimento = root.querySelector('#r-arrependimento').checked;
-    sim = Contratos.simularRescisao(ctx(), c, params);
-    root.querySelector('#r-memoria').innerHTML = memoriaRescisaoHtml(c, sim, { scrollTabela: true });
-    root.querySelector('#r-destino').classList.toggle('hidden', sim.saldo >= 0);
-    const avisos = [];
-    if (params.arrependimento && !sim.arrependimento) avisos.push(`Inscrição em ${Contratos.fmtData(c.criadoEm)}: ${sim.diasDesdeInscricao} dias até o pedido — fora do prazo de 7 dias.`);
-    if (params.criterio === 'aulas' && sim.linhas.some((l) => l.progresso?.unidade === 'dias')) avisos.push('Turma sem aulas agendadas: 1/3 contado em dias corridos.');
-    root.querySelector('#r-aviso').textContent = avisos.join(' ');
-  };
-  root.querySelectorAll('#r-data, #r-criterio, #r-desconto, #r-arrependimento').forEach((el) => el.addEventListener('change', recalcular));
-  recalcular();
-  root.querySelector('#btn-confirmar')?.addEventListener('click', () => {
-    const destino = sim.saldo < 0 ? root.querySelector('#r-destino-sel').value : sim.destino;
-    const motivo = root.querySelector('#motivo')?.value ?? '';
-    alterar((l) => Contratos.cancelar(l, c.id, motivo, { ...sim, destino }));
-    fecharModal();
-    toast(`Venda ${c.codigo} cancelada.`);
-    renderContrato();
+  modalConfirmacao({
+    titulo: `Cancelar venda ${esc(c.codigo)}`, rotulo: 'Cancelar venda', comMotivo: true,
+    corpo: '<p>A venda inteira é cancelada: parcelas em aberto e matrículas ativas são encerradas (as parcelas pagas ficam), o envelope do Clicksign em andamento é cancelado e os links dos pacotes param de aceitar cadastros.</p>',
+    aoConfirmar: (motivo) => { alterar((l) => Contratos.cancelar(l, c.id, motivo)); toast(`Venda ${c.codigo} cancelada.`); renderContrato(); },
   });
 }
-
-const confirmarCancelamento = () => abrirModalRescisao();
 
 function confirmarExclusao() {
   const c = atual();
@@ -2654,7 +2286,7 @@ function abrirModalClicksign() {
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-center gap-2"><span class="font-medium text-slate-800 dark:text-neutral-100">${esc(sg.nome)}</span>${pilula(sg.papel === 'escola' ? PILULA.petrol : sg.papel === 'aluno' ? PILULA.violeta : PILULA.laranja, nomeDe(PAPEIS_SIGNATARIO, sg.papel))}${sg.obrigatorio ? '<span class="text-[11px] text-slate-400">obrigatório</span>' : ''}</div>
         <p class="text-xs text-slate-500 dark:text-neutral-400">${esc(sg.detalhe)}</p>
-        <p class="text-xs ${sg.email ? 'text-slate-600 dark:text-neutral-300' : 'text-red-600 dark:text-red-400'}">${sg.email ? esc(sg.email) : 'sem e-mail cadastrado'}${!sg.email && sg.papel !== 'escola' ? ` — <a href="${sg.responsavelId ? `responsavel.html?id=${sg.responsavelId}` : sg.alunoId ? `aluno.html?id=${sg.alunoId}` : `empresa.html?id=${c.empresaId}`}" class="underline">completar cadastro</a>` : ''}</p>
+        <p class="text-xs ${sg.email ? 'text-slate-600 dark:text-neutral-300' : 'text-red-600 dark:text-red-400'}">${sg.email ? esc(sg.email) : 'sem e-mail cadastrado'}${!sg.email && sg.papel !== 'escola' && !vendedorExterno() ? ` — <a href="${sg.responsavelId ? `responsavel.html?id=${sg.responsavelId}` : sg.alunoId ? `aluno.html?id=${sg.alunoId}` : `empresa.html?id=${c.empresaId}`}" class="underline">completar cadastro</a>` : ''}</p>
       </div>
     </label>`;
   const bloqueio = Contratos.validarEnvio(ctx(), c, []);
@@ -2729,16 +2361,16 @@ function confirmarEmissaoBoletos() {
 
 function renderTudo() {
   if (MODO === 'detalhe') {
-    if (atual()) renderContrato();
-    else location.replace('contratos.html?erro=nao-encontrado');
+    if (!atual()) location.replace('contratos.html?erro=nao-encontrado');
+    else if (!podeVer(atual())) document.getElementById('tela').innerHTML = `<div class="${CARTAO} px-4 py-10 text-center"><p class="font-medium text-slate-800 dark:text-neutral-100">Sem acesso a esta venda</p><p class="mt-1 text-sm text-slate-500 dark:text-neutral-400">Ela é de outro vendedor. <a href="${urlLista()}" class="text-petrol-800 dark:text-sky-300 hover:underline">Ver as suas vendas</a></p></div>`;
+    else renderContrato();
     return;
   }
-  if (MODO === 'cobrancas') { renderPaginaCobrancas(); return; }
-  if (MODO === 'indicadores') { renderPaginaIndicadores(); return; }
   renderLista();
 }
 
-(function iniciar() {
+// Depois do DOMContentLoaded: a Sessao (js/menu.js, defer) já existe.
+document.addEventListener('DOMContentLoaded', function iniciar() {
   const aba = parametroUrl('aba');
   if (MODO === 'detalhe') {
     const id = parametroUrl('id');
@@ -2752,23 +2384,19 @@ function renderTudo() {
   // URL antiga (contratos.html?contrato=X) → página de detalhe.
   const antigo = parametroUrl('contrato');
   if (antigo) { location.replace(urlDetalhe(antigo, aba)); return; }
-  if (MODO === 'cobrancas' || MODO === 'indicadores') { renderTudo(); return; }
   const tipo = parametroUrl('tipo');
-  // URLs antigas (contratos.html?tipo=cobrancas / ?tipo=indicadores) → páginas próprias.
-  if (tipo === 'cobrancas') { location.replace('cobrancas.html'); return; }
-  if (tipo === 'indicadores') { location.replace('contratos.html'); return; }
   if (tipo === 'turmas') estado.tipo = tipo;
   const foco = parametroUrl('filtro');
   if (['vencidas', 'assinatura', 'documentos', 'sem-turma', 'vagas'].includes(foco)) estado.filtros.contratos.foco = foco;
   if (parametroUrl('novo') === '1') setTimeout(abrirModalNovo, 0);
   if (parametroUrl('erro') === 'nao-encontrado') { setTimeout(() => toast('Venda não encontrada.'), 0); history.replaceState(null, '', urlLista(estado.tipo)); }
   renderTudo();
-})();
+});
 
 // ---------- Sinais operacionais da lista ----------
 
 function cartoesResumoContratos() {
-  const ativos = estado.lista.filter((c) => c.status !== 'cancelado');
+  const ativos = vendasVisiveis().filter((c) => c.status !== 'cancelado');
   const assinatura = ativos.filter((c) => c.status === 'aguardando' && !Contratos.assinado(c)).length;
   const documentos = ativos.filter((c) => Contratos.pendenciasDocumento(ctx(), c).length).length;
   const semTurma = ativos.reduce((n, c) => n + Contratos.itensMatriculados(c).filter((m) => Contratos.matriculaAtiva(m) && !m.turmaId).length, 0);

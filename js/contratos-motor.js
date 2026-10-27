@@ -15,7 +15,7 @@
 // ============================================================
 
 const Contratos = (() => {
-  const CHAVE = 'aulor-v1-contratos-v9';
+  const CHAVE = 'aulor-v1-contratos-v10'; // v10: semente com centro de receita e vendedor externo
 
   const clonar = (x) => JSON.parse(JSON.stringify(x));
 
@@ -563,10 +563,11 @@ const Contratos = (() => {
 
   const vagasValidas = (v) => Number.isInteger(Number(v)) && Number(v) >= 1;
 
-  // Novo contrato = vendedor + 1º pacote (RF-01). Sem contratante.
+  // Novo contrato = vendedor + centro de receita + 1º pacote (RF-01).
   function validarNovo(ctx, d) {
     const erros = validarPacoteNovo(ctx, d);
     if (!VENDEDORES.some((v) => v.id === d.vendedorId)) erros.push({ campo: 'vendedorId', mensagem: 'Escolha o vendedor.' });
+    if (!CentrosReceita.ativos().some((cr) => cr.id === d.centroReceitaId)) erros.push({ campo: 'centroReceitaId', mensagem: 'Escolha o centro de receita.' });
     return erros;
   }
 
@@ -587,8 +588,9 @@ const Contratos = (() => {
   function incluir(lista, ctx, d) {
     const criadoEm = agora();
     let c = contratoSeed({
-      id: novoId(lista, 'ct'), codigo: proximoCodigo(lista, criadoEm), criadoEm, status: 'rascunho', vendedorId: d.vendedorId,
-      contratante: null, empresaId: null, responsavel: null,
+      id: novoId(lista, 'ct'), codigo: proximoCodigo(lista, criadoEm), criadoEm, status: 'rascunho', vendedorId: d.vendedorId, centroReceitaId: d.centroReceitaId,
+      // Particular nasce sem responsável: o 1º aluno que se cadastra pelo link do pacote vira o responsável (cadastrarPeloLinkPacote).
+      contratante: d.contratante === 'particular' ? 'particular' : null, empresaId: null, responsavel: null,
       cobranca: { forma: 'boleto', parcelas: d.venda === 'formacao' ? (formacaoDe(ctx, d.formacaoId)?.comercial.parcelasMax ?? 1) : 1, primeiroVencimento: '', pedidoCompra: '' },
     });
     const p = novoPacote(ctx, c, d);
@@ -598,7 +600,7 @@ const Contratos = (() => {
   }
 
   function atualizarDados(lista, id, d) {
-    return atualizar(lista, id, (c) => ({ ...c, descricao: String(d.descricao ?? '').trim(), observacoes: String(d.observacoes ?? '').trim(), vendedorId: d.vendedorId || c.vendedorId }));
+    return atualizar(lista, id, (c) => ({ ...c, descricao: String(d.descricao ?? '').trim(), observacoes: String(d.observacoes ?? '').trim(), vendedorId: d.vendedorId || c.vendedorId, centroReceitaId: d.centroReceitaId || c.centroReceitaId }));
   }
 
   // Contratante (RN-09/RN-10): empresa, ou particular com responsável único (cadastro de Responsável ou um aluno). Só em rascunho.
@@ -1055,6 +1057,7 @@ const Contratos = (() => {
     });
     const nomeAluno = porId(dados.alunos, alunoId)?.nome ?? alunoId;
     let nl = vincularAlunos(lista, c.id, p.id, [alunoId], { origem: 'link', situacao: 'aguardando', em: em.slice(0, 19), por: 'Aluno' });
+    if (c.contratante === 'particular' && !c.responsavel) nl = atualizar(nl, c.id, (x) => ({ ...x, responsavel: { tipo: 'aluno', id: alunoId } }));
     nl = atualizar(nl, c.id, (x) => registrar({ ...x, pacotes: x.pacotes.map((y) => (y.id === p.id ? { ...y, convite: { ...y.convite, usos: [...y.convite.usos, { alunoId, em }] } } : y)) }, `Aluno ${nomeAluno} entrou pelo link do pacote "${p.nome}"${existente ? ' (cadastro existente reaproveitado)' : ''}`, 'Aluno'));
     nl = regerarParcelas(nl, c.id);
     return { lista: nl, dados: sincronizarAlunosComContrato(dados, porId(nl, c.id), [alunoId]), erros: [], alunoId };
@@ -1100,7 +1103,7 @@ const Contratos = (() => {
       vagas: o.vagas ? p.vagas : Math.max(1, alunosOrigem.filter((v) => v.pacoteId === p.id).length), convite: null,
     }));
     let nc = contratoSeed({
-      id: novoId(lista, 'ct'), codigo: proximoCodigo(lista, criadoEm), criadoEm, status: 'rascunho', vendedorId: o.vendedor ? c.vendedorId : vendedorAtual,
+      id: novoId(lista, 'ct'), codigo: proximoCodigo(lista, criadoEm), criadoEm, status: 'rascunho', vendedorId: o.vendedor ? c.vendedorId : vendedorAtual, centroReceitaId: c.centroReceitaId,
       descricao: o.descricao ? c.descricao : '', observacoes: o.descricao ? c.observacoes : '',
       contratante: o.contratante ? c.contratante : null, empresaId: o.contratante ? c.empresaId : null, responsavel: o.contratante && c.responsavel ? { ...c.responsavel } : null,
       pacotes, alunos: [],

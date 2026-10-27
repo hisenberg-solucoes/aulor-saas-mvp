@@ -129,10 +129,12 @@ const VENDEDORES = [
   { id: 'ana', nome: 'Ana Souza' },
   { id: 'bruno', nome: 'Bruno Lima' },
   { id: 'carla', nome: 'Carla Mendes' },
+  { id: 'rafael', nome: 'Rafael Tonin' }, // vendedor externo (parceiro): vê só as vendas dele
 ];
 
 const contratoSeed = (d) => ({
   descricao: '', observacoes: '', vendedorId: 'ana',
+  centroReceitaId: null, // centro de receita da venda (js/centros-receita.js): B2B, B2C, Orion…
   contratante: null, // 'empresa' | 'particular' | null (só em rascunho)
   empresaId: null,
   responsavel: null, // { tipo: 'responsavel' | 'aluno', id } quando contratante = particular
@@ -438,7 +440,7 @@ const CONTRATOS_SEED_V6 = [
   contratoFormacao({ id: 'ct7', edicao: 'sup07', formacaoId: 'sup07', criadoEm: '2025-06-05T10:40:00', vendedorId: 'carla', alunoIds: ['a21'], preco: 8900, parcelas: 18, primeiroVencimento: '2025-07-10', assinadoPor: assinaAluno('a21'), desistencias: { a21: { em: '2025-12-01', motivo: 'mudanca', texto: 'Mudou-se para Curitiba' } }, observacoes: 'Desistência em 01/12/2025 (mudança de cidade). Multa contratual negociada.' }),
   contratoFormacao({ id: 'ct8', edicao: 'sup07', formacaoId: 'sup07', criadoEm: '2025-06-09T09:00:00', alunoIds: ['a24'], preco: 8900, parcelas: 10, primeiroVencimento: '2025-07-01', forma: 'pix', assinadoPor: assinaAluno('a24') }),
   // Empresa: Malwee paga por dois colaboradores (PO exigido? não — Malwee não exige).
-  contratoFormacao({ id: 'ct9', edicao: 'sup07', formacaoId: 'sup07', criadoEm: '2025-06-10T13:00:00', vendedorId: 'carla', empresaId: 'e4', alunoIds: ['a22', 'a23'], preco: 8900, fator: 0.85, parcelas: 12, primeiroVencimento: '2025-07-20', assinadoPor: 'Fernanda Ribeiro (Malwee)', descricao: 'Super DEV 7 · Malwee · 2 colaboradores', observacoes: 'Desconto de 15% por volume (2 alunos).' }),
+  contratoFormacao({ id: 'ct9', edicao: 'sup07', formacaoId: 'sup07', criadoEm: '2025-06-10T13:00:00', vendedorId: 'rafael', empresaId: 'e4', alunoIds: ['a22', 'a23'], preco: 8900, fator: 0.85, parcelas: 12, primeiroVencimento: '2025-07-20', assinadoPor: 'Fernanda Ribeiro (Malwee)', descricao: 'Super DEV 7 · Malwee · 2 colaboradores', observacoes: 'Desconto de 15% por volume (2 alunos).' }),
 
   // ===== Super DEV 8 · sábado · Java (set/2025 → jul/2027) — em andamento =====
   // Empresa: Senior paga por dois analistas.
@@ -498,11 +500,11 @@ const CONTRATOS_SEED_V6 = [
   // Ex-aluno do SD7 fez PostgreSQL avulso em junho.
   contratoAvulso({ id: 'ct37', criadoEm: '2026-05-18T10:00:00', alunoId: 'a24', itens: [itemAvulso('ptg', 'ta4')], parcelas: 2, primeiroVencimento: '2026-06-01', forma: 'boleto', assinadoPor: nomeAluno('a24') }),
   // Aguardando: Machine Learning avulso (turma de setembro).
-  contratoAvulso({ id: 'ct38', criadoEm: '2026-08-19T15:30:00', vendedorId: 'bruno', alunoId: 'a17', itens: [itemAvulso('mlp', 'ta2')], parcelas: 2, primeiroVencimento: '2026-09-10', status: 'aguardando', assinadoPor: nomeAluno('a17') }),
+  contratoAvulso({ id: 'ct38', criadoEm: '2026-08-19T15:30:00', vendedorId: 'rafael', alunoId: 'a17', itens: [itemAvulso('mlp', 'ta2')], parcelas: 2, primeiroVencimento: '2026-09-10', status: 'aguardando', assinadoPor: nomeAluno('a17') }),
   // Cancelado antes de assinar.
   contratoAvulso({ id: 'ct39', criadoEm: '2026-08-10T11:00:00', vendedorId: 'carla', alunoId: 'a16', itens: [itemAvulso('mlp', 'ta2')], parcelas: 1, primeiroVencimento: '2026-09-10', status: 'cancelado', assinadoPor: nomeAluno('a16'), cancelamento: { em: '2026-08-20T10:00:00', motivo: 'Aluno conseguiu emprego com horário incompatível; pediu para cancelar antes da assinatura.' } }),
   // Rascunho: Angular avulso ainda sendo montado.
-  contratoAvulso({ id: 'ct40', criadoEm: '2026-08-25T16:00:00', alunoId: 'a18', itens: [itemAvulso('ajs', 'ta3'), itemAvulso('py1', 'ta1')], parcelas: 3, primeiroVencimento: '', status: 'rascunho', assinadoPor: nomeAluno('a18'), observacoes: 'Aluno quer revisar Angular e Python antes de tentar vaga júnior; ainda decidindo se faz os dois.' }),
+  contratoAvulso({ id: 'ct40', criadoEm: '2026-08-25T16:00:00', vendedorId: 'rafael', alunoId: 'a18', itens: [itemAvulso('ajs', 'ta3'), itemAvulso('py1', 'ta1')], parcelas: 3, primeiroVencimento: '', status: 'rascunho', assinadoPor: nomeAluno('a18'), observacoes: 'Aluno quer revisar Angular e Python antes de tentar vaga júnior; ainda decidindo se faz os dois.' }),
 ];
 
 // >>> CATALOGO-PROWAY contratos (gerado por _tools/semente-catalogo/gerar.py — não editar à mão)
@@ -1244,4 +1246,5 @@ CONTRATOS_SEED_V6.push(
 // <<< CATALOGO-PROWAY contratos
 
 // Semente no modelo v7 (pacotes × vagas). `CONTRATOS_SEED_V6` fica exposta só para testar a migração.
-const CONTRATOS_SEED = CONTRATOS_SEED_V6.map((c) => contratoV6ParaV7(c));
+// Centro de receita da semente pelo contratante: empresa → B2B; particular (ou ainda sem contratante) → B2C.
+const CONTRATOS_SEED = CONTRATOS_SEED_V6.map((c) => contratoV6ParaV7(c)).map((c) => ({ ...c, centroReceitaId: c.contratante === 'empresa' ? 'cr-b2b' : 'cr-b2c' }));
