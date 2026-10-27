@@ -6,7 +6,7 @@
 
 const PortalAluno = (() => {
   const CHAVE_SESSAO = 'aulor-v1-portal-aluno-sessao';
-  // Senha única do protótipo: no sistema real vem do cadastro de usuário (../permissoes.html).
+  // Senha única do protótipo: no sistema real vem do cadastro de usuário (Perfis de acesso).
   const SENHA_PROTOTIPO = '123456';
 
   const hoje = () => (typeof Turmas !== 'undefined' ? Turmas.hoje() : new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10));

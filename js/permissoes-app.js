@@ -1679,7 +1679,7 @@ function iniciar() {
     estado.perfilSelecionadoId = id;
     if (parametroUrl('aba') === 'usuarios') estado.aba = 'usuarios';
   } else {
-    // URL antiga (permissoes.html?perfil=) → detalhe.
+    // URL antiga (perfis.html?perfil=) → detalhe.
     const antigo = parametroUrl('perfil') || parametroUrl('id');
     if (antigo) { location.replace(urlDetalhe(antigo)); return; }
     const aba = parametroUrl('aba');
