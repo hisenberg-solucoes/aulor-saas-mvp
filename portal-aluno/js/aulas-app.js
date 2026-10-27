@@ -17,7 +17,7 @@
 
   const SITUACAO = {
     realizada: { nome: 'Realizada', ponto: 'bg-slate-400' },
-    hoje: { nome: 'Hoje', ponto: 'bg-laranja' },
+    hoje: { nome: 'Hoje', ponto: 'bg-petrol-800 dark:bg-sky-300' },
     prevista: { nome: 'Prevista', ponto: 'bg-sky-500' },
     cancelada: { nome: 'Cancelada', ponto: 'bg-red-500' },
   };
@@ -43,23 +43,6 @@
     setTimeout(() => el.remove(), 3200);
   }
 
-  // ---------- Cabeçalho (igual às outras telas do portal) ----------
-
-  $('avatar').innerHTML = PortalAluno.avatarHtml(aluno);
-  $('nome-usuario').textContent = aluno.nome;
-  const menu = $('menu-usuario');
-  const lista = $('menu-usuario-lista');
-  const fecharMenu = () => { lista.classList.add('hidden'); menu.setAttribute('aria-expanded', 'false'); };
-  menu.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const abrir = lista.classList.contains('hidden');
-    lista.classList.toggle('hidden', !abrir);
-    menu.setAttribute('aria-expanded', String(abrir));
-  });
-  document.addEventListener('click', fecharMenu);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharMenu(); });
-  document.querySelectorAll('[data-em-breve]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); toast(`"${el.textContent.trim()}" ainda não foi desenhada no protótipo.`); }));
-  $('sair').addEventListener('click', () => { PortalAluno.sair(); location.replace('login.html'); });
 
   // ---------- Modo / URL ----------
 
@@ -138,7 +121,7 @@
     const cartaoProxima = proxima
       ? `<div class="mt-1.5 flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="font-display font-semibold text-lg leading-snug ${proxima.situacaoAula === 'hoje' ? 'text-laranja-escuro dark:text-laranja' : 'text-slate-900 dark:text-neutral-100'}">${esc(PortalAluno.rotuloDia(proxima.data, hoje))} · ${esc(proxima.inicio)}–${esc(proxima.fim)}</p>
+            <p class="font-display font-semibold text-lg leading-snug ${proxima.situacaoAula === 'hoje' ? 'text-petrol-800 dark:text-sky-300' : 'text-slate-900 dark:text-neutral-100'}">${esc(PortalAluno.rotuloDia(proxima.data, hoje))} · ${esc(proxima.inicio)}–${esc(proxima.fim)}</p>
             <p class="text-sm text-slate-700 dark:text-neutral-200 mt-1 truncate"><a href="${urlAula(proxima)}" class="hover:underline">${esc(proxima.curso?.nome ?? proxima.turma.codigo)}</a> <span class="font-mono text-xs text-slate-400">${esc(proxima.turma.codigo)}</span></p>
             <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(localTexto(proxima))}${proxima.instrutor ? ` · ${esc(proxima.instrutor.nome)}` : ''}</p>
           </div>
@@ -189,9 +172,9 @@
       const cancelada = a.situacaoAula === 'cancelada';
       const rep = reposicaoDe(a, aulas);
       const conteudo = a.conteudo || a.modulos.map((m) => m.titulo).join(' · ');
-      const classe = cancelada ? 'text-slate-400 dark:text-neutral-500' : a.situacaoAula === 'hoje' ? '!bg-laranja/10' : '';
+      const classe = cancelada ? 'text-slate-400 dark:text-neutral-500' : '';
       return `<tr data-abrir="${urlAula(a)}" class="cursor-pointer hover:bg-petrol-800/5 dark:hover:bg-sky-400/10 transition ${classe}">
-        <td class="whitespace-nowrap tabular-nums ${cancelada ? 'line-through' : ''}"><span class="${a.situacaoAula === 'hoje' ? 'font-semibold text-laranja-escuro dark:text-laranja' : ''}">${a.situacaoAula === 'hoje' || (estado.aba !== 'realizadas' && PortalAluno.rotuloDia(a.data, hoje) === 'Amanhã') ? esc(PortalAluno.rotuloDia(a.data, hoje)) : data(a.data)}</span> <span class="text-xs text-slate-500 dark:text-neutral-400">${esc(diaCurto(a.data))}</span></td>
+        <td class="whitespace-nowrap tabular-nums ${cancelada ? 'line-through' : ''}"><span class="${a.situacaoAula === 'hoje' ? 'font-semibold text-petrol-800 dark:text-sky-300' : ''}">${a.situacaoAula === 'hoje' || (estado.aba !== 'realizadas' && PortalAluno.rotuloDia(a.data, hoje) === 'Amanhã') ? esc(PortalAluno.rotuloDia(a.data, hoje)) : data(a.data)}</span> <span class="text-xs text-slate-500 dark:text-neutral-400">${esc(diaCurto(a.data))}</span></td>
         <td class="whitespace-nowrap tabular-nums ${cancelada ? 'line-through' : ''}">${esc(a.inicio)}–${esc(a.fim)}</td>
         <td><p class="font-medium ${cancelada ? '' : 'text-slate-900 dark:text-neutral-100'}">${esc(a.curso?.nome ?? a.turma.codigo)}</p><p class="text-xs text-slate-500 dark:text-neutral-400"><span class="font-mono">${esc(a.turma.codigo)}</span>${a.n ? ` · aula ${a.n}` : ''}</p></td>
         <td class="max-w-xs">${conteudo ? `<span class="${cancelada ? 'line-through' : ''}">${esc(conteudo)}</span>` : traco}${a.conteudo && a.modulos.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(a.modulos.map((m) => m.titulo).join(' · '))}</p>` : ''}${cancelada ? `<p class="text-xs text-red-600 dark:text-red-400">${esc(motivoTexto(a.motivo) || 'Aula cancelada')}${rep ? ` · reposição em ${data(rep.data)}` : ''}</p>` : ''}</td>
@@ -303,7 +286,7 @@
       ? `<div class="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-5 py-3 text-sm text-red-700 dark:text-red-300 mb-4">${ponto('bg-red-500', 'Aula cancelada')}${a.motivo ? ` — ${esc(motivoTexto(a.motivo))}` : ''}${rep ? `. Reposição em <a href="${urlAula(rep)}" class="font-medium underline">${data(rep.data)} · ${esc(rep.inicio)}–${esc(rep.fim)}</a>.` : '. A secretaria ainda não marcou a reposição.'}</div>`
       : '';
     const avisoHoje = a.situacaoAula === 'hoje'
-      ? `<div class="rounded-xl border border-laranja/40 bg-laranja/10 px-5 py-3 text-sm text-slate-800 dark:text-neutral-100 mb-4">${ponto('bg-laranja', 'É hoje')} · ${esc(a.inicio)}–${esc(a.fim)}${a.turma.meetLink ? ` · <a href="${esc(a.turma.meetLink)}" target="_blank" rel="noopener" class="font-medium underline">Entrar no Meet</a>` : a.sala ? ` · ${esc(a.sala.nome)}` : ''}</div>`
+      ? `<div class="rounded-lg bg-[var(--f-selecao)] px-4 py-3 text-sm text-petrol-800 dark:text-sky-300 mb-4">${ponto('bg-petrol-800 dark:bg-sky-300', 'É hoje')} · ${esc(a.inicio)}–${esc(a.fim)}${a.turma.meetLink ? ` · <a href="${esc(a.turma.meetLink)}" target="_blank" rel="noopener" class="font-medium underline">Entrar no Meet</a>` : a.sala ? ` · ${esc(a.sala.nome)}` : ''}</div>`
       : '';
     const local = a.sala
       ? `${esc(a.sala.nome)}${a.turma.meetLink ? `<p class="text-xs mt-0.5">${linkMeet(a)} <span class="text-slate-400">· também transmitida</span></p>` : ''}`

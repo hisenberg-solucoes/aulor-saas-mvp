@@ -1,14 +1,8 @@
 // ============================================================
-// Menu lateral compartilhado do Portal do Aluno — mesmo comportamento do
-// js/menu.js do admin e do portal-professor/js/menu.js: a sidebar é IDÊNTICA
-// em todas as telas, item "Início" fixo no topo + grupos na mesma ordem,
-// colapsáveis (estado em localStorage['aulor-v1-portal-aluno-menus']); só
-// muda o destaque do item ativo — o grupo dele abre nesta visita, sem gravar
-// estado. Busca no topo filtra itens/grupos; o scroll da sidebar persiste
-// entre páginas. Páginas de detalhe (aula, curso, contrato)
-// herdam o item da lista via MENU_ALIAS. Carregar com `defer` depois de
-// tooltip.js. O script só troca o conteúdo do <nav>; cabeçalho e rodapé da
-// sidebar ficam no HTML de cada página.
+// Menu do Portal do Aluno: Início fixo e os grupos da V1, na mesma ordem em
+// todas as telas. Quem desenha a sidebar e a barra de contexto é o shell
+// comum dos portais (../js/menu-portal.js, carregado depois deste). Páginas de
+// detalhe (aula, curso, contrato) herdam o item da lista via MENU_ALIAS.
 // ============================================================
 
 const MENU_FIXOS = [
@@ -62,7 +56,7 @@ const MENU_GRUPOS = [
     id: 'conta', nome: 'Conta',
     itens: [
       {
-        href: 'meus-dados.html', id: 'link-cadastro', nome: 'Meus dados',
+        href: 'meus-dados.html', nome: 'Meus dados',
         icone: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />',
       },
     ],
@@ -76,94 +70,9 @@ const MENU_ALIAS = {
   'contrato.html': 'contratos.html',
 };
 
-(function () {
-  const CHAVE = 'aulor-v1-portal-aluno-menus';
-  const CHAVE_SCROLL = 'aulor-v1-portal-aluno-menu-scroll';
-  const SETA = '<svg class="h-3.5 w-3.5 transition-transform" data-seta fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>';
-  const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const pagina = () => (location.pathname.split('/').pop() || 'home.html').toLowerCase();
-
-  const item = (it, ativo) => `
-        <a href="${it.href}"${it.id ? ` id="${esc(it.id)}"` : ''} class="nav-item${ativo ? ' nav-item-ativo' : ''}"${ativo ? ' aria-current="page"' : ''}${it.externo ? ' target="_blank" rel="noopener"' : ''}>
-          <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">${it.icone}</svg>
-          <span class="truncate">${esc(it.nome)}</span>${it.externo ? `
-          <span class="ml-auto shrink-0 inline-flex items-center gap-1 text-[11px] text-slate-500">${esc(it.externo)}<svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg></span>` : ''}
-        </a>`;
-
-  // Mesma sidebar em todas as telas: Início + todos os grupos colapsáveis (estado
-  // guardado). O grupo do item ativo abre nesta visita, sem alterar o estado salvo.
-  function render(nav, atual) {
-    let estado = {};
-    try { estado = JSON.parse(localStorage.getItem(CHAVE) || '{}'); } catch (_) { estado = {}; }
-    let html = `
-        <label class="relative block mb-2">
-          <svg class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-          <input data-busca-menu type="search" placeholder="Buscar no menu" autocomplete="off"
-            class="w-full rounded-lg bg-white/5 border border-white/10 pl-8 pr-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent" />
-        </label>`;
-    html += MENU_FIXOS.map((it) => item(it, it.href === atual)).join('');
-    html += MENU_GRUPOS.map((g) => `
-        <div class="menu-grupo" data-grupo="${g.id}">
-          <button type="button" data-toggle-grupo aria-expanded="true" aria-controls="grupo-${g.id}"
-            class="w-full flex items-center justify-between px-3 mt-3 py-1.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-200 hover:bg-white/5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30">
-            <span>${esc(g.nome)}</span>${SETA}
-          </button>
-          <div id="grupo-${g.id}" class="space-y-1 mt-0.5">${g.itens.map((it) => item(it, it.href === atual)).join('')}</div>
-        </div>`).join('');
-    nav.innerHTML = html;
-    const aplicar = (grupo, aberto) => {
-      const btn = grupo.querySelector('[data-toggle-grupo]');
-      btn.setAttribute('aria-expanded', String(aberto));
-      grupo.querySelector('#' + btn.getAttribute('aria-controls')).classList.toggle('hidden', !aberto);
-      btn.querySelector('[data-seta]').classList.toggle('-rotate-90', !aberto);
-    };
-    nav.querySelectorAll('.menu-grupo').forEach((grupo) => {
-      const id = grupo.dataset.grupo;
-      const temAtivo = !!grupo.querySelector('.nav-item-ativo');
-      aplicar(grupo, temAtivo || estado[id] !== false);
-      grupo.querySelector('[data-toggle-grupo]').addEventListener('click', () => {
-        const aberto = grupo.querySelector('[data-toggle-grupo]').getAttribute('aria-expanded') !== 'true';
-        estado[id] = aberto; localStorage.setItem(CHAVE, JSON.stringify(estado)); aplicar(grupo, aberto);
-      });
-    });
-    const busca = nav.querySelector('[data-busca-menu]');
-    const normalizar = (t) => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const filtrar = () => {
-      const termo = normalizar(busca.value.trim());
-      // style.display inline: a classe .hidden perde para o display:flex de .nav-item
-      nav.querySelectorAll(':scope > .nav-item').forEach((a) => {
-        a.style.display = !termo || normalizar(a.textContent).includes(termo) ? '' : 'none';
-      });
-      nav.querySelectorAll('.menu-grupo').forEach((grupo) => {
-        let visiveis = 0;
-        grupo.querySelectorAll('.nav-item').forEach((a) => {
-          const mostra = !termo || normalizar(a.textContent).includes(termo);
-          a.style.display = mostra ? '' : 'none';
-          if (mostra) visiveis += 1;
-        });
-        grupo.classList.toggle('hidden', !!termo && !visiveis);
-        aplicar(grupo, termo ? true : !!grupo.querySelector('.nav-item-ativo') || estado[grupo.dataset.grupo] !== false);
-      });
-    };
-    busca.addEventListener('input', filtrar);
-    busca.addEventListener('keydown', (e) => { if (e.key === 'Escape') { busca.value = ''; filtrar(); busca.blur(); } });
-    // A sidebar não muda de posição ao trocar de página: restaura o scroll da
-    // visita anterior; o scrollIntoView('nearest') só age se o item ativo ficou
-    // fora da área visível.
-    nav.scrollTop = Number(sessionStorage.getItem(CHAVE_SCROLL) || 0);
-    nav.addEventListener('scroll', () => sessionStorage.setItem(CHAVE_SCROLL, String(nav.scrollTop)));
-    nav.querySelector('.nav-item-ativo')?.scrollIntoView({ block: 'nearest' });
-  }
-
-  function iniciar() {
-    const nav = document.querySelector('aside[data-sidebar] nav');
-    if (!nav) return;
-    nav.className = 'flex-1 min-h-0 overflow-y-auto py-4 px-3 space-y-1 text-sm';
-    const p = pagina();
-    render(nav, MENU_ALIAS[p] ?? p);
-    // O nav estático de cada página vem com visibility:hidden para não piscar
-    // antes da troca pelo menu definitivo; revela só depois do render.
-    nav.style.visibility = '';
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
-})();
+// Quem está no portal (lida depois que a página carregou o motor) e para onde Sair leva.
+const MENU_PORTAL = {
+  id: 'aluno', nome: 'Portal do Aluno', papel: 'Aluno',
+  pessoa: () => { const a = PortalAluno.alunoLogado(); return a && { nome: a.nomeSocial || a.nome, email: a.email }; },
+  sair: () => { PortalAluno.sair(); location.href = '../entrar.html?portal=aluno&saiu=1'; },
+};

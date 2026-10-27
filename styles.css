@@ -368,6 +368,22 @@ html.dark {
   color: var(--f-tinta);
 }
 
+/* Item que leva para fora (Cursos EAD na Toolzz, no portal do aluno): o destino em label e tinta 3, à direita. */
+.shell .nav-item .nav-externo {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--f-tinta-3);
+}
+
+.shell .nav-item .nav-externo svg {
+  width: 12px;
+  height: 12px;
+}
+
 /* Rótulo do grupo (Diretoria, Comercial…): botão que recolhe o grupo. Tinta 3 sobre azul
    profundo dá 5,74:1. A seta gira -90° com o grupo fechado (classe posta pelo menu.js). */
 .shell .menu-grupo {

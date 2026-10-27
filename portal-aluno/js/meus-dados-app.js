@@ -44,20 +44,7 @@
   }
   const TIPOS_PRIVACIDADE = { exportacao: 'Exportação dos meus dados', exclusao: 'Exclusão do cadastro' };
 
-  // ---------- Cabeçalho (igual às outras telas do portal) ----------
-
-  const menu = $('menu-usuario');
-  const listaMenu = $('menu-usuario-lista');
-  const fecharMenu = () => { listaMenu.classList.add('hidden'); menu.setAttribute('aria-expanded', 'false'); };
-  menu.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const abrir = listaMenu.classList.contains('hidden');
-    listaMenu.classList.toggle('hidden', !abrir);
-    menu.setAttribute('aria-expanded', String(abrir));
-  });
-  document.addEventListener('click', fecharMenu);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { fecharMenu(); fecharModal(); } });
-  $('sair').addEventListener('click', () => { PortalAluno.sair(); location.replace('login.html'); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharModal(); });
 
   // ---------- Modal centralizado ----------
 
@@ -116,19 +103,19 @@
     if (a.status === 'inativo') return { cor: 'bg-slate-400', texto: 'Cadastro inativo' };
     if (a.inadimplencia?.devedor) return { cor: 'bg-red-500', texto: 'Pendência financeira — veja em Financeiro' };
     if (pend.length) return { cor: 'bg-amber-500', texto: `Cadastro incompleto: ${pend.join(', ').toLowerCase()}` };
-    return { cor: 'bg-emerald-500', texto: 'Cadastro completo' };
+    return null; // o que está certo não se anuncia (DESIGN.md)
   }
 
   function renderCabecalho() {
     const a = aluno();
     const nome = a.nomeSocial || a.nome;
-    $('avatar').innerHTML = avatarHtml(a, nome);
-    $('nome-usuario').textContent = nome;
+    // O nome na barra de contexto (js/menu-portal.js) acompanha a edição; na primeira carga a barra ainda não existe.
+    document.querySelector('.shell-usuario-nome')?.replaceChildren(nome);
     $('avatar-grande').innerHTML = avatarHtml(a, nome);
     $('cab-nome').textContent = nome;
     $('cab-email').textContent = a.email || 'Sem e-mail cadastrado';
     const s = situacaoCadastro(a);
-    $('cab-situacao').innerHTML = `<span class="inline-flex items-center gap-1.5 text-slate-700 dark:text-neutral-200"><span class="h-2 w-2 rounded-full ${s.cor}"></span>${esc(s.texto)}</span>`;
+    $('cab-situacao').innerHTML = s ? `<span class="inline-flex items-center gap-1.5 text-slate-700 dark:text-neutral-200"><span class="h-2 w-2 rounded-full ${s.cor}"></span>${esc(s.texto)}</span>` : '';
     $('cab-acoes').innerHTML = `<button type="button" data-acao="editar-contato" class="botao-sec">Editar contato</button><button type="button" data-acao="senha" class="botao-pri">Alterar senha</button>`;
   }
 

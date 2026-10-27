@@ -37,23 +37,7 @@
     setTimeout(() => el.remove(), 3200);
   }
 
-  // ---------- Cabeçalho (igual à home) ----------
-
-  $('avatar').innerHTML = PortalAluno.avatarHtml(aluno);
-  $('nome-usuario').textContent = aluno.nome;
-  const menu = $('menu-usuario');
-  const lista = $('menu-usuario-lista');
-  const fecharMenu = () => { lista.classList.add('hidden'); menu.setAttribute('aria-expanded', 'false'); };
-  menu.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const abrir = lista.classList.contains('hidden');
-    lista.classList.toggle('hidden', !abrir);
-    menu.setAttribute('aria-expanded', String(abrir));
-  });
-  document.addEventListener('click', fecharMenu);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { fecharMenu(); fecharModal(); } });
-  document.querySelectorAll('[data-em-breve]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); toast(`"${el.textContent.trim()}" ainda não foi desenhada no protótipo.`); }));
-  $('sair').addEventListener('click', () => { PortalAluno.sair(); location.replace('login.html'); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharModal(); });
 
   // ---------- Modal centralizado ----------
 

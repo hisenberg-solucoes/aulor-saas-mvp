@@ -17,7 +17,7 @@
   const FORMATO = { presencial: 'Presencial', online: 'Online ao vivo', hibrido: 'Híbrido', ead: 'EAD' };
   const AULA = {
     realizada: { nome: 'Realizada', ponto: 'bg-slate-400' },
-    hoje: { nome: 'Hoje', ponto: 'bg-laranja' },
+    hoje: { nome: 'Hoje', ponto: 'bg-petrol-800 dark:bg-sky-300' },
     prevista: { nome: 'Prevista', ponto: 'bg-sky-500' },
     cancelada: { nome: 'Cancelada', ponto: 'bg-red-500' },
   };
@@ -46,23 +46,7 @@
     setTimeout(() => el.remove(), 3200);
   }
 
-  // ---------- Cabeçalho (igual à home) ----------
-
-  $('avatar').innerHTML = PortalAluno.avatarHtml(aluno);
-  $('nome-usuario').textContent = aluno.nome;
-  const menu = $('menu-usuario');
-  const lista = $('menu-usuario-lista');
-  const fecharMenu = () => { lista.classList.add('hidden'); menu.setAttribute('aria-expanded', 'false'); };
-  menu.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const abrir = lista.classList.contains('hidden');
-    lista.classList.toggle('hidden', !abrir);
-    menu.setAttribute('aria-expanded', String(abrir));
-  });
-  document.addEventListener('click', fecharMenu);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { fecharMenu(); fecharModal(); } });
-  document.querySelectorAll('[data-em-breve]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); toast(`"${el.textContent.trim()}" ainda não foi desenhada no protótipo.`); }));
-  $('sair').addEventListener('click', () => { PortalAluno.sair(); location.replace('login.html'); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharModal(); });
 
   // ---------- Modal centralizado ----------
 
@@ -307,7 +291,7 @@
             const s = AULA[a.situacaoAula];
             const mods = nomeModulos(a);
             const conteudo = a.conteudo || mods.join(' · ');
-            return `<tr class="${a.situacaoAula === 'cancelada' ? 'opacity-60' : a.situacaoAula === 'hoje' ? 'bg-laranja/10 dark:bg-laranja/10' : ''}">
+            return `<tr class="${a.situacaoAula === 'cancelada' ? 'opacity-60' : ''}">
               <td class="tabular-nums text-slate-500 dark:text-neutral-400">${a.n ?? '—'}</td>
               <td class="whitespace-nowrap tabular-nums">${data(a.data)} <span class="text-xs text-slate-500 dark:text-neutral-400">${esc(PortalAluno.diaSemana(a.data).slice(0, 3))}</span></td>
               <td class="whitespace-nowrap tabular-nums">${esc(a.inicio)}–${esc(a.fim)}</td>
@@ -331,11 +315,11 @@
         </div>
         <div class="cartao divide-y divide-slate-100 dark:divide-neutral-900">${d.modulos.map((m, i) => `
           <div class="px-5 py-4 flex items-start gap-4 ${m.dado ? '' : ''}">
-            <div class="shrink-0 h-7 w-7 rounded-full grid place-items-center text-xs font-semibold ${m.dado ? 'bg-emerald-500 text-white' : m.emAndamento ? 'bg-laranja text-white' : 'bg-slate-100 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400'}">${m.dado ? '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>' : i + 1}</div>
+            <div class="shrink-0 h-7 w-7 rounded-full grid place-items-center text-xs font-semibold ${m.dado ? 'bg-slate-900 text-white dark:bg-neutral-100 dark:text-black' : m.emAndamento ? 'ring-2 ring-inset ring-amber-500 text-amber-700 dark:text-amber-300' : 'bg-slate-100 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400'}">${m.dado ? '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>' : i + 1}</div>
             <div class="min-w-0 flex-1">
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <p class="font-medium text-slate-900 dark:text-neutral-100">${esc(m.titulo)}</p>
-                <p class="text-xs text-slate-500 dark:text-neutral-400 tabular-nums">${esc(horas(Number(m.cargaHoraria) || 0))} · ${m.dado ? ponto('bg-emerald-500', 'Dado') : m.emAndamento ? ponto('bg-laranja', 'Em andamento') : ponto('bg-slate-400', 'A dar')}</p>
+                <p class="text-xs text-slate-500 dark:text-neutral-400 tabular-nums">${esc(horas(Number(m.cargaHoraria) || 0))} · ${m.dado ? ponto('bg-emerald-500', 'Dado') : m.emAndamento ? ponto('bg-amber-500', 'Em andamento') : ponto('bg-slate-400', 'A dar')}</p>
               </div>
               ${(m.topicos ?? []).length ? `<ol class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 text-sm text-slate-600 dark:text-neutral-300 list-decimal list-inside">${m.topicos.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>` : ''}
             </div>
@@ -379,16 +363,14 @@
       const requisitos = `
         <div class="cartao p-5 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           ${dado('Pré-requisitos', preReq ? `${d.preRequisitos.length ? `<ol class="list-decimal list-inside space-y-0.5">${d.preRequisitos.map((c) => `<li>${esc(c.nome)} <span class="font-mono text-xs text-slate-400">${esc(c.codigo)}</span></li>`).join('')}</ol>` : ''}${req?.preRequisitosTexto ? `<p class="${d.preRequisitos.length ? 'mt-1.5 ' : ''}text-slate-600 dark:text-neutral-300">${esc(req.preRequisitosTexto)}</p>` : ''}` : '<span class="text-slate-500 dark:text-neutral-400">Nenhum — o curso não exige conhecimento prévio.</span>')}
-          ${dado('Máquina', req?.infraestrutura?.requisitosMaquina ? esc(req.infraestrutura.requisitosMaquina) : '<span class="text-slate-500 dark:text-neutral-400">Sem requisito específico.</span>')}
           ${dado('Público-alvo', req?.publicoAlvo ? esc(req.publicoAlvo) : '—')}
-          ${dado('Sala', req?.infraestrutura?.sala ? esc(SALAS.find((s) => s.id === req.infraestrutura.sala)?.nome ?? req.infraestrutura.sala) : '—')}
         </div>`;
       return `
         <div class="space-y-6">
           <section><h3 class="titulo-secao mb-3">Softwares requeridos <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${d.softwares.length}</span></h3>${softwares}<p class="text-xs text-slate-500 dark:text-neutral-400 mt-2">Nos laboratórios da ProWay tudo já vem instalado; a lista é para quem quer praticar em casa ou assiste online.</p></section>
           <section><h3 class="titulo-secao mb-3">Materiais do curso <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${d.materiais.length}</span></h3>${materiais}</section>
           <section><h3 class="titulo-secao mb-3">Materiais das aulas <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${materiaisAulas.length}</span></h3>${daAulas}</section>
-          <section><h3 class="titulo-secao mb-3">Pré-requisitos e infraestrutura</h3>${requisitos}</section>
+          <section><h3 class="titulo-secao mb-3">Pré-requisitos e público-alvo</h3>${requisitos}</section>
         </div>`;
     }
 

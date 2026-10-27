@@ -14,7 +14,7 @@ Na raiz deste diretório:
 python3 -m http.server 8770
 ```
 
-Abra `http://localhost:8770/`. A entrada lista as contas de demonstração (senha `123456`): administradora, comercial, vendedor externo, coordenação, financeiro, professor e aluno. Não há build nem dependências: HTML estático, Tailwind v4 pelo CDN e JavaScript sem framework.
+Abra `http://localhost:8770/`. A entrada pede primeiro o portal (administrativo, aluno ou professor) e lista as contas de demonstração dele (senha `123456`): administradora, comercial, vendedor externo, coordenação, financeiro, professor e aluno. Não há build nem dependências: HTML estático, Tailwind v4 pelo CDN e JavaScript sem framework.
 
 ## Testes
 
@@ -32,6 +32,7 @@ Cada tela é um `.html` com o shell, os dados (`js/*-data.js`), as regras (`js/*
 |---|---|
 | `styles.css` | Shell e papéis do `DESIGN.md` do aulor-web. As telas usam as classes do Tailwind do protótipo, e as variáveis dessas cores passam a valer os papéis (tinta, apoio, elevado, linha, acento, estado), com o escuro em degraus sobre o azul profundo |
 | `js/menu.js` | Menu com os módulos da V1, unidade, Início, nome do módulo na barra e o menu da pessoa; `Sessao` |
+| `js/menu-portal.js` | O mesmo shell nos portais do aluno e do professor; cada portal declara os itens em `portal-*/js/menu.js` |
 | `js/acesso.js` | No `<head>` de cada tela do administrativo: sem sessão vai para a entrada; tela fora do perfil volta ao Início |
 | `entrar.html`, `js/entrar-app.js` | Entrada única: login, escolha do portal, primeiro acesso e recuperação de senha |
 | `js/permissoes-data.js` | Catálogo de permissões das telas da V1 e os perfis, com o Vendedor externo |
