@@ -951,6 +951,7 @@ function renderCobranca() {
 
 function renderDocumentos() {
   const c = atual();
+  const modelo = ModelosContrato.daVenda(c);
   const r = Contratos.responsavelFinanceiro(ctx(), c);
   const t = Contratos.totais(c);
   const pendDoc = Contratos.pendenciasDocumento(ctx(), c);
@@ -980,16 +981,8 @@ function renderDocumentos() {
       <section class="${CARTAO} xl:col-span-2">
         ${cabecalhoSecao('Contrato', c.documento ? `Versão ${c.documento.versao}, gerada em ${esc(Contratos.fmtDataHora(c.documento.geradoEm))}.${assinadoEnv ? ` Assinado no Clicksign (${esc(assinadoEnv.envelopeId)}).` : ''}` : 'Ainda não gerado. Prévia do que sairá no documento:', c.documento ? 'btn-baixar' : null, 'Baixar PDF')}
         <div class="p-6 font-serif text-sm leading-relaxed text-slate-800 dark:text-neutral-200 space-y-3 ${c.documento ? '' : 'opacity-70'}">
-          <p class="font-display font-semibold text-base text-center uppercase tracking-wide">Contrato de prestação de serviços educacionais · ${esc(c.codigo)}</p>
-          <p><strong>Contratada:</strong> ProWay Informática e Treinamentos Ltda.</p>
-          <p><strong>Contratante / responsável financeiro:</strong> ${contratanteTxt}.</p>
-          <p><strong>Objeto:</strong> ${esc(Contratos.descricao(ctx(), c))}, conforme os pacotes e vagas abaixo:</p>
-          <table class="w-full text-sm">
-            <thead class="text-left text-xs font-medium text-slate-500 dark:text-neutral-400 border-b border-slate-200 dark:border-neutral-800"><tr><th class="py-1 pr-3">Pacote e itens</th><th class="py-1 px-3 text-right">Valor unitário</th><th class="py-1 px-3 text-right">Vagas</th><th class="py-1 pl-3 text-right">Subtotal</th></tr></thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-neutral-900">${t.porPacote.length ? t.porPacote.map(linhaPacoteDoc).join('') : '<tr><td colspan="4" class="py-2 text-slate-400">—</td></tr>'}</tbody>
-          </table>
-          <p><strong>Valor total:</strong> ${moeda(t.final)}${t.desconto > 0 ? ` (valor de tabela ${moeda(t.base)}, desconto de ${moeda(t.desconto)})` : ''}, em ${c.cobranca.parcelas} parcela(s) via ${esc(nomeDe(FORMAS_COBRANCA, c.cobranca.forma)).toLowerCase()}${c.cobranca.primeiroVencimento ? `, a primeira em ${esc(Contratos.fmtData(c.cobranca.primeiroVencimento))}` : ''}. Vagas não preenchidas são devidas pelo valor do pacote.</p>
-          <p class="text-xs text-slate-500 dark:text-neutral-400">Cláusulas padrão (cancelamento, reposição, certificado, LGPD) entram aqui no documento real.</p>
+          ${modelo ? ModelosContrato.preencherHtml(modelo.texto, ModelosContrato.dadosDaVenda(c, ctx()), esc) : '<p class="text-slate-500 dark:text-neutral-400">Nenhum modelo de contrato ativo. Cadastre um em Modelos de contrato.</p>'}
+          <p class="text-xs font-display text-slate-500 dark:text-neutral-400">Modelo: ${modelo ? `<a href="modelo-contrato.html?id=${encodeURIComponent(modelo.id)}" class="text-petrol-800 dark:text-sky-300 hover:underline">${esc(modelo.nome)}</a>` : '—'}. Campos marcados ainda não têm dado na venda.</p>
           <div class="pt-3 border-t border-slate-200 dark:border-neutral-800">
             <p class="flex flex-wrap items-center gap-2"><strong>Anexo — alunos</strong> <span class="text-xs text-slate-500 dark:text-neutral-400">lista viva dos alunos aprovados; muda sem nova versão do documento${anexo.atualizadoEm ? ` · <span class="text-amber-700 dark:text-amber-300">anexo atualizado em ${esc(Contratos.fmtDataHora(anexo.atualizadoEm))}</span>` : ''}</span></p>
             ${anexo.aprovados.length ? `<ul class="list-disc pl-6 mt-1">${anexo.aprovados.map(linhaAnexo).join('')}</ul>` : `<p class="text-slate-400 mt-1">Nenhum aluno aprovado ainda${t.nAguardando ? ` (${t.nAguardando} aguardando conferência)` : ''}.</p>`}
