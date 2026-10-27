@@ -9,7 +9,7 @@
 // ============================================================
 
 const Diario = (() => {
-  const CHAVE = 'prototipo-diario-aula-v1';
+  const CHAVE = 'aulor-v1-diario-aula-v1';
   let cache = null;
 
   const hoje = () => (typeof Turmas !== 'undefined' ? Turmas.hoje() : new Date().toISOString().slice(0, 10));

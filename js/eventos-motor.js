@@ -5,8 +5,8 @@
 // ============================================================
 
 const Eventos = (() => {
-  const CHAVE = 'prototipo-eventos-v1';
-  const CHAVE_INSCRICOES = 'prototipo-eventos-inscricoes-v1';
+  const CHAVE = 'aulor-v1-eventos-v1';
+  const CHAVE_INSCRICOES = 'aulor-v1-eventos-inscricoes-v1';
   const clonar = (x) => JSON.parse(JSON.stringify(x));
 
   function carregar() {

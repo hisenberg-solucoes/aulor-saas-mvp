@@ -4,7 +4,7 @@
 // ============================================================
 
 const Clientes = (() => {
-  const CHAVE = 'prototipo-clientes-v5';
+  const CHAVE = 'aulor-v1-clientes-v5';
 
   const clonar = (x) => JSON.parse(JSON.stringify(x));
 

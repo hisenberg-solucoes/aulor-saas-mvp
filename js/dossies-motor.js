@@ -19,9 +19,9 @@
 // ============================================================
 
 const Dossies = (() => {
-  const CHAVE_TEMPLATES = 'prototipo-templates-dossie-v1';
-  const CHAVE = 'prototipo-dossies-v1';
-  const CHAVE_ENVIOS = 'prototipo-dossies-envios-v1';
+  const CHAVE_TEMPLATES = 'aulor-v1-templates-dossie-v1';
+  const CHAVE = 'aulor-v1-dossies-v1';
+  const CHAVE_ENVIOS = 'aulor-v1-dossies-envios-v1';
 
   const clonar = (x) => JSON.parse(JSON.stringify(x));
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

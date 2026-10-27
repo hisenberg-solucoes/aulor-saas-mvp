@@ -589,3 +589,44 @@ html:not(.dark) .shell-tema-sol {
 .menu-conta [role="menuitem"]:focus-visible {
   background: var(--f-realce);
 }
+
+/* Etiqueta de categoria (DESIGN.md do aulor-web, Chips e tags): 24px, 4px de canto, Label forte, ícone de
+   13px e o nome; fundo no -tint, texto e ícone na cor. Legal = azul, Financeiro = água, Emergência = vinho,
+   Menor de idade = violeta. Nunca é controle nem estado. */
+:root {
+  --cat-blue: #2750A2; --cat-blue-tint: #D9EAFF;
+  --cat-water: #006366; --cat-water-tint: #CCF2F3;
+  --cat-wine: #87305F; --cat-wine-tint: #FFDFED;
+  --cat-violet: #663E8E; --cat-violet-tint: #F0E3FF;
+}
+
+html.dark {
+  --cat-blue: #ACCEFF; --cat-blue-tint: #2E3E5C;
+  --cat-water: #8CDEE1; --cat-water-tint: #1E4647;
+  --cat-wine: #FEB4D6; --cat-wine-tint: #533342;
+  --cat-violet: #DCBEFF; --cat-violet-tint: #453756;
+}
+
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.etiqueta svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.etiqueta-legal { color: var(--cat-blue); background: var(--cat-blue-tint); }
+.etiqueta-financeiro { color: var(--cat-water); background: var(--cat-water-tint); }
+.etiqueta-emergencia { color: var(--cat-wine); background: var(--cat-wine-tint); }
+.etiqueta-menor { color: var(--cat-violet); background: var(--cat-violet-tint); }

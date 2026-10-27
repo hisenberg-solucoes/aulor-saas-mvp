@@ -4,7 +4,7 @@
 // ============================================================
 
 const Cursos = (() => {
-  const CHAVE = 'prototipo-cursos-v7'; // v6 (03/09/2026): sugestões de requisitos vindas dos instrutores
+  const CHAVE = 'aulor-v1-cursos-v7'; // v6 (03/09/2026): sugestões de requisitos vindas dos instrutores
 
   function clonar(x) {
     return JSON.parse(JSON.stringify(x));
@@ -114,7 +114,7 @@ const Cursos = (() => {
   // Formações: se a tela de formações já persistiu algo, vale o que está lá; senão, a semente `FORMACOES_CURSO`.
   function fonteFormacoes() {
     try {
-      const salvo = localStorage.getItem('prototipo-formacoes-v7');
+      const salvo = localStorage.getItem('aulor-v1-formacoes-v7');
       if (salvo) return JSON.parse(salvo).map((f) => ({ id: f.id, codigo: f.codigo ?? '', nome: f.nome, status: f.status, cursoIds: f.itens.map((i) => i.cursoId) }));
     } catch (_) { /* usa a semente */ }
     // Semente antiga guarda "SIGLA · Nome" num campo só; separa para a sigla sair em coluna própria.
@@ -128,7 +128,7 @@ const Cursos = (() => {
   // Turmas: se a tela de turmas já persistiu algo, vale o que está lá; senão, a semente `TURMAS_CURSO`.
   function todasTurmas() {
     try {
-      const salvo = localStorage.getItem('prototipo-turmas-v11');
+      const salvo = localStorage.getItem('aulor-v1-turmas-v11');
       if (salvo) return JSON.parse(salvo);
     } catch (_) { /* usa a semente */ }
     return TURMAS_CURSO;

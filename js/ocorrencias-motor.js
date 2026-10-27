@@ -16,7 +16,7 @@
 // ============================================================
 
 const Ocorrencias = (() => {
-  const CHAVE = 'prototipo-ocorrencias-v1';
+  const CHAVE = 'aulor-v1-ocorrencias-v1';
   const TEXTO_MAX = 2000;
   const PERIODOS = [
     { id: '7', nome: 'Últimos 7 dias', dias: 7 },

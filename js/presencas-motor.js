@@ -8,7 +8,7 @@
 // ============================================================
 
 const Presencas = (() => {
-  const CHAVE = 'prototipo-presencas-v3'; // v3 (07/09/2026): só as diferenças da semente são gravadas; v2: faltas variam por mês
+  const CHAVE = 'aulor-v1-presencas-v3'; // v3 (07/09/2026): só as diferenças da semente são gravadas; v2: faltas variam por mês
   let cache = null;
 
   const hoje = () => (typeof Turmas !== 'undefined' ? Turmas.hoje() : new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10));

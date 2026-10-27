@@ -3,7 +3,7 @@
 // Quando o professor projeta a tela para os alunos, oculta o que é
 // pessoal dele: financeiro (pagamentos, contratos), avaliações e meus dados.
 //
-// Estado em localStorage ('prototipo-portal-professor-privacidade-v1' = '1' | ausente),
+// Estado em localStorage ('aulor-v1-portal-professor-privacidade-v1' = '1' | ausente),
 // aplicado como classe `privacidade` no <html> ANTES do primeiro paint (mesmo
 // padrão de tema.js). Carregar logo após tema.js/tooltip.js, de forma síncrona.
 //
@@ -17,7 +17,7 @@
 // ============================================================
 
 (function () {
-  const CHAVE = 'prototipo-portal-professor-privacidade-v1';
+  const CHAVE = 'aulor-v1-portal-professor-privacidade-v1';
   const raiz = document.documentElement;
 
   function ativa() {

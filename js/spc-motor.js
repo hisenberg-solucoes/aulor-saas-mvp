@@ -8,7 +8,7 @@
 // ============================================================
 
 const Spc = (() => {
-  const CHAVE = 'prototipo-spc-v1';
+  const CHAVE = 'aulor-v1-spc-v1';
   const clonar = (x) => JSON.parse(JSON.stringify(x));
   const digitos = (v) => String(v ?? '').replace(/\D/g, '');
   const porId = (lista, id) => lista.find((x) => x.id === id) ?? null;

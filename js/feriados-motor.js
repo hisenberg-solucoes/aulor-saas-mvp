@@ -6,7 +6,7 @@
 // ============================================================
 
 const Feriados = (() => {
-  const CHAVE = 'prototipo-feriados-v1';
+  const CHAVE = 'aulor-v1-feriados-v1';
   const clonar = (x) => JSON.parse(JSON.stringify(x));
 
   function carregar() {

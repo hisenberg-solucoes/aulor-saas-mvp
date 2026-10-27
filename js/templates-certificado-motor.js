@@ -12,7 +12,7 @@
 // ============================================================
 
 const TemplatesCertificado = (() => {
-  const CHAVE = 'prototipo-templates-certificado-v1';
+  const CHAVE = 'aulor-v1-templates-certificado-v1';
   const clonar = (x) => JSON.parse(JSON.stringify(x));
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const normalizar = (t) => String(t ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();

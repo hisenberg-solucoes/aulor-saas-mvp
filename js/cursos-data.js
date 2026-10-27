@@ -116,7 +116,7 @@ FORMACOES_CURSO.push(
 // Turmas. Cada FORMAÇÃO (edição do Super DEV: SUP07, SUP08, SUP09, SUP10) tem uma turma por curso,
 // no mesmo período e sala. `formacaoId` (e o alias `edicao`, mantido para as telas antigas) agrupa
 // as turmas da mesma formação; `salaId` aponta para `SALAS_SEED` (js/salas-data.js).
-// A tela de turmas (turmas.html) persiste em `prototipo-turmas-v1`; quando existe, vale o que está lá
+// A tela de turmas (turmas.html) persiste em `aulor-v1-turmas-v1`; quando existe, vale o que está lá
 // (`Cursos.todasTurmas`). `TURMAS_CURSO` é a semente.
 // Agendas (dias, horários, recorrência, formato — js/agenda.js). As formações definem a própria
 // (`AGENDAS_EDICAO`, usada por `FORMACOES_SEED`); turmas de formação herdam; avulsas têm a sua.

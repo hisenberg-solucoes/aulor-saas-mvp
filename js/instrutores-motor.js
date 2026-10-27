@@ -6,7 +6,7 @@
 // ============================================================
 
 const Instrutores = (() => {
-  const CHAVE = 'prototipo-instrutores-v5';
+  const CHAVE = 'aulor-v1-instrutores-v5';
 
   function carregar() {
     try {

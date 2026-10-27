@@ -29,12 +29,12 @@ const Lancamentos = (() => {
   // v4 (19/10/2026): centros de custo viraram departamentos e o centro de receita saiu (ids cc-* mudaram de sentido);
   // v3 (08/09/2026): módulo Compras — a semente manual passou a abater coffee/material/limpeza já lançados pelas compras
   // (dupla contagem); v2 (07/09/2026): só manuais + derivados alterados ficam no storage.
-  const CHAVE = 'prototipo-financeiro-lancamentos-v4';
-  const CHAVE_PLANO = 'prototipo-financeiro-plano-v2'; // v2 (19/10/2026): centros de custo = departamentos, sem centros de receita
+  const CHAVE = 'aulor-v1-financeiro-lancamentos-v4';
+  const CHAVE_PLANO = 'aulor-v1-financeiro-plano-v2'; // v2 (19/10/2026): centros de custo = departamentos, sem centros de receita
   // v3 (19/10/2026): a semente passou a trazer os pagamentos da conta de pagamento (BB); o v2 salvo é migrado em carregarExtrato.
-  const CHAVE_EXTRATO = 'prototipo-financeiro-extrato-v3';
-  const CHAVE_EXTRATO_V2 = 'prototipo-financeiro-extrato-v2';
-  const CHAVE_SAQUES = 'prototipo-financeiro-saques-v1';
+  const CHAVE_EXTRATO = 'aulor-v1-financeiro-extrato-v3';
+  const CHAVE_EXTRATO_V2 = 'aulor-v1-financeiro-extrato-v2';
+  const CHAVE_SAQUES = 'aulor-v1-financeiro-saques-v1';
 
   // ---------- Helpers ----------
 

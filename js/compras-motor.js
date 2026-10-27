@@ -12,14 +12,14 @@
 // dados de que o Financeiro precisa. Qualquer status não final → cancelada
 // (motivo obrigatório); cancelada/reprovada não geram conta a pagar.
 //
-// Persistência em localStorage['prototipo-compras-v1']; semente COMPRAS_SEED
+// Persistência em localStorage['aulor-v1-compras-v1']; semente COMPRAS_SEED
 // (js/compras-data.js) quando a chave não existe. hoje() = data local do
 // navegador. Depende de: compras-data.js; opcionais (typeof): Colaboradores /
 // COLABORADORES_SEED (solicitantes), Turmas (turma opcional).
 // ============================================================
 
 const Compras = (() => {
-  const CHAVE = 'prototipo-compras-v3'; // v3 (19/10/2026): centros de custo viraram departamentos (cc-* mudaram de sentido); v2 (08/09/2026): etapa de rascunho (status 'rascunho', solicitadaEm) + pc37 na semente
+  const CHAVE = 'aulor-v1-compras-v3'; // v3 (19/10/2026): centros de custo viraram departamentos (cc-* mudaram de sentido); v2 (08/09/2026): etapa de rascunho (status 'rascunho', solicitadaEm) + pc37 na semente
 
   // ---------- Helpers ----------
 

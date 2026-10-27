@@ -18,7 +18,7 @@
 // ============================================================
 
 const Financeiro = (() => {
-  const CHAVE = 'prototipo-financeiro-custos-v2';
+  const CHAVE = 'aulor-v1-financeiro-custos-v2';
 
   const arred = (n) => Math.round((Number(n) || 0) * 100) / 100;
   const soma = (xs, f) => arred(xs.reduce((s, x) => s + (Number(f(x)) || 0), 0));

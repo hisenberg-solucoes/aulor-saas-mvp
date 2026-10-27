@@ -5,7 +5,7 @@
 // ============================================================
 
 const PortalAluno = (() => {
-  const CHAVE_SESSAO = 'prototipo-portal-aluno-sessao';
+  const CHAVE_SESSAO = 'aulor-v1-portal-aluno-sessao';
   // Senha única do protótipo: no sistema real vem do cadastro de usuário (permissoes.html).
   const SENHA_PROTOTIPO = '123456';
 
@@ -104,7 +104,7 @@ const PortalAluno = (() => {
   // envio = { turmaId, alunoId, modalidade, questionarioId, data, … }).
   function enviosAvaliacao(alunoId) {
     try {
-      return JSON.parse(localStorage.getItem('prototipo-avaliacao-aluno-envios') ?? '[]').filter((e) => e.alunoId === alunoId);
+      return JSON.parse(localStorage.getItem('aulor-v1-avaliacao-aluno-envios') ?? '[]').filter((e) => e.alunoId === alunoId);
     } catch (_) { return []; }
   }
 
@@ -674,7 +674,7 @@ const PortalAluno = (() => {
 
   // ---------- Solicitações do aluno (localStorage próprio do portal) ----------
 
-  const CHAVE_SOLICITACOES = 'prototipo-portal-aluno-solicitacoes-v1';
+  const CHAVE_SOLICITACOES = 'aulor-v1-portal-aluno-solicitacoes-v1';
   const TIPOS_SOLICITACAO = [
     { id: 'cancelamento', nome: 'Cancelamento do contrato', descricao: 'Rescisão do contrato inteiro, com o acerto calculado pelos Termos Gerais.' },
     { id: 'segunda_via', nome: 'Segunda via / atualização de dados', descricao: 'Nova cópia do contrato ou correção dos seus dados no documento.' },

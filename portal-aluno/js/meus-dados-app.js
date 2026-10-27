@@ -14,8 +14,8 @@
   const GENEROS = [{ id: 'feminino', nome: 'Feminino' }, { id: 'masculino', nome: 'Masculino' }, { id: 'outro', nome: 'Outro / prefiro não informar' }];
 
   // Chaves próprias do portal (não existem no modelo do aluno do administrativo).
-  const CHAVE_PREFERENCIAS = 'prototipo-portal-aluno-preferencias-v1';
-  const CHAVE_PRIVACIDADE = 'prototipo-portal-aluno-privacidade-v1';
+  const CHAVE_PREFERENCIAS = 'aulor-v1-portal-aluno-preferencias-v1';
+  const CHAVE_PRIVACIDADE = 'aulor-v1-portal-aluno-privacidade-v1';
 
   function toast(msg) {
     const el = document.createElement('div');

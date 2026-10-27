@@ -5,7 +5,7 @@
 // classes claras com o par dark: ao lado nas constantes abaixo.
 // ============================================================
 
-const STORAGE_KEY = 'prototipo-permissionamento-v6';
+const STORAGE_KEY = 'aulor-v1-permissionamento-v6';
 
 // Páginas: perfis.html (lista + matrizes + validação) e perfil.html?id= (detalhe,
 // body[data-modo="detalhe"]). O mesmo app.js atende às duas pelo MODO.

@@ -2,7 +2,7 @@
 // Menu lateral compartilhado do Portal do Aluno — mesmo comportamento do
 // js/menu.js do admin e do portal-professor/js/menu.js: a sidebar é IDÊNTICA
 // em todas as telas, item "Início" fixo no topo + grupos na mesma ordem,
-// colapsáveis (estado em localStorage['prototipo-portal-aluno-menus']); só
+// colapsáveis (estado em localStorage['aulor-v1-portal-aluno-menus']); só
 // muda o destaque do item ativo — o grupo dele abre nesta visita, sem gravar
 // estado. Busca no topo filtra itens/grupos; o scroll da sidebar persiste
 // entre páginas. Páginas de detalhe (aula, curso, contrato, certificado)
@@ -85,8 +85,8 @@ const MENU_ALIAS = {
 };
 
 (function () {
-  const CHAVE = 'prototipo-portal-aluno-menus';
-  const CHAVE_SCROLL = 'prototipo-portal-aluno-menu-scroll';
+  const CHAVE = 'aulor-v1-portal-aluno-menus';
+  const CHAVE_SCROLL = 'aulor-v1-portal-aluno-menu-scroll';
   const SETA = '<svg class="h-3.5 w-3.5 transition-transform" data-seta fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>';
   const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const pagina = () => (location.pathname.split('/').pop() || 'home.html').toLowerCase();

@@ -6,7 +6,7 @@
 // ============================================================
 
 const PortalProfessor = (() => {
-  const CHAVE_SESSAO = 'prototipo-portal-professor-sessao';
+  const CHAVE_SESSAO = 'aulor-v1-portal-professor-sessao';
   // Senha única do protótipo: no sistema real vem do cadastro de usuário (permissoes.html, tipo "professor").
   const SENHA_PROTOTIPO = '123456';
 

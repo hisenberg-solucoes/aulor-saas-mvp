@@ -7,8 +7,8 @@
 // ============================================================
 
 const Chamados = (() => {
-  const CHAVE = 'prototipo-chamados-v2';
-  const CHAVE_INSTRUTORES = 'prototipo-instrutores-v5';
+  const CHAVE = 'aulor-v1-chamados-v2';
+  const CHAVE_INSTRUTORES = 'aulor-v1-instrutores-v5';
 
   const clonar = (x) => JSON.parse(JSON.stringify(x));
 

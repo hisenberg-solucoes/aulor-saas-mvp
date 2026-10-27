@@ -2,12 +2,12 @@
 // Tema claro/escuro compartilhado por todas as páginas.
 // Carregado de forma síncrona no <head> para aplicar a classe
 // `dark` no <html> ANTES do primeiro paint (sem piscar).
-// Preferência salva em localStorage ('prototipo-tema' = 'light' | 'dark');
+// Preferência salva em localStorage ('aulor-v1-tema' = 'light' | 'dark');
 // sem valor salvo, segue prefers-color-scheme do sistema.
 // ============================================================
 
 (function () {
-  const CHAVE = 'prototipo-tema';
+  const CHAVE = 'aulor-v1-tema';
   const raiz = document.documentElement;
   const midia = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -61,13 +61,13 @@
 
 // ============================================================
 // Sidebar recolhível, compartilhada por todas as páginas.
-// Estado salvo em localStorage ('prototipo-sidebar' = 'aberta' | 'fechada');
+// Estado salvo em localStorage ('aulor-v1-sidebar' = 'aberta' | 'fechada');
 // aplicado como classe `sidebar-fechada` no <html> antes do paint.
 // A <aside> precisa ter `data-sidebar`; o botão, `data-toggle-sidebar`.
 // ============================================================
 
 (function () {
-  const CHAVE = 'prototipo-sidebar';
+  const CHAVE = 'aulor-v1-sidebar';
   const raiz = document.documentElement;
 
   function fechada() {

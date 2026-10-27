@@ -7,8 +7,8 @@
 // ============================================================
 
 const Colaboradores = (() => {
-  const CHAVE = 'prototipo-colaboradores-v3';
-  const CHAVE_PERMISSOES = 'prototipo-permissionamento-v6';
+  const CHAVE = 'aulor-v1-colaboradores-v3';
+  const CHAVE_PERMISSOES = 'aulor-v1-permissionamento-v6';
 
   const clonar = (x) => JSON.parse(JSON.stringify(x));
 

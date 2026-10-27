@@ -1,7 +1,7 @@
 // ============================================================
 // Menu lateral compartilhado (DESIGN.md do aulor-web, Shell). A sidebar é IDÊNTICA em
 // todas as telas: a unidade em uso, o Início fixo e os módulos da V1 na mesma ordem,
-// colapsáveis (estado em localStorage['prototipo-home-menus']); só muda o
+// colapsáveis (estado em localStorage['aulor-v1-home-menus']); só muda o
 // destaque do item ativo — o grupo dele abre nesta visita, sem gravar estado.
 // A barra de contexto leva o nome do módulo como h1; a pessoa abre um menu com Sair.
 // Páginas de detalhe (turma.html, curso.html…) herdam o item da lista via
@@ -163,7 +163,7 @@ const UNIDADE = 'ProWay';
   // Mesma sidebar em todas as telas: unidade, Início e os grupos colapsáveis (estado
   // guardado). O grupo do item ativo abre nesta visita, sem alterar o estado salvo.
   function render(nav, atual, grupos) {
-    const CHAVE = 'prototipo-home-menus';
+    const CHAVE = 'aulor-v1-home-menus';
     let estado = {};
     try { estado = JSON.parse(localStorage.getItem(CHAVE) || '{}'); } catch (_) { estado = {}; }
     let html = `
@@ -192,8 +192,8 @@ const UNIDADE = 'ProWay';
       });
     });
     // A sidebar não muda de posição ao trocar de página: restaura o scroll da visita anterior.
-    nav.scrollTop = Number(sessionStorage.getItem('prototipo-menu-scroll') || 0);
-    nav.addEventListener('scroll', () => sessionStorage.setItem('prototipo-menu-scroll', String(nav.scrollTop)));
+    nav.scrollTop = Number(sessionStorage.getItem('aulor-v1-menu-scroll') || 0);
+    nav.addEventListener('scroll', () => sessionStorage.setItem('aulor-v1-menu-scroll', String(nav.scrollTop)));
     nav.querySelector('.nav-item-ativo')?.scrollIntoView({ block: 'nearest' });
   }
 

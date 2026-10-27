@@ -5,7 +5,7 @@
 // ============================================================
 
 const Areas = (() => {
-  const CHAVE = 'prototipo-areas-v2';
+  const CHAVE = 'aulor-v1-areas-v2';
 
   const clonar = (x) => JSON.parse(JSON.stringify(x));
 

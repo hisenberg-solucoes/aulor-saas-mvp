@@ -15,7 +15,7 @@
 // ============================================================
 
 const Contratos = (() => {
-  const CHAVE = 'prototipo-contratos-v9';
+  const CHAVE = 'aulor-v1-contratos-v9';
 
   const clonar = (x) => JSON.parse(JSON.stringify(x));
 
@@ -1508,7 +1508,7 @@ const Contratos = (() => {
   }
 
   // Meta mensal de vendas fechadas (R$) [sup.]: uma só para a escola, guardada à parte dos contratos.
-  const CHAVE_META = 'prototipo-comercial-meta-v1';
+  const CHAVE_META = 'aulor-v1-comercial-meta-v1';
   const META_PADRAO = { mensal: 30000 };
   function metaComercial() {
     try { const m = JSON.parse(localStorage.getItem(CHAVE_META)); if (m && Number.isFinite(Number(m.mensal))) return { mensal: Number(m.mensal) }; } catch (_) { /* padrão */ }

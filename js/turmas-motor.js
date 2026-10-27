@@ -10,7 +10,7 @@
 // ============================================================
 
 const Turmas = (() => {
-  const CHAVE = 'prototipo-turmas-v11'; // (08/09/2026: risco de não fechar é derivado — RN11 — sem bump); v11 (07/09/2026): catálogo ProWay completo (turmas de todas as áreas); v10 (03/09/2026): requisitos de software/máquina por turma (RN10); v9: AULAS_CANCELADAS_SEED com 23 cancelamentos
+  const CHAVE = 'aulor-v1-turmas-v11'; // (08/09/2026: risco de não fechar é derivado — RN11 — sem bump); v11 (07/09/2026): catálogo ProWay completo (turmas de todas as áreas); v10 (03/09/2026): requisitos de software/máquina por turma (RN10); v9: AULAS_CANCELADAS_SEED com 23 cancelamentos
 
   // Situação exibida = status administrativo + fase pelas datas (RN2).
   const SITUACOES = [

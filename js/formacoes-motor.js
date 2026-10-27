@@ -5,7 +5,7 @@
 // ============================================================
 
 const Formacoes = (() => {
-  const CHAVE = 'prototipo-formacoes-v7'; // v7 (15/10/2026): resumos da semente sem código, horas e cursos
+  const CHAVE = 'aulor-v1-formacoes-v7'; // v7 (15/10/2026): resumos da semente sem código, horas e cursos
 
   function clonar(x) {
     return JSON.parse(JSON.stringify(x));

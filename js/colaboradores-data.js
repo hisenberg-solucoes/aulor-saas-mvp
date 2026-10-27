@@ -10,7 +10,7 @@
 // guarda só o que o sistema usa: identificação (matrícula, nome, CPF,
 // nascimento), cargo/departamento, admissão e status, contato de trabalho
 // e o vínculo com o USUÁRIO de acesso do protótipo de permissões
-// (js/permissoes-data.js, chave 'prototipo-permissionamento-v6'): o
+// (js/permissoes-data.js, chave 'aulor-v1-permissionamento-v6'): o
 // colaborador aponta `acesso.usuarioId`; os perfis continuam sendo geridos
 // em Perfis de acesso.
 //
