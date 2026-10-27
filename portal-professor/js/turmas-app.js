@@ -1,4 +1,5 @@
-// Portal do Professor — Minhas turmas (UI). Só leitura: turmas, aulas, matrículas e presenças vêm do administrativo.
+// Portal do Professor — Minhas turmas (UI). Turmas, aulas e matrículas vêm do administrativo; aqui o professor
+// cadastra os materiais das aulas (js/materiais-motor.js) e mexe nos requisitos da turma.
 // Lista (turmas.html) + detalhe em página separada (turma.html?id=<turmaId>&aba=), MODO lido de <body data-modo>.
 // Consultas extras ficam aqui (o motor portal-professor-motor.js não muda).
 (() => {
@@ -34,9 +35,6 @@
     desistiu: { nome: 'Desistiu', ponto: 'bg-amber-500' },
     cancelada: { nome: 'Cancelada', ponto: 'bg-red-500' },
   };
-  const temPresencas = typeof Presencas !== 'undefined';
-  const temDiario = typeof Diario !== 'undefined';
-  const temDossies = typeof Dossies !== 'undefined';
 
   const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
   const situacaoTurma = (id) => { const s = SITUACAO[id] ?? SITUACAO.planejada; return ponto(s.ponto, s.nome); };
@@ -44,19 +42,9 @@
   const vazio = (msg) => `<div class="cartao p-8 text-center text-sm text-slate-500 dark:text-neutral-400">${msg}</div>`;
   const meetOnline = (t) => Boolean(t.turma.meetLink && (t.turma.formato === 'online' || t.turma.formato === 'hibrido'));
   const linkTurma = (t) => `turma.html?id=${encodeURIComponent(t.turma.id)}`;
-  const linkAula = (t, a) => `aula.html?turma=${encodeURIComponent(t.turma.id)}&data=${encodeURIComponent(a.data)}`;
   // Motivo do cancelamento da aula: { tipo, texto } (ou string antiga).
   const motivoTexto = (m) => (m && typeof m === 'object' ? [typeof Aulas !== 'undefined' && Aulas.motivoDe ? Aulas.motivoDe(m.tipo) : m.tipo, m.texto].filter(Boolean).join(': ') : String(m ?? ''));
 
-  // Contrato do instrutor que cobre esta turma (o mais recente que não seja rascunho/cancelado).
-  function contratoDaTurma(turmaId) {
-    const cs = (instrutor.contratos ?? []).filter((c) => c.status !== 'rascunho' && c.status !== 'cancelado' && (c.itens ?? []).some((it) => it.turmaId === turmaId));
-    const c = cs.sort((a, b) => String(b.criadoEm ?? '').localeCompare(String(a.criadoEm ?? '')))[0] ?? null;
-    if (!c) return null;
-    const st = typeof STATUS_CONTRATO_INSTRUTOR !== 'undefined' ? STATUS_CONTRATO_INSTRUTOR.find((x) => x.id === c.status) : null;
-    const faltaMinha = c.status === 'assinatura' && !!c.clicksign && !c.clicksign.instrutorAssinouEm;
-    return { contrato: c, statusNome: st?.nome ?? c.status, faltaMinha, href: `contrato.html?id=${encodeURIComponent(c.id)}` };
-  }
   const salas = typeof Salas !== 'undefined' ? Salas.carregar() : [];
   const localDe = (a, t) => {
     if (a?.salaId) return Salas.porId(salas, a.salaId)?.nome ?? t.sala?.nome ?? '';
@@ -97,14 +85,19 @@
       <button type="button" data-fechar class="botao-sec">Cancelar</button>
       <button type="submit" class="botao-pri">${confirmar}</button>
     </div>`;
-  const erroDe = (campo) => `<p data-erro="${campo}" class="hidden mt-1 text-xs text-red-600 dark:text-red-400"></p>`;
+  const erroDe = (campo) => `<p id="erro-${campo}" data-erro="${campo}" class="hidden mt-1 text-xs text-red-600 dark:text-red-400"></p>`;
+  const ICONE_ERRO = '<svg class="inline h-3.5 w-3.5 -mt-0.5 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>';
+  function limparErro(root, campo) {
+    const p = root.querySelector(`[data-erro="${campo}"]`);
+    if (p) { p.classList.add('hidden'); p.textContent = ''; }
+    root.querySelectorAll(`[name="${campo}"]`).forEach((el) => { el.classList.remove('campo-erro'); el.removeAttribute('aria-invalid'); });
+  }
   function mostrarErros(root, erros) {
-    root.querySelectorAll('[data-erro]').forEach((p) => { p.classList.add('hidden'); p.textContent = ''; });
-    root.querySelectorAll('.campo-erro').forEach((el) => el.classList.remove('campo-erro'));
+    root.querySelectorAll('[data-erro]').forEach((p) => limparErro(root, p.dataset.erro));
     erros.forEach((e) => {
       const p = root.querySelector(`[data-erro="${e.campo}"]`);
-      if (p) { p.textContent = e.mensagem; p.classList.remove('hidden'); }
-      root.querySelector(`[name="${e.campo}"]`)?.classList.add('campo-erro');
+      if (p) { p.innerHTML = `${ICONE_ERRO}${esc(e.mensagem)}`; p.classList.remove('hidden'); }
+      root.querySelectorAll(`[name="${e.campo}"]`).forEach((el) => { el.classList.add('campo-erro'); el.setAttribute('aria-invalid', 'true'); });
     });
     root.querySelector('.campo-erro')?.focus();
     return erros.length > 0;
@@ -292,102 +285,35 @@
   // ============================================================
 
   // Consultas locais (não estão no motor do portal).
+  // Todas as aulas agendadas (inclusive canceladas) ou a prévia da agenda.
+  const aulasDaTurma = (t) => (Turmas.aulasAgendadas(t.turma) ?? t.aulas).map((a) => {
+    const situacaoAula = a.status === 'cancelada' ? 'cancelada' : a.data < hoje ? 'realizada' : a.data === hoje ? 'hoje' : 'futura';
+    const modulos = (a.moduloIds ?? []).map((id) => (t.curso?.modulos ?? []).find((m) => m.id === id)?.titulo).filter(Boolean);
+    return { ...a, situacaoAula, modulos, local: localDe(a, t) };
+  });
+
   function montarDetalhe(t) {
     const concluida = t.situacao === 'concluida';
-    // Todas as aulas agendadas (inclusive canceladas) ou a prévia da agenda.
-    const todas = (Turmas.aulasAgendadas(t.turma) ?? t.aulas).map((a) => {
-      const situacaoAula = a.status === 'cancelada' ? 'cancelada' : a.data < hoje ? 'realizada' : a.data === hoje ? 'hoje' : 'futura';
-      const chamada = temPresencas && situacaoAula !== 'futura' ? Presencas.porAula(t.turma.id, a) : [];
-      const diario = temDiario && situacaoAula !== 'futura' && situacaoAula !== 'cancelada' ? Diario.porAula(t.turma.id, a.data) : null;
-      const modulos = (a.moduloIds ?? []).map((id) => (t.curso?.modulos ?? []).find((m) => m.id === id)?.titulo).filter(Boolean);
-      return { ...a, situacaoAula, chamadaFeita: chamada.length > 0, diario, modulos, local: localDe(a, t), gravacoes: t.gravacoes.filter((g) => g.data === a.data) };
-    });
-    const aulaHoje = todas.find((a) => a.situacaoAula === 'hoje') ?? null;
+    const todas = aulasDaTurma(t);
     const proximas = todas.filter((a) => a.situacaoAula === 'hoje' || a.situacaoAula === 'futura');
     const alunosCadastro = typeof Clientes !== 'undefined' ? Clientes.carregar().alunos : [];
-    const minimo = t.curso?.certificado?.frequenciaMinima ?? undefined;
     const alunos = (Turmas.matriculas(t.turma)?.linhas ?? [])
-      .map((l) => {
-        const aluno = Clientes.porId(alunosCadastro, l.alunoId);
-        const encerrada = l.matricula.status !== 'matriculado';
-        const frequencia = temPresencas ? Presencas.frequencia(t.turma.id, l.alunoId, t.aulas, hoje, { concluido: concluida || encerrada, minimo }) : null;
-        return { aluno, alunoId: l.alunoId, matricula: l.matricula, contrato: l.contrato, frequencia };
-      })
+      .map((l) => ({ aluno: Clientes.porId(alunosCadastro, l.alunoId), alunoId: l.alunoId, matricula: l.matricula, contrato: l.contrato }))
       .filter((x) => x.aluno)
       .sort((a, b) => a.aluno.nome.localeCompare(b.aluno.nome, 'pt-BR'));
-    const realizadasSemChamada = todas.filter((a) => a.situacaoAula === 'realizada' && !a.chamadaFeita);
     const pendencias = PortalProfessor.pendencias(instrutor, [t], hoje).filter((p) => p.turma === t);
-    if (temPresencas && realizadasSemChamada.length) pendencias.unshift({ tipo: 'chamada', turma: t, qtd: realizadasSemChamada.length, texto: `${plural(realizadasSemChamada.length, 'aula realizada sem chamada', 'aulas realizadas sem chamada')}`, href: `${linkTurma(t)}&aba=aulas` });
-    return { ...t, concluida, todas, aulaHoje, proximas, alunos, pendencias, minimo: minimo ?? (typeof FREQUENCIA_MINIMA !== 'undefined' ? FREQUENCIA_MINIMA : 75) };
-  }
-
-  const freqTexto = (f) => {
-    if (!f) return '<span class="text-slate-400">—</span>';
-    const s = Presencas.statusFrequenciaDe(f.status);
-    if (f.status === 'sem_aulas') return ponto(s.ponto, 'Sem aulas dadas');
-    return `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${s.ponto} shrink-0"></span><span class="tabular-nums">${f.percentual}%</span><span class="text-slate-400">·</span>${esc(s.nome)}</span>`;
-  };
-
-  // ---------- Dossiês (aba na turma; mesma tabela de dossies.html) ----------
-
-  // null quando a turma não tem template de dossiê ativo. pendentesMeus = alunos do período atual sem o meu registro.
-  function montarDossies(d) {
-    const ctx = Dossies.contexto(hoje);
-    const template = ctx.templateDe(d.turma);
-    if (!template) return null;
-    const periodos = Dossies.periodos(d.turma, template, hoje);
-    const atual = Dossies.periodoAtual(d.turma, template, hoje);
-    const pendentesMeus = atual && d.situacao === 'em_andamento'
-      ? Dossies.listar(ctx, { turmaId: d.turma.id, periodoId: atual.id, ref: hoje }).filter((it) => !it.dossie?.fechadoEm && !Dossies.registroDe(it.dossie, instrutor.id)).length
-      : 0;
-    return { ctx, template, periodos, atual, pendentesMeus };
-  }
-  const linkDossie = (it) => `dossie.html?turma=${encodeURIComponent(it.turma.id)}&aluno=${encodeURIComponent(it.aluno?.id ?? it.matricula?.alunoId ?? '')}&periodo=${encodeURIComponent(it.periodo.id)}`;
-  function tabelaDossies(linhas) {
-    if (!linhas.length) return '<div class="px-4 py-8 text-center text-sm text-slate-500 dark:text-neutral-400">Nenhum aluno matriculado nesta turma.</div>';
-    const freqHtml = (f) => {
-      if (!f) return '<span class="text-slate-400">—</span>';
-      if (f.status === 'sem_aulas' || f.percentual == null) return '<span class="text-slate-400">Sem aulas no período</span>';
-      const s = Presencas.statusFrequenciaDe(f.status);
-      return `<span class="inline-flex items-center gap-1.5 whitespace-nowrap" title="${esc(`${f.validas} de ${f.dadas} aulas · ${s?.nome ?? ''}`)}"><span class="h-2 w-2 rounded-full ${s?.ponto ?? 'bg-slate-400'} shrink-0"></span><span class="tabular-nums ${f.abaixoDoMinimo ? 'text-red-600 dark:text-red-400 font-medium' : ''}">${f.percentual}%</span><span class="text-xs text-slate-400">${f.faltas ? plural(f.faltas, 'falta', 'faltas') : 'sem faltas'}</span></span>`;
-    };
-    return `<div class="overflow-x-auto"><table class="tabela w-full">
-      <thead><tr><th>Aluno</th><th>Frequência no período</th><th>Meu registro</th><th>Outros professores</th><th>Situação</th><th class="text-right"></th></tr></thead>
-      <tbody>${linhas.map((it) => {
-        const meu = Dossies.registroDe(it.dossie, instrutor.id);
-        const outros = it.registros.filter((r) => r.instrutorId !== instrutor.id);
-        const fechado = Boolean(it.dossie?.fechadoEm);
-        const href = linkDossie(it);
-        return `<tr data-href="${href}" tabindex="0" class="cursor-pointer transition hover:!bg-slate-100 dark:hover:!bg-neutral-900">
-          <td class="font-medium text-slate-900 dark:text-neutral-100"><div class="flex items-center gap-2.5">${PortalProfessor.avatarAlunoHtml(it.aluno, 'h-8 w-8')}<div class="min-w-0"><a href="${href}" class="hover:underline">${esc(it.nomeAluno || '—')}</a>${it.codigoMatricula ? `<p class="text-xs font-mono font-normal text-slate-400">${esc(it.codigoMatricula)}</p>` : ''}</div></div></td>
-          <td>${freqHtml(it.frequencia)}</td>
-          <td>${meu ? ponto('bg-emerald-500', `Preenchido em ${data(meu.atualizadoEm).slice(0, 5)}`) : fechado ? '<span class="text-slate-400">Sem registro</span>' : ponto('bg-laranja', 'Pendente')}</td>
-          <td>${outros.length ? `<span title="${esc(outros.map((r) => r.instrutorNome).join(', '))}" class="tabular-nums">${plural(outros.length, 'registro', 'registros')}</span>` : '<span class="text-slate-400">—</span>'}</td>
-          <td>${DossiesUi.situacaoHtml(it.situacao)}</td>
-          <td class="text-right"><a href="${href}" class="link whitespace-nowrap">${fechado ? 'Ver' : meu ? 'Editar' : 'Preencher'}</a></td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table></div>`;
+    return { ...t, concluida, todas, proximas, alunos, pendencias };
   }
 
   function renderDetalhe(d) {
-    // Dossiês (js/dossies-motor.js, opcional): só quando a turma tem template ativo. Só leitura aqui (o preenchimento é em dossie.html).
-    const dossies = temDossies ? montarDossies(d) : null;
     const ABAS = [
       { id: 'visao', titulo: 'Visão geral' },
       { id: 'alunos', titulo: 'Alunos', n: d.alunos.length },
       { id: 'aulas', titulo: 'Aulas', n: d.todas.length },
-      ...(temPresencas ? [{ id: 'frequencia', titulo: 'Frequência' }] : []),
-      ...(dossies ? [{ id: 'dossies', titulo: 'Dossiês', n: dossies.pendentesMeus || undefined }] : []),
       { id: 'requisitos', titulo: 'Requisitos', n: Turmas.requisitos(d.turma, d.curso).softwares.length },
-      { id: 'gravacoes', titulo: 'Gravações', n: d.gravacoes.length },
     ];
     const abaUrl = params.get('aba');
-    const periodoUrl = params.get('periodo');
-    const estado = {
-      aba: ABAS.some((x) => x.id === abaUrl) ? abaUrl : 'visao', buscaFreq: params.get('aluno') ?? '',
-      periodoDossie: dossies && dossies.periodos.some((p) => p.id === periodoUrl) ? periodoUrl : (dossies?.atual?.id ?? ''),
-    };
+    const estado = { aba: ABAS.some((x) => x.id === abaUrl) ? abaUrl : 'visao' };
     const nomeCurso = d.curso?.nome ?? d.turma.codigo;
     const tid = encodeURIComponent(d.turma.id);
     $('tela-detalhe').classList.remove('hidden');
@@ -399,21 +325,15 @@
     bc.classList.add('flex');
     bc.innerHTML = `<a href="turmas.html" class="hover:underline">Minhas turmas</a><svg class="h-3.5 w-3.5 text-slate-300 dark:text-neutral-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg><span class="text-slate-800 dark:text-neutral-100 font-medium font-mono" aria-current="page">${esc(d.turma.codigo)}</span>`;
 
-    // Ações do topo: chamada de hoje (ou próxima aula), Meet, atalhos.
+    // Ação do topo: o Meet da turma online/híbrida.
     const proxima = d.proximas[0] ?? null;
-    const acoes = [];
-    if (d.aulaHoje) acoes.push(`<a href="${linkAula(d, d.aulaHoje)}" class="botao-laranja">Fazer a chamada</a>`);
-    else if (proxima) acoes.push(`<a href="${linkAula(d, proxima)}" class="botao-pri">Ver próxima aula</a>`);
-    if (meetOnline(d)) acoes.push(`<a href="${esc(d.turma.meetLink)}" target="_blank" rel="noopener" class="botao-sec">Abrir o Meet</a>`);
-    const ct = contratoDaTurma(d.turma.id);
-    if (ct) acoes.push(`<a href="${ct.href}" class="${ct.faltaMinha ? 'botao-pri' : 'botao-sec'}">${ct.faltaMinha ? 'Assinar contrato' : 'Ver contrato'}</a>`);
-    $('acoes-topo').innerHTML = acoes.join('');
+    $('acoes-topo').innerHTML = meetOnline(d) ? `<a href="${esc(d.turma.meetLink)}" target="_blank" rel="noopener" class="botao-sec">Abrir o Meet</a>` : '';
 
     // Cabeçalho fixo acima das abas.
     const total = d.aulas.length;
     const feitas = d.concluida ? total : d.realizadas;
     const dadoCab = (r, v) => `<div><p class="rotulo">${esc(r)}</p><div class="text-sm text-slate-800 dark:text-neutral-100 mt-0.5">${v}</div></div>`;
-    // Situação como pílula (cores por situação) e três blocos numéricos: alunos, aulas, contrato.
+    // Situação como pílula (cores por situação) e dois blocos numéricos: alunos e aulas.
     const PILULA_SIT = {
       em_andamento: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
       confirmada: 'bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
@@ -424,7 +344,6 @@
     const sit = SITUACAO[d.situacao] ?? SITUACAO.planejada;
     const pilulaSit = `<span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${PILULA_SIT[d.situacao] ?? PILULA_SIT.planejada}"><span class="h-1.5 w-1.5 rounded-full ${sit.ponto}"></span>${esc(sit.nome)}</span>`;
     const ocupando = d.alunos.filter((x) => x.matricula.status === 'matriculado' || x.matricula.status === 'concluido').length;
-    const abaixoMin = d.alunos.filter((x) => x.frequencia && (x.frequencia.status === 'risco' || x.frequencia.status === 'reprovado_frequencia')).length;
     const vagas = d.turma.vagas ?? null;
     const horasTotal = Math.round(Turmas.horasAulas(d.aulas));
     const horasDadas = d.concluida ? horasTotal : Math.round(Turmas.horasAulas(d.aulas.filter((a) => a.data < hoje)));
@@ -437,7 +356,7 @@
     };
     const localTexto = `${d.sala ? esc(d.sala.nome) : d.turma.meetLink ? 'Google Meet' : '<span class="text-slate-400">Sala a definir</span>'}${d.turma.meetLink ? ` · <a href="${esc(d.turma.meetLink)}" target="_blank" rel="noopener" class="link">${esc(d.turma.meetLink.replace(/^https?:\/\//, ''))}</a>` : ''}`;
     $('cabecalho-turma').innerHTML = `
-      <div class="cartao p-5 grid grid-cols-1 lg:grid-cols-[1.6fr_1fr_1fr_1fr] gap-x-6 gap-y-5 lg:divide-x lg:divide-slate-200/70 dark:lg:divide-neutral-800">
+      <div class="cartao p-5 grid grid-cols-1 lg:grid-cols-[1.6fr_1fr_1fr] gap-x-6 gap-y-5 lg:divide-x lg:divide-slate-200/70 dark:lg:divide-neutral-800">
         <div class="space-y-2.5 min-w-0">
           <div class="flex flex-wrap items-center gap-2">${pilulaSit}<span class="text-xs text-slate-500 dark:text-neutral-400">${esc(FORMATO[d.turma.formato] ?? d.turma.formato ?? '')}${d.turma.tipo === 'incompany' ? ' · In company' : ''}</span></div>
           ${linhaInfo(ICO.calendario, `<span class="tabular-nums">${data(d.turma.inicio)} – ${data(d.turma.fim)}</span>`)}
@@ -448,7 +367,7 @@
           <p class="rotulo">Alunos</p>
           ${numero(ocupando, vagas ?? '—')}
           <div class="mt-2">${barra(vagas ? (ocupando / vagas) * 100 : 0)}</div>
-          <p class="text-xs mt-1.5 ${abaixoMin ? 'text-red-600 dark:text-red-400' : 'text-slate-500 dark:text-neutral-400'}">${abaixoMin ? `${plural(abaixoMin, 'aluno abaixo da frequência mínima', 'alunos abaixo da frequência mínima')} · <a href="${linkTurma(d)}&aba=frequencia" data-aba-link="frequencia" class="link !text-xs">ver</a>` : vagas ? `${plural(Math.max(0, vagas - ocupando), 'vaga livre', 'vagas livres')}` : 'Sem limite de vagas'}</p>
+          <p class="text-xs mt-1.5 text-slate-500 dark:text-neutral-400">${vagas ? `${plural(Math.max(0, vagas - ocupando), 'vaga livre', 'vagas livres')}` : 'Sem limite de vagas'}</p>
         </div>
         <div class="lg:pl-6">
           <p class="rotulo">Aulas</p>
@@ -456,17 +375,11 @@
           <div class="mt-2">${barra(total ? (feitas / total) * 100 : 0, d.concluida)}</div>
           <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1.5">${horasDadas} de ${horasTotal} h${proxima ? ` · próxima ${esc(PortalProfessor.rotuloDia(proxima.data, hoje).toLowerCase())} ${esc(proxima.inicio)}` : d.concluida ? ' · concluída' : ''}</p>
         </div>
-        <div class="lg:pl-6">
-          <p class="rotulo">Contrato</p>
-          ${ct
-            ? `<p class="mt-1"><a href="${ct.href}" class="link font-mono text-lg leading-none">${esc(ct.contrato.codigo)}</a></p><p class="mt-2.5"><span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${ct.faltaMinha ? 'bg-laranja/15 text-laranja-escuro border-laranja/40 dark:text-laranja' : ct.contrato.status === 'assinado' ? PILULA_SIT.em_andamento : PILULA_SIT.planejada}"><span class="h-1.5 w-1.5 rounded-full ${ct.faltaMinha ? 'bg-laranja' : ct.contrato.status === 'assinado' ? 'bg-emerald-500' : 'bg-slate-400'}"></span>${esc(ct.faltaMinha ? 'Aguarda sua assinatura' : ct.statusNome)}</span></p>`
-            : `<p class="text-sm text-slate-400 mt-1">Sem contrato</p><p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">A coordenação ainda não gerou.</p>`}
-        </div>
       </div>`;
 
     const dado = (r, v) => `<div><p class="rotulo">${esc(r)}</p><div class="text-sm text-slate-800 dark:text-neutral-100 mt-0.5">${v}</div></div>`;
     const linhaAulaCurta = (a) => `
-      <a href="${linkAula(d, a)}" class="flex items-center gap-4 px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition">
+      <a href="${linkTurma(d)}&aba=aulas" data-aba-link="aulas" class="flex items-center gap-4 px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition">
         <div class="shrink-0 w-12 text-center rounded-lg ${a.situacaoAula === 'hoje' ? 'bg-laranja/15 text-laranja-escuro dark:text-laranja' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
           <p class="text-lg font-display font-semibold leading-none tabular-nums">${new Date(`${a.data}T12:00:00`).getDate()}</p>
           <p class="text-[10px] uppercase tracking-wider mt-0.5">${esc(PortalProfessor.diaSemana(a.data).slice(0, 3))}</p>
@@ -491,8 +404,7 @@
             ${dado('Formação', d.formacao ? `${esc(d.formacao.nome)}<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(d.formacao.codigo ?? '')}</p>` : '<span class="text-slate-500 dark:text-neutral-400">Turma avulsa</span>')}
             ${dado('Turma', `<span class="font-mono">${esc(d.turma.codigo)}</span>${d.turma.tipo === 'incompany' ? '<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">In company</p>' : ''}`)}
             ${dado('Carga horária', `${esc(String(Math.round(horas)))} h em ${plural(d.aulas.length, 'aula', 'aulas')}${semConteudo && !d.concluida ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${plural(semConteudo, 'aula sem conteúdo definido', 'aulas sem conteúdo definido')}</p>` : ''}`)}
-            ${dado('Próxima aula', proxima ? `<a href="${linkAula(d, proxima)}" class="hover:underline">${esc(PortalProfessor.rotuloDia(proxima.data, hoje))} · ${esc(proxima.inicio)}–${esc(proxima.fim)}</a><p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(proxima.local || '—')}</p>` : d.concluida ? 'Turma concluída' : '—')}
-            ${dado('Frequência mínima', `${d.minimo}%${abaixoMin ? `<p class="text-xs text-red-600 dark:text-red-400 mt-0.5">${plural(abaixoMin, 'aluno abaixo do mínimo', 'alunos abaixo do mínimo')} · <a href="${linkTurma(d)}&aba=frequencia" data-aba-link="frequencia" class="link !text-xs">Ver frequência</a></p>` : '<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Ninguém abaixo do mínimo.</p>'}`)}
+            ${dado('Próxima aula', proxima ? `${esc(PortalProfessor.rotuloDia(proxima.data, hoje))} · ${esc(proxima.inicio)}–${esc(proxima.fim)}<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(proxima.local || '—')}</p>` : d.concluida ? 'Turma concluída' : '—')}
             ${d.turma.observacoes ? `<div class="sm:col-span-2 lg:col-span-3">${dado('Observações', esc(d.turma.observacoes))}</div>` : ''}
           </div>
           <div class="space-y-5">
@@ -508,187 +420,249 @@
     function abaAlunos() {
       if (!d.alunos.length) return vazio('Nenhum aluno matriculado nesta turma ainda.');
       const ativos = d.alunos.filter((x) => x.matricula.status === 'matriculado' || x.matricula.status === 'concluido').length;
-      const abaixo = d.alunos.filter((x) => x.frequencia && x.frequencia.abaixoDoMinimo).length;
       return `
         <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <p class="text-sm text-slate-500 dark:text-neutral-400">${plural(ativos, 'aluno ocupando vaga', 'alunos ocupando vagas')} de ${d.turma.vagas ?? '—'}${abaixo ? ` · ${plural(abaixo, 'aluno abaixo da frequência mínima', 'alunos abaixo da frequência mínima')} (${d.minimo}%)` : ''}.</p>
-          ${temPresencas ? `<a href="${linkTurma(d)}&aba=frequencia" data-aba-link="frequencia" class="link">Frequência detalhada</a>` : ''}
+          <p class="text-sm text-slate-500 dark:text-neutral-400">${plural(ativos, 'aluno ocupando vaga', 'alunos ocupando vagas')} de ${d.turma.vagas ?? '—'}.</p>
         </div>
         <div class="cartao overflow-hidden"><div class="overflow-x-auto"><table class="tabela w-full">
-          <thead><tr><th>Nº</th><th>Aluno</th><th>Matrícula</th><th>Frequência</th><th>Situação</th></tr></thead>
+          <thead><tr><th>Nº</th><th>Aluno</th><th>Matrícula</th></tr></thead>
           <tbody>${d.alunos.map((x, i) => {
             const m = MATRICULA[x.matricula.status] ?? { nome: x.matricula.status, ponto: 'bg-slate-400' };
             const encerrada = x.matricula.status === 'desistiu' || x.matricula.status === 'cancelada' || x.matricula.status === 'congelada';
-            const f = x.frequencia;
-            const s = f && temPresencas ? Presencas.statusFrequenciaDe(f.status) : null;
-            // Clicar no aluno abre a aba Frequência já filtrada nele.
-            const hrefAluno = `${linkTurma(d)}&aba=frequencia&aluno=${encodeURIComponent(x.aluno.nome)}`;
-            return `<tr data-aba-link="frequencia" data-aluno="${esc(x.aluno.nome)}" tabindex="0" class="cursor-pointer transition hover:!bg-slate-100 dark:hover:!bg-neutral-900 ${encerrada ? 'opacity-60' : ''}">
+            return `<tr class="${encerrada ? 'opacity-60' : ''}">
               <td class="tabular-nums text-slate-500 dark:text-neutral-400 w-10">${i + 1}</td>
-              <td class="font-medium text-slate-900 dark:text-neutral-100"><div class="flex items-center gap-2.5">${PortalProfessor.avatarAlunoHtml(x.aluno, 'h-9 w-9')}<div class="min-w-0"><a href="${hrefAluno}" data-aba-link="frequencia" data-aluno="${esc(x.aluno.nome)}" class="hover:underline">${esc(x.aluno.nome)}</a>${x.aluno.apelido ? ` <span class="text-xs font-normal text-slate-500 dark:text-neutral-400">(${esc(x.aluno.apelido)})</span>` : ''}</div></div></td>
+              <td class="font-medium text-slate-900 dark:text-neutral-100"><div class="flex items-center gap-2.5">${PortalProfessor.avatarAlunoHtml(x.aluno, 'h-9 w-9')}<div class="min-w-0">${esc(x.aluno.nome)}${x.aluno.apelido ? ` <span class="text-xs font-normal text-slate-500 dark:text-neutral-400">(${esc(x.aluno.apelido)})</span>` : ''}</div></div></td>
               <td>${ponto(m.ponto, m.nome)}${x.matricula.codigo ? `<p class="text-xs font-mono text-slate-400">${esc(x.matricula.codigo)}</p>` : ''}</td>
-              <td class="min-w-36">${f && f.dadas ? `<div class="flex items-center gap-2"><div class="flex-1"><div class="barra-progresso"><div class="h-full rounded-full ${s?.ponto ?? 'bg-slate-400'}" style="width:${f.percentual}%"></div></div></div><span class="text-xs tabular-nums text-slate-500 dark:text-neutral-400 shrink-0">${f.percentual}%</span></div><p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${plural(f.faltas, 'falta', 'faltas')} em ${plural(f.dadas, 'aula', 'aulas')}</p>` : '<span class="text-slate-400">—</span>'}</td>
-              <td>${f ? (f.status === 'sem_aulas' ? ponto(s.ponto, 'Sem aulas dadas') : ponto(s.ponto, s.nome)) : '<span class="text-slate-400">—</span>'}</td>
             </tr>`;
           }).join('')}</tbody>
         </table></div></div>`;
     }
 
-    // Grade aluno × aula dada (P/A/J/F), com totais e situação — era a página frequencia.html (removida em 08/09/2026).
-    function abaFrequencia() {
-      const INICIAL = { presente: 'P', atraso: 'A', justificada: 'J', ausente: 'F' };
-      const pct = (n) => (n == null ? '—' : `${n}%`);
-      const dadas = Presencas.aulasDadas(d.aulas, hoje);
-      const linhas = d.alunos.filter((x) => ['matriculado', 'concluido', 'desistiu'].includes(x.matricula.status) && x.frequencia)
-        .map((x) => ({ ...x, registros: dadas.map((a) => Presencas.registroDe(d.turma.id, x.alunoId, a)) }));
-      const com = linhas.filter((l) => l.frequencia.dadas > 0);
-      const media = com.length ? Math.round(com.reduce((s, l) => s + l.frequencia.percentual, 0) / com.length) : null;
-      const abaixo = linhas.filter((l) => l.frequencia.abaixoDoMinimo).length;
-      const conta = (s) => linhas.filter((l) => l.frequencia.status === s).length;
-      const situ = STATUS_FREQUENCIA.filter((s) => s.id !== 'sem_aulas' && conta(s.id)).map((s) => `<span class="inline-flex items-center gap-1.5 text-xs"><span class="h-2 w-2 rounded-full ${s.ponto}"></span>${conta(s.id)} ${esc(s.nome.toLowerCase())}</span>`).join('');
-      const cartaoResumo = (rotulo, valor, texto) => `<div class="cartao p-4"><p class="rotulo">${rotulo}</p><p class="font-display text-2xl font-semibold text-slate-900 dark:text-neutral-100 mt-1 tabular-nums">${valor}</p>${texto ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">${texto}</p>` : ''}</div>`;
-      const celula = (reg, aula) => {
-        if (!reg) return `<span title="${esc(`${data(aula.data)} · sem registro na chamada — conta como falta`)}" class="inline-grid place-items-center h-6 w-6 rounded-full border border-slate-300 dark:border-neutral-700 text-slate-400 text-[10px]">—</span>`;
-        const s = Presencas.statusDe(reg.status);
-        const extra = reg.status === 'atraso' && reg.minutos ? ` (${reg.minutos} min)` : '';
-        const hor = Presencas.horarioTexto ? Presencas.horarioTexto(reg) : '';
-        return `<span title="${esc(`${data(reg.data)} · ${s?.nome ?? reg.status}${extra}${hor ? ` · ${hor}` : ''}${reg.observacao ? ` · ${reg.observacao}` : ''}`)}" class="inline-grid place-items-center h-6 w-6 rounded-full ${s?.ponto ?? 'bg-slate-400'} text-white text-[10px] font-semibold">${INICIAL[reg.status] ?? '?'}</span>`;
-      };
-      const th = (txt, cls = '') => `<th class="px-3 py-2.5 font-semibold border-b border-slate-200 dark:border-neutral-800 whitespace-nowrap text-left text-[11px] uppercase tracking-wider text-slate-500 dark:text-neutral-400 ${cls}">${txt}</th>`;
-      const td = (txt, cls = '') => `<td class="px-3 py-2 whitespace-nowrap ${cls}">${txt}</td>`;
-      const aulasTh = dadas.map((a) => th(`<a href="${linkAula(d, a)}" title="${esc(`${a.n ? `Aula ${a.n} · ` : ''}${data(a.data)} · ${a.inicio}–${a.fim} — abrir a chamada`)}" class="inline-block px-1 rounded hover:text-petrol-800 dark:hover:text-sky-300 hover:underline tabular-nums normal-case tracking-normal">${esc(data(a.data).slice(0, 5))}</a>`, 'text-center')).join('');
-      const termo = estado.buscaFreq.trim().toLowerCase();
-      const visiveis = termo ? linhas.filter((l) => l.aluno.nome.toLowerCase().includes(termo)) : linhas;
-      const corpo = !visiveis.length
-        ? `<tr><td colspan="${5 + dadas.length}" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-neutral-400">${linhas.length ? 'Nenhum aluno encontrado para a busca.' : 'Nenhum aluno matriculado nesta turma.'}</td></tr>`
-        : visiveis.map((l) => {
-          const f = l.frequencia;
-          const sf = Presencas.statusFrequenciaDe(f.status);
-          const sub = l.matricula.status !== 'matriculado' ? `<span class="text-xs text-slate-400 ml-1.5">${esc(MATRICULA[l.matricula.status]?.nome ?? l.matricula.status)}</span>` : '';
-          return `<tr>
-            ${td(`<div class="flex items-center gap-2">${PortalProfessor.avatarAlunoHtml(l.aluno, 'h-7 w-7')}<span><span class="font-medium text-slate-900 dark:text-neutral-100">${esc(l.aluno.nome)}</span>${sub}</span></div>`, `col-fixa min-w-56 border-r border-slate-200 dark:border-neutral-800 border-l-2 ${f.abaixoDoMinimo ? 'border-l-red-400 dark:border-l-red-500' : 'border-l-transparent'}`)}
-            ${dadas.map((a, i) => td(celula(l.registros[i], a), 'text-center')).join('')}
-            ${td(f.dadas ? f.validas : '—', 'text-right tabular-nums border-l border-slate-200 dark:border-neutral-800')}
-            ${td(f.dadas ? (f.faltas ? `<span class="text-red-600 dark:text-red-400">${f.faltas}</span>` : '0') : '—', 'text-right tabular-nums')}
-            ${td(pct(f.percentual), `text-right tabular-nums font-medium ${f.abaixoDoMinimo ? 'text-red-600 dark:text-red-400' : ''}`)}
-            ${td(`<span class="inline-flex items-center gap-1.5" title="${esc(sf?.descricao ?? '')}"><span class="h-2 w-2 rounded-full ${sf?.ponto ?? 'bg-slate-400'}"></span>${esc(sf?.nome ?? f.status)}</span>`)}
-          </tr>`;
-        }).join('');
-      const legenda = STATUS_PRESENCA.map((s) => `<span class="inline-flex items-center gap-1.5"><span class="h-4 w-4 rounded-full ${s.ponto} text-white text-[9px] font-semibold grid place-items-center">${INICIAL[s.id]}</span>${esc(s.nome)}</span>`).join('')
-        + `<span class="inline-flex items-center gap-1.5"><span class="h-4 w-4 rounded-full border border-slate-300 dark:border-neutral-700 grid place-items-center text-[9px]">—</span>Sem registro (conta como falta)</span>`;
-      return `
-        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
-          ${cartaoResumo('Aulas dadas', `${dadas.length}<span class="text-sm font-sans font-normal text-slate-400"> / ${d.aulas.length}</span>`, dadas.length ? `Última em ${data(dadas[dadas.length - 1].data)}` : 'Nenhuma aula realizada ainda')}
-          ${cartaoResumo('Média de frequência', pct(media), plural(linhas.length, 'aluno', 'alunos'))}
-          ${cartaoResumo('Situação', `<span class="text-sm font-sans font-normal flex flex-wrap gap-x-3 gap-y-1 mt-1">${situ || '<span class="text-slate-400">—</span>'}</span>`, '')}
-          ${cartaoResumo('Mínimo exigido', pct(d.minimo), abaixo ? `<span class="text-red-600 dark:text-red-400">${plural(abaixo, 'aluno abaixo do mínimo', 'alunos abaixo do mínimo')}</span>` : 'Ninguém abaixo do mínimo')}
-        </div>
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <input type="search" id="busca-freq" value="${esc(estado.buscaFreq)}" placeholder="Buscar aluno" class="campo !py-1.5 w-64" autocomplete="off">
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-neutral-400">${legenda}</div>
-        </div>
-        <div class="cartao overflow-hidden"><div class="overflow-auto max-h-[70vh]"><table class="tab-freq w-full text-sm">
-          <thead><tr>${th('Aluno', 'col-fixa min-w-56 border-r border-slate-200 dark:border-neutral-800')}${aulasTh}${th('Pres.', 'text-right border-l border-slate-200 dark:border-neutral-800')}${th('Faltas', 'text-right')}${th('%', 'text-right')}${th('Situação')}</tr></thead>
-          <tbody id="linhas-freq">${corpo}</tbody>
-        </table></div></div>`;
-    }
-    function ligarFrequencia() {
-      const b = $('busca-freq');
-      if (!b) return;
-      b.addEventListener('input', () => {
-        estado.buscaFreq = b.value;
-        const pos = b.selectionStart;
-        const tbody = $('linhas-freq');
-        const html = abaFrequencia();
-        const tmp = document.createElement('div'); tmp.innerHTML = html;
-        tbody.innerHTML = tmp.querySelector('#linhas-freq').innerHTML;
-        b.setSelectionRange(pos, pos);
-      });
-      if (estado.buscaFreq) b.focus();
-    }
+    // ---------- Aba Aulas: os materiais de cada aula ----------
+    // O professor cadastra os materiais da aula e escolhe quando liberar (js/materiais-motor.js);
+    // o aluno vê no portal só o que já está liberado; a coordenação acompanha tudo na tela de materiais dela.
 
-    // Aba Dossiês: combo de período + a mesma tabela de "Meus dossiês" (dossies.html) para esta turma.
-    function abaDossies() {
-      const periodo = dossies.periodos.find((p) => p.id === estado.periodoDossie) ?? dossies.atual;
-      if (!periodo) return vazio('Esta turma ainda não tem período de dossiê (começa junto com as aulas).');
-      const linhas = Dossies.listar(dossies.ctx, { turmaId: d.turma.id, periodoId: periodo.id, ref: hoje });
-      const meus = linhas.filter((it) => Dossies.registroDe(it.dossie, instrutor.id)).length;
-      const pendentes = linhas.filter((it) => !it.dossie?.fechadoEm && !Dossies.registroDe(it.dossie, instrutor.id)).length;
-      const opcoes = [...dossies.periodos].reverse().map((p) => `<option value="${esc(p.id)}" ${p.id === periodo.id ? 'selected' : ''}>${esc(p.rotulo)}${p.id === dossies.atual?.id && !p.encerrado ? ' (atual)' : ''}</option>`).join('');
-      return `
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <div class="flex flex-wrap items-center gap-3">
-            <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-neutral-300"><span class="rotulo">Período</span>
-              <select id="periodo-dossie" class="campo !w-auto !py-1.5" aria-label="Período do dossiê">${opcoes}</select>
-            </label>
-            <p class="text-sm text-slate-500 dark:text-neutral-400 tabular-nums">${data(periodo.inicio)} – ${data(periodo.fim)} · ${plural(meus, 'registro meu', 'registros meus')} de ${plural(linhas.length, 'aluno', 'alunos')}${pendentes ? ` · <span class="text-laranja-escuro dark:text-laranja font-medium">${plural(pendentes, 'pendente', 'pendentes')}</span>` : ''}</p>
-          </div>
-          <a href="dossies.html" class="link">Meus dossiês</a>
+    const chaveAula = (a) => a.id ?? `${a.data}|${a.inicio}`;
+    const svg = (path, cls = 'h-4 w-4') => `<svg class="${cls} shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">${path}</svg>`;
+    const ICO_ARQUIVO = '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />';
+    const ICO_LINK = '<path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />';
+    const ICO_MAIS = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />';
+    // Pílula do DESIGN.md: liberado é o estado bom; programado é informação (neutra); não liberado espera o professor (aviso).
+    const PILULA_MATERIAL = {
+      liberado: { cls: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300', ponto: 'bg-emerald-500' },
+      programado: { cls: 'bg-slate-100 text-slate-700 dark:bg-neutral-900 dark:text-neutral-300', ponto: 'bg-slate-500 dark:bg-neutral-400' },
+      bloqueado: { cls: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300', ponto: 'bg-amber-500' },
+    };
+    const diaMes = (iso) => data(iso).slice(0, 5);
+    function pilulaMaterial(m) {
+      const sit = Materiais.situacao(m, hoje);
+      const texto = sit === 'programado' ? `Programado para ${diaMes(m.liberarEm)}` : Materiais.SITUACOES[sit].nome;
+      return `<span title="${esc(Materiais.SITUACOES[sit].descricao)}" class="pilula inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-0.5 text-[11px] font-medium ${PILULA_MATERIAL[sit].cls}"><span class="h-1.5 w-1.5 rounded-full ${PILULA_MATERIAL[sit].ponto}"></span>${esc(texto)}</span>`;
+    }
+    const descricaoAula = (a) => `${a.n ? `Aula ${a.n} · ` : ''}${data(a.data)} · ${esc(a.inicio)}–${esc(a.fim)}`;
+
+    const linhaMaterial = (m) => `
+      <li class="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-slate-200 dark:border-neutral-800 px-3 py-2">
+        <span class="text-slate-400">${svg(m.tipo === 'link' ? ICO_LINK : ICO_ARQUIVO)}</span>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(m.titulo)}</p>
+          <p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${m.tipo === 'link' ? `<a href="${esc(m.url)}" target="_blank" rel="noopener" class="link !text-xs">${esc(m.url.replace(/^https?:\/\//, ''))}</a>` : esc(m.arquivo)}${m.descricao ? ` · ${esc(m.descricao)}` : ''}</p>
         </div>
-        <div class="cartao overflow-hidden">${tabelaDossies(linhas)}</div>`;
-    }
-    function ligarDossies() {
-      $('periodo-dossie')?.addEventListener('change', (e) => { estado.periodoDossie = e.target.value; renderAba(); });
-    }
+        ${pilulaMaterial(m)}
+        <div class="flex items-center">
+          ${Materiais.situacao(m, hoje) !== 'liberado' ? `<button type="button" data-liberar-material="${esc(m.id)}" aria-label="Liberar agora: ${esc(m.titulo)}" class="botao-fantasma">Liberar agora</button>` : ''}
+          <button type="button" data-editar-material="${esc(m.id)}" aria-label="Editar ${esc(m.titulo)}" class="botao-fantasma">Editar</button>
+          <button type="button" data-remover-material="${esc(m.id)}" aria-label="Remover ${esc(m.titulo)}" class="botao-fantasma">Remover</button>
+        </div>
+      </li>`;
 
     function abaAulas() {
       if (!d.todas.length) return vazio('As aulas desta turma ainda não foram agendadas.');
       const estimadas = !Turmas.temAgendamento(d.turma);
-      const semChamada = d.todas.filter((a) => a.situacaoAula === 'realizada' && !a.chamadaFeita).length;
-      const semDiario = temDiario ? d.todas.filter((a) => a.situacaoAula === 'realizada' && !a.diario).length : 0;
+      const mats = Materiais.daTurma(d.turma.id);
+      const liberados = mats.filter((m) => Materiais.situacao(m, hoje) === 'liberado').length;
       return `
         <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <p class="text-sm text-slate-500 dark:text-neutral-400">${estimadas ? 'Datas previstas pela agenda da turma; o conteúdo aparece quando a secretaria confirmar o agendamento.' : `${plural(d.aulas.length, 'aula', 'aulas')} agendadas${semChamada ? ` · ${plural(semChamada, 'realizada sem chamada', 'realizadas sem chamada')}` : ''}${semDiario ? ` · ${plural(semDiario, 'sem diário', 'sem diário')}` : ''}.`}</p>
+          <p class="text-sm text-slate-500 dark:text-neutral-400">${estimadas ? 'Datas previstas pela agenda da turma; o conteúdo aparece quando a secretaria confirmar o agendamento.' : `${plural(d.aulas.length, 'aula', 'aulas')} agendadas.`} ${mats.length ? `${plural(mats.length, 'material', 'materiais')}, ${plural(liberados, 'liberado', 'liberados')}. ` : ''}O aluno vê no portal só o material liberado.</p>
         </div>
-        <div class="cartao overflow-hidden"><div class="overflow-x-auto"><table class="tabela w-full">
-          <thead><tr><th>Nº</th><th>Data</th><th>Horário</th><th>Local</th><th>Conteúdo</th><th>Situação</th><th>Chamada</th><th>Diário</th><th></th></tr></thead>
-          <tbody>${d.todas.map((a) => {
-            const s = AULA[a.situacaoAula];
-            const conteudo = a.conteudo || a.modulos.join(' · ');
-            const chamada = a.situacaoAula === 'futura' ? '<span class="text-slate-400">—</span>'
-              : a.situacaoAula === 'cancelada' ? '<span class="text-slate-400">—</span>'
-                : a.chamadaFeita ? ponto('bg-emerald-500', 'Feita')
-                  : ponto(a.situacaoAula === 'hoje' ? 'bg-laranja' : 'bg-red-500', 'Não feita');
-            const diario = !temDiario || a.situacaoAula === 'futura' || a.situacaoAula === 'cancelada' ? '<span class="text-slate-400">—</span>'
-              : a.diario ? ponto('bg-emerald-500', 'Preenchido')
-                : `<a href="${linkAula(d, a)}#diario" class="inline-flex items-center gap-1.5 whitespace-nowrap hover:underline"><span class="h-2 w-2 rounded-full ${a.situacaoAula === 'hoje' ? 'bg-laranja' : 'bg-red-500'}"></span>Pendente</a>`;
-            const acao = a.situacaoAula === 'cancelada' ? '' : (a.situacaoAula === 'hoje' || (a.situacaoAula === 'realizada' && !a.chamadaFeita))
-              ? `<a href="${linkAula(d, a)}" class="link whitespace-nowrap">Chamada</a>`
-              : `<a href="${linkAula(d, a)}" class="link whitespace-nowrap">Ver aula</a>`;
-            return `<tr data-href="${linkAula(d, a)}" tabindex="0" class="cursor-pointer transition hover:!bg-slate-100 dark:hover:!bg-neutral-900 ${a.situacaoAula === 'cancelada' ? 'opacity-60' : a.situacaoAula === 'hoje' ? 'bg-laranja/10 dark:bg-laranja/10' : ''}">
-              <td class="tabular-nums text-slate-500 dark:text-neutral-400">${a.n ?? '—'}</td>
-              <td class="whitespace-nowrap tabular-nums ${a.situacaoAula === 'cancelada' ? 'line-through' : ''}"><a href="${linkAula(d, a)}" class="font-medium text-slate-900 dark:text-neutral-100 hover:underline">${data(a.data)}</a> <span class="text-xs text-slate-500 dark:text-neutral-400 no-underline">${esc(PortalProfessor.diaSemana(a.data).slice(0, 3))}</span></td>
-              <td class="whitespace-nowrap tabular-nums">${esc(a.inicio)}–${esc(a.fim)}</td>
-              <td class="whitespace-nowrap">${esc(a.local || '—')}</td>
-              <td>${conteudo ? esc(conteudo) : '<span class="text-slate-400">—</span>'}${a.conteudo && a.modulos.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(a.modulos.join(' · '))}</p>` : ''}${a.status === 'cancelada' && a.motivo ? `<p class="text-xs text-red-600 dark:text-red-400">${esc(motivoTexto(a.motivo))}</p>` : ''}${a.origem === 'reposicao' ? '<p class="text-xs text-slate-500 dark:text-neutral-400">Reposição</p>' : a.origem === 'extra' ? '<p class="text-xs text-slate-500 dark:text-neutral-400">Aula extra</p>' : ''}</td>
-              <td>${ponto(s.ponto, s.nome)}</td>
-              <td>${chamada}</td>
-              <td>${diario}</td>
-              <td class="text-right">${acao}</td>
-            </tr>`;
-          }).join('')}</tbody>
-        </table></div></div>`;
+        <div class="cartao divide-y divide-slate-100 dark:divide-neutral-900">${d.todas.map((a) => {
+          const s = AULA[a.situacaoAula];
+          const cancelada = a.situacaoAula === 'cancelada';
+          const conteudo = a.conteudo || a.modulos.join(' · ');
+          const ms = a.id ? Materiais.daAula(d.turma.id, a.id) : [];
+          return `
+          <div data-aula="${esc(chaveAula(a))}" class="px-5 py-4 ${cancelada ? 'linha-apagada' : a.situacaoAula === 'hoje' ? 'bg-laranja/10 dark:bg-laranja/10' : ''}">
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div class="shrink-0 w-12 text-center rounded-lg ${a.situacaoAula === 'hoje' ? 'bg-laranja/15 text-laranja-escuro dark:text-laranja' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
+                <p class="text-lg font-display font-semibold leading-none tabular-nums">${new Date(`${a.data}T12:00:00`).getDate()}</p>
+                <p class="text-[10px] uppercase tracking-wider mt-0.5">${esc(PortalProfessor.diaSemana(a.data).slice(0, 3))}</p>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 tabular-nums ${cancelada ? 'line-through' : ''}">${descricaoAula(a)}${a.local ? ` · ${esc(a.local)}` : ''}</p>
+                <p class="text-xs text-slate-500 dark:text-neutral-400">${conteudo ? esc(conteudo) : 'Sem conteúdo definido'}${cancelada && a.motivo ? ` · <span class="text-red-600 dark:text-red-400">${esc(motivoTexto(a.motivo))}</span>` : ''}${a.origem === 'reposicao' ? ' · Reposição' : a.origem === 'extra' ? ' · Aula extra' : ''}</p>
+              </div>
+              <div class="flex items-center gap-3 shrink-0 text-sm">
+                ${ponto(s.ponto, s.nome)}
+                ${cancelada ? '' : `<button type="button" data-add-material="${esc(chaveAula(a))}" class="botao-fantasma">${svg(ICO_MAIS)}Adicionar material</button>`}
+              </div>
+            </div>
+            ${ms.length ? `<ul class="mt-3 sm:ml-16 space-y-2">${ms.map(linhaMaterial).join('')}</ul>` : ''}
+          </div>`;
+        }).join('')}</div>`;
     }
 
-    function abaGravacoes() {
-      const gs = [...d.gravacoes].sort((a, b) => b.data.localeCompare(a.data));
-      const cabec = `<div class="flex flex-wrap items-center justify-between gap-3 mb-3"><p class="text-sm text-slate-500 dark:text-neutral-400">${gs.length ? `${plural(gs.length, 'gravação do Meet', 'gravações do Meet')} registradas pela secretaria.` : ''}</p></div>`;
-      if (!gs.length) return `${cabec}${vazio(d.turma.meetLink ? 'Nenhuma gravação registrada nesta turma ainda.' : 'Esta turma não tem link do Meet; gravações só existem em turmas online ou híbridas.')}`;
-      return `${cabec}<div class="cartao divide-y divide-slate-100 dark:divide-neutral-900">${gs.map((g) => {
-        const aula = d.todas.find((a) => a.data === g.data);
-        return `
-        <a href="${esc(g.url)}" target="_blank" rel="noopener" class="flex items-center gap-4 px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition">
-          <div class="shrink-0 h-9 w-9 rounded-lg bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300 grid place-items-center">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" /></svg>
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(g.titulo || nomeCurso)}</p>
-            <p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${data(g.data)}${aula?.n ? ` · aula ${aula.n}` : ''}${g.duracaoMin ? ` · ${esc(Turmas.duracaoTexto(g.duracaoMin))}` : ''}${g.observacoes ? ` · ${esc(g.observacoes)}` : ''}</p>
-          </div>
-          <span class="link shrink-0">Assistir</span>
-        </a>`;
-      }).join('')}</div>`;
+    // Aulas ainda na prévia da agenda (sem id): gera e grava as aulas da turma antes do primeiro material,
+    // como a semente faz (turmas-motor.js, semearAulas). Devolve o id da aula de mesma data e horário.
+    function materializarAulas(aula) {
+      const lista = Turmas.carregar();
+      const t = Turmas.porId(lista, d.turma.id);
+      if (!Turmas.temAgendamento(t)) {
+        t.aulas = Aulas.distribuirConteudo(Aulas.gerar(t, Turmas.agendaDe(t)), d.curso);
+        Turmas.salvar(lista);
+      }
+      d.turma = t;
+      d.todas = aulasDaTurma(d);
+      return d.todas.find((a) => a.data === aula.data && a.inicio === aula.inicio)?.id ?? null;
     }
+
+    // Diálogo nativo (DESIGN.md do aulor-web): título, contexto, corpo e as ações à direita.
+    const dialogo = $('dialogo');
+    dialogo.addEventListener('click', (e) => { if (e.target.closest('[data-fechar-dialogo]')) dialogo.close(); });
+    // O evento close chega depois (tarefa na fila): se o diálogo já reabriu com outro conteúdo, não limpa.
+    dialogo.addEventListener('close', () => { if (!dialogo.open) dialogo.innerHTML = ''; });
+    function abrirDialogo(html, largura) {
+      dialogo.className = `dialogo modal-anim ${largura}`;
+      dialogo.innerHTML = html;
+      dialogo.showModal();
+    }
+    const topoDialogo = (titulo, contexto) => `
+      <h3 id="dialogo-titulo" class="titulo-secao">${titulo}</h3>
+      <p id="dialogo-contexto" class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${contexto}</p>`;
+    const acoesDialogo = (confirmar, cls = 'botao-pri') => `
+      <div class="mt-5 flex justify-end gap-2">
+        <button type="button" data-fechar-dialogo class="botao-sec">Cancelar</button>
+        <button type="submit" class="${cls}">${confirmar}</button>
+      </div>`;
+    // Volta o foco para a aula depois de gravar (o botão que abriu o diálogo foi redesenhado).
+    const focarAula = (aulaId) => $('conteudo-aba').querySelector(`[data-aula="${CSS.escape(String(aulaId))}"] [data-add-material]`)?.focus();
+
+    function dialogoMaterial(aula, m = null) {
+      const modo = !m ? 'agora' : Materiais.situacao(m, hoje) === 'liberado' ? 'agora' : m.liberarEm ? 'data' : 'depois';
+      const tipo = m?.tipo ?? 'arquivo';
+      const opcao = (nome, valor, rotulo, apoio = '') => `
+        <label class="flex items-start gap-2 cursor-pointer">
+          <input type="radio" name="${nome}" value="${valor}" ${(nome === 'tipo' ? tipo : modo) === valor ? 'checked' : ''} class="mt-0.5 h-4 w-4 shrink-0 accent-petrol-800 dark:accent-sky-500">
+          <span class="text-sm text-slate-800 dark:text-neutral-100">${rotulo}${apoio ? `<span class="block text-xs text-slate-500 dark:text-neutral-400">${apoio}</span>` : ''}</span>
+        </label>`;
+      abrirDialogo(`
+        ${topoDialogo(m ? 'Editar material' : 'Adicionar material', `${descricaoAula(aula)}. O aluno vê no portal quando o material for liberado.`)}
+        <form id="form-material" novalidate class="mt-4 space-y-4">
+          <div>
+            <label class="rotulo" for="m-titulo">Título</label>
+            <input id="m-titulo" name="titulo" type="text" maxlength="120" autofocus value="${esc(m?.titulo ?? '')}" placeholder="Ex.: Apostila do módulo 1" aria-required="true" aria-describedby="erro-titulo" class="campo mt-1">
+            ${erroDe('titulo')}
+          </div>
+          <fieldset>
+            <legend class="rotulo">Tipo</legend>
+            <div class="mt-1.5 flex flex-wrap gap-x-6 gap-y-2">${opcao('tipo', 'arquivo', 'Arquivo')}${opcao('tipo', 'link', 'Link')}</div>
+            ${erroDe('tipo')}
+          </fieldset>
+          <div data-bloco="arquivo" ${tipo === 'arquivo' ? '' : 'hidden'}>
+            <label class="rotulo" for="m-arquivo">Arquivo</label>
+            <input id="m-arquivo" name="arquivo" type="file" aria-describedby="erro-arquivo m-arquivo-apoio" class="campo mt-1 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 dark:file:bg-neutral-900 file:px-2.5 file:py-1 file:text-sm file:font-medium file:text-slate-700 dark:file:text-neutral-200">
+            <p id="m-arquivo-apoio" class="mt-1 text-xs text-slate-500 dark:text-neutral-400">${m?.arquivo ? `Atual: <span class="font-medium text-slate-700 dark:text-neutral-200">${esc(m.arquivo)}</span>. Escolha outro só para trocar.` : 'No protótipo, fica guardado só o nome do arquivo.'}</p>
+            ${erroDe('arquivo')}
+          </div>
+          <div data-bloco="link" ${tipo === 'link' ? '' : 'hidden'}>
+            <label class="rotulo" for="m-url">Link</label>
+            <input id="m-url" name="url" type="url" value="${esc(m?.url ?? '')}" placeholder="https://" aria-describedby="erro-url" class="campo mt-1">
+            ${erroDe('url')}
+          </div>
+          <div>
+            <label class="rotulo" for="m-descricao">Descrição <span class="normal-case font-normal tracking-normal text-slate-400">(opcional)</span></label>
+            <textarea id="m-descricao" name="descricao" rows="2" maxlength="300" class="campo mt-1 resize-y">${esc(m?.descricao ?? '')}</textarea>
+          </div>
+          <fieldset>
+            <legend class="rotulo">Quando liberar</legend>
+            <div class="mt-1.5 space-y-2.5">
+              ${opcao('liberar', 'agora', 'Agora', esc(Materiais.SITUACOES.liberado.descricao))}
+              ${opcao('liberar', 'data', 'Em uma data', esc(Materiais.SITUACOES.programado.descricao))}
+              <div data-bloco="data" class="pl-6" ${modo === 'data' ? '' : 'hidden'}>
+                <input name="liberarEm" type="date" value="${esc(modo === 'data' ? m.liberarEm : '')}" aria-label="Data de liberação" aria-describedby="erro-liberarEm" class="campo !w-auto">
+                ${erroDe('liberarEm')}
+              </div>
+              ${opcao('liberar', 'depois', 'Depois (não liberar ainda)', `${esc(Materiais.SITUACOES.bloqueado.descricao)} Você libera quando quiser.`)}
+            </div>
+          </fieldset>
+          ${erroDe('aulaId')}
+          ${acoesDialogo(m ? 'Salvar' : 'Adicionar')}
+        </form>`, 'max-w-[560px]');
+      const form = $('form-material');
+      const f = form.elements;
+      form.addEventListener('change', (e) => {
+        form.querySelector('[data-bloco="arquivo"]').hidden = f.tipo.value !== 'arquivo';
+        form.querySelector('[data-bloco="link"]').hidden = f.tipo.value !== 'link';
+        form.querySelector('[data-bloco="data"]').hidden = f.liberar.value !== 'data';
+        if (e.target.name === 'liberar' && e.target.value === 'data') f.liberarEm.focus();
+        limparErro(form, e.target.name);
+      });
+      form.addEventListener('input', (e) => limparErro(form, e.target.name));
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const liberar = f.liberar.value;
+        const dados = {
+          id: m?.id, turmaId: d.turma.id, aulaId: m?.aulaId ?? aula.id ?? chaveAula(aula),
+          titulo: f.titulo.value, descricao: f.descricao.value, tipo: f.tipo.value,
+          arquivo: f.arquivo.files[0]?.name ?? m?.arquivo ?? '', url: f.url.value,
+          // "Agora" mantém a data de quem já estava liberado.
+          liberarEm: liberar === 'agora' ? (m && Materiais.situacao(m, hoje) === 'liberado' ? m.liberarEm : hoje) : liberar === 'data' ? f.liberarEm.value : null,
+          autor: { nome: instrutor.nome, papel: 'professor' },
+        };
+        const erros = Materiais.validar(dados);
+        if (liberar === 'data' && !dados.liberarEm) erros.liberarEm = 'Informe a data.';
+        const comoLista = (es) => Object.entries(es).map(([campo, mensagem]) => ({ campo, mensagem }));
+        if (mostrarErros(form, comoLista(erros))) return;
+        if (!m && !aula.id) dados.aulaId = materializarAulas(aula);
+        const r = Materiais.salvar(dados);
+        if (r.erros) { mostrarErros(form, comoLista(r.erros)); return; }
+        dialogo.close();
+        renderAba();
+        focarAula(r.material.aulaId);
+        const quando = { liberado: 'o aluno já vê', programado: `libera em ${diaMes(r.material.liberarEm)}`, bloqueado: 'ainda não liberado' }[Materiais.situacao(r.material, hoje)];
+        toast(`${m ? 'Material salvo' : 'Material adicionado'}: ${quando}.`);
+      });
+    }
+
+    function dialogoRemover(m) {
+      const aula = d.todas.find((a) => a.id === m.aulaId);
+      abrirDialogo(`
+        ${topoDialogo('Remover material', `"${esc(m.titulo)}" sai da ${aula?.n ? `aula ${aula.n}` : 'aula'} e o aluno deixa de ver. Não dá para desfazer.`)}
+        <form id="form-remover">${acoesDialogo('Remover', 'botao-perigo')}</form>`, 'max-w-[400px]');
+      $('form-remover').addEventListener('submit', (e) => {
+        e.preventDefault();
+        Materiais.remover(m.id);
+        dialogo.close();
+        renderAba();
+        focarAula(m.aulaId);
+        toast('Material removido.');
+      });
+    }
+
+    $('conteudo-aba').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-add-material], [data-editar-material], [data-liberar-material], [data-remover-material]');
+      if (!b) return;
+      if (b.dataset.addMaterial) { const a = d.todas.find((x) => chaveAula(x) === b.dataset.addMaterial); if (a) dialogoMaterial(a); return; }
+      const m = Materiais.daTurma(d.turma.id).find((x) => x.id === (b.dataset.editarMaterial ?? b.dataset.liberarMaterial ?? b.dataset.removerMaterial));
+      if (!m) return;
+      if (b.dataset.editarMaterial) dialogoMaterial(d.todas.find((a) => a.id === m.aulaId) ?? {}, m);
+      else if (b.dataset.removerMaterial) dialogoRemover(m);
+      else {
+        Materiais.liberar(m.id, hoje);
+        renderAba();
+        focarAula(m.aulaId);
+        toast(`"${m.titulo}" liberado: o aluno já vê.`);
+      }
+    });
 
     // ---------- Aba Requisitos ----------
     // Softwares e máquina da SUA turma: nasceram do catálogo do curso e daqui em diante são
@@ -1005,27 +979,16 @@
     function renderAba() {
       renderAbas();
       const q = new URLSearchParams(location.search); q.set('aba', estado.aba);
-      if (estado.aba === 'frequencia' && estado.buscaFreq) q.set('aluno', estado.buscaFreq); else q.delete('aluno');
-      if (estado.aba === 'dossies' && estado.periodoDossie) q.set('periodo', estado.periodoDossie); else q.delete('periodo');
       history.replaceState(null, '', `?${q}`);
-      $('conteudo-aba').innerHTML = { visao: abaVisao, alunos: abaAlunos, aulas: abaAulas, frequencia: abaFrequencia, dossies: abaDossies, requisitos: abaRequisitos, gravacoes: abaGravacoes }[estado.aba]();
+      $('conteudo-aba').innerHTML = { visao: abaVisao, alunos: abaAlunos, aulas: abaAulas, requisitos: abaRequisitos }[estado.aba]();
       if (estado.aba === 'requisitos') ligarRequisitos();
-      if (estado.aba === 'frequencia') ligarFrequencia();
-      if (estado.aba === 'dossies') ligarDossies();
     }
 
     document.addEventListener('click', (e) => {
       const b = e.target.closest('[data-aba]');
       if (b) { estado.aba = b.dataset.aba; renderAba(); return; }
       const l = e.target.closest('[data-aba-link]');
-      if (l && !e.target.closest('a:not([data-aba-link]), button, input')) { e.preventDefault(); estado.aba = l.dataset.abaLink; if ('aluno' in l.dataset) estado.buscaFreq = l.dataset.aluno; renderAba(); return; }
-      const tr = e.target.closest('tr[data-href]');
-      if (tr && !e.target.closest('a, button, input')) location.href = tr.dataset.href;
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter') return;
-      const tr = e.target.closest?.('tr[data-href], tr[data-aba-link]');
-      if (tr && e.target === tr) { if (tr.dataset.href) location.href = tr.dataset.href; else { estado.aba = tr.dataset.abaLink; if ('aluno' in tr.dataset) estado.buscaFreq = tr.dataset.aluno; renderAba(); } }
+      if (l) { e.preventDefault(); estado.aba = l.dataset.abaLink; renderAba(); }
     });
 
     renderAba();
