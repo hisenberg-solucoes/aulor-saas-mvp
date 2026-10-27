@@ -99,6 +99,8 @@ function plural(n, singular, pluralTxt = `${singular}s`) {
 
 // Sugestões de requisitos vindas dos instrutores (docs/cursos.md RN9): quem decide é a coordenação.
 const AUTOR_SUGESTOES = 'Coordenação';
+// Requisitos de máquina não entram na V1: só as sugestões de software aparecem.
+const sugestoesSoftware = (c) => Cursos.sugestoesRequisitos(c).filter((x) => x.tipo !== 'maquina');
 
 // "03/09/2026 · 19h40" a partir de "2026-09-03T19:40".
 function fmtDataHora(iso) {
@@ -289,7 +291,7 @@ function renderCurso() {
   const turmas = Cursos.turmasDoCurso(c.id);
   const formacoes = Cursos.formacoesDoCurso(c.id);
   const podeExcluir = Cursos.podeExcluir(c.id);
-  const sugestoes = Cursos.sugestoesRequisitos(c).filter((x) => x.status === 'pendente').length;
+  const sugestoes = sugestoesSoftware(c).filter((x) => x.status === 'pendente').length;
   const subAba = (a) => {
     const n = a.id === 'conteudo' ? c.modulos.length : a.id === 'material' ? c.materiais.length : a.id === 'oferta' ? turmas.length + formacoes.length : null;
     return `
@@ -311,8 +313,6 @@ function renderCurso() {
 
   el.innerHTML = `
     <nav aria-label="Breadcrumb" class="mb-3 flex items-center gap-1.5 text-sm text-slate-600 dark:text-neutral-400">
-      <a href="home.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Home</a>
-      <span>/</span>
       <a href="cursos.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Cursos</a>
       <span>/</span>
       <span class="font-medium text-slate-800 dark:text-neutral-100 truncate max-w-xs" aria-current="page">${esc(c.nome)}</span>
@@ -402,7 +402,6 @@ function alterarStatus(id, status) {
 function renderAbaDados() {
   const c = atual();
   document.getElementById('acoes-aba').innerHTML = '';
-  const cert = c.certificado;
   const k = c.comercial;
   const canais = [k.turmaAberta ? 'Turma aberta' : null, k.inCompany ? 'In company' : null].filter(Boolean);
   const precoHora = k.precoReferencia != null && c.cargaHoraria ? k.precoReferencia / c.cargaHoraria : null;
@@ -424,23 +423,12 @@ function renderAbaDados() {
       </section>
 
       <section class="${CARTAO}">
-        ${cabecalhoSecao('Descrição', 'Textos usados no site, na proposta comercial e no certificado.', 'btn-editar-descricao')}
+        ${cabecalhoSecao('Descrição', 'Textos usados no site e na proposta comercial.', 'btn-editar-descricao')}
         <div class="p-4 space-y-4">
           ${campo('Resumo (uma linha)', valorOuVazio(c.resumo))}
           ${campo('Descrição / objetivo', `<p class="whitespace-pre-line">${valorOuVazio(c.descricao)}</p>`)}
           ${campo('Público-alvo', valorOuVazio(c.publicoAlvo))}
           ${campo('Pré-requisitos (texto livre)', valorOuVazio(c.preRequisitosTexto, '<span class="text-slate-500 dark:text-neutral-400">nenhum</span>'))}
-        </div>
-      </section>
-
-      <section class="${CARTAO}">
-        ${cabecalhoSecao('Certificado', 'Condições para o aluno receber o certificado de conclusão.', 'btn-editar-certificado')}
-        <div class="p-4 grid grid-cols-2 gap-4">
-          ${campo('Emite certificado', cert.emite ? 'Sim' : 'Não')}
-          ${campo('Frequência mínima', cert.emite ? `${cert.frequenciaMinima ?? 0}%` : '—')}
-          ${campo('Exige aprovação', cert.emite ? (cert.exigeAprovacao ? 'Sim' : 'Não — só frequência') : '—')}
-          ${campo('Nota mínima', cert.emite && cert.exigeAprovacao ? String(cert.notaMinima ?? '—').replace('.', ',') : '—')}
-          ${templateCertificadoTexto(cert, 'curso') !== null ? campo('Modelo de certificado', cert.emite ? templateCertificadoTexto(cert, 'curso') : '—', 'col-span-2') : ''}
         </div>
       </section>
 
@@ -457,7 +445,6 @@ function renderAbaDados() {
     </div>`;
   document.getElementById('btn-editar-dados').addEventListener('click', () => abrirModalCurso(c.id));
   document.getElementById('btn-editar-descricao').addEventListener('click', () => abrirModalDescricao());
-  document.getElementById('btn-editar-certificado').addEventListener('click', () => abrirModalCertificado());
   document.getElementById('btn-editar-comercial').addEventListener('click', () => abrirModalComercial());
 }
 
@@ -493,7 +480,7 @@ function renderAbaConteudo() {
   if (!c.modulos.length) {
     el.innerHTML = `
       <div class="${CARTAO} border-dashed p-10 text-center">
-        <p class="text-sm text-slate-500 dark:text-neutral-400">Sem conteúdo programático. Divida as ${fmtHoras(c.cargaHoraria)} em módulos com seus tópicos — é o que vai para o site, a proposta e o certificado.</p>
+        <p class="text-sm text-slate-500 dark:text-neutral-400">Sem conteúdo programático. Divida as ${fmtHoras(c.cargaHoraria)} em módulos com seus tópicos — é o que vai para o site e a proposta.</p>
         <button type="button" id="btn-novo-modulo-vazio" class="${BOTAO_PRI} mt-4">${ICONE.mais} Criar o primeiro módulo</button>
       </div>`;
     el.querySelector('#btn-novo-modulo-vazio').addEventListener('click', () => abrirModalModulo());
@@ -650,7 +637,7 @@ function renderAbaMaterial() {
 const SUB_REQUISITOS = [
   { id: 'pre', titulo: 'Pré-requisitos' },
   { id: 'instrutores', titulo: 'Instrutores' },
-  { id: 'infra', titulo: 'Infraestrutura e softwares' },
+  { id: 'infra', titulo: 'Softwares' }, // id antigo mantido: links ?sub=infra continuam abrindo aqui
 ];
 
 // Requisitos é dividido em partes (controle segmentado) para cada lista crescer sem empurrar as outras.
@@ -661,11 +648,10 @@ function renderAbaRequisitos() {
   const pre = c.preRequisitoCursoIds.map((id) => Cursos.porId(estado.lista, id)).filter(Boolean).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   const instrutores = c.instrutorIds.map(instrutorDe).filter(Boolean).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   const infra = c.infraestrutura;
-  const sala = SALAS.find((s) => s.id === infra.sala);
   const softwares = infra.softwares
     .map((item) => ({ item, cat: item.softwareId ? softwareDoCatalogo(item.softwareId) : null, chave: Cursos.chaveSoftware(item) }))
     .sort((a, b) => a.item.nome.localeCompare(b.item.nome, 'pt-BR'));
-  const sugestoes = Cursos.sugestoesRequisitos(c);
+  const sugestoes = sugestoesSoftware(c);
   const pendentes = sugestoes.filter((x) => x.status === 'pendente');
   const respondidas = sugestoes.filter((x) => x.status !== 'pendente');
   const contagem = { pre: pre.length, instrutores: instrutores.length, infra: softwares.length };
@@ -726,7 +712,7 @@ function renderAbaRequisitos() {
           <li class="flex items-start gap-3 px-4 py-3">
             <div class="min-w-0 flex-1">
               <p class="text-sm text-slate-800 dark:text-neutral-100">${esc(Cursos.textoSugestao(sg))}</p>
-              ${sg.tipo === 'maquina' ? `<p class="text-sm text-slate-700 dark:text-neutral-300 mt-0.5">"${esc(sg.texto)}"</p>` : sg.observacao ? `<p class="text-xs text-slate-700 dark:text-neutral-300 mt-0.5">${esc(sg.observacao)}</p>` : ''}
+              ${sg.observacao ? `<p class="text-xs text-slate-700 dark:text-neutral-300 mt-0.5">${esc(sg.observacao)}</p>` : ''}
               ${sg.site ? `<p class="text-xs mt-0.5"><a href="${esc(sg.site)}" target="_blank" rel="noopener" class="${BOTAO_LINK}">${esc(sg.site.replace(/^https?:\/\//, ''))}</a></p>` : ''}
               <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(sg.instrutorNome || 'Instrutor')}${sg.turmaCodigo ? ` · turma ${esc(sg.turmaCodigo)}` : ''} · ${esc(fmtDataHora(sg.em))}</p>
             </div>
@@ -744,15 +730,8 @@ function renderAbaRequisitos() {
           </ul>
         </details>` : ''}
       </section>` : ''}
-      <section class="${CARTAO} mb-4">
-        ${cabecalhoSecao('Sala e máquina', 'Onde as turmas deste curso acontecem e o mínimo que cada máquina precisa ter.', 'btn-editar-infra')}
-        <div class="p-4 grid grid-cols-2 gap-4">
-          ${campo('Sala', sala ? `${esc(sala.nome)} <span class="text-xs text-slate-500 dark:text-neutral-400">· ${esc(sala.descricao)}</span>` : valorOuVazio(null))}
-          ${campo('Máquina', valorOuVazio(infra.requisitosMaquina || null, '<span class="text-slate-500 dark:text-neutral-400">sem requisitos</span>'))}
-        </div>
-      </section>
       <section class="${CARTAO}">
-        ${cabecalhoSecao('Softwares', 'Precisam estar instalados nas máquinas para as aulas. O suporte usa esta lista no chamado de instalação da turma.')}
+        ${cabecalhoSecao('Softwares', 'O aluno vê esta lista para instalar os programas no computador antes das aulas.')}
         <ul class="${LISTA}">
           ${softwares.length ? softwares.map(({ item, cat, chave }) => `
           <li class="flex items-center gap-3 px-4 py-2">
@@ -765,7 +744,7 @@ function renderAbaRequisitos() {
             ${cat?.site || item.site ? `<a href="${esc(cat?.site || item.site)}" target="_blank" rel="noopener" class="${BOTAO_LINK}" title="${esc(cat?.site || item.site)}">Site</a>` : ''}
             <button type="button" data-obs-software="${esc(chave)}" title="Observação (versão, configuração, licença…)" class="${ICONE_BOTAO}">${ICONE.lapis}</button>
             <button type="button" data-remover-software="${esc(chave)}" title="Remover software" class="${ICONE_BOTAO_VERMELHO}">${ICONE.lixeira}</button>
-          </li>`).join('') : listaVazia(infra.sala === 'laboratorio' ? 'Nenhum software — o laboratório vai como está na imagem padrão.' : 'Nenhum software requerido.')}
+          </li>`).join('') : listaVazia('Nenhum software requerido.')}
         </ul>
       </section>`,
   };
@@ -776,7 +755,6 @@ function renderAbaRequisitos() {
   acoes.querySelector('#btn-add-instrutor')?.addEventListener('click', () => abrirSeletorInstrutores());
   acoes.querySelector('#btn-add-software')?.addEventListener('click', () => abrirSeletorSoftwares());
   acoes.querySelector('#btn-add-software-livre')?.addEventListener('click', () => abrirModalSoftwareLivre());
-  el.querySelector('#btn-editar-infra')?.addEventListener('click', () => abrirModalInfraestrutura());
   el.querySelectorAll('[data-aceitar-sug]').forEach((b) => b.addEventListener('click', () => {
     const sg = Cursos.sugestoesRequisitos(c).find((x) => x.id === b.dataset.aceitarSug);
     estado.lista = Cursos.aceitarSugestao(estado.lista, c.id, b.dataset.aceitarSug, AUTOR_SUGESTOES);
@@ -1019,7 +997,7 @@ function abrirModalDescricao() {
   modalFormulario({
     id: 'form-descricao',
     titulo: 'Descrição do curso',
-    subtitulo: `Em <strong>${esc(c.nome)}</strong> · textos do site, da proposta e do certificado.`,
+    subtitulo: `Em <strong>${esc(c.nome)}</strong> · textos do site e da proposta.`,
     rotulo: 'Salvar alterações',
     largura: 'xl',
     foco: '#f-resumo',
@@ -1032,89 +1010,6 @@ function abrirModalDescricao() {
       estado.lista = Cursos.atualizarDescricao(estado.lista, c.id, Object.fromEntries(fd));
       persistir(); renderCurso();
       toast('Descrição atualizada.');
-    },
-  });
-}
-
-// Template de certificado (js/templates-certificado-*): texto na aba Dados e combo no modal. Sem o motor carregado, some.
-function templateCertificadoTexto(cert, aplicaA) {
-  if (typeof TemplatesCertificado === 'undefined') return null;
-  const lista = TemplatesCertificado.lista();
-  const escolhido = cert.templateId ? TemplatesCertificado.porId(lista, cert.templateId) : null;
-  const efetivo = TemplatesCertificado.para(aplicaA, { certificado: cert }, lista);
-  const link = (t) => `<a href="template-certificado.html?id=${encodeURIComponent(t.id)}" class="text-petrol-800 dark:text-sky-300 hover:underline">${esc(t.nome)}</a>`;
-  if (!escolhido) return `${efetivo ? link(efetivo) : '—'} <span class="text-xs text-slate-500 dark:text-neutral-400">· padrão</span>`;
-  if (escolhido.status !== 'ativo' || escolhido.aplicaA !== aplicaA) return `${link(escolhido)} <span class="text-xs ${AVISO}">· ${escolhido.status !== 'ativo' ? TemplatesCertificado.statusDe(escolhido.status).nome.toLowerCase() : 'de outro tipo'} — emite com ${efetivo ? link(efetivo) : 'o padrão'}</span>`;
-  return link(escolhido);
-}
-function campoTemplateCertificado(cert, aplicaA) {
-  if (typeof TemplatesCertificado === 'undefined') return '';
-  const lista = TemplatesCertificado.lista();
-  const padrao = TemplatesCertificado.padraoPara(lista, aplicaA);
-  const opcoes = TemplatesCertificado.ativosPara(lista, aplicaA).map((t) => ({ id: t.id, nome: t.nome, descricao: t.padrao ? 'padrão do tipo' : (t.descricao || '') }));
-  const atualInativo = cert.templateId && !opcoes.some((o) => o.id === cert.templateId) ? TemplatesCertificado.porId(lista, cert.templateId) : null;
-  if (atualInativo) opcoes.push({ id: atualInativo.id, nome: atualInativo.nome, descricao: `${TemplatesCertificado.statusDe(atualInativo.status).nome.toLowerCase()} — não emite; vale o padrão` });
-  return `
-    <div>
-      <label class="rotulo" for="f-templateId">Modelo de certificado</label>
-      ${campoCombo('templateId', opcoes, cert.templateId ?? '', { vazio: padrao ? `Padrão (${padrao.nome})` : 'Padrão do sistema', opcional: true })}
-      <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">Frente e verso do documento. <a href="templates-certificado.html" class="text-petrol-800 dark:text-sky-300 hover:underline">Ver modelos</a>.</p>
-    </div>`;
-}
-
-function abrirModalCertificado() {
-  const c = atual();
-  const k = c.certificado;
-  const { form } = modalFormulario({
-    id: 'form-certificado',
-    titulo: 'Certificado',
-    subtitulo: `Em <strong>${esc(c.nome)}</strong> · condições de conclusão.`,
-    rotulo: 'Salvar alterações',
-    corpo: `
-      ${campoSwitch('emite', 'Emite certificado', 'Ao concluir, o aluno recebe o certificado de conclusão.', k.emite)}
-      <div id="cert-campos" class="space-y-5 ${k.emite ? '' : 'hidden'}">
-        ${campoTexto('frequenciaMinima', 'Frequência mínima', k.frequenciaMinima, { tipo: 'number', extra: 'min="0" max="100" step="5"', sufixo: '%' })}
-        ${campoSwitch('exigeAprovacao', 'Exige aprovação', 'Além da frequência, o aluno precisa atingir a nota mínima.', k.exigeAprovacao)}
-        <div id="cert-nota" class="${k.exigeAprovacao ? '' : 'hidden'}">
-          ${campoTexto('notaMinima', 'Nota mínima', k.notaMinima, { tipo: 'number', extra: 'min="0" max="10" step="0.5"', sufixo: 'de 10' })}
-        </div>
-        ${campoTemplateCertificado(k, 'curso')}
-      </div>`,
-    aoSalvar: (fd) => {
-      const dados = { emite: fd.has('emite'), frequenciaMinima: fd.get('frequenciaMinima'), exigeAprovacao: fd.has('exigeAprovacao'), notaMinima: fd.get('notaMinima'), templateId: fd.get('templateId') };
-      const erros = Cursos.validarCertificado(dados);
-      if (erros.length) return erros;
-      estado.lista = Cursos.atualizarCertificado(estado.lista, c.id, dados);
-      persistir(); renderCurso();
-      toast('Certificado atualizado.');
-    },
-  });
-  form.querySelector('[name="emite"]').addEventListener('change', (e) => form.querySelector('#cert-campos').classList.toggle('hidden', !e.target.checked));
-  form.querySelector('[name="exigeAprovacao"]').addEventListener('change', (e) => form.querySelector('#cert-nota').classList.toggle('hidden', !e.target.checked));
-}
-
-function abrirModalInfraestrutura() {
-  const c = atual();
-  const k = c.infraestrutura;
-  modalFormulario({
-    id: 'form-infra',
-    titulo: 'Infraestrutura',
-    subtitulo: `Em <strong>${esc(c.nome)}</strong> · o que a sala e a máquina precisam ter.`,
-    rotulo: 'Salvar alterações',
-    largura: 'xl',
-    corpo: `
-      <fieldset>
-        <legend class="rotulo">Tipo de sala</legend>
-        ${cartoesRadio('sala', SALAS, k.sala)}
-        ${ERRO('sala')}
-      </fieldset>
-      ${campoArea('requisitosMaquina', 'Requisitos de máquina', k.requisitosMaquina, { rows: 2, max: 300, opcional: true, placeholder: 'Ex.: 8 GB de RAM, Windows 10+' })}`,
-    aoSalvar: (fd) => {
-      const dados = Object.fromEntries(fd);
-      if (!dados.sala) return [{ campo: 'sala', mensagem: 'Escolha o tipo de sala.' }];
-      estado.lista = Cursos.atualizarInfraestrutura(estado.lista, c.id, dados);
-      persistir(); renderCurso();
-      toast('Infraestrutura atualizada.');
     },
   });
 }
@@ -1481,45 +1376,29 @@ function abrirModalObservacaoSoftware(chave) {
   if (!id || !Cursos.porId(estado.lista, id)) { location.replace('cursos.html?erro=nao-encontrado'); return; }
   estado.selecionado = id;
   estado.aba = abaValida;
-  // `?aba=requisitos&sub=infra` abre direto em Infraestrutura e softwares (link vindo da turma).
+  // `?aba=requisitos&sub=infra` abre direto em Softwares (link vindo da turma).
   const sub = parametroUrl('sub');
   if (SUB_REQUISITOS.some((x) => x.id === sub)) estado.subRequisitos = sub;
   renderCurso();
 })();
 
-// ---------- Cards de resumo da lista (catálogo, turmas e resultado por curso — motor Financeiro, opcional) ----------
+// ---------- Cards de resumo da lista (catálogo e turmas) ----------
 
 function cartoesResumoCursos() {
   const ativos = estado.lista.filter((c) => c.status === 'ativo').length;
   const turmas = Cursos.todasTurmas().filter((t) => t.status !== 'cancelada');
-  const hoje = typeof Turmas !== 'undefined' ? Turmas.hoje() : new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10); // data local do navegador
+  const hoje = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10); // data local do navegador
   const andamento = turmas.filter((t) => t.inicio <= hoje && t.fim >= hoje).length;
   const futuras = turmas.filter((t) => t.inicio > hoje).length;
-  // Número primeiro; o nome do curso vai na linha de apoio para não ser cortado no tamanho do indicador.
   const cartao = (rotulo, valor, sub) => `
     <div class="${CARTAO} p-4 min-w-0">
       <p class="text-xs font-medium text-slate-500 dark:text-neutral-400">${rotulo}</p>
       <p class="font-display text-2xl font-semibold tabular-nums leading-none mt-1 text-slate-800 dark:text-neutral-100">${valor}</p>
       <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1.5 truncate">${sub}</p>
     </div>`;
-  let fin = '';
-  if (typeof Financeiro !== 'undefined') {
-    const ctxF = Financeiro.contexto();
-    const linhas = Financeiro.linhasTurma(ctxF);
-    const t = Financeiro.totais(linhas);
-    const porCurso = Financeiro.agrupar(linhas, 'curso').filter((g) => g.receita > 0);
-    const maisVende = porCurso[0];
-    const maisRende = [...porCurso].sort((a, b) => (b.margem ?? -999) - (a.margem ?? -999))[0];
-    const nome = (g) => `<span title="${esc(g.nome)}">${esc(g.nome)}</span>`;
-    fin = `
-      ${cartao('Receita contratada', Financeiro.fmtCompacto(t.receita), `margem ${Financeiro.fmtPct(t.margem)} · <a href="faturamento.html?aba=cursos" class="text-petrol-800 dark:text-sky-300 hover:underline">faturamento por curso</a>`)}
-      ${cartao('Mais vende', maisVende ? Financeiro.fmtCompacto(maisVende.receita) : '—', maisVende ? `${nome(maisVende)} · ${plural(maisVende.n, 'turma')}` : 'nenhuma turma com receita')}
-      ${cartao('Melhor margem', maisRende ? Financeiro.fmtPct(maisRende.margem) : '—', maisRende ? `${nome(maisRende)} · ${Financeiro.fmtCompacto(maisRende.receita)}` : 'nenhuma turma com receita')}`;
-  }
   return `
     <div class="grid grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
       ${cartao('Cursos ativos', String(ativos), `${estado.lista.length} no catálogo`)}
       ${cartao('Turmas', String(turmas.length), `${andamento} em andamento · ${futuras} a começar`)}
-      ${fin}
     </div>`;
 }

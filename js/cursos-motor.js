@@ -170,7 +170,6 @@ const Cursos = (() => {
     if (!curso.instrutorIds.length) p.push('Instrutor habilitado');
     if (curso.comercial.precoReferencia == null) p.push('Preço de referência');
     if (!curso.comercial.turmaAberta && !curso.comercial.inCompany) p.push('Como é comercializado');
-    if (!curso.infraestrutura.sala) p.push('Tipo de sala');
     return p;
   }
 

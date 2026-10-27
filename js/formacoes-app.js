@@ -269,10 +269,9 @@ function renderLista() {
   el.innerHTML = `
     <div class="mb-4">
       <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100">Formações</h2>
-      <p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Conjuntos de cursos do catálogo, em sequência, que podem misturar eixos (Front-end, Back-end, IA, carreira…). A carga horária e os eixos vêm dos cursos; a área de negócio é da própria formação; a formação define ordem, obrigatoriedade, certificado e preço.</p>
+      <p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Conjuntos de cursos do catálogo, em sequência, que podem misturar eixos (Front-end, Back-end, IA, carreira…). A carga horária e os eixos vêm dos cursos; a área de negócio é da própria formação; a formação define ordem, obrigatoriedade e preço.</p>
     </div>
 
-    ${cartoesResumoFormacoes()}
     <div class="mb-4 flex flex-wrap items-center gap-2">
       ${busca('busca-formacao', f.busca, 'Buscar por código, nome ou resumo', 'w-64')}
       <div class="ml-auto flex flex-wrap items-center gap-2">
@@ -343,7 +342,7 @@ function renderFormacao() {
     : f.status === 'ativo' && !f.comercial.publicadoSite ? pilula(PILULA.neutra, 'Fora do site', 'Ativa, mas não publicada no site da ProWay') : '';
   // Uma ação à vista; o resto no "Mais", com o motivo de cada item travado.
   const itensMais = [
-    { nome: 'Duplicar', detalhe: 'Cópia em rascunho com os mesmos cursos, certificado e preço', acao: () => abrirModalDuplicar(f.id) },
+    { nome: 'Duplicar', detalhe: 'Cópia em rascunho com os mesmos cursos e preço', acao: () => abrirModalDuplicar(f.id) },
     f.status === 'ativo'
       ? { nome: 'Inativar', detalhe: 'Sai do catálogo e do site; turmas e alunos continuam', acao: () => alterarStatus(f.id, 'inativo') }
       : { nome: 'Ativar', detalhe: pend.length ? `Libera para o comercial mesmo com ${plural(pend.length, 'pendência')}` : 'Libera para o comercial', acao: () => alterarStatus(f.id, 'ativo') },
@@ -354,8 +353,6 @@ function renderFormacao() {
 
   el.innerHTML = `
     <nav aria-label="Breadcrumb" class="mb-3 flex items-center gap-1.5 text-sm text-slate-600 dark:text-neutral-400">
-      <a href="home.html" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Home</a>
-      <span>/</span>
       <a href="${PAGINA_LISTA}" class="hover:text-petrol-800 dark:hover:text-sky-300 transition">Formações</a>
       <span>/</span>
       <span class="font-medium text-slate-800 dark:text-neutral-100 truncate max-w-xs" aria-current="page">${esc(f.nome)}</span>
@@ -644,7 +641,7 @@ function renderAbaCursos() {
     </li>`;
   const resumo = `
     <section class="${CARTAO} mb-4">
-      ${cabecalhoSecao('Carga horária por eixo', `Vem dos cursos${ajustadas ? `; ${plural(ajustadas, 'curso ajustado', 'cursos ajustados')} só nesta formação` : ''}. Optativos não entram na obrigatoriedade do certificado.`)}
+      ${cabecalhoSecao('Carga horária por eixo', `Vem dos cursos${ajustadas ? `; ${plural(ajustadas, 'curso ajustado', 'cursos ajustados')} só nesta formação` : ''}.`)}
       <div class="p-4 pt-3 flex items-start gap-8">
         <div class="w-44 shrink-0">
           <p class="font-display text-2xl font-semibold tabular-nums leading-none text-slate-800 dark:text-neutral-100">${fmtHoras(t.horas)}</p>
@@ -687,7 +684,7 @@ function renderAbaCursos() {
           </div>
         </td>
         <td class="${TH}">
-          <p class="truncate"><span class="font-mono text-xs text-slate-500 dark:text-neutral-400 mr-1.5">${esc(c.codigo)}</span><a href="curso.html?id=${c.id}" title="${esc(c.nome)}" class="text-sm font-medium text-slate-800 dark:text-neutral-100 hover:underline underline-offset-2">${esc(c.nome)}</a>${c.status === 'ativo' ? '' : ` ${pilula(PILULA[c.status], sc.nome, `Curso ${sc.nome.toLowerCase()} — ${sc.descricao}`)}`}${!editavel && !i.obrigatorio ? ` ${pilula(PILULA.neutra, 'Optativo', 'Não entra na obrigatoriedade do certificado')}` : ''}</p>
+          <p class="truncate"><span class="font-mono text-xs text-slate-500 dark:text-neutral-400 mr-1.5">${esc(c.codigo)}</span><a href="curso.html?id=${c.id}" title="${esc(c.nome)}" class="text-sm font-medium text-slate-800 dark:text-neutral-100 hover:underline underline-offset-2">${esc(c.nome)}</a>${c.status === 'ativo' ? '' : ` ${pilula(PILULA[c.status], sc.nome, `Curso ${sc.nome.toLowerCase()} — ${sc.descricao}`)}`}${!editavel && !i.obrigatorio ? ` ${pilula(PILULA.neutra, 'Optativo', 'Não é obrigatório para concluir a formação')}` : ''}</p>
           ${aviso
             ? `<p class="text-xs ${AVISO} truncate" title="${esc(aviso.map((p) => p.nome).join(', '))}">Pré-requisito fora da sequência: ${esc(aviso.map((p) => p.codigo || p.nome).join(', '))}</p>`
             : `<p class="text-xs text-slate-500 dark:text-neutral-400 truncate" title="${esc(c.resumo)}">${esc(c.resumo)}</p>`}
@@ -874,7 +871,6 @@ function abrirModalCargaHoraria(cursoId) {
 
 function renderAbaDados() {
   const f = atual();
-  const k = f.certificado;
   const c = f.comercial;
   const t = Formacoes.totais(f, estado.cursos);
   const economia = c.precoReferencia != null && t.somaPrecos ? 1 - c.precoReferencia / t.somaPrecos : null;
@@ -904,16 +900,6 @@ function renderAbaDados() {
         </div>
       </section>
       <section class="${CARTAO}">
-        ${cabecalhoSecao('Certificado da formação', 'Além dos certificados de cada curso, o aluno recebe um da formação inteira.', 'btn-editar-certificado')}
-        <div class="p-4 grid grid-cols-2 gap-4">
-          ${campo('Emite certificado', k.emite ? 'Sim' : 'Não')}
-          ${campo('Condição', k.emite ? (k.exigeTodosObrigatorios ? `Concluir os ${t.obrigatorios} cursos obrigatórios` : 'Sem exigir todos os obrigatórios') : '—')}
-          ${campo('Optativos mínimos', k.emite ? (k.minimoOptativos ? `${k.minimoOptativos} de ${t.optativos}` : 'nenhum') : '—')}
-          ${campo('Carga horária no certificado', k.emite ? `<span class="tabular-nums">${fmtHoras(t.horasObrigatorias)}</span> <span class="text-xs text-slate-500 dark:text-neutral-400">+ optativos concluídos</span>` : '—')}
-          ${templateCertificadoTexto(k, 'formacao') !== null ? campo('Modelo de certificado', k.emite ? templateCertificadoTexto(k, 'formacao') : '—', 'col-span-2') : ''}
-        </div>
-      </section>
-      <section class="${CARTAO}">
         ${cabecalhoSecao('Comercial', 'Valor de referência da formação fechada; as condições reais ficam na proposta e na matrícula.', 'btn-editar-comercial')}
         <div class="p-4 grid grid-cols-2 gap-4">
           ${campo('Preço de referência', c.precoReferencia == null ? valorOuVazio(null) : `<span class="tabular-nums">${fmtMoeda(c.precoReferencia)}</span>${t.horas ? ` <span class="text-xs text-slate-500 dark:text-neutral-400 tabular-nums">· ${fmtMoeda(c.precoReferencia / t.horas)} por hora</span>` : ''}`)}
@@ -927,7 +913,6 @@ function renderAbaDados() {
       </section>
     </div>`;
   document.getElementById('btn-editar-dados').addEventListener('click', () => abrirModalFormacao(f.id));
-  document.getElementById('btn-editar-certificado').addEventListener('click', () => abrirModalCertificado());
   document.getElementById('btn-editar-agenda').addEventListener('click', () => abrirModalAgenda());
   document.getElementById('btn-editar-comercial').addEventListener('click', () => abrirModalComercial());
 }
@@ -996,7 +981,6 @@ function abrirModalFormacao(id = null) {
       ${campoTexto('resumo', 'Resumo (uma linha)', d.resumo, { max: 160, opcional: true, placeholder: 'Chamada curta para o catálogo' })}
       ${campoArea('descricao', 'Descrição', d.descricao, { rows: 5, max: 2000, opcional: true, placeholder: 'Para quem é, o que o aluno sai sabendo fazer' })}
       ${campoArea('publicoAlvo', 'Público-alvo', d.publicoAlvo, { rows: 2, max: 300, opcional: true })}
-      ${campoTemplateCertificado(f?.certificado ?? { templateId: null }, 'formacao')}
       ${f ? `
       <fieldset>
         <legend class="rotulo">Status</legend>
@@ -1004,7 +988,7 @@ function abrirModalFormacao(id = null) {
         ${ERRO('status')}
       </fieldset>` : ''}`,
     aoSalvar: (fd) => {
-      const novo = { codigo: fd.get('codigo') ?? '', nome: fd.get('nome') ?? '', areaId: fd.get('areaId') ?? '', resumo: fd.get('resumo') ?? '', descricao: fd.get('descricao') ?? '', publicoAlvo: fd.get('publicoAlvo') ?? '', status: f ? fd.get('status') : null, ...(fd.has('templateId') ? { templateId: fd.get('templateId') || null } : {}) };
+      const novo = { codigo: fd.get('codigo') ?? '', nome: fd.get('nome') ?? '', areaId: fd.get('areaId') ?? '', resumo: fd.get('resumo') ?? '', descricao: fd.get('descricao') ?? '', publicoAlvo: fd.get('publicoAlvo') ?? '', status: f ? fd.get('status') : null };
       const erros = Formacoes.validarDados(novo, estado.lista, id);
       if (erros.length) return erros;
       if (f) {
@@ -1027,7 +1011,7 @@ function abrirModalDuplicar(origemId) {
   const { form } = modalFormulario({
     id: 'form-duplicar',
     titulo: 'Duplicar formação',
-    subtitulo: `Cópia de <strong>${esc(origem.nome)}</strong> com os mesmos ${plural(origem.itens.length, 'curso')}, certificado e preço, em <strong>rascunho</strong> e fora do site.`,
+    subtitulo: `Cópia de <strong>${esc(origem.nome)}</strong> com os mesmos ${plural(origem.itens.length, 'curso')} e preço, em <strong>rascunho</strong> e fora do site.`,
     rotulo: 'Criar cópia',
     foco: '#f-nome',
     corpo: `
@@ -1045,60 +1029,6 @@ function abrirModalDuplicar(origemId) {
     },
   });
   form.querySelector('#f-nome').select();
-}
-
-// Template de certificado (js/templates-certificado-*): texto na aba Dados e combo no modal. Sem o motor carregado, some.
-function templateCertificadoTexto(cert, aplicaA) {
-  if (typeof TemplatesCertificado === 'undefined') return null;
-  const lista = TemplatesCertificado.lista();
-  const escolhido = cert.templateId ? TemplatesCertificado.porId(lista, cert.templateId) : null;
-  const efetivo = TemplatesCertificado.para(aplicaA, { certificado: cert }, lista);
-  const link = (t) => `<a href="template-certificado.html?id=${encodeURIComponent(t.id)}" class="text-petrol-800 dark:text-sky-300 hover:underline">${esc(t.nome)}</a>`;
-  if (!escolhido) return `${efetivo ? link(efetivo) : '—'} <span class="text-xs text-slate-500 dark:text-neutral-400">· padrão</span>`;
-  if (escolhido.status !== 'ativo' || escolhido.aplicaA !== aplicaA) return `${link(escolhido)} <span class="text-xs ${AVISO}">· ${escolhido.status !== 'ativo' ? TemplatesCertificado.statusDe(escolhido.status).nome.toLowerCase() : 'de outro tipo'} — emite com ${efetivo ? link(efetivo) : 'o padrão'}</span>`;
-  return link(escolhido);
-}
-function campoTemplateCertificado(cert, aplicaA) {
-  if (typeof TemplatesCertificado === 'undefined') return '';
-  const lista = TemplatesCertificado.lista();
-  const padrao = TemplatesCertificado.padraoPara(lista, aplicaA);
-  const opcoes = TemplatesCertificado.ativosPara(lista, aplicaA).map((t) => ({ id: t.id, nome: t.nome, descricao: t.padrao ? 'padrão do tipo' : (t.descricao || '') }));
-  const atualInativo = cert.templateId && !opcoes.some((o) => o.id === cert.templateId) ? TemplatesCertificado.porId(lista, cert.templateId) : null;
-  if (atualInativo) opcoes.push({ id: atualInativo.id, nome: atualInativo.nome, descricao: `${TemplatesCertificado.statusDe(atualInativo.status).nome.toLowerCase()} — não emite; vale o padrão` });
-  return `
-    <div>
-      <label class="rotulo" for="f-templateId">Modelo de certificado</label>
-      ${campoCombo('templateId', opcoes, cert.templateId ?? '', { vazio: padrao ? `Padrão (${padrao.nome})` : 'Padrão do sistema', opcional: true })}
-      <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">Frente e verso do documento. <a href="templates-certificado.html" class="text-petrol-800 dark:text-sky-300 hover:underline">Ver modelos</a>.</p>
-    </div>`;
-}
-
-function abrirModalCertificado() {
-  const f = atual();
-  const k = f.certificado;
-  const t = Formacoes.totais(f, estado.cursos);
-  const { form } = modalFormulario({
-    id: 'form-certificado',
-    titulo: 'Certificado da formação',
-    subtitulo: `Em <strong>${esc(f.nome)}</strong> · ${t.obrigatorios} obrigatórios e ${t.optativos} optativos hoje.`,
-    rotulo: 'Salvar alterações',
-    corpo: `
-      ${campoSwitch('emite', 'Emite certificado da formação', 'Documento único com a carga horária total, além dos certificados de cada curso.', k.emite)}
-      <div id="cert-campos" class="space-y-5 ${k.emite ? '' : 'hidden'}">
-        ${campoSwitch('exigeTodosObrigatorios', 'Exige todos os obrigatórios', 'O aluno precisa concluir (com certificado) cada curso obrigatório.', k.exigeTodosObrigatorios)}
-        ${campoTexto('minimoOptativos', 'Optativos mínimos', k.minimoOptativos, { tipo: 'number', extra: `min="0" max="${t.optativos}" step="1"`, sufixo: `de ${t.optativos}` })}
-        ${campoTemplateCertificado(k, 'formacao')}
-      </div>`,
-    aoSalvar: (fd) => {
-      const dados = { emite: fd.has('emite'), exigeTodosObrigatorios: fd.has('exigeTodosObrigatorios'), minimoOptativos: fd.get('minimoOptativos'), templateId: fd.get('templateId') };
-      const erros = Formacoes.validarCertificado(dados, f);
-      if (erros.length) return erros;
-      estado.lista = Formacoes.atualizarCertificado(estado.lista, f.id, dados);
-      persistir(); renderFormacao();
-      toast('Certificado atualizado.');
-    },
-  });
-  form.querySelector('[name="emite"]').addEventListener('change', (e) => form.querySelector('#cert-campos').classList.toggle('hidden', !e.target.checked));
 }
 
 function abrirModalAgenda() {
@@ -1239,7 +1169,6 @@ function abrirModalVerTurma(turmaId) {
           </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          <a href="agendamento.html?turma=${t.id}" target="_blank" class="${BOTAO_SEC}">${Turmas.temAgendamento(t) ? 'Agendamento' : 'Agendar aulas'} ${ICONE.externo}</a>
           <a href="turma.html?id=${t.id}&aba=requisitos" target="_blank" class="${BOTAO_SEC}" title="Softwares e requisitos de máquina desta turma">Requisitos${Turmas.requisitos(t, curso).softwares.length ? ` · ${Turmas.requisitos(t, curso).softwares.length}` : ''} ${ICONE.externo}</a>
           <a href="turma.html?id=${t.id}" target="_blank" class="${BOTAO_SEC}">Abrir turma ${ICONE.externo}</a>
           <button type="button" data-fechar-modal class="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-neutral-200" aria-label="Fechar">${ICONE.fechar}</button>
@@ -1501,36 +1430,3 @@ function abrirSeletorCursos() {
   if (aba && aba !== estado.aba) atualizarUrl();
   renderFormacao();
 })();
-
-// ---------- Cards de resumo da lista (alunos, receita e resultado das formações — motor Financeiro, opcional) ----------
-
-function cartoesResumoFormacoes() {
-  const ativas = estado.lista.filter((f) => f.status === 'ativo');
-  const alunos = ativas.reduce((s, f) => s + Formacoes.alunosDaFormacao(f.id, estado.cursos).length, 0);
-  // Número primeiro; o nome da formação vai na linha de apoio para não ser cortado no tamanho do indicador.
-  const cartao = (rotulo, valor, sub) => `
-    <div class="${CARTAO} p-4 min-w-0">
-      <p class="text-xs font-medium text-slate-500 dark:text-neutral-400">${rotulo}</p>
-      <p class="font-display text-2xl font-semibold tabular-nums leading-none mt-1 text-slate-800 dark:text-neutral-100">${valor}</p>
-      <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1.5 truncate">${sub}</p>
-    </div>`;
-  let fin = '';
-  if (typeof Financeiro !== 'undefined') {
-    const ctxF = Financeiro.contexto();
-    const linhas = Financeiro.linhasTurma(ctxF).filter((l) => l.turma.formacaoId);
-    const t = Financeiro.totais(linhas);
-    const melhor = Financeiro.agrupar(linhas, 'formacao').filter((g) => g.receita > 0).sort((a, b) => (b.margem ?? -999) - (a.margem ?? -999))[0];
-    // Regra do Azul e do Vermelho: só o resultado negativo ganha cor, sempre com o sinal.
-    const resultado = t.resultado < 0 ? `<span class="text-red-700 dark:text-red-400">−${Financeiro.fmtCompacto(-t.resultado)}</span>` : Financeiro.fmtCompacto(t.resultado);
-    fin = `
-      ${cartao('Receita contratada', Financeiro.fmtCompacto(t.receita), `${t.n} turmas de formação · <a href="faturamento.html?aba=formacoes" class="text-petrol-800 dark:text-sky-300 hover:underline">detalhar</a>`)}
-      ${cartao('Resultado', resultado, `margem ${Financeiro.fmtPct(t.margem)} após instrutor, custos e impostos`)}
-      ${cartao('Melhor margem', melhor ? Financeiro.fmtPct(melhor.margem) : '—', melhor ? `<span title="${esc(melhor.nome)}">${esc(melhor.codigo || melhor.nome)}</span> · ${Financeiro.fmtCompacto(melhor.receita)}` : 'nenhuma turma com receita')}`;
-  }
-  return `
-    <div class="grid grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
-      ${cartao('Formações ativas', String(ativas.length), `${estado.lista.length} no catálogo`)}
-      ${cartao('Alunos nas formações ativas', String(alunos), 'matriculados via venda')}
-      ${fin}
-    </div>`;
-}

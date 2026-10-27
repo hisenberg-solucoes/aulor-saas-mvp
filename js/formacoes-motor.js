@@ -319,7 +319,7 @@ const Formacoes = (() => {
 
   // ---------- Alunos da formação (via contratos) ----------
 
-  // Só funciona quando a página carregou Clientes/Contratos (formacoes.html carrega).
+  // Só funciona quando a página carregou Clientes/Contratos (formacao.html carrega).
   // Uma linha por aluno × contrato de venda desta formação, com a edição (turmas dos itens),
   // o responsável financeiro, a situação de cobrança e o progresso nas matrículas.
   function alunosDaFormacao(formacaoId, cursos) {
