@@ -124,14 +124,11 @@ const MENU_GRUPOS = [
 ];
 
 
-// Página de detalhe/apoio → item de menu que ela representa.
-const MENU_ALIAS = {
-  'turma.html': 'turmas.html', 'curso.html': 'cursos.html', 'formacao.html': 'formacoes.html',
-  'contrato.html': 'contratos.html', 'conta-bancaria.html': 'contas-bancarias.html',
-  'empresa.html': 'empresas.html', 'aluno.html': 'alunos.html', 'responsavel.html': 'responsaveis.html',
-  'instrutor.html': 'instrutores.html', 'colaborador.html': 'colaboradores.html',
-  'perfil.html': 'perfis.html', 'permissoes.html': 'perfis.html', 'modelo-contrato.html': 'modelos-contrato.html',
-};
+// Os grupos só com os itens que a pessoa pode ver (js/acesso.js); o Início fica sempre.
+function menuVisivel() {
+  if (typeof Acesso === 'undefined') return MENU_GRUPOS;
+  return MENU_GRUPOS.map((g) => ({ ...g, itens: g.itens.filter((i) => Acesso.pode(Acesso.tela(i.href))) })).filter((g) => g.itens.length);
+}
 
 const MENU_FIXOS = [
   {
@@ -231,9 +228,11 @@ const UNIDADE = 'ProWay';
     const nav = document.querySelector('aside[data-sidebar] nav');
     if (!nav) return;
     const sessao = Sessao.atual() ?? { nome: 'Ana Souza', email: 'ana.souza@proway.com.br', perfil: 'administrador', perfilNome: 'Administrador' };
+    // Detalhe herda o item da lista (turma.html → Turmas): os dois são a mesma tela do catálogo.
     const p = pagina();
-    const atual = MENU_ALIAS[p] ?? p;
-    render(nav, atual, MENU_GRUPOS);
+    const tela = typeof Acesso !== 'undefined' ? Acesso.tela(p) : p.replace(/\.html$/, '');
+    const atual = MENU_GRUPOS.flatMap((g) => g.itens).find((i) => i.href === `${tela}.html`)?.href ?? p;
+    render(nav, atual, menuVisivel());
     // Barra de contexto: diz onde você está (o módulo), não o que a tela é.
     const grupo = MENU_GRUPOS.find((g) => g.itens.some((i) => i.href === atual));
     const h1 = document.querySelector('.shell-titulo');

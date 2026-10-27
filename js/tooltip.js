@@ -6,8 +6,8 @@
 // innerHTML — sem alterar as telas: o title vira `data-tip` no primeiro hover
 // (assim o balão nativo não aparece por cima).
 // `data-tip-html` (03/09/2026): balão rico, com HTML já montado pela tela
-// (título, linhas com amostra de cor, rodapé) — usado pelos gráficos de
-// resultados.html. Quem monta o HTML é responsável por escapar os textos.
+// (título, linhas com amostra de cor, rodapé) — usado pelos gráficos dos
+// painéis. Quem monta o HTML é responsável por escapar os textos.
 // Carregar em todas as páginas depois de tema.js.
 // ============================================================
 

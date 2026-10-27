@@ -370,7 +370,7 @@ function listaComentarios(comentarios, avaliacoesPorId, filtroTom, mostrarTurma 
           <div class="flex items-center justify-between gap-2 mb-1.5">
             <div class="min-w-0">
               <p class="text-sm font-medium text-slate-800 dark:text-neutral-100 truncate">${esc(c.aluno.nome)}</p>
-              <p class="text-xs text-slate-500 dark:text-neutral-400">${mostrarTurma ? `${esc(turma.codigo)} · ` : ''}<a class="hover:underline underline-offset-2" href="avaliacao-turma.html?turma=${turma.id}&data=${av.data}">${dataCurta(av.data)}</a></p>
+              <p class="text-xs text-slate-500 dark:text-neutral-400">${mostrarTurma ? `${esc(turma.codigo)} · ` : ''}<span>${dataCurta(av.data)}</span></p>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               ${pilulaTom(c.tom)}

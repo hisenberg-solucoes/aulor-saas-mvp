@@ -8,12 +8,16 @@ const escH = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', 
 
 function renderInicio() {
   const nome = (Sessao.atual()?.nome ?? 'Ana Souza').split(' ')[0];
+  // Volta de uma tela fora das permissões (js/acesso.js): diz qual, na faixa neutra.
+  const semAcesso = new URLSearchParams(location.search).get('sem-acesso');
+  const telaNegada = semAcesso && MENU_GRUPOS.flatMap((g) => g.itens).find((i) => i.href === `${semAcesso}.html`)?.nome;
   document.getElementById('home-tela').innerHTML = `
+    ${semAcesso ? `<p role="status" class="mb-4 rounded-lg bg-slate-200/70 dark:bg-neutral-900 px-3 py-2 text-sm text-slate-700 dark:text-neutral-300">O seu perfil não dá acesso a ${escH(telaNegada ?? 'essa tela')}. Fale com quem administra os perfis de acesso.</p>` : ''}
     <div class="mb-6">
       <h2 class="text-xl font-semibold tracking-tight text-slate-900 dark:text-neutral-100">Olá, ${escH(nome)}</h2>
       <p class="mt-0.5 text-sm text-slate-500 dark:text-neutral-400">Escolha por onde começar.</p>
     </div>
-    <div class="grid grid-cols-2 xl:grid-cols-3 gap-4">${MENU_GRUPOS.map((g) => `
+    <div class="grid grid-cols-2 xl:grid-cols-3 gap-4">${menuVisivel().map((g) => `
       <section class="${CARTAO} p-4" aria-labelledby="inicio-${g.id}">
         <h3 id="inicio-${g.id}" class="text-[15px] leading-[22px] font-semibold text-slate-900 dark:text-neutral-100">${escH(g.nome)}</h3>
         <ul class="mt-2 -mx-2">${g.itens.map((i) => `

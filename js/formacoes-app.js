@@ -516,22 +516,6 @@ function renderAbaAlunos() {
       <div class="relative h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 mt-1.5"><span class="absolute inset-y-0 left-0 rounded-full ${saiu ? 'bg-slate-400 dark:bg-neutral-600' : 'bg-slate-700 dark:bg-neutral-300'}" style="width:${pct}%"></span></div>
       ${p.desistiu ? `<p class="text-xs ${AVISO} mt-1">${plural(p.desistiu, 'curso')} não cursado${p.desistiu === 1 ? '' : 's'}</p>` : ''}`;
   };
-  // Frequência consolidada do aluno nas turmas desta formação (chamada do professor no Portal do Professor).
-  const frequenciaHtml = (l) => {
-    if (typeof Presencas === 'undefined') return '<span class="text-slate-500 dark:text-neutral-400">—</span>';
-    const ref = Turmas.hoje();
-    const fs = Contratos.itensMatriculados(l.contrato)
-      .filter((it) => it.alunoId === l.alunoId && it.formacaoId === f.id && ['matriculado', 'concluido', 'desistiu'].includes(it.status))
-      .map((it) => {
-        const t = Contratos.turmaDe(it.turmaId);
-        if (!t || t.status === 'cancelada') return null;
-        const concluido = Turmas.situacao(t) === 'concluida' || it.status !== 'matriculado';
-        const minimo = PresencasUi.minimoDe(Cursos.porId(estado.cursos, it.cursoId));
-        return Presencas.frequencia(t.id, l.alunoId, Turmas.aulas(t), ref, { concluido, minimo });
-      })
-      .filter(Boolean);
-    return PresencasUi.situacaoHtml(Presencas.consolidar(fs));
-  };
   const cursoAtualHtml = (l) => {
     if (!l.cursoAtual) return `<span class="text-sm text-slate-500 dark:text-neutral-400">${l.situacaoAluno === 'concluido' ? 'Formação concluída' : '—'}</span>`;
     const { curso, turma, futuro } = l.cursoAtual;
@@ -548,7 +532,6 @@ function renderAbaAlunos() {
         </td>
         <td class="${TH}">${situacaoHtml(l)}</td>
         <td class="${TH}">${cursoAtualHtml(l)}</td>
-        <td class="${TH}">${frequenciaHtml(l)}</td>
         <td class="${TH}">${quemPagaHtml(l)}</td>
         <td class="${TD} tabular-nums whitespace-nowrap text-right font-medium text-slate-800 dark:text-neutral-100">${moeda(l.valor)}</td>
       </tr>`;
@@ -560,7 +543,6 @@ function renderAbaAlunos() {
         <th class="${TH}">Aluno</th>
         <th class="${TH} w-[150px]">Situação e cursos</th>
         <th class="${TH} w-[176px]">Curso atual</th>
-        <th class="${TH} w-[108px]">Frequência</th>
         <th class="${TH} w-[184px]">Quem paga e venda</th>
         <th class="${TH} w-[124px] text-right">Valor</th>
       </tr>
