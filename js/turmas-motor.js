@@ -86,7 +86,7 @@ const Turmas = (() => {
     return t.formacaoId ? (formacaoDe(t.formacaoId)?.agenda ?? null) : (t.agenda ?? null);
   }
 
-  // Aulas da turma: as AGENDADAS (gravadas em `t.aulas`, tela aulas.html) quando existem;
+  // Aulas da turma: as AGENDADAS (gravadas em `t.aulas` pelo Gerar aulas da turma) quando existem;
   // senão a PRÉVIA calculada pela agenda em vigor entre início e fim. Só as não canceladas.
   const temAgendamento = (t) => Array.isArray(t.aulas);
   function aulas(t) {
@@ -540,6 +540,8 @@ const Turmas = (() => {
       vagas: numero(dados.vagas),
       observacoes: String(dados.observacoes ?? '').trim(),
       meetLink: String(dados.meetLink ?? '').trim() || null,
+      // Centro de receita padrão (js/centros-receita.js), herdado pela venda da turma. Ausente = não mexe.
+      ...(dados.centroReceitaId !== undefined ? { centroReceitaId: dados.centroReceitaId || null } : {}),
       // Requisitos não passam pelo formulário da turma: só entram quando quem chama manda (criação).
       ...(dados.requisitos !== undefined ? { requisitos: dados.requisitos } : {}),
       // Template de certificado só para turma avulsa (formação usa o da formação). Ausente = herda do curso.

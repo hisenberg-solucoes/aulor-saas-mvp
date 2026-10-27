@@ -57,15 +57,6 @@
     .rotulo {
       @apply block text-xs font-medium text-slate-500 dark:text-neutral-400 mb-1;
     }
-
-    /* Grade de presenças (aba Presenças): cabeçalho e coluna do aluno congelados no scroll do contêiner. */
-    .tab-freq th { @apply sticky top-0 z-20 bg-slate-50 dark:bg-neutral-900; }
-    .tab-freq .col-fixa { @apply sticky left-0 z-10; }
-    .tab-freq th.col-fixa { @apply z-30; }
-    .tab-freq tr:nth-child(even) > td { @apply bg-slate-50/70 dark:bg-neutral-900/50; }
-    .tab-freq tr:nth-child(odd) > td { @apply bg-white dark:bg-neutral-950; }
-    .tab-freq tr:nth-child(even) > td.col-fixa { @apply bg-slate-50 dark:bg-neutral-900; }
-    .tab-freq tr:hover > td { @apply bg-slate-100 dark:bg-neutral-900; }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -129,6 +120,7 @@
   <script src="js/documento.js"></script>
   <script src="js/formacoes-data.js"></script>
   <script src="js/formacoes-motor.js"></script>
+  <script src="js/centros-receita.js"></script>
   <script src="js/clientes-data.js"></script>
   <script src="js/clientes-motor.js"></script>
   <script src="js/contratos-data.js"></script>
@@ -139,18 +131,6 @@
   <script src="js/turmas-motor.js"></script>
   <script src="js/instrutores-data.js"></script>
   <script src="js/instrutores-motor.js"></script>
-  <script src="js/financeiro-data.js"></script>
-  <script src="js/financeiro-motor.js"></script>
-  <script src="js/avaliacoes-data.js"></script>
-  <script src="js/avaliacoes-motor.js"></script>
-  <script src="js/presencas-data.js"></script>
-  <script src="js/presencas-motor.js"></script>
-  <script src="js/presencas-ui.js"></script>
-  <script src="js/templates-certificado-data.js"></script>
-  <script src="js/templates-certificado-motor.js"></script>
-  <script src="js/dossies-data.js"></script>
-  <script src="js/dossies-motor.js"></script>
-  <script src="js/dossies-ui.js"></script>
   <script src="js/turmas-drawer.js"></script>
   <script src="js/menu-mais.js"></script>
   <script src="js/turmas-app.js"></script>

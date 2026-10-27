@@ -149,7 +149,7 @@ function renderTopo(doAno) {
   return `
     <div class="mb-4">
       <h2 class="font-display text-xl font-semibold ${TINTA}">Feriados</h2>
-      <p class="max-w-3xl text-sm ${APOIO_FUNDO} mt-0.5">Os dias sem aula da escola: feriados, pontos facultativos e recessos. O <a href="aulas.html" class="${LINK}">agendamento das aulas</a> avisa quando uma aula cai num deles e pula o dia ao repor ou remarcar.</p>
+      <p class="max-w-3xl text-sm ${APOIO_FUNDO} mt-0.5">Os dias sem aula da escola: feriados, pontos facultativos e recessos. Ao gerar as aulas de uma turma, esses dias ficam de fora.</p>
     </div>
     ${imp.aulas ? faixa('aviso', `<span class="font-medium">${textoImpacto(imp)} ainda ${imp.aulas === 1 ? 'cai' : 'caem'} em feriados de ${estado.ano}.</span> Remarque ou cancele na aba Aulas de cada turma: ${turmasAfetadas(imp)}.`) : ''}
     ${faltam.length ? faixa('passo', `<span class="font-medium">${estado.ano} ainda não tem ${faltam.length === 1 ? 'um feriado' : `${faltam.length} feriados`} que ${estado.ano - 1} teve:</span> ${esc(juntar(faltam.map((f) => f.nome)))}. Os que dependem da Páscoa ganham as datas de ${estado.ano}; os outros vão para o mesmo dia.`,
@@ -368,7 +368,7 @@ function abrirModalFeriado(id = null, dataInicial = null) {
       <div class="px-5 pt-4 pb-3 flex items-start justify-between gap-3">
         <div class="min-w-0">
           <h3 id="titulo-feriado" class="font-display text-[15px] font-semibold ${TINTA}">${f ? esc(f.nome) : 'Novo feriado'}</h3>
-          <p class="text-xs mt-0.5 ${APOIO}">${f ? `${tipoNome(f.tipo)} · ${quando(f)}` : 'O agendamento das aulas passa a avisar e a pular esse dia.'}</p>
+          <p class="text-xs mt-0.5 ${APOIO}">${f ? `${tipoNome(f.tipo)} · ${quando(f)}` : 'A geração das aulas passa a pular esse dia.'}</p>
         </div>
         <button type="button" data-fechar-modal class="${BOTAO_FECHAR} -mr-1.5 -mt-1" aria-label="Fechar">${ICONE.fechar}</button>
       </div>
@@ -461,7 +461,7 @@ function confirmarExclusao(id) {
     </div>
     <div class="px-5 pb-5 space-y-2 text-sm text-slate-700 dark:text-neutral-200">
       ${f.recorrente ? '<p>Ele se repete todo ano: sai do calendário de todos os anos, não só deste.</p>' : ''}
-      <p>O agendamento volta a contar ${varios ? 'esses dias' : 'esse dia'} como dia de aula.${imp.aulas ? ` As ${textoImpacto(imp)} já marcadas ${varios ? 'neles' : 'nele'} ficam como estão e deixam de ser avisadas.` : ''}</p>
+      <p>A geração das aulas volta a contar ${varios ? 'esses dias' : 'esse dia'} como dia de aula.${imp.aulas ? ` As ${textoImpacto(imp)} já marcadas ${varios ? 'neles' : 'nele'} ficam como estão e deixam de ser avisadas.` : ''}</p>
     </div>
     <div class="px-5 py-3 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-end gap-2">
       <button type="button" data-fechar-modal class="${BOTAO_CANCELAR}">Cancelar</button>

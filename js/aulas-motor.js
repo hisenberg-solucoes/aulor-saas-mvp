@@ -94,6 +94,16 @@ const Aulas = (() => {
     return lista;
   }
 
+  // Link do Google Meet da aula (V1, simulado): abc-defg-hij determinístico por turma + aula,
+  // para a mesma aula ganhar sempre o mesmo link. shortcut: não cria a reunião de verdade; trocar pela API do Google Calendar.
+  function meetUrl(turmaId, aula) {
+    let h = 2166136261;
+    for (const c of `${turmaId}:${aula.id}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0;
+    let letras = '';
+    for (let i = 0; i < 10; i += 1) { h = (Math.imul(h, 1664525) + 1013904223) >>> 0; letras += String.fromCharCode(97 + ((h >>> 16) % 26)); }
+    return `https://meet.google.com/${letras.slice(0, 3)}-${letras.slice(3, 7)}-${letras.slice(7)}`;
+  }
+
   function nova({ data, inicio, fim, origem = 'extra', salaId = null, instrutorId = null, moduloIds = [], conteudo = '', observacoes = '' }) {
     return { data, inicio, fim, origem, status: 'prevista', motivo: null, salaId, instrutorId, moduloIds, conteudo, observacoes };
   }
@@ -300,7 +310,7 @@ const Aulas = (() => {
   return {
     STATUS, ORIGENS, MOTIVOS,
     feriado, horas, somaHoras, diaDe, mesDe, ordenar, ativas, numerar,
-    gerar, nova, proximoEncaixe, planoEmpurrar, empurrar, periodoDe, distribuirConteudo, validar, conflitos, resumo, pendencias,
+    gerar, meetUrl, nova, proximoEncaixe, planoEmpurrar, empurrar, periodoDe, distribuirConteudo, validar, conflitos, resumo, pendencias,
     incluir, atualizar, cancelar, restaurar, remover, motivoDe,
   };
 })();
