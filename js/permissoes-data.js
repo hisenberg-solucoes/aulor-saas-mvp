@@ -152,6 +152,9 @@ const USUARIOS = [
   // Otávio dá aulas e também coordena: dois perfis, dois portais.
   { id: 'otavio', nome: 'Otávio Rangel Delgado', perfis: ['professor', 'coordenador'], extras: {} },
   { id: 'adriana', nome: 'Adriana Vilela Moraes', perfis: [], extras: {} },
+  // Contas que nasceram no aceite de um convite de cadastro (js/convites-cadastro.js) e entram pelo e-mail do convite.
+  { id: 'leticia', nome: 'Letícia Ramos Prates', email: 'leticia.prates@gmail.com', perfis: ['professor'], extras: {} },
+  { id: 'rogerio', nome: 'Rogério Vidal Trindade', email: 'rogerio.vidal@gmail.com', perfis: ['professor'], extras: {} },
   // Alunos (js/clientes-data.js)
   { id: 'gustavo-queiroz', nome: 'Gustavo Fellipe Queiroz', perfis: ['aluno'], extras: {} },
   { id: 'angeli', nome: 'Angeli Yasmim Teixeira', perfis: ['aluno'], extras: {} },

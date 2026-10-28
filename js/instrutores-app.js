@@ -5,7 +5,8 @@
 // (instrutor.html?id=), só com os dados do cadastro: na V1 não há abas (calendário,
 // empresa e valor hora, contratos, pagamentos e documentos saíram; o pagamento do
 // instrutor fica como conta a pagar no Financeiro). O mesmo arquivo atende as duas
-// páginas; o modo vem de <body data-modo>.
+// páginas; o modo vem de <body data-modo>. O convite de cadastro (AULOR-007) é de
+// js/convites-ui.js: o filtro "Convidados" da lista e o convite pela ficha.
 // ============================================================
 
 const MODO = document.body.dataset.modo === 'detalhe' ? 'detalhe' : 'lista';
@@ -13,7 +14,7 @@ const MODO = document.body.dataset.modo === 'detalhe' ? 'detalhe' : 'lista';
 const estado = {
   lista: Instrutores.carregar(),
   selecionado: null,
-  filtros: { busca: '', situacao: '', remuneracao: '', visao: '' }, // visao: '' | pendente | inativo (filtro rápido)
+  filtros: { busca: '', situacao: '', remuneracao: '', visao: '' }, // visao: '' | pendente | inativo | convidados (filtro rápido)
 };
 
 const ICONE = {
@@ -29,7 +30,6 @@ const ICONE = {
   telefone: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>',
   predio: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" /></svg>',
   camera: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" /></svg>',
-  copiar: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75"/></svg>',
   externo: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>',
   convite: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>',
   baixo: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>',
@@ -140,8 +140,9 @@ const turmaLink = (t) => (t ? `<a href="turma.html?id=${encodeURIComponent(t.id)
 
 // ---------- Lista ----------
 
-// Filtro rápido sobre a busca e a situação: as exceções que a coordenação procura.
-const VISOES = [{ id: '', nome: 'Todos' }, { id: 'pendente', nome: 'Com pendência' }, { id: 'inativo', nome: 'Inativos' }];
+// Filtro rápido sobre a busca e a situação: as exceções que a coordenação procura. Os convidados
+// ainda não são instrutores: só aparecem no próprio filtro e não contam nos outros (GAC-3 de AULOR-007).
+const VISOES = [{ id: '', nome: 'Todos' }, { id: 'pendente', nome: 'Com pendência' }, { id: 'inativo', nome: 'Inativos' }, { id: 'convidados', nome: 'Convidados' }];
 // Pendência de inativo não conta: ninguém vai agir sobre ele.
 const pendenciasDe = (i) => (i.status === 'inativo' ? [] : Instrutores.pendencias(i));
 const urlDetalhe = (id) => `instrutor.html?id=${encodeURIComponent(id)}`;
@@ -150,13 +151,14 @@ function renderLista() {
   const el = document.getElementById('tela');
   const f = estado.filtros;
   const base = Instrutores.filtrar(estado.lista, { busca: f.busca, situacao: f.situacao, remuneracao: f.remuneracao });
-  const porVisao = { '': base, pendente: base.filter((i) => pendenciasDe(i).length), inativo: base.filter((i) => i.status === 'inativo') };
+  const convites = Convites.daLista('instrutor', f.busca);
+  const porVisao = { '': base, pendente: base.filter((i) => pendenciasDe(i).length), inativo: base.filter((i) => i.status === 'inativo'), convidados: convites };
   const visiveis = porVisao[f.visao];
+  const deConvidados = f.visao === 'convidados';
   const filtrando = f.busca || f.situacao || f.remuneracao;
   const SITUACOES = [
     { id: 'sem-empresa', nome: 'Sem empresa para pagamento' },
     { id: 'antecedentes', nome: `Antecedentes ${Instrutores.anoAtual()} pendente` },
-    { id: 'aguardando', nome: 'Aguardando o instrutor preencher' },
   ];
   const corSelect = (ativo) => (ativo ? 'border-[color:var(--f-foco)] text-slate-900 dark:text-neutral-100' : 'border-slate-300 dark:border-neutral-700 text-slate-700 dark:text-neutral-200');
   // PJ é o comum e mostra só a empresa; RPA e folha dizem o que são (Regra da Pílula de Exceção).
@@ -181,7 +183,6 @@ function renderLista() {
     const marcas = [
       i.status === 'inativo' ? pilula(PILULA.neutra, 'Inativo') : '',
       i.colaboradorId ? `<a href="${urlColaborador(i.colaboradorId)}" title="${esc(colab ? `Também é colaborador: ${colab.cargo}` : 'Também é colaborador')}" class="inline-flex items-center whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs font-medium ${PILULA.extra} hover:underline underline-offset-2">Na equipe</a>` : '',
-      Instrutores.aguardandoCadastro(i) ? pilula(PILULA.falta, 'Aguardando instrutor', `Link de cadastro gerado em ${fmtData(i.cadastro.criadoEm)}; o instrutor ainda não preencheu`) : '',
     ].join('');
     return `
       <tr data-abrir="${i.id}" class="cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-900 transition ${FOCO_LINHA} ${i.status === 'inativo' ? 'opacity-60' : ''}">
@@ -210,7 +211,7 @@ function renderLista() {
         <p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Quem dá aula, de fora ou da equipe: dados pessoais, contato, endereço e remuneração (PJ, RPA ou folha). O pagamento do instrutor é uma conta a pagar no Financeiro.</p>
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <button type="button" id="btn-convidar" class="${BOTAO_SEC}" title="Manda um link para o próprio instrutor preencher o cadastro">${ICONE.convite} Convidar instrutor</button>
+        ${ConvitesUI.pode('instrutor', 'criar') ? `<button type="button" id="btn-convidar" class="${BOTAO_SEC}" title="O instrutor recebe o convite por e-mail, entra com ele e completa o próprio cadastro">${ICONE.convite} Convidar instrutor</button>` : ''}
         <button type="button" id="btn-novo" class="${BOTAO_PRI}">${ICONE.mais} Novo instrutor</button>
       </div>
     </div>
@@ -224,8 +225,8 @@ function renderLista() {
     </div>
 
     <div class="mb-4 flex flex-wrap items-center gap-2">
-      ${busca('busca-instrutor', f.busca, 'Buscar nome, especialidade, e-mail ou empresa', 'w-96')}
-      <div class="ml-auto flex flex-wrap items-center gap-2">
+      ${busca('busca-instrutor', f.busca, deConvidados ? 'Buscar convidado pelo nome ou e-mail' : 'Buscar nome, especialidade, e-mail ou empresa', 'w-96')}
+      <div class="ml-auto flex flex-wrap items-center gap-2 ${deConvidados ? 'hidden' : ''}">
         <select id="filtro-remuneracao" class="${SELECT_FILTRO} ${corSelect(f.remuneracao)}" aria-label="Remuneração">
           <option value="">Todas as remunerações</option>
           ${REMUNERACOES_INSTRUTOR.map((o) => `<option value="${o.id}" ${o.id === f.remuneracao ? 'selected' : ''}>${esc(o.nome)}</option>`).join('')}
@@ -238,8 +239,9 @@ function renderLista() {
       </div>
     </div>
 
+    ${deConvidados ? ConvitesUI.tabela(convites, 'instrutor', f.busca) : `
     <div class="${CARTAO} overflow-x-auto">
-      <table class="w-full table-fixed text-left">
+      <table data-tabela-instrutores class="w-full table-fixed text-left">
         ${thead([['Instrutor'], ['Contato', 'w-[220px]'], ['Pagamento', 'w-[220px]']])}
         <tbody class="divide-y divide-slate-100 dark:divide-neutral-900">
           ${visiveis.length ? visiveis.map(linha).join('') : `
@@ -252,21 +254,23 @@ function renderLista() {
       <div class="px-4 py-2 border-t border-slate-100 dark:border-neutral-900 ${APOIO} tabular-nums">
         ${plural(visiveis.length, 'instrutor', 'instrutores')}${visiveis.length !== estado.lista.length ? ` de ${estado.lista.length}` : ''}
       </div>
-    </div>`;
+    </div>`}`;
 
   const limpar = () => { estado.filtros = { busca: '', situacao: '', remuneracao: '', visao: '' }; renderLista(); };
   const campoBusca = el.querySelector('#busca-instrutor');
   campoBusca.addEventListener('input', () => { estado.filtros.busca = campoBusca.value; renderLista(); const b = el.querySelector('#busca-instrutor'); b.focus(); b.setSelectionRange(b.value.length, b.value.length); });
   el.querySelector('#filtro-situacao').addEventListener('change', (e) => { estado.filtros.situacao = e.target.value; renderLista(); });
   el.querySelector('#filtro-remuneracao').addEventListener('change', (e) => { estado.filtros.remuneracao = e.target.value; renderLista(); });
+  const aoMudarConvite = () => { estado.filtros.visao = 'convidados'; renderLista(); };
   el.querySelectorAll('[data-visao]').forEach((b) => b.addEventListener('click', () => { estado.filtros.visao = b.dataset.visao; renderLista(); el.querySelector(`[data-visao="${estado.filtros.visao}"]`).focus(); }));
   el.querySelector('#btn-limpar-filtros')?.addEventListener('click', limpar);
   el.querySelector('[data-limpar]')?.addEventListener('click', limpar);
   el.querySelector('#btn-novo').addEventListener('click', () => abrirDrawerInstrutor());
-  el.querySelector('#btn-convidar').addEventListener('click', () => abrirDrawerConvite());
+  el.querySelector('#btn-convidar')?.addEventListener('click', () => ConvitesUI.abrirFormulario({ papel: 'instrutor', aoMudar: aoMudarConvite }));
   el.querySelector('#btn-novo-vazio')?.addEventListener('click', () => abrirDrawerInstrutor());
+  ConvitesUI.ligarTabela(el, aoMudarConvite);
   // O nome é o link (teclado, ⌘-clique); o resto da linha abre o mesmo registro, a não ser que haja texto selecionado.
-  el.querySelector('table').addEventListener('click', (e) => {
+  el.querySelector('[data-tabela-instrutores]')?.addEventListener('click', (e) => {
     const tr = e.target.closest('tr[data-abrir]');
     if (!tr || e.target.closest('a, button') || getSelection().toString()) return;
     if (e.metaKey || e.ctrlKey) window.open(urlDetalhe(tr.dataset.abrir), '_blank'); else selecionar(tr.dataset.abrir);
@@ -283,10 +287,8 @@ function renderInstrutor() {
   const podeExcluir = Instrutores.podeExcluir(i);
   const colab = i.colaboradorId ? Instrutores.pessoaDe(i).colaborador : null;
 
-  // Uma ação à vista (e o WhatsApp); link de cadastro, foto, status e exclusão no "Mais".
-  // O formulário público pede empresa e dados pessoais: só serve para PJ de fora da equipe.
+  // Uma ação à vista (e o WhatsApp); foto, status e exclusão no "Mais".
   const itensMais = [
-    i.remuneracao === 'pj' && !i.colaboradorId ? { nome: 'Link para o instrutor', detalhe: i.cadastro?.preenchidoEm ? `Preenchido em ${fmtData(i.cadastro.preenchidoEm.slice(0, 10))}` : 'Ele mesmo completa o cadastro', acao: () => abrirModalLinkInstrutor(i.id) } : null,
     { nome: i.foto ? 'Trocar foto' : 'Adicionar foto', detalhe: 'Aparece na lista e no portal do professor', acao: abrirDrawerFoto },
     'sep',
     i.status === 'ativo'
@@ -331,14 +333,12 @@ function renderInstrutor() {
       </div>
     </div>
 
-    ${faixaCadastro(i)}
     ${pend.length ? faixa(`<span class="font-medium">${plural(pend.length, 'pendência')} no cadastro:</span> ${pend.map(esc).join(' · ')}${pendPag.length ? `.<br><span class="font-medium">Bloqueiam o pagamento:</span> ${pendPag.map(esc).join(' · ')}.` : ''}`) : ''}
 
     <div id="aba"></div>`;
 
   el.querySelector('#btn-editar').addEventListener('click', () => abrirDrawerInstrutor(i.id));
   el.querySelector('#btn-mais').addEventListener('click', (e) => abrirMenu(e.currentTarget, itensMais));
-  el.querySelector('#btn-faixa-link')?.addEventListener('click', () => abrirModalLinkInstrutor(i.id));
   el.querySelector('#btn-foto').addEventListener('click', () => abrirDrawerFoto());
 
   renderAbaDados(el.querySelector('#aba'), i);
@@ -365,6 +365,7 @@ function renderAbaDados(el, i) {
         ${cabecalhoSecao('Identificação', i.colaboradorId ? `Nascimento e CPF vêm do cadastro na equipe: <a href="${urlColaborador(i.colaboradorId)}" class="${LINK}">abrir colaborador</a>.` : 'Dados pessoais — os mesmos do formulário de cadastro.', 'btn-editar-dados')}
         <div class="px-4 pb-4 grid grid-cols-2 gap-4">
           ${campo('Nome completo', esc(i.nome), 'col-span-2')}
+          ${i.nomeSocial ? campo('Nome social', esc(i.nomeSocial), 'col-span-2') : ''}
           ${campo('Como gosta de ser chamado', vazio(i.apelido))}
           ${campo('Data de nascimento', pessoa.nascimento ? `<span class="tabular-nums">${esc(fmtData(pessoa.nascimento))}</span> <span class="${APOIO}">· ${idade} anos</span>` : vazio(null))}
           ${campo('CPF', pessoa.cpf ? `<span class="font-mono">${esc(fmtCpf(pessoa.cpf))}</span>${Instrutores.cpfValido(pessoa.cpf) ? '' : ' <span class="text-xs font-medium text-red-700 dark:text-red-400">inválido</span>'}` : vazio(null))}
@@ -383,6 +384,11 @@ function renderAbaDados(el, i) {
           ${campo('WhatsApp', c.whatsapp ? `<a href="https://wa.me/55${esc(Instrutores.digitos(c.whatsapp))}" target="_blank" rel="noopener" class="${LINK} tabular-nums">${esc(fmtTelefone(c.whatsapp))}</a>` : vazio(null))}
           ${campo('Contato de emergência', c.emergencia?.nome ? `${esc(c.emergencia.nome)} <span class="text-slate-500 dark:text-neutral-400 tabular-nums">· ${esc(fmtTelefone(c.emergencia.telefone))}</span>` : vazio(null), 'col-span-2')}
         </div>
+      </section>
+
+      <section class="${CARTAO}" data-cartao-acesso>
+        ${cabecalhoSecao('Acesso ao sistema', 'O usuário com que a pessoa entra no Aulor e no portal do professor.', null)}
+        ${cartaoAcesso(i)}
       </section>
 
       <section class="${CARTAO}">
@@ -433,6 +439,66 @@ function renderAbaDados(el, i) {
   el.querySelector('#btn-editar-endereco').addEventListener('click', () => abrirDrawerEndereco());
   el.querySelector('#btn-editar-tag').addEventListener('click', () => abrirDrawerTag());
   el.querySelector('#btn-editar-obs').addEventListener('click', () => abrirDrawerObservacoes());
+  el.querySelector('#btn-vincular-acesso')?.addEventListener('click', () => abrirDrawerVincularAcesso());
+  el.querySelector('#btn-desvincular-acesso')?.addEventListener('click', () => desvincularAcesso());
+  if (!Instrutores.usuarioDe(i)) ConvitesUI.ligarFicha(el.querySelector('[data-cartao-acesso]'), 'instrutor', pessoaDoConvite(i), () => renderInstrutor());
+}
+
+// ---------- Acesso ao sistema ----------
+
+const TAG = 'inline-flex items-center h-6 rounded px-2 text-xs font-medium bg-slate-100 text-slate-700 dark:bg-neutral-900 dark:text-neutral-300';
+const pessoaDoConvite = (i) => ({ id: i.id, nome: i.nomeSocial || i.nome, email: i.contato.email });
+
+// O usuário é da pessoa: quem é da equipe usa o do colaborador. Sem usuário, o convite pela ficha (GAC-6 de AULOR-007).
+function cartaoAcesso(i) {
+  const usuarioId = Instrutores.usuarioDe(i);
+  if (!usuarioId) {
+    if (i.colaboradorId) return `<p class="px-4 pb-4 text-sm text-slate-800 dark:text-neutral-100">Ainda não tem usuário. O acesso de quem é da equipe fica na <a href="${urlColaborador(i.colaboradorId)}" class="${LINK}">ficha de colaborador</a>.</p>`;
+    return ConvitesUI.ficha('instrutor', pessoaDoConvite(i), `<button type="button" id="btn-vincular-acesso" class="${BOTAO_SEC}">Vincular usuário existente</button>`, 'px-4 pb-4');
+  }
+  const a = Colaboradores.Acesso.de(usuarioId);
+  if (!a.usuario) return `<p class="px-4 pb-4 text-sm text-red-700 dark:text-red-400">O usuário <span class="font-mono">${esc(usuarioId)}</span> não existe mais em Perfis de acesso.</p>`;
+  return `
+    <div class="px-4 pb-4 grid grid-cols-2 gap-4">
+      ${campo('Usuário', `${esc(a.usuario.nome)} <span class="font-mono text-xs text-slate-500 dark:text-neutral-400">· ${esc(a.usuario.id)}</span>`)}
+      ${campo('Perfis de acesso', a.perfis.length ? `<span class="flex flex-wrap gap-1 mt-1">${a.perfis.map((p) => `<span class="${TAG}">${esc(p.nome)}</span>`).join('')}</span>` : `<span class="font-medium ${AVISO}">Nenhum perfil — o usuário existe mas não acessa nada.</span>`)}
+    </div>
+    <div class="px-4 pb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+      ${i.colaboradorId ? `<a href="${urlColaborador(i.colaboradorId)}" class="${BOTAO_LINK}">Gerido na ficha de colaborador</a>` : `<button type="button" id="btn-desvincular-acesso" class="${BOTAO_LINK}">Desvincular</button>`}
+      <a href="perfis.html" target="_blank" class="${BOTAO_LINK} ml-auto">Abrir Perfis de acesso ${ICONE.externo}</a>
+    </div>`;
+}
+
+// Usuários sem pessoa ligada: nem colaborador, nem outro instrutor de fora da equipe.
+function abrirDrawerVincularAcesso() {
+  const i = atual();
+  const ocupados = estado.lista.filter((x) => x.id !== i.id && !x.colaboradorId).map((x) => x.acesso?.usuarioId);
+  const livres = Colaboradores.Acesso.livres(Colaboradores.carregar(), null, ocupados);
+  drawerFormulario({
+    id: 'form-vincular-acesso', titulo: 'Vincular usuário existente', subtitulo: 'Usuários de <strong>Perfis de acesso</strong> que ainda não são de outra pessoa da unidade.', rotulo: 'Vincular', largura: 'max-w-lg',
+    corpo: livres.length ? `
+      <div class="space-y-2">
+        ${livres.map((u) => `
+        <label class="${CARTAO_OPCAO} flex items-start gap-2.5">
+          <input type="radio" name="usuarioId" value="${esc(u.id)}" class="sr-only">
+          <span class="block text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(u.nome)} <span class="font-mono text-xs font-normal text-slate-500 dark:text-neutral-400">· ${esc(u.id)}</span></span>
+        </label>`).join('')}
+      </div>
+      ${ERRO('usuarioId')}` : '<p class="text-sm text-slate-500 dark:text-neutral-400">Todos os usuários já estão ligados a alguém. Para dar acesso, use "Enviar convite".</p>',
+    aoSalvar: (fd) => {
+      const usuarioId = fd.get('usuarioId');
+      if (!usuarioId) return livres.length ? [{ campo: 'usuarioId', mensagem: 'Escolha um usuário.' }] : [];
+      estado.lista = Instrutores.vincularUsuario(estado.lista, i.id, usuarioId);
+      persistir(); renderInstrutor();
+      toast(`Usuário "${livres.find((u) => u.id === usuarioId).nome}" vinculado.`);
+    },
+  });
+}
+
+function desvincularAcesso() {
+  estado.lista = Instrutores.vincularUsuario(estado.lista, estado.selecionado, null);
+  persistir(); renderInstrutor();
+  toast('Usuário desvinculado — ele continua existindo em Perfis de acesso.');
 }
 
 // ---------- Drawer genérico ----------
@@ -739,106 +805,6 @@ function abrirDrawerObservacoes() {
   });
 }
 
-// ---------- Link para o próprio instrutor preencher o cadastro ----------
-
-const linhaLink = (id, titulo, descricao, u) => `
-      <div>
-        <p class="rotulo mb-1">${titulo} <span class="font-normal text-slate-500 dark:text-neutral-400">— ${descricao}</span></p>
-        <div class="flex gap-2">
-          <input id="${id}" type="text" readonly value="${esc(u)}" class="campo font-mono text-xs">
-          <button type="button" data-copiar="${id}" class="${BOTAO_SEC} shrink-0">${ICONE.copiar} Copiar</button>
-          <a href="${esc(u)}" target="_blank" rel="noopener" class="${BOTAO_SEC} shrink-0" title="Abrir como quem recebe o link">${ICONE.externo} Abrir</a>
-        </div>
-      </div>`;
-const linhasLinks = (prefixo, urlForm, urlPassos) => `
-      ${linhaLink(`${prefixo}-form`, 'Formulário único', 'tudo numa página, bom para quem já tem os dados à mão', urlForm)}
-      ${linhaLink(`${prefixo}-passos`, 'Passo a passo', 'uma etapa por vez, com revisão no final — bom no celular', urlPassos)}`;
-function ligarCopiar(root) {
-  root.querySelectorAll('[data-copiar]').forEach((b) => b.addEventListener('click', async () => {
-    const campo = root.querySelector(`#${b.dataset.copiar}`);
-    try { await navigator.clipboard.writeText(campo.value); toast('Link copiado.'); }
-    catch (_) { campo.select(); toast('Selecione e copie o link.'); }
-  }));
-}
-
-function faixaCadastro(i) {
-  if (!Instrutores.aguardandoCadastro(i)) return '';
-  return faixa(`<span class="font-medium">Aguardando o instrutor preencher o cadastro</span> — link gerado em <span class="tabular-nums">${esc(fmtData(i.cadastro.criadoEm))}</span>.`, `<button type="button" id="btn-faixa-link" class="${ACAO_FAIXA}">Ver link</button>`);
-}
-
-function abrirModalLinkInstrutor(id) {
-  let i = Instrutores.porId(estado.lista, id);
-  if (!i.cadastro) {
-    estado.lista = Instrutores.gerarCadastro(estado.lista, id);
-    persistir(); i = Instrutores.porId(estado.lista, id);
-    renderInstrutor();
-  }
-  const url = Instrutores.urlCadastro(i, 'formulario');
-  const urlPassos = Instrutores.urlCadastro(i, 'passos');
-  const preenchido = Boolean(i.cadastro.preenchidoEm);
-  const msg = `Olá, ${(i.apelido || i.nome).split(' ')[0]}! Para fecharmos seu cadastro de instrutor na ProWay (contrato e pagamento), preencha seus dados neste link: ${url}`;
-  const root = abrirModal(`
-    <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-start justify-between gap-3">
-      <div>
-        <h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Link para o instrutor preencher o cadastro</h3>
-        <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(i.nome)} abre o link, confere o que já foi digitado e completa dados pessoais, endereço, empresa para pagamento, antecedentes e o aceite LGPD.</p>
-      </div>
-      <button type="button" data-fechar-modal class="p-1 rounded text-slate-500 hover:text-slate-700 dark:hover:text-neutral-200" aria-label="Fechar">${ICONE.fechar}</button>
-    </div>
-    <div class="px-5 py-4 space-y-4">
-      ${preenchido
-        ? `<div class="flex items-center gap-2 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-2 text-sm text-emerald-900 dark:text-emerald-200"><span class="text-emerald-600 dark:text-emerald-400">${ICONE.check}</span> Preenchido pelo instrutor em ${esc(fmtData(i.cadastro.preenchidoEm.slice(0, 10)))}. O link já não aceita novos envios.</div>`
-        : `<div class="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">${ICONE.alerta} Aguardando o instrutor — link gerado em ${esc(fmtData(i.cadastro.criadoEm))}.</div>`}
-      ${linhasLinks('link-instrutor', url, urlPassos)}
-      <div class="flex flex-wrap items-center gap-2">
-        ${i.contato.whatsapp ? `<a href="https://wa.me/55${esc(i.contato.whatsapp)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener" class="${BOTAO_SEC} text-emerald-700 dark:text-emerald-400">${ICONE_WHATSAPP} Enviar por WhatsApp</a>` : ''}
-        ${i.contato.email ? `<a href="mailto:${esc(i.contato.email)}?subject=${encodeURIComponent('Complete seu cadastro de instrutor — ProWay')}&body=${encodeURIComponent(msg)}" class="${BOTAO_SEC}">${ICONE.envelope} Enviar por e-mail</a>` : ''}
-        <span class="text-xs text-slate-500 dark:text-neutral-400 ml-auto">WhatsApp/e-mail mandam o formulário único.</span>
-      </div>
-      <p class="text-xs text-slate-500 dark:text-neutral-400">Protótipo: o link funciona neste navegador (mesmo localStorage). Em produção o token expira e é de uso único.</p>
-    </div>
-    <div class="px-5 py-3 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-between gap-2">
-      <button type="button" id="btn-novo-link" class="${BOTAO_LINK}">Gerar novo link (invalida o atual)</button>
-      <button type="button" data-fechar-modal class="${BOTAO_CANCELAR}">Fechar</button>
-    </div>`, 'max-w-3xl');
-  ligarCopiar(root);
-  root.querySelector('#btn-novo-link').addEventListener('click', () => {
-    estado.lista = Instrutores.gerarCadastro(estado.lista, id);
-    persistir(); fecharModal(); renderInstrutor();
-    toast('Novo link gerado; o anterior deixou de valer.');
-    abrirModalLinkInstrutor(id);
-  });
-}
-
-// Convite: a escola só digita nome e contato; o resto vem do instrutor pelo link.
-function abrirDrawerConvite() {
-  drawerFormulario({
-    id: 'form-convite',
-    titulo: 'Convidar instrutor',
-    subtitulo: 'Só o nome e como falar com ele. O próprio instrutor preenche CPF, endereço, empresa para pagamento e o aceite LGPD pelo link.',
-    rotulo: 'Gerar link',
-    largura: 'max-w-lg',
-    foco: '#f-nome',
-    corpo: `
-      ${campoTexto('nome', 'Nome completo', '', { max: 120 })}
-      <div class="grid grid-cols-2 gap-3">
-        ${campoTexto('email', 'E-mail', '', { tipo: 'email', max: 120 })}
-        ${campoTexto('whatsapp', 'WhatsApp', '', { placeholder: '(47) 99999-9999', max: 16, extra: 'inputmode="tel"' })}
-      </div>
-      ${campoTexto('especialidade', 'Especialidade', '', { placeholder: 'Ex.: Java e Spring', max: 80, opcional: true })}`,
-    aoSalvar: (fd) => {
-      const d = Object.fromEntries(fd);
-      const erros = Instrutores.validarConvite(d, estado.lista);
-      if (erros.length) return erros;
-      const r = Instrutores.convidar(estado.lista, d);
-      estado.lista = r.lista; persistir();
-      sessionStorage.setItem('instrutores-abrir-link', r.instrutor.id);
-      toast(`${r.instrutor.apelido} cadastrado — mande o link.`);
-      selecionar(r.instrutor.id);
-    },
-  });
-}
-
 // ---------- Exclusão do instrutor ----------
 
 function confirmarExclusao(id) {
@@ -870,9 +836,4 @@ function confirmarExclusao(id) {
   if (!id || !Instrutores.porId(estado.lista, id)) { location.replace('instrutores.html?erro=nao-encontrado'); return; }
   estado.selecionado = id;
   renderInstrutor(); // ?aba= de links antigos é ignorado: só há Dados.
-  // Recém-convidado: já oferece o link para o instrutor completar o cadastro.
-  if (sessionStorage.getItem('instrutores-abrir-link') === id) {
-    sessionStorage.removeItem('instrutores-abrir-link');
-    abrirModalLinkInstrutor(id);
-  }
 })();

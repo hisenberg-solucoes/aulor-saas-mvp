@@ -14,9 +14,10 @@ const Acesso = (() => {
     'conta-bancaria.html': 'contas-bancarias', 'instrutor.html': 'instrutores', 'colaborador.html': 'colaboradores',
     'perfil.html': 'perfis', 'modelo-contrato.html': 'modelos-contrato',
   };
-  // Sem sessão: a entrada e os cadastros pelo link (o aluno, a empresa e o instrutor se cadastram sozinhos).
+  // Sem sessão: a entrada, os cadastros pelo link (o aluno e a empresa se cadastram sozinhos) e o convite de cadastro,
+  // que pede a entrada com o e-mail convidado na própria página.
   const LIVRES = ['', 'index.html', 'entrar.html', 'cadastro-aluno.html', 'cadastro-aluno-steps.html', 'cadastro-empresa.html',
-    'cadastro-empresa-steps.html', 'cadastro-instrutor.html', 'cadastro-instrutor-steps.html'];
+    'cadastro-empresa-steps.html', 'convite.html'];
 
   const pagina = () => location.pathname.split('/').pop().toLowerCase();
   const tela = (p = pagina()) => TELA_DA_PAGINA[p] ?? p.replace(/\.html$/, '');

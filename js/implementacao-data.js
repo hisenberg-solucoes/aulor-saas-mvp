@@ -27,7 +27,7 @@ const IMPLEMENTACAO = {
   // (js/permissoes-data.js), que o menu do web ainda não segue. As raias com `portal` descem da Entrada.
   raias: [
     {
-      id: 'link', nome: 'Cadastro pelo link', descricao: 'Páginas públicas, abertas por um link enviado',
+      id: 'link', nome: 'Cadastro pelo link', descricao: 'Páginas abertas por um link enviado; o convite pede a entrada com o e-mail convidado',
       grupos: [{
         id: 'link', nome: 'Cadastro pelo link',
         telas: [
@@ -51,12 +51,15 @@ const IMPLEMENTACAO = {
             ],
           },
           {
-            id: 'link-instrutor', nome: 'Cadastro do instrutor', prototipo: ['cadastro-instrutor.html', 'cadastro-instrutor-steps.html'],
-            liga: ['instrutores'],
+            // AULOR-007: substitui o link público do instrutor; não há formulário anônimo (D3).
+            id: 'convite-cadastro', nome: 'Convite de cadastro', prototipo: ['convite.html'],
+            liga: ['instrutores', 'colaboradores'], integracoes: ['auth0'],
             features: [
-              F('Página', 'Abre pelo link enviado ao instrutor, sem login', 'falta', 'falta'),
-              F('Página', 'Identificação, contato e remuneração', 'falta', 'parcial', 'O cadastro existe só autenticado (POST /v1/instructors e PUT /v1/instructors/{id}/contact).'),
-              F('Página', 'Resolve as pendências (nascimento, e-mail, WhatsApp)', 'falta', 'parcial', 'A API já calcula as pendências do instrutor.'),
+              F('Entrada', 'Abre pelo e-mail do convite e entra com o e-mail convidado', 'ok', 'ok', 'Confirmação do convite de AULOR-002 (POST /v1/invitations/confirmations), que recusa outro e-mail.'),
+              F('Página', 'Complete seu cadastro: CPF, nascimento, nome social e contato', 'falta', 'falta', 'O convite de cadastro do People ainda não existe (TRD de AULOR-007).'),
+              F('Página', 'CPF que o acesso não prova fica com a coordenação, sem revelar ninguém', 'falta', 'falta'),
+              F('Página', 'Cadastro concluído e o que o perfil permite', 'falta', 'falta'),
+              F('Página', 'Convite pela ficha liga a pessoa ao acesso, sem formulário', 'falta', 'falta'),
             ],
           },
         ],
@@ -265,10 +268,13 @@ const IMPLEMENTACAO = {
               id: 'instrutores', nome: 'Instrutores', prototipo: ['instrutores.html', 'instrutor.html'], web: '/:slug/instrutores',
               webSituacao: 'Em construção',
               endpoints: ['POST /v1/instructors/search', 'POST /v1/instructors', 'PUT /v1/instructors/{id}', 'GET /v1/instructors/{id}', 'PUT /v1/instructors/{id}/identification', 'PUT /v1/instructors/{id}/contact', 'PUT /v1/instructors/{id}/notes', 'POST /v1/instructors/{id}/deactivation', 'POST /v1/instructors/{id}/reactivation', 'PUT /v1/instructors/{id}/unit-membership', 'DELETE /v1/instructors/{id}/unit-membership'],
-              liga: ['link-instrutor', 'turmas'],
+              liga: ['convite-cadastro', 'turmas'],
               features: [
                 F('Lista', 'Busca, remuneração e recortes por pendência', 'falta', 'ok'),
                 F('Novo instrutor', 'Cadastro; CPF já cadastrado adiciona o papel', 'falta', 'ok'),
+                F('Convite', 'Convidar instrutor: nome, e-mail, remuneração e perfil', 'falta', 'falta', 'AULOR-007.'),
+                F('Convite', 'Convidados na lista, com selo, Reenviar e Cancelar', 'falta', 'falta'),
+                F('Ficha · Dados', 'Enviar convite a quem não tem usuário', 'falta', 'falta'),
                 F('Ficha · Dados', 'Identificação, contato e observações', 'falta', 'ok'),
                 F('Ficha · Dados', 'Inativar e reativar', 'falta', 'ok'),
                 F('Ficha · Dados', 'Pendências: nascimento, e-mail, WhatsApp e acesso', 'falta', 'ok'),
@@ -280,13 +286,16 @@ const IMPLEMENTACAO = {
               id: 'colaboradores', nome: 'Colaboradores', prototipo: ['colaboradores.html', 'colaborador.html'], web: '/:slug/colaboradores',
               webSituacao: 'Em construção',
               endpoints: ['POST /v1/staff/search', 'GET /v1/staff/departments', 'POST /v1/staff', 'PUT /v1/staff/{id}', 'GET /v1/staff/{id}','PUT /v1/staff/{id}/personal-details', 'PUT /v1/staff/{id}/contact', 'PUT /v1/staff/{id}/position', 'PUT /v1/staff/{id}/notes', 'POST /v1/staff/{id}/leave', 'POST /v1/staff/{id}/return', 'POST /v1/staff/{id}/dismissal', 'POST /v1/staff/{id}/readmission', 'PUT /v1/staff/{id}/unit-membership', 'DELETE /v1/staff/{id}/unit-membership', 'POST /v1/invitations'],
-              liga: ['perfis'],
+              liga: ['perfis', 'convite-cadastro'],
               features: [
                 F('Lista', 'Busca, departamento e recortes (afastados, desligados, com pendência)', 'falta', 'ok'),
                 F('Novo colaborador', 'Cadastro; CPF já cadastrado adiciona o papel', 'falta', 'ok'),
+                F('Convite', 'Convidar colaborador: cargo, departamento, admissão e perfil', 'falta', 'falta', 'AULOR-007.'),
+                F('Convite', 'Convidados na lista, com selo, Reenviar e Cancelar', 'falta', 'falta'),
                 F('Ficha', 'Dados pessoais, contato, cargo e observações', 'falta', 'ok'),
                 F('Ficha', 'Afastamento, desligamento e readmissão', 'falta', 'ok'),
-                F('Ficha', 'Usuário de acesso: convite e vínculo com a unidade', 'falta', 'ok', 'O web só confirma o convite; não emite.'),
+                F('Ficha', 'Usuário de acesso: vínculo com a unidade', 'falta', 'ok'),
+                F('Ficha', 'Enviar convite a quem não tem usuário, que liga no aceite', 'falta', 'falta', 'AULOR-007; hoje o web só confirma o convite e não emite.'),
               ],
             },
           ],

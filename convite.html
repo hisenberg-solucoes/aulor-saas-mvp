@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aulor · Convite</title>
+  <!-- Tailwind v4 (browser build — em produção, usar o build via PostCSS/Vite) -->
+  <script src="js/tema.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @custom-variant dark (&:where(.dark, .dark *));
+
+    @theme {
+      --color-petrol-800: #0F3D4E;
+      --color-petrol-900: #0B2D3C;
+      --color-areia: #F5F0E8;
+      --color-fundo: #F3F5F6;
+      --font-sans: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/svg+xml" href="img/aulor-favicon.svg">
+</head>
+<body class="min-h-full bg-fundo dark:bg-black font-sans text-slate-800 dark:text-neutral-100 antialiased ficha">
+  <!-- Como a entrada (DESIGN.md do aulor-web): sem shell, coluna centrada, símbolo e wordmark no alto e um cartão. -->
+  <main class="mx-auto w-full max-w-[520px] px-4 py-16">
+    <div class="mb-6 flex items-center gap-2.5">
+      <img src="img/aulor-simbolo.svg" alt="" class="h-9 w-9">
+      <img src="img/aulor-wordmark-escuro.svg" alt="Aulor" class="h-4 w-auto dark:hidden">
+      <img src="img/aulor-wordmark-claro.svg" alt="Aulor" class="h-4 w-auto hidden dark:block">
+    </div>
+    <div id="tela"></div>
+  </main>
+
+  <script src="js/documento.js"></script>
+  <script src="js/agenda.js"></script>
+  <script src="js/cursos-data.js"></script>
+  <script src="js/cursos-motor.js"></script>
+  <script src="js/formacoes-data.js"></script>
+  <script src="js/formacoes-motor.js"></script>
+  <script src="js/clientes-data.js"></script>
+  <script src="js/clientes-motor.js"></script>
+  <script src="js/colaboradores-data.js"></script>
+  <script src="js/colaboradores-motor.js"></script>
+  <script src="js/instrutores-data.js"></script>
+  <script src="js/instrutores-motor.js"></script>
+  <script src="js/permissoes-data.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/entrada.js"></script>
+  <script src="js/convites-cadastro.js"></script>
+  <script src="js/convite-app.js"></script>
+</body>
+</html>

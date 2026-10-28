@@ -5,7 +5,8 @@
 // página própria (colaborador.html?id=) com cartões por seção, cada um com
 // seu drawer. O mesmo arquivo atende as duas páginas; o modo vem de
 // <body data-modo>. O cartão "Acesso ao sistema" lê/grava o protótipo de
-// permissões (Colaboradores.Acesso).
+// permissões (Colaboradores.Acesso); acesso nasce só de convite (AULOR-007),
+// e o convite de cadastro é de js/convites-ui.js.
 // O sistema não faz folha de pagamento: o cadastro guarda só identificação,
 // cargo/departamento, admissão/status, contato de trabalho e acesso.
 // Quem também dá aula tem um instrutor com `colaboradorId` (docs/pessoas-papeis.md);
@@ -18,7 +19,7 @@ const estado = {
   lista: Colaboradores.carregar(),
   instrutores: Instrutores.carregar(),
   selecionado: null,
-  filtros: { busca: '', departamentoId: '', visao: '' }, // visao: '' | pendente | afastado | desligado (filtro rápido)
+  filtros: { busca: '', departamentoId: '', visao: '' }, // visao: '' | pendente | afastado | desligado | convidados (filtro rápido)
 };
 
 const ICONE = {
@@ -37,6 +38,7 @@ const ICONE = {
   celular: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>',
   externo: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>',
   baixo: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>',
+  convite: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>',
 };
 
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
@@ -114,6 +116,7 @@ const linkWhats = (celular) => (celular ? `<a href="https://wa.me/55${esc(C.digi
 function persistir() { C.salvar(estado.lista); }
 function atual() { return C.porId(estado.lista, estado.selecionado); }
 const acessoAtual = (c) => C.Acesso.de(c.acesso.usuarioId);
+const pessoaDoConvite = (c) => ({ id: c.id, nome: nomeExibido(c), email: c.contato.email });
 const urlDetalhe = (id) => `colaborador.html?id=${encodeURIComponent(id)}`;
 // Papel docente: o instrutor que aponta para este colaborador, se houver.
 const instrutorDe = (c) => Instrutores.instrutorDoColaborador(estado.instrutores, c.id);
@@ -189,12 +192,14 @@ function seloDocente(c) {
 
 // ---------- Lista ----------
 
-// Filtro rápido sobre a busca e o departamento: as exceções que a secretaria procura.
+// Filtro rápido sobre a busca e o departamento: as exceções que a secretaria procura. Os convidados
+// ainda não são colaboradores: só aparecem no próprio filtro e não contam nos outros (GAC-3 de AULOR-007).
 const VISOES = [
   { id: '', nome: 'Todos' },
   { id: 'pendente', nome: 'Com pendência' },
   { id: 'afastado', nome: 'Afastados' },
   { id: 'desligado', nome: 'Desligados' },
+  { id: 'convidados', nome: 'Convidados' },
 ];
 
 function renderLista() {
@@ -202,8 +207,10 @@ function renderLista() {
   const f = estado.filtros;
   const base = C.filtrar(estado.lista, { ...f, status: '' });
   const pendDe = (c) => C.pendencias(c, acessoAtual(c));
-  const porVisao = { '': base, pendente: base.filter((c) => pendDe(c).length), afastado: base.filter((c) => c.status === 'afastado'), desligado: base.filter((c) => c.status === 'desligado') };
+  const convites = Convites.daLista('colaborador', f.busca);
+  const porVisao = { '': base, pendente: base.filter((c) => pendDe(c).length), afastado: base.filter((c) => c.status === 'afastado'), desligado: base.filter((c) => c.status === 'desligado'), convidados: convites };
   const visiveis = porVisao[f.visao];
+  const deConvidados = f.visao === 'convidados';
   const filtrando = f.departamentoId || f.busca;
   const corSelect = f.departamentoId ? 'border-[color:var(--f-foco)] text-slate-900 dark:text-neutral-100' : 'border-slate-300 dark:border-neutral-700 text-slate-700 dark:text-neutral-200';
 
@@ -235,7 +242,10 @@ function renderLista() {
         <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100">Colaboradores <span class="ml-1 text-base font-normal text-slate-600 dark:text-neutral-400 tabular-nums">${estado.lista.length}</span></h2>
         <p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Equipe da escola: identificação, cargo, contato e o usuário de acesso ao sistema. Quem também dá aula leva o selo <em>Dá aula</em> e aparece em <a href="instrutores.html" class="text-petrol-800 dark:text-sky-300 hover:underline">Instrutores</a>, com o mesmo CPF.</p>
       </div>
-      <button type="button" id="btn-novo" class="${BOTAO_PRI} shrink-0">${ICONE.mais} Novo colaborador</button>
+      <div class="flex items-center gap-2 shrink-0">
+        ${ConvitesUI.pode('colaborador', 'criar') ? `<button type="button" id="btn-convidar" class="${BOTAO_SEC}" title="O colaborador recebe o convite por e-mail, entra com ele e completa o próprio cadastro">${ICONE.convite} Convidar colaborador</button>` : ''}
+        <button type="button" id="btn-novo" class="${BOTAO_PRI}">${ICONE.mais} Novo colaborador</button>
+      </div>
     </div>
 
     <div role="group" aria-label="Filtro rápido" class="mb-4 shadow-[inset_0_-1px_0] shadow-slate-200 dark:shadow-neutral-800 flex items-center gap-4">
@@ -247,8 +257,8 @@ function renderLista() {
     </div>
 
     <div class="mb-4 flex flex-wrap items-center gap-2">
-      ${busca('busca-colab', f.busca, 'Buscar nome, matrícula, cargo, CPF ou e-mail', 'w-96')}
-      <div class="ml-auto flex flex-wrap items-center gap-2">
+      ${busca('busca-colab', f.busca, deConvidados ? 'Buscar convidado pelo nome ou e-mail' : 'Buscar nome, matrícula, cargo, CPF ou e-mail', 'w-96')}
+      <div class="ml-auto flex flex-wrap items-center gap-2 ${deConvidados ? 'hidden' : ''}">
         <select id="filtro-departamento" class="${SELECT_FILTRO} ${corSelect}" aria-label="Departamento">
           <option value="">Todos os departamentos</option>
           ${DEPARTAMENTOS.map((o) => `<option value="${o.id}" ${o.id === f.departamentoId ? 'selected' : ''}>${esc(o.nome)}</option>`).join('')}
@@ -257,8 +267,9 @@ function renderLista() {
       </div>
     </div>
 
+    ${deConvidados ? ConvitesUI.tabela(convites, 'colaborador', f.busca) : `
     <div class="${CARTAO} overflow-x-auto">
-      <table class="w-full table-fixed text-left">
+      <table data-tabela-colaboradores class="w-full table-fixed text-left">
         <thead class="text-xs font-medium text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800">
           <tr>
             <th class="${TH}">Colaborador</th>
@@ -279,7 +290,7 @@ function renderLista() {
       <div class="px-4 py-2 border-t border-slate-100 dark:border-neutral-900 ${APOIO} tabular-nums">
         ${plural(visiveis.length, 'colaborador', 'colaboradores')}${visiveis.length !== estado.lista.length ? ` de ${estado.lista.length}` : ''}
       </div>
-    </div>`;
+    </div>`}`;
 
   const limpar = () => { estado.filtros = { busca: '', departamentoId: '', visao: '' }; renderLista(); };
   const campoBusca = el.querySelector('#busca-colab');
@@ -290,8 +301,11 @@ function renderLista() {
   el.querySelector('[data-limpar]')?.addEventListener('click', limpar);
   el.querySelector('#btn-novo').addEventListener('click', () => abrirDrawerColaborador());
   el.querySelector('#btn-novo-vazio')?.addEventListener('click', () => abrirDrawerColaborador());
+  const aoMudarConvite = () => { estado.filtros.visao = 'convidados'; renderLista(); };
+  el.querySelector('#btn-convidar')?.addEventListener('click', () => ConvitesUI.abrirFormulario({ papel: 'colaborador', aoMudar: aoMudarConvite }));
+  ConvitesUI.ligarTabela(el, aoMudarConvite);
   // O nome é o link (teclado, ⌘-clique); o resto da linha abre o mesmo registro, a não ser que haja texto selecionado.
-  el.querySelector('table').addEventListener('click', (e) => {
+  el.querySelector('[data-tabela-colaboradores]')?.addEventListener('click', (e) => {
     const tr = e.target.closest('tr[data-abrir]');
     if (!tr || e.target.closest('a, button') || getSelection().toString()) return;
     if (e.metaKey || e.ctrlKey) window.open(urlDetalhe(tr.dataset.abrir), '_blank'); else selecionar(tr.dataset.abrir);
@@ -330,16 +344,11 @@ function renderColaborador() {
     : c.status === 'desligado' && temAcessoAtivo ? `<button type="button" id="btn-faixa-bloquear" class="${ACAO_FAIXA}">Bloquear acesso</button>` : '';
 
   const cartaoAcesso = () => {
+    // Sem usuário: o convite pela ficha (GAC-6 de AULOR-007); quem já tem vínculo na unidade segue pelo Vincular.
     if (!c.acesso.usuarioId) {
-      return `
-        <div class="p-4 text-sm text-slate-800 dark:text-neutral-100 space-y-4">
-          <p>${c.status === 'desligado' ? 'Sem usuário de acesso.' : 'Ainda não tem usuário no sistema — não entra em nenhum portal.'}</p>
-          ${c.status === 'desligado' ? '' : `
-          <div class="flex flex-wrap gap-2">
-            <button type="button" id="btn-criar-acesso" class="${BOTAO_PRI}">${ICONE.escudo} Criar usuário de acesso</button>
-            <button type="button" id="btn-vincular-acesso" class="${BOTAO_SEC}">Vincular usuário existente</button>
-          </div>`}
-        </div>`;
+      return c.status === 'desligado'
+        ? '<p class="p-4 text-sm text-slate-800 dark:text-neutral-100">Sem usuário de acesso.</p>'
+        : ConvitesUI.ficha('colaborador', pessoaDoConvite(c), `<button type="button" id="btn-vincular-acesso" class="${BOTAO_SEC}">Vincular usuário existente</button>`);
     }
     if (!acesso.usuario) {
       return `
@@ -430,7 +439,7 @@ function renderColaborador() {
         </div>
       </section>
 
-      <section class="${CARTAO}">
+      <section class="${CARTAO}" data-cartao-acesso>
         ${cabecalhoSecao('Acesso ao sistema', 'Usuário em Perfis de acesso e o que ele pode fazer.', acesso?.usuario ? 'btn-perfis-acesso' : null, 'Perfis', ICONE.escudo)}
         ${cartaoAcesso()}
       </section>
@@ -461,7 +470,7 @@ function renderColaborador() {
   el.querySelector('#btn-editar-pessoais').addEventListener('click', () => abrirDrawerPessoais());
   el.querySelector('#btn-editar-contato').addEventListener('click', () => abrirDrawerContato());
   el.querySelector('#btn-editar-obs').addEventListener('click', () => abrirDrawerObservacoes());
-  el.querySelector('#btn-criar-acesso')?.addEventListener('click', () => abrirDrawerCriarAcesso());
+  if (!c.acesso.usuarioId && c.status !== 'desligado') ConvitesUI.ligarFicha(el.querySelector('[data-cartao-acesso]'), 'colaborador', pessoaDoConvite(c), () => renderColaborador());
   el.querySelector('#btn-vincular-acesso')?.addEventListener('click', () => abrirDrawerVincularAcesso());
   el.querySelector('#btn-perfis-acesso')?.addEventListener('click', () => abrirDrawerPerfisAcesso());
   el.querySelector('#btn-bloquear-acesso')?.addEventListener('click', () => confirmarBloqueio());
@@ -879,41 +888,14 @@ function ligarBuscaPerfis(form) {
   });
 }
 
-function abrirDrawerCriarAcesso() {
-  const c = atual();
-  const { form } = drawerFormulario({
-    id: 'form-criar-acesso',
-    titulo: 'Criar usuário de acesso',
-    subtitulo: `Cria o usuário em <strong>Perfis de acesso</strong> e vincula a <strong>${esc(nomeExibido(c))}</strong>. Escolha ao menos um perfil, senão a pessoa não acessa nada.`,
-    rotulo: 'Criar e vincular',
-    largura: 'max-w-lg',
-    foco: '#f-nomeUsuario',
-    corpo: `
-      ${campoTexto('nomeUsuario', 'Nome do usuário', nomeExibido(c), { max: 80 })}
-      ${listaPerfis([])}`,
-    aoSalvar: (fd) => {
-      const nome = String(fd.get('nomeUsuario') ?? '').trim();
-      const perfis = fd.getAll('perfis');
-      const erros = [];
-      if (nome.length < 3) erros.push({ campo: 'nomeUsuario', mensagem: 'Informe o nome.' });
-      if (!perfis.length) erros.push({ campo: 'perfis', mensagem: 'Escolha ao menos um perfil.' });
-      if (erros.length) return erros;
-      const u = C.Acesso.criar(nome, perfis);
-      estado.lista = C.vincularUsuario(estado.lista, c.id, u.id);
-      persistir(); renderColaborador();
-      toast(`Usuário "${u.nome}" criado com ${plural(perfis.length, 'perfil', 'perfis')}.`);
-    },
-  });
-  ligarBuscaPerfis(form);
-}
-
 function abrirDrawerVincularAcesso() {
   const c = atual();
-  const livres = C.Acesso.livres(estado.lista, c.id);
+  // Livres: nem de outro colaborador, nem de instrutor de fora da equipe.
+  const livres = C.Acesso.livres(estado.lista, c.id, estado.instrutores.filter((i) => !i.colaboradorId).map((i) => i.acesso?.usuarioId));
   const { form } = drawerFormulario({
     id: 'form-vincular-acesso',
     titulo: c.acesso.usuarioId ? 'Trocar usuário de acesso' : 'Vincular usuário existente',
-    subtitulo: `Usuários de <strong>Perfis de acesso</strong> que ainda não pertencem a outro colaborador.`,
+    subtitulo: `Usuários de <strong>Perfis de acesso</strong> que ainda não são de outra pessoa da unidade.`,
     rotulo: 'Vincular',
     largura: 'max-w-lg',
     foco: '#busca-usuario',
@@ -934,10 +916,7 @@ function abrirDrawerVincularAcesso() {
       </div>
       <p data-sem-usuario class="hidden text-xs text-slate-500 dark:text-neutral-400">Nenhum usuário com esse nome.</p>
       ${ERRO('usuarioId')}` : `
-      <div class="text-center py-6 text-sm text-slate-500 dark:text-neutral-400">
-        <p>Todos os usuários já estão vinculados a colaboradores.</p>
-        <button type="button" id="btn-ir-criar" class="${BOTAO_PRI} mt-4">${ICONE.escudo} Criar usuário de acesso</button>
-      </div>`,
+      <p class="text-center py-6 text-sm text-slate-500 dark:text-neutral-400">Todos os usuários já estão ligados a alguém. Para dar acesso, use "Enviar convite".</p>`,
     aoSalvar: (fd) => {
       const usuarioId = fd.get('usuarioId');
       if (!usuarioId) return [{ campo: 'usuarioId', mensagem: 'Escolha um usuário.' }];
@@ -953,7 +932,6 @@ function abrirDrawerVincularAcesso() {
     form.querySelectorAll('[data-usuario-item]').forEach((li) => { const ok = !termo || li.dataset.nome.includes(termo); li.classList.toggle('hidden', !ok); if (ok) n += 1; });
     form.querySelector('[data-sem-usuario]').classList.toggle('hidden', n > 0);
   });
-  form.querySelector('#btn-ir-criar')?.addEventListener('click', () => { form.querySelector('[data-fechar-drawer]').click(); abrirDrawerCriarAcesso(); });
 }
 
 function abrirDrawerPerfisAcesso() {

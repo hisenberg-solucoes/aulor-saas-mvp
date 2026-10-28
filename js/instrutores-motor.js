@@ -6,7 +6,7 @@
 // ============================================================
 
 const Instrutores = (() => {
-  const CHAVE = 'aulor-v1-instrutores-v5';
+  const CHAVE = 'aulor-v1-instrutores-v6';
 
   function carregar() {
     try {
@@ -299,9 +299,6 @@ const Instrutores = (() => {
   function removerAntecedentes(lista, id, ano) {
     return atualizarInstrutor(lista, id, (i) => ({ ...i, antecedentes: i.antecedentes.filter((a) => a.ano !== ano) }));
   }
-  function registrarLgpd(lista, id) {
-    return atualizarInstrutor(lista, id, (i) => registrar({ ...i, lgpd: { aceitoEm: hoje(), versao: LGPD_INSTRUTOR.versao } }, 'Aceite da política de privacidade registrado'));
-  }
   function atualizarTag(lista, id, dados) {
     const possui = dados.possui === 'sim' || dados.possui === true;
     return atualizarInstrutor(lista, id, (i) => registrar({ ...i, tagEstacionamento: { possui, identificacao: possui ? String(dados.identificacao ?? '').trim() : '', cedidaEm: possui ? dados.cedidaEm || '' : '', devolvidaEm: possui ? '' : dados.devolvidaEm || '' } }, possui ? 'Tag de estacionamento cedida' : 'Tag de estacionamento devolvida/não possui'));
@@ -331,7 +328,7 @@ const Instrutores = (() => {
     if (i.remuneracao === 'rpa' && semContaPessoal(i)) p.push('Sem PIX nem conta bancária');
     if (i.remuneracao !== 'folha' && !i.valoresHora.length) p.push('Sem valor hora');
     if (!antecedentesEmDia(i)) p.push(`Declaração de antecedentes ${anoAtual()} pendente`);
-    if (!i.lgpd) p.push('Aceite da política de privacidade pendente');
+    if (!usuarioDe(i)) p.push('Sem usuário de acesso');
     return p;
   }
   // O que impede pagar de verdade. Folha não entra: sem contrato, não há pagamento a bloquear.
@@ -351,7 +348,7 @@ const Instrutores = (() => {
   function filtrar(lista, { busca = '', status = '', situacao = '', remuneracao = '' } = {}) {
     const termo = normalizar(busca);
     return lista
-      .filter((i) => !termo || normalizar(`${i.nome} ${i.apelido} ${i.especialidade} ${i.contato.email} ${i.empresa?.razaoSocial ?? ''}`).includes(termo))
+      .filter((i) => !termo || normalizar(`${i.nome} ${i.nomeSocial ?? ''} ${i.apelido} ${i.especialidade} ${i.contato.email} ${i.empresa?.razaoSocial ?? ''}`).includes(termo))
       .filter((i) => !status || i.status === status)
       .filter((i) => !remuneracao || i.remuneracao === remuneracao)
       .filter((i) => {
@@ -359,7 +356,6 @@ const Instrutores = (() => {
         if (situacao === 'pendencias') return pendencias(i).length > 0;
         if (situacao === 'sem-empresa') return i.remuneracao === 'pj' && !i.empresa;
         if (situacao === 'antecedentes') return !antecedentesEmDia(i);
-        if (situacao === 'aguardando') return aguardandoCadastro(i);
         if (situacao === 'aguardando-nf') return i.pagamentos.some((p) => statusPagamento(p) === 'aguardando_nf');
         if (situacao === 'assinatura') return i.contratos.some((c) => c.status === 'assinatura');
         return true;
@@ -439,10 +435,11 @@ const Instrutores = (() => {
 
   function instrutorNovo(dados) {
     return {
-      status: 'ativo', remuneracao: 'pj', colaboradorId: null, foto: null, apelido: '', nascimento: '', cpf: '', rg: '', especialidade: '', bio: '',
+      status: 'ativo', remuneracao: 'pj', colaboradorId: null, foto: null, nomeSocial: '', apelido: '', nascimento: '', cpf: '', rg: '', especialidade: '', bio: '',
       endereco: { cep: '', logradouro: '', numero: '', complemento: '', bairro: '', cidade: '', uf: 'SC' },
       contato: { email: '', whatsapp: '', emergencia: { nome: '', telefone: '' } },
-      empresa: null, contaPessoal: null, custoHoraReferencia: null, valoresHora: [], contratos: [], pagamentos: [], antecedentes: [], lgpd: null, cadastro: null,
+      empresa: null, contaPessoal: null, custoHoraReferencia: null, valoresHora: [], contratos: [], pagamentos: [], antecedentes: [], lgpd: null,
+      acesso: { usuarioId: null },
       tagEstacionamento: { possui: false, identificacao: '', cedidaEm: '', devolvidaEm: '' },
       observacoes: '', historico: [],
       ...dados,
@@ -481,6 +478,9 @@ const Instrutores = (() => {
     const c = i.colaboradorId ? colaboradores().find((x) => x.id === i.colaboradorId) ?? null : null;
     return { colaborador: c, nascimento: c ? c.nascimento : i.nascimento, cpf: c ? c.cpf : i.cpf };
   }
+  // O usuário de acesso é da pessoa: o de quem é da equipe mora no colaborador.
+  const usuarioDe = (i) => (i.colaboradorId ? pessoaDe(i).colaborador?.acesso.usuarioId : i.acesso?.usuarioId) ?? null;
+  const vincularUsuario = (lista, id, usuarioId) => atualizarInstrutor(lista, id, (i) => ({ ...i, acesso: { usuarioId: usuarioId || null } }));
   // O colaborador ganha o papel de instrutor: nome e contato de trabalho vêm junto; o CPF fica com ele.
   function incluirDeColaborador(lista, c, { remuneracao }) {
     const existente = instrutorDoColaborador(lista, c.id);
@@ -492,70 +492,6 @@ const Instrutores = (() => {
     return { lista: [...lista, i], instrutor: i };
   }
 
-  // ---------- Link para o próprio instrutor preencher o cadastro ----------
-  // A escola convida (nome + contato) e manda o link; o instrutor completa dados
-  // pessoais, endereço, empresa para pagamento, antecedentes e o aceite LGPD.
-  // Protótipo: token só vale neste navegador (mesmo localStorage).
-
-  const gerarToken = () => Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, '0')).join('');
-
-  // Gera (ou regenera) o link — um novo token invalida o anterior.
-  function gerarCadastro(lista, id) {
-    return atualizarInstrutor(lista, id, (i) => ({ ...i, cadastro: { token: gerarToken(), criadoEm: hoje(), preenchidoEm: '' } }));
-  }
-  const porTokenCadastro = (lista, token) => (token ? lista.find((i) => i.cadastro?.token === token) ?? null : null);
-  const aguardandoCadastro = (i) => Boolean(i.cadastro && !i.cadastro.preenchidoEm);
-  // variante: 'formulario' (página única) ou 'passos' (stepper) — mesmo token, mesma gravação.
-  const urlCadastro = (i, variante = 'formulario') => `${location.origin}${location.pathname.replace(/[^/]*$/, '')}${variante === 'passos' ? 'cadastro-instrutor-steps.html' : 'cadastro-instrutor.html'}?token=${i.cadastro.token}`;
-
-  // Convite: cadastro mínimo (a escola só sabe o nome e como falar com a pessoa).
-  function validarConvite(d, lista) {
-    const erros = [];
-    if (String(d.nome ?? '').trim().length < 3) erros.push({ campo: 'nome', mensagem: 'Nome completo com pelo menos 3 letras.' });
-    if (!String(d.email ?? '').trim()) erros.push({ campo: 'email', mensagem: 'E-mail para mandar o link.' });
-    else if (!emailValido(d.email)) erros.push({ campo: 'email', mensagem: 'E-mail inválido.' });
-    else if (lista.some((i) => normalizar(i.contato.email) === normalizar(d.email))) erros.push({ campo: 'email', mensagem: 'Já existe instrutor com este e-mail.' });
-    if (digitos(d.whatsapp).length < 10) erros.push({ campo: 'whatsapp', mensagem: 'WhatsApp com DDD.' });
-    return erros;
-  }
-  function convidar(lista, d) {
-    const nome = String(d.nome).trim();
-    const i = registrar(instrutorNovo({
-      id: novoId(lista, 'i'),
-      nome,
-      apelido: String(d.apelido ?? '').trim() || nome.split(/\s+/)[0],
-      especialidade: String(d.especialidade ?? '').trim(),
-      contato: { email: String(d.email ?? '').trim(), whatsapp: digitos(d.whatsapp), emergencia: { nome: '', telefone: '' } },
-      cadastro: { token: gerarToken(), criadoEm: hoje(), preenchidoEm: '' },
-    }), 'Convite enviado — aguardando o instrutor preencher o cadastro');
-    return { lista: [...lista, i], instrutor: i };
-  }
-
-  // O que o instrutor manda pela página pública: identificação + contato + endereço + empresa + aceite.
-  function validarPreenchimento(d, lista, excetoId) {
-    const erros = validarDados(d, lista, excetoId);
-    erros.push(...validarContato(d.contato));
-    if (!String(d.contato.emergenciaNome ?? '').trim()) erros.push({ campo: 'emergenciaNome', mensagem: 'Quem avisamos numa emergência.' });
-    erros.push(...validarEndereco(d.endereco));
-    erros.push(...validarEmpresa(d.empresa, lista, excetoId));
-    if (!d.aceite) erros.push({ campo: 'aceite', mensagem: 'É preciso aceitar para continuar.' });
-    if (!d.aceiteDados) erros.push({ campo: 'aceiteDados', mensagem: 'É preciso aceitar para continuar.' });
-    return erros;
-  }
-
-  function preencherPeloInstrutor(lista, token, d) {
-    const i = porTokenCadastro(lista, token);
-    if (!i) return lista;
-    let r = atualizarDados(lista, i.id, d);
-    if (d.foto) r = atualizarFoto(r, i.id, d.foto);
-    r = atualizarContato(r, i.id, d.contato);
-    r = atualizarEndereco(r, i.id, d.endereco);
-    r = atualizarEmpresa(r, i.id, d.empresa);
-    if (String(d.antecedentes?.arquivo ?? '').trim()) r = registrarAntecedentes(r, i.id, { ano: anoAtual(), enviadoEm: hoje(), arquivo: d.antecedentes.arquivo });
-    r = registrarLgpd(r, i.id);
-    return atualizarInstrutor(r, i.id, (x) => registrar({ ...x, cadastro: { ...x.cadastro, preenchidoEm: new Date().toISOString() } }, 'Cadastro preenchido pelo instrutor'));
-  }
-
   return {
     CHAVE, carregar, salvar, normalizar, porId, numero, digitos, hoje, anoAtual,
     cpfValido, cnpjValido, fmtCpf, fmtCnpj, fmtCep, fmtTelefone, fmtData, fmtMoeda, idade, iniciais,
@@ -564,12 +500,11 @@ const Instrutores = (() => {
     contratoDe, totalContrato, horasContrato, contratosAtivos, podeEditarContrato, podeGerar, podeEnviarClicksign, podeReabrir, podeCancelarContrato, podeEncerrar, assinaturasPendentes,
     validarContrato, incluirContrato, atualizarItensContrato, ajustarItem, gerarDocumento, reabrirContrato, enviarClicksign, registrarAssinatura, cancelarContrato, encerrarContrato, removerContrato, itemDeTurma,
     pagamentosDoContrato, statusPagamento, totalPago, totalProgramado, podeProgramarPagamento, validarPagamento, incluirPagamento, validarNf, registrarNf, registrarPagamento, removerPagamento,
-    antecedentesDoAno, antecedentesEmDia, registrarAntecedentes, removerAntecedentes, registrarLgpd, atualizarTag,
+    antecedentesDoAno, antecedentesEmDia, registrarAntecedentes, removerAntecedentes, atualizarTag,
     pendencias, pendenciasPagamento, filtrar, contagem,
     validarDados, validarContato, validarEndereco, validarEmpresa, validarContaPessoal, validarFaixa,
     incluir, atualizarDados, atualizarFoto, atualizarContato, atualizarEndereco, atualizarEmpresa, atualizarContaPessoal, removerEmpresa,
-    instrutorDoColaborador, pessoaDe, incluirDeColaborador, atualizarObservacoes, alterarStatus, podeExcluir, remover,
+    instrutorDoColaborador, pessoaDe, usuarioDe, vincularUsuario, incluirDeColaborador, atualizarObservacoes, alterarStatus, podeExcluir, remover,
     incluirFaixa, atualizarFaixa, removerFaixa,
-    gerarCadastro, porTokenCadastro, aguardandoCadastro, urlCadastro, validarConvite, convidar, validarPreenchimento, preencherPeloInstrutor,
   };
 })();

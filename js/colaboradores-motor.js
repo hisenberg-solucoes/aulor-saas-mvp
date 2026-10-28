@@ -309,9 +309,9 @@ const Colaboradores = (() => {
       };
     }
 
-    // Usuários que nenhum colaborador da lista aponta (candidatos a vínculo).
-    function livres(lista, exceto = null) {
-      const usados = new Set(lista.filter((c) => c.id !== exceto).map((c) => c.acesso.usuarioId).filter(Boolean));
+    // Usuários que nenhum colaborador da lista aponta (candidatos a vínculo); `ocupados`: os ligados a instrutores de fora da equipe.
+    function livres(lista, exceto = null, ocupados = []) {
+      const usados = new Set([...lista.filter((c) => c.id !== exceto).map((c) => c.acesso.usuarioId), ...ocupados].filter(Boolean));
       return usuarios().filter((u) => !usados.has(u.id));
     }
 
@@ -324,11 +324,13 @@ const Colaboradores = (() => {
 
     const filtrarPerfis = (s, perfilIds) => perfilIds.filter((p) => s.perfis.some((x) => x.id === p));
 
-    function criar(nome, perfilIds) {
+    // `email`: a conta que nasce no aceite de um convite (AULOR-002) entra por ele.
+    function criar(nome, perfilIds, email = '') {
       const s = snapshot();
       const usuario = {
         id: idDe(nome, s.usuarios),
         nome: String(nome).trim(),
+        ...(email ? { email: String(email).trim().toLowerCase() } : {}),
         perfis: filtrarPerfis(s, perfilIds),
         extras: {},
       };
