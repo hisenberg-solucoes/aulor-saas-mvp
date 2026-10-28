@@ -32,6 +32,9 @@ test('editar mantém o id e o autor; liberar grava a data', () => {
   assert.equal(m.titulo, 'Slides v2');
   assert.equal(m.autor.nome, 'Prof');
   assert.equal(m.liberarEm, '2026-10-01');
+  // O Desfazer do portal do professor devolve a data anterior (null = não liberado).
+  Materiais.liberar(material.id, null);
+  assert.equal(Materiais.situacao(Materiais.daAula('t2', 3)[0], '2026-10-27'), 'bloqueado');
 });
 
 test('rótulo da pílula: o mesmo nos dois portais, com a data de quem está programado', () => {

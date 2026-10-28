@@ -27,6 +27,8 @@
     hoje: { nome: 'Hoje', ponto: 'bg-petrol-800 dark:bg-sky-300' },
     futura: { nome: 'Futura', ponto: 'bg-sky-500' },
     cancelada: { nome: 'Cancelada', ponto: 'bg-red-500' },
+    // Data da prévia da agenda: ponto vazado, ainda não é aula.
+    prevista: { nome: 'Prevista', ponto: 'border-[1.5px] border-slate-400 dark:border-neutral-500' },
   };
   const MATRICULA = {
     matriculado: { nome: 'Matriculado', ponto: 'bg-emerald-500' },
@@ -59,12 +61,18 @@
     return FORMATO[t.turma.formato] ?? '';
   };
 
-  function toast(msg) {
+  // `acao` = { rotulo, fn }: botão no toast (o Desfazer), que fica 6 s em vez de 3,2 (como em js/cursos-app.js).
+  function toast(msg, acao = null) {
     const el = document.createElement('div');
-    el.className = 'toast-anim pointer-events-auto rounded-lg bg-slate-900 dark:bg-neutral-800 text-white text-sm px-4 py-2 shadow-lg';
-    el.textContent = msg;
+    el.className = `toast-anim pointer-events-auto flex items-center gap-3 rounded-lg bg-slate-900 dark:bg-neutral-800 text-white text-sm shadow-lg ${acao ? 'pl-4 pr-1.5 py-1.5' : 'px-4 py-2'}`;
+    el.append(Object.assign(document.createElement('span'), { textContent: msg }));
+    if (acao) {
+      const b = Object.assign(document.createElement('button'), { type: 'button', textContent: acao.rotulo, className: 'h-8 px-2.5 rounded-md font-semibold text-areia hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60' });
+      b.addEventListener('click', () => { el.remove(); acao.fn(); });
+      el.append(b);
+    }
     $('toasts').appendChild(el);
-    setTimeout(() => el.remove(), 3200);
+    setTimeout(() => el.remove(), acao ? 6000 : 3200);
   }
 
   // ---------- Modal centralizado (requisitos) ----------
@@ -149,7 +157,7 @@
         .flatMap((t) => aulasDaTurma(t).filter((a) => a.situacaoAula !== 'cancelada' && a.data >= hoje && a.data <= ate).map((a) => ({ a, t })))
         .sort((x, y) => `${x.a.data} ${x.a.inicio}`.localeCompare(`${y.a.data} ${y.a.inicio}`));
       const materiais = ({ a, t }) => {
-        if (!Turmas.temAgendamento(t.turma)) return '<span class="text-slate-500 dark:text-neutral-400">Aulas ainda não geradas</span>';
+        if (!Turmas.temAgendamento(t.turma)) return '<span class="text-slate-500 dark:text-neutral-400">Aguardando o calendário</span>';
         const ms = Materiais.daAula(t.turma.id, a.id);
         if (!ms.length) return ponto(a.data <= PortalProfessor.somarDias(hoje, 1) ? 'bg-amber-500' : 'bg-slate-400', 'Sem material');
         const qtd = plural(ms.length, 'material', 'materiais');
@@ -449,20 +457,20 @@
         <span class="text-slate-400">${svg(m.tipo === 'link' ? ICO_LINK : ICO_ARQUIVO)}</span>
         <div class="min-w-0 flex-1">
           <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(m.titulo)}</p>
-          <p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${m.tipo === 'link' ? `<a href="${esc(m.url)}" target="_blank" rel="noopener" class="link !text-xs">${esc(m.url.replace(/^https?:\/\//, ''))}</a>` : esc(m.arquivo)}${m.descricao ? ` · ${esc(m.descricao)}` : ''}</p>
+          <p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${m.autor?.papel === 'coordenacao' ? '<span class="font-medium text-slate-700 dark:text-neutral-200">Adicionado pela coordenação</span> · ' : ''}${m.tipo === 'link' ? `<a href="${esc(m.url)}" target="_blank" rel="noopener" class="link !text-xs">${esc(m.url.replace(/^https?:\/\//, ''))}</a>` : esc(m.arquivo)}${m.descricao ? ` · ${esc(m.descricao)}` : ''}</p>
         </div>
         ${pilulaMaterial(m)}
-        <div class="flex items-center">
+        ${d.concluida ? '' : `<div class="flex items-center">
           ${Materiais.situacao(m, hoje) !== 'liberado' ? `<button type="button" data-liberar-material="${esc(m.id)}" aria-label="Liberar agora: ${esc(m.titulo)}" class="botao-fantasma">Liberar agora</button>` : ''}
           <button type="button" data-editar-material="${esc(m.id)}" aria-label="Editar ${esc(m.titulo)}" class="botao-fantasma">Editar</button>
           <button type="button" data-remover-material="${esc(m.id)}" aria-label="Remover ${esc(m.titulo)}" class="botao-fantasma">Remover</button>
-        </div>
+        </div>`}
       </li>`;
 
     // Material só entra em aula gerada pela coordenação (Gerar aulas, no administrativo, que tira os feriados
-    // e pode criar o Meet de cada aula); na prévia da agenda as datas só informam.
+    // e pode criar o Meet de cada aula); na prévia da agenda as datas só informam. Turma concluída é só consulta.
     function linhaAula(a, previa) {
-      const s = AULA[a.situacaoAula];
+      const s = previa ? AULA.prevista : AULA[a.situacaoAula];
       const cancelada = a.situacaoAula === 'cancelada';
       const conteudo = a.conteudo || a.modulos.join(' · ');
       const ms = a.id ? Materiais.daAula(d.turma.id, a.id) : [];
@@ -472,11 +480,11 @@
             ${blocoData(a)}
             <div class="min-w-0 flex-1">
               <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 tabular-nums ${cancelada ? 'line-through' : ''}">${descricaoAula(a)}${a.local ? ` · ${esc(a.local)}` : ''}</p>
-              <p class="text-xs text-slate-500 dark:text-neutral-400">${conteudo ? esc(conteudo) : 'Sem conteúdo definido'}${cancelada && a.motivo ? ` · <span class="text-red-600 dark:text-red-400">${esc(motivoTexto(a.motivo))}</span>` : ''}${a.origem === 'reposicao' ? ' · Reposição' : a.origem === 'extra' ? ' · Aula extra' : ''}</p>
+              ${previa ? '' : `<p class="text-xs text-slate-500 dark:text-neutral-400">${conteudo ? esc(conteudo) : 'Sem conteúdo definido'}${cancelada && a.motivo ? ` · <span class="text-red-600 dark:text-red-400">${esc(motivoTexto(a.motivo))}</span>` : ''}${a.origem === 'reposicao' ? ' · Reposição' : a.origem === 'extra' ? ' · Aula extra' : ''}</p>`}
             </div>
             <div class="flex items-center gap-3 shrink-0 text-sm">
               ${ponto(s.ponto, s.nome)}
-              ${cancelada || previa ? '' : `<button type="button" data-add-material="${esc(chaveAula(a))}" aria-label="Adicionar material: ${a.n ? `aula ${a.n}, ` : ''}${diaMes(a.data)}" class="botao-fantasma">${svg(ICO_MAIS)}Adicionar material</button>`}
+              ${cancelada || previa || d.concluida ? '' : `<button type="button" data-add-material="${esc(chaveAula(a))}" aria-label="Adicionar material: ${a.n ? `aula ${a.n}, ` : ''}${diaMes(a.data)}" class="botao-fantasma">${svg(ICO_MAIS)}Adicionar material</button>`}
             </div>
           </div>
           ${ms.length ? `<ul class="mt-3 sm:ml-16 space-y-2">${ms.map(linhaMaterial).join('')}</ul>` : ''}
@@ -496,12 +504,27 @@
       const lista = (as) => `<div class="cartao divide-y divide-slate-100 dark:divide-neutral-900">${as.map((a) => linhaAula(a, previa)).join('')}</div>`;
       const titulo = (texto, n = null) => `<h3 class="titulo-secao mb-2">${texto}${n != null ? ` <span class="ml-1 text-xs font-normal text-slate-500 dark:text-neutral-400 tabular-nums">${n}</span>` : ''}</h3>`;
       const CHEVRON = '<svg class="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>';
+      // Prévia: as datas da agenda numa lista só, sem "próxima aula", com o aviso do que falta para o material entrar.
+      if (previa) {
+        const [cabeca, corpo] = d.concluida
+          ? ['Esta turma terminou sem calendário de aulas no sistema', 'As datas abaixo são as previstas pela agenda da turma. Só para consulta.']
+          : ['O calendário de aulas desta turma ainda não foi montado', 'As datas abaixo são previstas pela agenda da turma, já sem feriados, e podem mudar. Você poderá adicionar material quando a coordenação montar o calendário. Se a turma começa em breve, fale com a coordenação.'];
+        return `
+          <div class="space-y-6">
+            <div class="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900/60 px-4 py-3.5">
+              <span class="mt-0.5 shrink-0 text-slate-500 dark:text-neutral-400" aria-hidden="true">${ICO.calendario}</span>
+              <div class="min-w-0 space-y-1">
+                <p class="text-sm font-semibold text-slate-900 dark:text-neutral-100">${cabeca}</p>
+                <p class="text-sm text-slate-600 dark:text-neutral-300 max-w-prose">${corpo}</p>
+              </div>
+            </div>
+            <section>${titulo(d.concluida ? 'Datas pela agenda' : 'Datas previstas', d.todas.length)}${lista(d.todas)}</section>
+          </div>`;
+      }
       return `
         <div class="space-y-6">
           <div class="space-y-2">
-            <p class="text-sm text-slate-500 dark:text-neutral-400">${previa
-              ? 'As aulas desta turma ainda não foram geradas pela coordenação. As datas abaixo são uma prévia da agenda, sem os feriados; os materiais entram depois que a coordenação gerar as aulas.'
-              : `${plural(d.aulas.length, 'aula', 'aulas')} agendadas. ${mats.length ? `${plural(mats.length, 'material', 'materiais')}, ${plural(liberados, 'liberado', 'liberados')}. ` : ''}O aluno vê no portal só o material liberado.`}</p>
+            <p class="text-sm text-slate-500 dark:text-neutral-400">${d.concluida ? `Turma concluída: ${plural(d.aulas.length, 'aula', 'aulas')}. ` : `${plural(d.aulas.length, 'aula', 'aulas')} agendadas. `}${mats.length ? `${plural(mats.length, 'material', 'materiais')}, ${plural(liberados, 'liberado', 'liberados')}. ` : ''}${d.concluida ? 'Só para consulta: para mudar um material, fale com a coordenação.' : 'O aluno vê no portal só o material liberado.'}</p>
             ${pend.length ? `<ul class="space-y-1">${pend.map((p) => `<li class="flex items-start gap-2 text-sm text-slate-800 dark:text-neutral-100"><span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" aria-hidden="true"></span>${esc(p.texto)}.</li>`).join('')}</ul>` : ''}
           </div>
           ${proxima ? `<section>${titulo(proxima.situacaoAula === 'hoje' ? 'Aula de hoje' : 'Próxima aula')}${lista([proxima])}</section>` : ''}
@@ -538,7 +561,11 @@
     const focarAula = (aulaId) => $('conteudo-aba').querySelector(`[data-aula="${CSS.escape(String(aulaId))}"] [data-add-material]`)?.focus();
 
     function dialogoMaterial(aula, m = null) {
-      const modo = !m ? 'agora' : Materiais.situacao(m, hoje) === 'liberado' ? 'agora' : m.liberarEm ? 'data' : 'depois';
+      // Aula futura: o padrão é liberar no dia da aula (o aluno vê o liberado mesmo antes de a aula acontecer).
+      const futura = aula.data > hoje;
+      const modo = !m ? (futura ? 'aula' : 'agora')
+        : Materiais.situacao(m, hoje) === 'liberado' ? 'agora'
+          : futura && m.liberarEm === aula.data ? 'aula' : m.liberarEm ? 'data' : 'depois';
       const tipo = m?.tipo ?? 'arquivo';
       const opcao = (nome, valor, rotulo, apoio = '') => `
         <label class="flex items-start gap-2 cursor-pointer">
@@ -576,6 +603,7 @@
           <fieldset>
             <legend class="rotulo">Quando liberar</legend>
             <div class="mt-1.5 space-y-2.5">
+              ${futura ? opcao('liberar', 'aula', `No dia da aula (${diaMes(aula.data)})`, 'Libera sozinho no dia; antes disso o aluno não vê.') : ''}
               ${opcao('liberar', 'agora', 'Agora', esc(Materiais.SITUACOES.liberado.descricao))}
               ${opcao('liberar', 'data', 'Em uma data', esc(Materiais.SITUACOES.programado.descricao))}
               <div data-bloco="data" class="pl-6" ${modo === 'data' ? '' : 'hidden'}>
@@ -606,7 +634,7 @@
           titulo: f.titulo.value, descricao: f.descricao.value, tipo: f.tipo.value,
           arquivo: f.arquivo.files[0]?.name ?? m?.arquivo ?? '', url: f.url.value,
           // "Agora" mantém a data de quem já estava liberado.
-          liberarEm: liberar === 'agora' ? (m && Materiais.situacao(m, hoje) === 'liberado' ? m.liberarEm : hoje) : liberar === 'data' ? f.liberarEm.value : null,
+          liberarEm: liberar === 'agora' ? (m && Materiais.situacao(m, hoje) === 'liberado' ? m.liberarEm : hoje) : liberar === 'aula' ? aula.data : liberar === 'data' ? f.liberarEm.value : null,
           autor: { nome: instrutor.nome, papel: 'professor' },
         };
         const erros = Materiais.validar(dados);
@@ -647,10 +675,18 @@
       if (b.dataset.editarMaterial) dialogoMaterial(d.todas.find((a) => a.id === m.aulaId) ?? {}, m);
       else if (b.dataset.removerMaterial) dialogoRemover(m);
       else {
+        const antes = m.liberarEm;
         Materiais.liberar(m.id, hoje);
         renderAba();
         focarAula(m.aulaId);
-        toast(`"${m.titulo}" liberado: o aluno já vê.`);
+        // Desfaz só se ninguém mexeu no material nesse meio-tempo.
+        toast(`"${m.titulo}" liberado: o aluno já vê.`, { rotulo: 'Desfazer', fn: () => {
+          if (Materiais.daTurma(d.turma.id).find((x) => x.id === m.id)?.liberarEm !== hoje) { toast('Não dá para desfazer: o material mudou depois.'); return; }
+          Materiais.liberar(m.id, antes);
+          renderAba();
+          focarAula(m.aulaId);
+          toast('Liberação desfeita: o aluno não vê mais.');
+        } });
       }
     });
 

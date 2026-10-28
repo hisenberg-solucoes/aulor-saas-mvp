@@ -112,14 +112,15 @@ const PortalProfessor = (() => {
   // ---------- Pendências ----------
   // Na V1 (sem diário, gravações, dossiês, contratos nem pagamentos no portal): a turma online/híbrida
   // sem link do Meet, a aula de hoje ou de amanhã ainda sem material e o material não liberado de aula
-  // que já aconteceu (estas duas só com as aulas geradas e o motor de materiais carregado).
+  // que já aconteceu (estas duas só com as aulas geradas, o motor de materiais carregado e a turma em curso:
+  // a concluída é só consulta no portal).
   function pendencias(instrutor, ts, ref = hoje()) {
     const p = [];
     ts.forEach((t) => {
       const href = `turma.html?id=${encodeURIComponent(t.turma.id)}&aba=aulas`;
       const online = t.turma.formato === 'online' || t.turma.formato === 'hibrido';
       if (online && t.situacao !== 'concluida' && !t.turma.meetLink) p.push({ tipo: 'meet', turma: t, qtd: 1, texto: `${t.turma.codigo} é ${t.turma.formato === 'online' ? 'online' : 'híbrida'} e ainda não tem link do Meet; a coordenação cadastra`, href });
-      if (typeof Materiais === 'undefined' || !Turmas.temAgendamento(t.turma)) return;
+      if (typeof Materiais === 'undefined' || !Turmas.temAgendamento(t.turma) || t.situacao === 'concluida') return;
       const amanha = somarDias(ref, 1);
       t.aulas.filter((a) => (a.data === ref || a.data === amanha) && !Materiais.daAula(t.turma.id, a.id).length).forEach((a) => {
         p.push({ tipo: 'sem_material', turma: t, qtd: 1, texto: `A aula de ${rotuloDia(a.data, ref).toLowerCase()} (${a.inicio}) ainda não tem material`, href });
