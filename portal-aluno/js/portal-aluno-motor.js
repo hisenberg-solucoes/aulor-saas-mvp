@@ -337,6 +337,15 @@ const PortalAluno = (() => {
     };
   }
 
+  // Materiais de uma aula para o aluno (js/materiais-motor.js): os já liberados e, enquanto não há nenhum, a data
+  // da próxima liberação programada pelo professor (nula se ele ainda não marcou). Só aula agendada tem id.
+  function materiaisDaAula(turmaId, aulaId, ref = hoje()) {
+    const todos = typeof Materiais !== 'undefined' && aulaId != null ? Materiais.daAula(turmaId, aulaId) : [];
+    const materiaisLiberados = todos.filter((x) => Materiais.liberado(x, ref));
+    const liberaMateriaisEm = todos.filter((x) => Materiais.situacao(x, ref) === 'programado').map((x) => x.liberarEm).sort()[0] ?? null;
+    return { materiaisLiberados, liberaMateriaisEm };
+  }
+
   // Detalhe de um curso do aluno (turma): todas as aulas (passadas e futuras) com situação e os materiais
   // que o professor já liberou (js/materiais-motor.js), módulos marcados como dados e softwares/materiais/pré-requisitos.
   function detalheCurso(alunoId, turmaId, ref = hoje()) {
@@ -350,8 +359,7 @@ const PortalAluno = (() => {
       situacaoAula: a.status === 'cancelada' ? 'cancelada' : a.data < ref ? 'realizada' : a.data === ref ? 'hoje' : 'prevista',
       sala: (a.salaId ? salas.find((s) => s.id === a.salaId) : null) ?? m.sala,
       horas: Turmas.horasAula(a),
-      // Materiais da aula já liberados (só aulas agendadas têm id; vazio sem o motor de materiais).
-      materiaisLiberados: typeof Materiais !== 'undefined' && a.id != null ? Materiais.daAula(m.turma.id, a.id).filter((x) => Materiais.liberado(x, ref)) : [],
+      ...materiaisDaAula(m.turma.id, a.id, ref),
     }));
     const realizadas = aulas.filter((a) => a.situacaoAula === 'realizada');
     // Módulos dados: pelos moduloIds das aulas realizadas quando o agendamento distribuiu conteúdo;
@@ -533,7 +541,7 @@ const PortalAluno = (() => {
     fmtData, fmtDataLonga, rotuloDia, diaSemana,
     matriculas, proximasAulas, financeiro,
     contextoFinanceiro, financeiroDetalhado, situacaoParcela, linhaDigitavel, pixCopiaCola, historicoFinanceiro,
-    SITUACOES_MATRICULA, situacaoMatricula, todasMatriculas, cursosAgrupados, detalheCurso,
+    SITUACOES_MATRICULA, situacaoMatricula, todasMatriculas, cursosAgrupados, detalheCurso, materiaisDaAula,
     // contratos (contratos.html)
     SITUACOES_CONTRATO_PORTAL, situacaoContrato, progressoMatricula, linhaDoTempoContrato, contratacaoOnline, arrependimento, assinaturaPendenteDoAluno, turmasParaTransferencia, contratosDetalhados, simularRescisaoPortal,
     CHAVE_SOLICITACOES, TIPOS_SOLICITACAO, STATUS_SOLICITACAO, solicitacoes, solicitacoesDoAluno, solicitacaoAberta, registrarSolicitacao, desistirSolicitacao,

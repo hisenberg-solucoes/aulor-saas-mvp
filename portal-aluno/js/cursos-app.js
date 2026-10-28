@@ -22,7 +22,8 @@
     cancelada: { nome: 'Cancelada', ponto: 'bg-red-500' },
   };
   const TIPO_MATERIAL = { video: 'Vídeo', arquivo: 'Arquivo', link: 'Link' };
-  const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
+  const ICONE_RELOGIO = '<svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+  const ponto =(cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
   const situacao = (id) => ponto(PONTO[id] ?? 'bg-slate-400', SIT[id]?.nome ?? id);
   const barra = (pct, concluido = false) => `<div class="barra-progresso"><div class="h-full rounded-full ${concluido ? 'bg-slate-400 dark:bg-neutral-600' : 'bg-petrol-800 dark:bg-sky-400'}" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
   const chipArea = (area) => {
@@ -268,16 +269,17 @@
         ${d.curso?.resumo ? `<div class="cartao p-5 mt-5"><p class="rotulo mb-1.5">Sobre o curso</p><p class="text-sm text-slate-700 dark:text-neutral-200">${esc(d.curso.descricao || d.curso.resumo)}</p></div>` : ''}`;
     }
 
-    // Materiais da aula (js/materiais-motor.js): só os liberados abrem; aula futura sem nada liberado fica bloqueada.
-    const CADEADO = '<svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>';
+    // Materiais da aula (js/materiais-motor.js): só os liberados abrem; aula por vir sem nada liberado espera o
+    // professor liberar (mesmo vocabulário de aulas.html e aula.html).
     const acaoMaterialAula = (mt, rotulo, cls = 'link block text-left') => (mt.tipo === 'link'
       ? `<a href="${esc(mt.url)}" target="_blank" rel="noopener" class="${cls}">${rotulo}</a>`
       : `<button type="button" data-acao="baixar-material" data-nome="${esc(mt.arquivo || mt.titulo)}" class="${cls}">${rotulo}</button>`);
     const materiaisAula = (a) => {
       if (a.materiaisLiberados.length) return a.materiaisLiberados.map((mt) => acaoMaterialAula(mt, esc(mt.titulo))).join('');
-      if (a.situacaoAula === 'prevista') return `<span class="inline-flex items-center gap-1 text-slate-400 whitespace-nowrap" title="O professor libera o acesso aos materiais desta aula.">${CADEADO}Bloqueado</span>`;
+      if (a.situacaoAula === 'prevista' || a.situacaoAula === 'hoje') return `<span class="inline-flex items-start gap-1 text-slate-500 dark:text-neutral-400">${ICONE_RELOGIO}${a.liberaMateriaisEm ? `Libera em ${data(a.liberaMateriaisEm)}` : 'Ainda não liberado'}</span>`;
       return '<span class="text-slate-400">—</span>';
     };
+    const urlAula = (a) => `aula.html?turma=${encodeURIComponent(d.turma.id)}&data=${encodeURIComponent(a.data)}&inicio=${encodeURIComponent(a.inicio)}`;
 
     function abaAulas() {
       if (!d.aulas.length) return vazio('As aulas desta turma ainda não foram agendadas.');
@@ -293,7 +295,7 @@
             const conteudo = a.conteudo || mods.join(' · ');
             return `<tr class="${a.situacaoAula === 'cancelada' ? 'opacity-60' : ''}">
               <td class="tabular-nums text-slate-500 dark:text-neutral-400">${a.n ?? '—'}</td>
-              <td class="whitespace-nowrap tabular-nums">${data(a.data)} <span class="text-xs text-slate-500 dark:text-neutral-400">${esc(PortalAluno.diaSemana(a.data).slice(0, 3))}</span></td>
+              <td class="whitespace-nowrap tabular-nums"><a href="${urlAula(a)}" class="link">${data(a.data)}</a> <span class="text-xs text-slate-500 dark:text-neutral-400">${esc(PortalAluno.diaSemana(a.data).slice(0, 3))}</span></td>
               <td class="whitespace-nowrap tabular-nums">${esc(a.inicio)}–${esc(a.fim)}</td>
               <td>${conteudo ? esc(conteudo) : '<span class="text-slate-400">—</span>'}${a.conteudo && mods.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(mods.join(' · '))}</p>` : ''}${a.status === 'cancelada' && a.motivo ? `<p class="text-xs text-red-600 dark:text-red-400">${esc(typeof a.motivo === 'string' ? Aulas.motivoDe(a.motivo) : [Aulas.motivoDe(a.motivo.tipo), a.motivo.texto].filter(Boolean).join(' — '))}</p>` : ''}</td>
               <td>${a.sala ? esc(a.sala.nome) : d.turma.meetLink ? 'Google Meet' : '—'}${a.situacaoAula === 'hoje' && meetOnline(d) ? ` <a href="${esc(d.turma.meetLink)}" target="_blank" rel="noopener" class="link text-xs whitespace-nowrap ml-1">Entrar no Meet</a>` : ''}</td>

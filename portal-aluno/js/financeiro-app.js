@@ -23,7 +23,7 @@
   };
   const SITUACAO_GERAL = {
     em_dia: { nome: 'Em dia', ponto: 'bg-emerald-500', texto: 'Nenhuma parcela vencida.' },
-    vencida: { nome: 'Parcela vencida', ponto: 'bg-red-500', texto: 'Regularize para manter o acesso às aulas.' },
+    vencida: { nome: 'Parcela vencida', ponto: 'bg-red-500', texto: 'Pague por Pix ou boleto na parcela vencida.' },
     quitado: { nome: 'Quitado', ponto: 'bg-slate-400', texto: 'Todas as parcelas foram pagas.' },
     sem_cobrancas: { nome: 'Sem cobranças', ponto: 'bg-slate-400', texto: 'Nenhum contrato com parcelas no seu nome.' },
   };
@@ -58,16 +58,15 @@
   const rodapeModal = (extra = '') => `<div class="px-5 py-3 border-t border-slate-100 dark:border-neutral-900 flex justify-end gap-2">${extra}<button type="button" data-fechar class="botao-sec">Fechar</button></div>`;
   const linhaDl = (dt, dd) => `<div class="flex justify-between gap-4 py-1.5"><dt class="text-slate-500 dark:text-neutral-400">${esc(dt)}</dt><dd class="text-right text-slate-800 dark:text-neutral-100 font-medium">${dd}</dd></div>`;
 
-  // ---------- Área de transferência (com fallback para o modal quando o clipboard não está disponível) ----------
+  // ---------- Área de transferência ----------
+  // Só se copia de dentro da janela de pagamento, onde o código já está à vista: se o navegador negar, copia-se à mão.
 
-  async function copiar(texto, msgOk, rotuloFallback) {
+  async function copiar(texto, msgOk) {
     try {
-      if (!navigator.clipboard?.writeText) throw new Error('sem clipboard');
       await navigator.clipboard.writeText(texto);
       toast(msgOk);
     } catch (_) {
-      toast('Não foi possível copiar automaticamente — copie o código na janela.');
-      abrirModal(`${cabecalhoModal(rotuloFallback)}<div class="p-5"><textarea readonly rows="4" class="w-full rounded-lg border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 p-3 font-mono text-xs text-slate-800 dark:text-neutral-100" onfocus="this.select()">${esc(texto)}</textarea></div>${rodapeModal()}`);
+      toast('Não foi possível copiar. Selecione o código na janela e copie.');
     }
   }
 
@@ -76,7 +75,8 @@
   const fin = PortalAluno.financeiroDetalhado(aluno.id, hoje);
   const ABAS = [{ id: 'parcelas', titulo: 'Parcelas' }, { id: 'historico', titulo: 'Histórico' }];
   const abaUrl = new URLSearchParams(location.search).get('aba');
-  const estado = { aba: ABAS.some((x) => x.id === abaUrl) ? abaUrl : 'parcelas', filtro: 'todas' };
+  // Abre no que falta pagar; as pagas ficam a um filtro de distância.
+  const estado = { aba: ABAS.some((x) => x.id === abaUrl) ? abaUrl : 'parcelas', filtro: fin.abertas.length ? 'abertas' : 'todas' };
   const todasParcelas = () => fin.contratos.flatMap((b) => b.parcelas.map((p) => ({ b, p })));
   const blocoDe = (id) => fin.contratos.find((b) => b.contrato.id === id);
   const parcelaDe = (id, n) => blocoDe(id)?.parcelas.find((p) => p.n === Number(n));
@@ -131,8 +131,12 @@
     } else {
       proximo = cartao('Próximo vencimento', '—', fin.vencidas.length ? 'Só há parcelas vencidas em aberto.' : 'Nenhuma parcela a vencer.');
     }
+    // Uma parcela por vez: cada uma tem o seu boleto e o seu Pix. O cartão leva direto à mais antiga.
+    const maisAntiga = [...fin.vencidas].sort((x, y) => x.vencimento.localeCompare(y.vencimento))[0];
+    const pagarAntiga = maisAntiga && maisAntiga.bloco.pagaEste
+      ? `<button type="button" data-acao="pagar" data-contrato="${maisAntiga.bloco.contrato.id}" data-n="${maisAntiga.n}" class="botao-pri mt-3">Pagar a mais antiga</button>` : '';
     $('resumo').innerHTML = [
-      cartao('Situação', ponto(s.ponto, s.nome), vencidasTexto, fin.situacao === 'vencida' ? 'vermelho' : 'neutro'),
+      cartao('Situação', ponto(s.ponto, s.nome), `${vencidasTexto}${pagarAntiga ? `<br>${pagarAntiga}` : ''}`, fin.situacao === 'vencida' ? 'vermelho' : 'neutro'),
       cartao('Total pago', moeda(fin.totalPago), nPagas ? `${nPagas} ${nPagas === 1 ? 'parcela paga' : 'parcelas pagas'}` : 'Nenhuma parcela paga ainda.'),
       cartao('Em aberto', moeda(fin.totalAberto), nAbertas ? `${nAbertas} ${nAbertas === 1 ? 'parcela' : 'parcelas'} (emitidas e previstas)` : 'Nada em aberto.'),
       proximo,
@@ -152,11 +156,8 @@
       return `<span class="text-slate-400 text-xs">${dispIso <= hoje ? 'Boleto ainda não emitido' : `Boleto disponível em ${data(dispIso)}`}</span>`;
     }
     if (!b.pagaEste) return `<span class="text-slate-400 text-xs">Em nome de ${esc(b.responsavel.nome)}</span>`;
-    return `<div class="flex flex-wrap gap-x-3 gap-y-1">
-      <button type="button" data-acao="linha" data-contrato="${b.contrato.id}" data-n="${p.n}" class="link">Copiar linha digitável</button>
-      <button type="button" data-acao="pix" data-contrato="${b.contrato.id}" data-n="${p.n}" class="link">Pix copia e cola</button>
-      <button type="button" data-acao="pagar-pix" data-contrato="${b.contrato.id}" data-n="${p.n}" class="link">Pagar com Pix</button>
-    </div>`;
+    // Uma ação só; Pix ou boleto se escolhe na janela. A vencida pede mais atenção (primário).
+    return `<button type="button" data-acao="pagar" data-contrato="${b.contrato.id}" data-n="${p.n}" class="${p.vencida ? 'botao-pri' : 'botao-sec'}">Pagar</button>`;
   }
 
   function tabelaParcelas() {
@@ -164,7 +165,7 @@
     const varios = fin.contratos.length > 1;
     const linhas = todasParcelas()
       .filter(({ p }) => f === 'todas' || (f === 'abertas' ? p.status === 'emitida' || p.status === 'prevista' : p.status === 'paga'))
-      .sort((x, y) => x.p.vencimento.localeCompare(y.p.vencimento) || x.p.n - y.p.n);
+      .sort((x, y) => Number(y.p.vencida) - Number(x.p.vencida) || x.p.vencimento.localeCompare(y.p.vencimento) || x.p.n - y.p.n);
     if (!linhas.length) return `<div class="px-5 py-8 text-center text-sm text-slate-500 dark:text-neutral-400">Nenhuma parcela ${f === 'abertas' ? 'em aberto' : f === 'pagas' ? 'paga' : ''}.</div>`;
     return `<div class="overflow-x-auto"><table class="tabela w-full">
       <thead><tr><th class="w-16">Nº</th>${varios ? '<th>Contrato</th>' : ''}<th>Vencimento</th><th>Valor</th><th>Status</th><th>Ação</th></tr></thead>
@@ -192,7 +193,7 @@
     if (!fin.contratos.length) { $('conteudo-aba').innerHTML = vazio('Nenhuma parcela: você não tem contratos ativos no seu nome.'); return; }
     $('conteudo-aba').innerHTML = `
       <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <p class="text-sm text-slate-500 dark:text-neutral-400">Parcelas de ${fin.contratos.length === 1 ? 'seu contrato' : `seus ${fin.contratos.length} contratos`}, por vencimento.</p>
+        <p class="text-sm text-slate-500 dark:text-neutral-400">Parcelas de ${fin.contratos.length === 1 ? 'seu contrato' : `seus ${fin.contratos.length} contratos`}, por vencimento${fin.vencidas.length ? ', com as vencidas primeiro' : ''}.</p>
         <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-neutral-300">Mostrar
           <select data-filtro class="select">
             <option value="todas" ${estado.filtro === 'todas' ? 'selected' : ''}>Todas</option>
@@ -246,7 +247,8 @@
       ${rodapeModal(`<button type="button" data-acao="baixar-comprovante" class="botao-pri">Baixar PDF</button>`)}`);
   }
 
-  function modalPix(b, p) {
+  // Pagar uma parcela: Pix (QR e código) ou boleto (código de barras em linha), lado a lado na mesma janela.
+  function modalPagar(b, p) {
     const codigo = PortalAluno.pixCopiaCola(b.contrato, p);
     // QR "fake": grade determinística a partir do código, só para o protótipo.
     const n = 21;
@@ -260,15 +262,25 @@
       else cheio = Number(semente[i % semente.length]) + x * y % 3 > 4;
       if (cheio) celulas.push(`<rect x="${x}" y="${y}" width="1" height="1"/>`);
     }
-    abrirModal(`${cabecalhoModal('Pagar com Pix', `Parcela ${p.n}/${b.parcelas.length} · vence ${data(p.vencimento)}`)}
-      <div class="p-5 text-center">
-        <svg viewBox="0 0 ${n} ${n}" class="mx-auto h-44 w-44 rounded-lg bg-white p-2 border border-slate-200 dark:border-neutral-800 fill-slate-900" shape-rendering="crispEdges">${celulas.join('')}</svg>
-        <p class="font-display font-semibold text-xl text-slate-900 dark:text-neutral-100 mt-3">${moeda(p.valor)}</p>
-        <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">Abra o app do seu banco, escolha Pix → Ler QR code, ou use o código abaixo.</p>
-        <textarea readonly rows="3" class="mt-3 w-full rounded-lg border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 p-2.5 font-mono text-[11px] text-slate-700 dark:text-neutral-200 break-all" onfocus="this.select()">${esc(codigo)}</textarea>
-        <p class="text-[11px] text-slate-400 mt-2">Simulação do protótipo: o pagamento não é processado.</p>
+    const linha = PortalAluno.linhaDigitavel(b.contrato, p);
+    const campo = 'w-full rounded-lg border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 p-2.5 font-mono text-[11px] text-slate-700 dark:text-neutral-200 break-all';
+    abrirModal(`${cabecalhoModal(`Pagar ${moeda(p.valor)}`, `Parcela ${p.n}/${b.parcelas.length} · ${p.vencida ? '<span class="text-red-600 dark:text-red-400 font-medium">venceu</span>' : 'vence'} ${data(p.vencimento)}`)}
+      <div class="p-5 space-y-5">
+        <section class="text-center">
+          <h3 class="titulo-secao text-left mb-2">Pix</h3>
+          <svg viewBox="0 0 ${n} ${n}" class="mx-auto h-40 w-40 rounded-lg bg-white p-2 border border-slate-200 dark:border-neutral-800 fill-slate-900" shape-rendering="crispEdges" role="img" aria-label="QR code do Pix">${celulas.join('')}</svg>
+          <p class="text-xs text-slate-500 dark:text-neutral-400 mt-2">No app do banco, escolha Pix e leia o QR code, ou cole o código.</p>
+          <textarea readonly rows="3" aria-label="Código Pix" class="mt-2 ${campo}" onfocus="this.select()">${esc(codigo)}</textarea>
+          <button type="button" data-acao="pix" data-contrato="${b.contrato.id}" data-n="${p.n}" class="botao-pri mt-2">Copiar código Pix</button>
+        </section>
+        <section class="border-t border-slate-100 dark:border-neutral-900 pt-4">
+          <h3 class="titulo-secao mb-2">Boleto</h3>
+          <textarea readonly rows="2" aria-label="Código do boleto" class="${campo}" onfocus="this.select()">${esc(linha)}</textarea>
+          <button type="button" data-acao="linha" data-contrato="${b.contrato.id}" data-n="${p.n}" class="botao-sec mt-2">Copiar código do boleto</button>
+        </section>
+        <p class="text-[11px] text-slate-400">Simulação do protótipo: o pagamento não é processado.</p>
       </div>
-      ${rodapeModal(`<button type="button" data-acao="pix" data-contrato="${b.contrato.id}" data-n="${p.n}" class="botao-pri">Copiar código</button>`)}`);
+      ${rodapeModal()}`);
   }
 
   // ---------- Eventos ----------
@@ -282,9 +294,9 @@
     if (acao === 'nf') { toast(`NF ${b.nf.numero}: o download do PDF fica para a integração com o emissor.`); return; }
     if (acao === 'baixar-comprovante') { toast('O PDF do comprovante fica para a integração com o banco.'); return; }
     if (!p) return;
-    if (acao === 'linha') copiar(PortalAluno.linhaDigitavel(b.contrato, p), `Linha digitável da parcela ${p.n} copiada.`, 'Linha digitável do boleto');
-    else if (acao === 'pix') copiar(PortalAluno.pixCopiaCola(b.contrato, p), `Código Pix da parcela ${p.n} copiado.`, 'Pix copia e cola');
-    else if (acao === 'pagar-pix') modalPix(b, p);
+    if (acao === 'linha') copiar(PortalAluno.linhaDigitavel(b.contrato, p), `Código do boleto da parcela ${p.n} copiado.`);
+    else if (acao === 'pix') copiar(PortalAluno.pixCopiaCola(b.contrato, p), `Código Pix da parcela ${p.n} copiado.`);
+    else if (acao === 'pagar') modalPagar(b, p);
     else if (acao === 'comprovante') modalComprovante(b, p);
   });
 

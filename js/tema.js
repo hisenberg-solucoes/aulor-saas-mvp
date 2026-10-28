@@ -74,9 +74,12 @@
     return localStorage.getItem(CHAVE) === 'fechada';
   }
 
+  // No celular (styles.css, abaixo de 768px) a sidebar é gaveta: abre e fecha só nesta página, sem gravar.
+  const movel = () => matchMedia('(max-width: 767px)').matches;
+
   function aplicar() {
-    const estaFechada = fechada();
-    raiz.classList.toggle('sidebar-fechada', estaFechada);
+    raiz.classList.toggle('sidebar-fechada', fechada());
+    const estaFechada = movel() ? !raiz.classList.contains('menu-movel-aberto') : fechada();
     document.querySelectorAll('[data-toggle-sidebar]').forEach((botao) => {
       const atalho = navigator.platform.startsWith('Mac') ? '⌘B' : 'Ctrl+B';
       const titulo = (estaFechada ? 'Mostrar menu' : 'Ocultar menu') + ' (' + atalho + ')';
@@ -87,11 +90,25 @@
   }
 
   function alternar() {
-    localStorage.setItem(CHAVE, fechada() ? 'aberta' : 'fechada');
+    if (movel()) {
+      raiz.classList.toggle('menu-movel-aberto');
+      if (raiz.classList.contains('menu-movel-aberto')) document.querySelector('[data-sidebar] .nav-item-ativo, [data-sidebar] a')?.focus();
+    } else localStorage.setItem(CHAVE, fechada() ? 'aberta' : 'fechada');
     aplicar();
   }
 
+  function fecharGaveta(devolverFoco) {
+    if (!raiz.classList.contains('menu-movel-aberto')) return;
+    raiz.classList.remove('menu-movel-aberto');
+    aplicar();
+    if (devolverFoco) document.querySelector('[data-toggle-sidebar]')?.focus();
+  }
+
   aplicar();
+
+  // O véu da gaveta é o body::after: o toque fora da sidebar chega no body. No Esc o foco volta ao botão.
+  document.addEventListener('click', (e) => { if (e.target === document.body) fecharGaveta(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharGaveta(true); });
 
   window.addEventListener('storage', (e) => {
     if (e.key === CHAVE) aplicar();

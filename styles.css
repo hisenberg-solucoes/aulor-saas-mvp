@@ -283,6 +283,86 @@ html.dark {
   border-right: 1px solid var(--f-linha);
 }
 
+/* Abaixo de 768px a sidebar vira gaveta sobre o conteúdo: fechada a cada página, abre pelo botão do
+   menu (classe menu-movel-aberto no <html>, posta por js/tema.js) e fecha no véu ou no Esc. A
+   preferência de recolher do desktop (sidebar-fechada) não vale aqui. */
+@media (max-width: 767px) {
+  html.sidebar-fechada aside[data-sidebar],
+  aside[data-sidebar] {
+    display: flex !important;
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    width: min(280px, 85vw);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.2s ease, visibility 0s linear 0.2s;
+  }
+
+  html.menu-movel-aberto aside[data-sidebar] {
+    transform: none;
+    visibility: visible;
+    box-shadow: 8px 0 24px rgb(2 11 17 / 0.3);
+    transition: transform 0.2s ease;
+  }
+
+  html.menu-movel-aberto body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: var(--f-veu);
+  }
+
+  /* Select com opção longa (nome do curso) não passa da largura da tela. */
+  main select {
+    max-width: 100%;
+  }
+
+  /* Nos portais (js/menu-portal.js marca a tabela e rotula as células com o cabeçalho), cada linha
+     vira um cartão: rótulo da coluna à esquerda, valor à direita, sem rolagem lateral. */
+  .tabela-cartoes thead {
+    display: none;
+  }
+
+  .tabela-cartoes,
+  .tabela-cartoes tbody,
+  .tabela-cartoes tr,
+  .tabela-cartoes td {
+    display: block;
+  }
+
+  .tabela-cartoes tr {
+    padding: 8px 0;
+  }
+
+  .tabela-cartoes td {
+    position: relative;
+    max-width: none !important;
+    padding: 4px 16px 4px calc(16px + 7rem) !important;
+    white-space: normal !important;
+  }
+
+  .tabela-cartoes td::before {
+    content: attr(data-rotulo);
+    position: absolute;
+    top: 4px;
+    left: 16px;
+    width: 6.5rem;
+    font-size: 12px;
+    line-height: 20px;
+    color: var(--f-tinta-3);
+  }
+
+  .tabela-cartoes td[data-rotulo=""] {
+    padding-left: 16px !important;
+  }
+
+  .tabela-cartoes td[data-rotulo=""]::before {
+    content: none;
+  }
+}
+
 .shell-marca {
   box-sizing: border-box;
   height: 48px; /* alinha a divisória com a da barra de contexto */
