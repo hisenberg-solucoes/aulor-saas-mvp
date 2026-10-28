@@ -84,7 +84,8 @@ const PortalProfessor = (() => {
     const linhas = Turmas.carregar()
       .filter((t) => t.instrutorId === instrutorId && t.status !== 'cancelada')
       .map((turma) => {
-        const aulas = Turmas.aulas(turma);
+        // Prévia sem os feriados, como o Gerar aulas da coordenação vai gravar.
+        const aulas = Turmas.temAgendamento(turma) ? Turmas.aulas(turma) : Turmas.aulas(turma).filter((a) => !Aulas.feriado(a.data));
         const realizadas = aulas.filter((a) => a.data < ref).length;
         const ms = Turmas.matriculas(turma);
         const alunos = (ms?.linhas ?? [])
@@ -109,13 +110,23 @@ const PortalProfessor = (() => {
   }
 
   // ---------- Pendências ----------
-  // Na V1 (sem diário, gravações, dossiês, contratos nem pagamentos no portal), o que sobra é a
-  // turma online/híbrida não concluída sem link do Meet.
-  function pendencias(instrutor, ts) {
+  // Na V1 (sem diário, gravações, dossiês, contratos nem pagamentos no portal): a turma online/híbrida
+  // sem link do Meet, a aula de hoje ou de amanhã ainda sem material e o material não liberado de aula
+  // que já aconteceu (estas duas só com as aulas geradas e o motor de materiais carregado).
+  function pendencias(instrutor, ts, ref = hoje()) {
     const p = [];
     ts.forEach((t) => {
+      const href = `turma.html?id=${encodeURIComponent(t.turma.id)}&aba=aulas`;
       const online = t.turma.formato === 'online' || t.turma.formato === 'hibrido';
-      if (online && t.situacao !== 'concluida' && !t.turma.meetLink) p.push({ tipo: 'meet', turma: t, qtd: 1, texto: `${t.turma.codigo} é ${t.turma.formato === 'online' ? 'online' : 'híbrida'} e não tem link do Meet`, href: `turma.html?id=${encodeURIComponent(t.turma.id)}` });
+      if (online && t.situacao !== 'concluida' && !t.turma.meetLink) p.push({ tipo: 'meet', turma: t, qtd: 1, texto: `${t.turma.codigo} é ${t.turma.formato === 'online' ? 'online' : 'híbrida'} e ainda não tem link do Meet; a coordenação cadastra`, href });
+      if (typeof Materiais === 'undefined' || !Turmas.temAgendamento(t.turma)) return;
+      const amanha = somarDias(ref, 1);
+      t.aulas.filter((a) => (a.data === ref || a.data === amanha) && !Materiais.daAula(t.turma.id, a.id).length).forEach((a) => {
+        p.push({ tipo: 'sem_material', turma: t, qtd: 1, texto: `A aula de ${rotuloDia(a.data, ref).toLowerCase()} (${a.inicio}) ainda não tem material`, href });
+      });
+      const passadas = new Set(t.aulas.filter((a) => a.data <= ref).map((a) => a.id));
+      const presos = Materiais.daTurma(t.turma.id).filter((m) => passadas.has(m.aulaId) && Materiais.situacao(m, ref) === 'bloqueado').length;
+      if (presos) p.push({ tipo: 'nao_liberado', turma: t, qtd: presos, texto: `${presos} ${presos === 1 ? 'material de aula que já aconteceu ainda não foi liberado' : 'materiais de aulas que já aconteceram ainda não foram liberados'}`, href });
     });
     return p;
   }

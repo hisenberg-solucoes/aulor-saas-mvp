@@ -3,8 +3,9 @@
 // turma e escolhe quando liberar; a coordenação cadastra também e acompanha o
 // que o professor cadastrou (aba Aulas da turma); o aluno vê no portal só o que
 // já está liberado, mesmo que a aula seja futura.
-// A aula é a materializada em turma.aulas (js/aulas-motor.js); a tela que
-// cadastra gera as aulas da turma antes, se ainda forem só a prévia da agenda.
+// A aula é a materializada em turma.aulas (js/aulas-motor.js): na prévia da
+// agenda não há material, nem no administrativo nem no portal do professor;
+// quem grava as aulas é o Gerar aulas da coordenação.
 // Liberação: `liberarEm` (data ISO) — nula é "ainda não liberado"; até hoje,
 // liberado; depois de hoje, programado.
 // Arquivo: na V1 real fica em armazenamento privado com link assinado; aqui é

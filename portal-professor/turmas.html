@@ -88,8 +88,10 @@
           <div id="acoes-topo" class="flex flex-wrap items-center gap-2"></div>
         </div>
 
-        <!-- Lista: barra única (busca + situação) + tabela zebrada -->
+        <!-- Lista: as próximas aulas de todas as turmas e, abaixo, as turmas (busca + situação) -->
         <div id="tela-lista" class="hidden space-y-4 surgir" style="animation-delay: 60ms">
+          <section id="proximas-aulas" class="pb-2"></section>
+          <h3 class="titulo-secao">Turmas</h3>
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-2">
               <input id="busca" type="search" placeholder="Buscar por código, curso ou formação" class="campo w-72" aria-label="Buscar turma">
@@ -145,6 +147,7 @@
   <script src="../js/feriados-motor.js"></script>
   <script src="../js/aulas-motor.js"></script>
   <script src="../js/turmas-motor.js"></script>
+  <script src="../js/materiais-motor.js"></script>
   <script src="../js/instrutores-data.js"></script>
   <script src="../js/instrutores-motor.js"></script>
   <script src="js/portal-professor-motor.js"></script>
