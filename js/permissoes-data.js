@@ -46,6 +46,7 @@ const FEATURES = [
   { id: 'alunos', modulo: 'comercial', nome: 'Alunos', acoes: [VER, CRIAR, EDITAR] },
   { id: 'responsaveis', modulo: 'comercial', nome: 'Responsáveis', acoes: [VER, CRIAR, EDITAR] },
   { id: 'empresas', modulo: 'comercial', nome: 'Empresas', acoes: [VER, CRIAR, EDITAR] },
+  { id: 'modelos-contrato', modulo: 'comercial', nome: 'Modelos de contrato', acoes: [VER, EDITAR] },
 
   // ---------- Pedagógico ----------
   { id: 'cursos', modulo: 'pedagogico', nome: 'Cursos', acoes: [VER, CRIAR, EDITAR] },
@@ -75,7 +76,6 @@ const FEATURES = [
 
   // ---------- Configurações ----------
   { id: 'perfis', modulo: 'configuracoes', nome: 'Perfis de acesso', acoes: [VER, EDITAR] },
-  { id: 'modelos-contrato', modulo: 'configuracoes', nome: 'Modelos de contrato', acoes: [VER, EDITAR] },
 
   // ================= Portal do Professor =================
   { id: 'minhas-turmas', modulo: 'prof-turmas', nome: 'Minhas turmas', acoes: [VER] },
