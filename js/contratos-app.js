@@ -1331,7 +1331,7 @@ function corpoPacote() {
         <legend class="rotulo">O que o pacote vende</legend>
         ${cartoesRadio('venda', TIPOS_VENDA, null)}
         <div data-bloco="formacao" class="hidden">${listaSelecionavel('formacaoId', formacoes.map((f) => { const tot = Formacoes.totais(f, ctx().cursos); return { id: f.id, nome: `${f.codigo} · ${f.nome}`, detalhe: `${plural(tot.n, 'curso')} · ${tot.horas}h · rateado por carga horária`, busca: `${f.codigo} ${f.nome}`, direita: moeda(f.comercial.precoReferencia) }; }), { placeholder: 'Buscar formação', vazioTxt: 'Nenhuma formação ativa.' })}</div>
-        <div data-bloco="cursos" class="hidden">${listaSelecionavel('cursoIds', cursos.map((x) => ({ id: x.id, nome: `${x.codigo} · ${x.nome}`, detalhe: `${esc(nomeDe(EIXOS, x.eixoId))} · ${x.cargaHoraria}h · ${plural(Cursos.turmasDoCurso(x.id).length, 'turma')}`, busca: `${x.codigo} ${x.nome} ${nomeDe(EIXOS, x.eixoId)}`, direita: moeda(x.comercial.precoReferencia) })), { multiplo: true, placeholder: 'Buscar curso', vazioTxt: 'Nenhum curso ativo.' })}</div>
+        <div data-bloco="cursos" class="hidden">${listaSelecionavel('cursoIds', cursos.map((x) => ({ id: x.id, nome: `${x.codigo} · ${x.nome}`, detalhe: `${x.cargaHoraria}h · ${plural(Cursos.turmasDoCurso(x.id).length, 'turma')}`, busca: `${x.codigo} ${x.nome} ${x.area ?? ''}`, direita: moeda(x.comercial.precoReferencia) })), { multiplo: true, placeholder: 'Buscar curso', vazioTxt: 'Nenhum curso ativo.' })}</div>
       </fieldset>
       <div data-vagas class="grid grid-cols-2 gap-3 items-start">
         ${campoTexto('vagas', 'Vagas', 1, { tipo: 'number', extra: 'min="1" step="1"' })}
@@ -2167,7 +2167,7 @@ function abrirSeletorCursos(alunoId) {
   const base = ctx().cursos.filter((cu) => cu.status === 'ativo' && !ja.includes(cu.id)).sort((x, y) => x.nome.localeCompare(y.nome, 'pt-BR'));
   modalSelecao({
     titulo: `Cursos avulsos para ${a.nomeSocial || a.nome}`, subtitulo: 'Cursos ativos do catálogo, com o preço de referência como valor base. A turma se define depois, item a item.',
-    itens: base.map((cu) => ({ id: cu.id, nome: `${cu.codigo} · ${cu.nome}`, detalhe: `${esc(nomeDe(EIXOS, cu.eixoId))} · ${cu.cargaHoraria}h · ${plural(Cursos.turmasDoCurso(cu.id).length, 'turma')}`, busca: `${cu.codigo} ${cu.nome} ${nomeDe(EIXOS, cu.eixoId)}`, direita: moeda(cu.comercial.precoReferencia) })),
+    itens: base.map((cu) => ({ id: cu.id, nome: `${cu.codigo} · ${cu.nome}`, detalhe: `${cu.cargaHoraria}h · ${plural(Cursos.turmasDoCurso(cu.id).length, 'turma')}`, busca: `${cu.codigo} ${cu.nome} ${cu.area ?? ''}`, direita: moeda(cu.comercial.precoReferencia) })),
     vazioTxt: 'Todos os cursos ativos já estão nos itens deste aluno.', rotuloBotao: 'Adicionar',
     aoConfirmar: (ids) => { alterar((l) => Contratos.regerarParcelas(Contratos.adicionarCursos(l, ctx(), c.id, alunoId, ids), c.id)); toast(`${plural(ids.length, 'curso')} adicionado${ids.length === 1 ? '' : 's'} para ${a.nome}.`); renderContrato(); },
   });

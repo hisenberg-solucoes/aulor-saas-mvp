@@ -2,7 +2,7 @@
 // UI da tela "Formações". Regras no motor (Formacoes.*); cursos vêm
 // de Cursos.carregar() (mesma persistência da tela de cursos).
 // Páginas: formacoes.html (lista) e formacao.html?id= (detalhe com sub-abas
-// Cursos (carga por eixo + sequência + turmas por curso) | Alunos | Dados gerais (com Comercial)),
+// Cursos (sequência + turmas por curso) | Alunos | Dados gerais (com Comercial)),
 // ambas com este mesmo script — MODO vem de <body data-modo> (docs/padrao-tela-detalhe.md).
 // Turmas são criadas na linha do curso (TurmaForm, js/turmas-drawer.js) e
 // persistidas por Turmas.* (js/turmas-motor.js); a lista completa fica em turmas.html.
@@ -19,13 +19,11 @@ function urlDetalhe(id, aba = 'cursos') {
 const estado = {
   lista: Formacoes.carregar(),
   cursos: Cursos.carregar(),
-  areas: Areas.carregar(),
   turmas: Turmas.carregar(),
   salas: Salas.carregar(),
   selecionado: null,
   aba: 'cursos',
-  agruparPorEixo: false,
-  filtros: { busca: '', status: '', areaId: parametroUrl('area') ?? '', eixoId: '' }, // ?area= vem da contagem em Áreas
+  filtros: { busca: '', status: '', area: '' },
   filtrosAlunos: { busca: '', edicaoId: '', situacaoAluno: '' },
 };
 
@@ -57,7 +55,6 @@ const ICONE = {
   relogio: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
   lista: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>',
   local: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>',
-  areas: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>',
   alerta: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>',
   cadeado: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>',
   alertaMini: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>',
@@ -83,7 +80,7 @@ const THEAD = 'text-xs font-medium text-slate-500 dark:text-neutral-400 bg-slate
 const FOCO_LINHA = 'has-[.link-registro:focus-visible]:bg-slate-50 dark:has-[.link-registro:focus-visible]:bg-neutral-900 has-[.link-registro:focus-visible]:outline-2 has-[.link-registro:focus-visible]:-outline-offset-2 has-[.link-registro:focus-visible]:outline-[color:var(--f-foco)]';
 const AVISO = 'text-[color:var(--f-aviso)]';
 const FILTRO_ATIVO = 'border-petrol-800 dark:border-sky-400 text-petrol-800 dark:text-sky-300';
-// Faixa de grupo dentro da tabela (edição, eixo): rótulo em caixa normal, sem caixa alta espaçada.
+// Faixa de grupo dentro da tabela (edição): rótulo em caixa normal, sem caixa alta espaçada.
 const LINHA_GRUPO = 'bg-slate-50 dark:bg-neutral-900 border-y border-slate-200 dark:border-neutral-800';
 
 // Pílula só de exceção (Regra da Pílula de Exceção): ativa, no site, obrigatório e contrato conferido são o comum e não se anunciam.
@@ -114,12 +111,6 @@ const PONTO_ALUNO = {
   cancelada: 'ring-1 ring-inset ring-slate-400 dark:ring-neutral-500',
 };
 
-// Cor fixa por eixo: só identifica o eixo (ponto ao lado do nome), não vira série de gráfico.
-const COR_EIXO = {
-  frontend: 'bg-sky-500', backend: 'bg-violet-500', ia: 'bg-fuchsia-500', cross: 'bg-slate-500',
-  carreira: 'bg-emerald-500', tcc: 'bg-amber-500', complementar: 'bg-teal-500',
-};
-
 // ---------- Helpers ----------
 
 function pilula(classe, texto, titulo = '') {
@@ -127,8 +118,6 @@ function pilula(classe, texto, titulo = '') {
 }
 
 const ponto = (classe) => `<span class="inline-block h-2 w-2 shrink-0 rounded-full align-middle -mt-px ${classe}"></span>`;
-// Sem eixo é vazado: o ponto diz "não classificado", não uma cor a mais.
-const pontoEixo = (id) => ponto(COR_EIXO[id] ?? 'ring-1 ring-inset ring-slate-400 dark:ring-neutral-500');
 
 function chip(icone, conteudo, titulo = '') {
   return `<span title="${esc(titulo)}" class="inline-flex items-center gap-1.5 text-[13px] text-slate-600 dark:text-neutral-300"><span class="text-slate-400 dark:text-neutral-500">${icone}</span>${conteudo}</span>`;
@@ -156,12 +145,6 @@ function fmtMoeda(v) {
 }
 
 const nomeDe = (lista, id) => lista.find((x) => x.id === id)?.nome ?? '';
-const eixoDe = (id) => nomeDe(EIXOS, id);
-// Área: marca quadrada na cor dela + nome em texto (vazada quando a área foi removida). Quadrada para não se passar por ponto de eixo ou de ciclo de vida.
-function pilulaArea(id, tamanho = 'text-sm') {
-  const a = Areas.porId(estado.areas, id);
-  return `<span title="Área" class="inline-flex items-center gap-1.5 whitespace-nowrap ${tamanho} text-slate-600 dark:text-neutral-300"><span class="h-2 w-2 shrink-0 rounded-[2px] ${Areas.cor(a).ponto}"></span>${esc(a?.nome ?? 'Área removida')}</span>`;
-}
 const formatoDe = (id) => nomeDe(FORMATOS, id);
 const nivelDe = (id) => nomeDe(NIVEIS, id);
 const statusFormacao = (id) => STATUS_FORMACAO.find((s) => s.id === id);
@@ -231,19 +214,13 @@ function faixa(tom, html) {
   return `<div class="mb-4 flex items-start gap-3 rounded-lg px-4 py-3 text-sm ${cores[tom]}"><span class="shrink-0">${ICONE.alerta}</span><div class="min-w-0 flex-1">${html}</div></div>`;
 }
 
-// Controle segmentado: partes de uma aba ou modos de ver a mesma lista, na linha das ações.
-function segmentado(itens, ativo, atributo) {
-  return `<div class="inline-flex rounded-lg bg-[color:var(--f-etiqueta)] p-0.5">${itens.map((x) => `
-    <button type="button" ${atributo}="${x.id}" aria-pressed="${ativo === x.id}" class="h-7 px-2.5 rounded-md text-[12.5px] font-medium whitespace-nowrap transition ${ativo === x.id ? 'bg-[color:var(--f-elevado)] text-[color:var(--f-tinta)] shadow-[0_1px_2px_rgb(7_30_44/0.08)]' : 'text-[color:var(--f-tinta-2)] hover:text-[color:var(--f-tinta)]'}">${x.titulo}</button>`).join('')}</div>`;
-}
-
 // ---------- Lista ----------
 
 function renderLista() {
   const el = document.getElementById('tela');
   const f = estado.filtros;
   const visiveis = Formacoes.filtrar(estado.lista, estado.cursos, f);
-  const filtrando = f.busca || f.status || f.areaId;
+  const filtrando = f.busca || f.status || f.area;
   const select = (id, rotulo, opcoes, valor) => campoCombo(id, opcoes, valor, { id, vazio: rotulo, filtro: true, classe: valor ? FILTRO_ATIVO : '' });
 
   // Ativa é o comum: só rascunho e inativa ganham pílula; a segunda linha troca o resumo pelo que falta, quando falta.
@@ -259,7 +236,7 @@ function renderLista() {
             ? `<p class="text-xs ${AVISO} truncate" title="${esc(pend.join(' · '))}">${plural(pend.length, 'pendência')}: ${esc(pend.join(' · '))}</p>`
             : `<p class="text-xs text-slate-500 dark:text-neutral-400 truncate" title="${esc(x.resumo)}">${esc(x.resumo) || 'sem resumo'}</p>`}
         </td>
-        <td class="${TD}">${pilulaArea(x.areaId)}</td>
+        <td class="${TD} truncate" title="${esc(x.area)}">${valorOuVazio(x.area, '—')}</td>
         <td class="${TD} text-right tabular-nums whitespace-nowrap">${t.n}${t.optativos ? `<span class="block text-xs text-slate-500 dark:text-neutral-400">${t.optativos} optativo${t.optativos === 1 ? '' : 's'}</span>` : ''}</td>
         <td class="${TD} text-right tabular-nums whitespace-nowrap">${fmtHoras(t.horas)}</td>
         <td class="${TD} text-right tabular-nums whitespace-nowrap">${fmtMoeda(x.comercial.precoReferencia)}</td>
@@ -269,13 +246,13 @@ function renderLista() {
   el.innerHTML = `
     <div class="mb-4">
       <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100">Formações</h2>
-      <p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Conjuntos de cursos do catálogo, em sequência, que podem misturar eixos (Front-end, Back-end, IA, carreira…). A carga horária e os eixos vêm dos cursos; a área de negócio é da própria formação; a formação define ordem, obrigatoriedade e preço.</p>
+      <p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Conjuntos de cursos do catálogo, em sequência. A carga horária vem dos cursos; a formação define ordem, obrigatoriedade e preço.</p>
     </div>
 
     <div class="mb-4 flex flex-wrap items-center gap-2">
       ${busca('busca-formacao', f.busca, 'Buscar por código, nome ou resumo', 'w-64')}
       <div class="ml-auto flex flex-wrap items-center gap-2">
-        ${select('filtro-area', 'Área', Areas.opcoes(estado.areas, f.areaId), f.areaId)}
+        ${select('filtro-area', 'Área', Cursos.areasUsadas(estado.lista).map((a) => ({ id: a, nome: a })), f.area)}
         ${select('filtro-status', 'Status', STATUS_FORMACAO, f.status)}
         ${filtrando ? `<button type="button" id="btn-limpar-filtros" class="${BOTAO_LINK}">Limpar</button>` : ''}
         <button type="button" id="btn-nova" class="${BOTAO_PRI}">${ICONE.mais} Nova formação</button>
@@ -306,11 +283,11 @@ function renderLista() {
 
   const campoBusca = el.querySelector('#busca-formacao');
   campoBusca.addEventListener('input', () => { estado.filtros.busca = campoBusca.value; const [ini, fim] = [campoBusca.selectionStart, campoBusca.selectionEnd]; renderLista(); const novo = document.getElementById('busca-formacao'); novo.focus(); novo.setSelectionRange(ini, fim); });
-  [['filtro-area', 'areaId'], ['filtro-status', 'status']].forEach(([id, chave]) => {
+  [['filtro-area', 'area'], ['filtro-status', 'status']].forEach(([id, chave]) => {
     el.querySelector(`[data-name="${id}"] input[type="hidden"]`).addEventListener('change', (e) => { estado.filtros[chave] = e.target.value; renderLista(); });
   });
   ativarCombos(el);
-  el.querySelector('#btn-limpar-filtros')?.addEventListener('click', () => { estado.filtros = { busca: '', status: '', areaId: '', eixoId: '' }; renderLista(); });
+  el.querySelector('#btn-limpar-filtros')?.addEventListener('click', () => { estado.filtros = { busca: '', status: '', area: '' }; renderLista(); });
   el.querySelector('#btn-nova').addEventListener('click', () => abrirModalFormacao());
   el.querySelector('#btn-nova-vazio')?.addEventListener('click', () => abrirModalFormacao());
   // O nome é o link (teclado, ⌘-clique); o resto da linha abre a mesma formação, a não ser que a pessoa esteja selecionando texto.
@@ -367,10 +344,9 @@ function renderFormacao() {
           </div>
           ${f.resumo ? `<p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-300 mt-1">${esc(f.resumo)}</p>` : ''}
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
-            ${pilulaArea(f.areaId, 'text-[13px]')}
+            ${f.area ? `<span title="Área" class="text-[13px] text-slate-600 dark:text-neutral-300">${esc(f.area)}</span>` : ''}
             ${chip(ICONE.lista, `${plural(t.n, 'curso')}${t.optativos ? ` · ${t.optativos} optativo${t.optativos === 1 ? '' : 's'}` : ''}`, 'Cursos da formação')}
             ${chip(ICONE.relogio, `${fmtHoras(t.horas)}${optativas}`, 'Carga horária total')}
-            ${t.porEixo.some((x) => x.area.id) ? chip(ICONE.areas, plural(t.porEixo.filter((x) => x.area.id).length, 'eixo'), 'Eixos dos cursos (Front-end, Back-end, IA…)') : ''}
             ${chip(ICONE.pessoas, `${plural(nTurmas, 'turma')} · ${plural(nAlunos, 'aluno')}`, 'Turmas (não canceladas) e alunos matriculados')}
             ${chip(ICONE.local, Formacoes.temAgenda(f) ? `${esc(Agenda.descrever(f.agenda))} · ${esc(formatoDe(f.agenda.formato))}` : 'Agenda a definir', 'Agenda das aulas (dias, horários, recorrência, formato)')}
           </div>
@@ -591,46 +567,22 @@ function renderAbaCursos() {
   // RN11: turma só em formação ativa (rascunho ainda muda a sequência; inativa está encerrada).
   const podeCriarTurma = f.status === 'ativo';
   const motivoTurma = f.status === 'rascunho' ? 'Ative a formação para abrir turmas' : 'Formação inativa não abre turmas novas';
-  const porEixo = estado.agruparPorEixo;
   // Rascunho não abre turma: sem nenhuma turma ainda, a coluna só diria "sem turma" em todas as linhas.
   const comTurmas = podeCriarTurma || Turmas.turmasDaFormacao(estado.turmas, f.id).length > 0;
 
   acoes.innerHTML = `
-    ${itens.length ? segmentado([{ id: 'sequencia', titulo: 'Em sequência' }, { id: 'eixo', titulo: 'Por eixo' }], porEixo ? 'eixo' : 'sequencia', 'data-visao') : ''}
     ${editavel ? `<button type="button" id="btn-adicionar" class="${BOTAO_PRI} ml-auto">${ICONE.mais} Adicionar cursos</button>` : ''}`;
-  acoes.querySelectorAll('[data-visao]').forEach((b) => b.addEventListener('click', () => { estado.agruparPorEixo = b.dataset.visao === 'eixo'; renderAbaCursos(); }));
   acoes.querySelector('#btn-adicionar')?.addEventListener('click', () => abrirSeletorCursos());
 
   if (!itens.length) {
     el.innerHTML = `
       <div class="${CARTAO} border-dashed p-10 text-center">
-        <p class="text-sm text-slate-500 dark:text-neutral-400">${editavel ? 'Esta formação ainda não tem cursos. Adicione cursos do catálogo — de qualquer eixo — e a carga horária aparece aqui.' : `Esta formação não tem cursos. ${esc(motivoTrava)}`}</p>
+        <p class="text-sm text-slate-500 dark:text-neutral-400">${editavel ? 'Esta formação ainda não tem cursos. Adicione cursos do catálogo e a carga horária aparece aqui.' : `Esta formação não tem cursos. ${esc(motivoTrava)}`}</p>
         ${editavel ? `<button type="button" id="btn-adicionar-vazio" class="${BOTAO_PRI} mt-4">${ICONE.mais} Adicionar cursos</button>` : ''}
       </div>`;
     el.querySelector('#btn-adicionar-vazio')?.addEventListener('click', () => abrirSeletorCursos());
     return;
   }
-
-  // Carga por eixo: um cartão, com medidores em tinta (Regra da Tinta nos Dados); o ponto só identifica o eixo.
-  const ajustadas = itens.filter((i) => i.cargaHoraria != null && Number(i.cargaHoraria) !== Number(i.curso.cargaHoraria)).length;
-  const eixoLinha = (x) => `
-    <li class="flex items-center gap-3 text-sm" title="${esc(`${x.area.nome}: ${fmtHoras(x.horas)} em ${plural(x.n, 'curso')}${x.obrigatorias !== x.horas ? ` (${fmtHoras(x.obrigatorias)} obrigatórias)` : ''}`)}">
-      <span class="w-40 shrink-0 min-w-0 flex items-center gap-1.5 text-slate-600 dark:text-neutral-300">${pontoEixo(x.area.id)}<span class="truncate">${esc(x.area.nome)}</span></span>
-      <span class="relative h-1.5 min-w-0 flex-1 rounded-full bg-slate-100 dark:bg-neutral-800"><span class="absolute inset-y-0 left-0 rounded-full bg-slate-700 dark:bg-neutral-300" style="width:${x.pct * 100}%"></span></span>
-      <span class="w-12 shrink-0 text-right tabular-nums text-slate-800 dark:text-neutral-100">${fmtHoras(x.horas)}</span>
-      <span class="w-9 shrink-0 text-right tabular-nums text-xs text-slate-500 dark:text-neutral-400">${Math.round(x.pct * 100)}%</span>
-    </li>`;
-  const resumo = `
-    <section class="${CARTAO} mb-4">
-      ${cabecalhoSecao('Carga horária por eixo', `Vem dos cursos${ajustadas ? `; ${plural(ajustadas, 'curso ajustado', 'cursos ajustados')} só nesta formação` : ''}.`)}
-      <div class="p-4 pt-3 flex items-start gap-8">
-        <div class="w-44 shrink-0">
-          <p class="font-display text-2xl font-semibold tabular-nums leading-none text-slate-800 dark:text-neutral-100">${fmtHoras(t.horas)}</p>
-          <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1.5 tabular-nums">${plural(t.n, 'curso')} · ${fmtHoras(t.horasObrigatorias)} obrigatórias${t.horasOptativas ? ` · ${fmtHoras(t.horasOptativas)} optativas` : ''}</p>
-        </div>
-        <ul class="min-w-0 flex-1 grid grid-cols-2 gap-x-8 gap-y-2.5">${t.porEixo.map(eixoLinha).join('')}</ul>
-      </div>
-    </section>`;
 
   const celulaTurmas = (c) => {
     const turmas = Turmas.turmasDoCursoNaFormacao(estado.turmas, c.id, f.id);
@@ -646,10 +598,10 @@ function renderAbaCursos() {
       </div>`;
   };
 
-  const linha = (i, idx, podeMover) => {
+  const linha = (i, idx) => {
     const c = i.curso;
     const sc = statusCurso(c.status);
-    const arrasta = editavel && podeMover;
+    const arrasta = editavel;
     const ajustada = i.cargaHoraria != null && Number(i.cargaHoraria) !== Number(c.cargaHoraria);
     return `
       <tr data-curso="${c.id}" data-posicao="${idx}" ${arrasta ? 'draggable="true"' : ''} class="align-top ${c.status === 'inativo' ? 'linha-apagada' : ''} ${arrasta ? 'linha-arrastavel' : ''}">
@@ -658,8 +610,8 @@ function renderAbaCursos() {
             ${arrasta ? `<span class="alca-arrastar cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 dark:text-neutral-600 dark:hover:text-neutral-300" title="Arraste para reposicionar"><svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="7" cy="5" r="1.5"/><circle cx="13" cy="5" r="1.5"/><circle cx="7" cy="10" r="1.5"/><circle cx="13" cy="10" r="1.5"/><circle cx="7" cy="15" r="1.5"/><circle cx="13" cy="15" r="1.5"/></svg></span>` : ''}
             <span class="text-xs tabular-nums text-slate-500 dark:text-neutral-400 w-5 text-right">${idx + 1}</span>
             ${editavel ? `<div class="flex flex-col -my-1">
-              <button type="button" data-mover="-1" data-id="${c.id}" aria-label="Subir ${esc(c.nome)}" title="Subir" class="${ICONE_BOTAO} h-5" ${podeMover && idx > 0 ? '' : 'disabled'}>${ICONE.cima}</button>
-              <button type="button" data-mover="1" data-id="${c.id}" aria-label="Descer ${esc(c.nome)}" title="Descer" class="${ICONE_BOTAO} h-5" ${podeMover && idx < itens.length - 1 ? '' : 'disabled'}>${ICONE.baixo}</button>
+              <button type="button" data-mover="-1" data-id="${c.id}" aria-label="Subir ${esc(c.nome)}" title="Subir" class="${ICONE_BOTAO} h-5" ${idx > 0 ? '' : 'disabled'}>${ICONE.cima}</button>
+              <button type="button" data-mover="1" data-id="${c.id}" aria-label="Descer ${esc(c.nome)}" title="Descer" class="${ICONE_BOTAO} h-5" ${idx < itens.length - 1 ? '' : 'disabled'}>${ICONE.baixo}</button>
             </div>` : ''}
           </div>
         </td>
@@ -668,7 +620,7 @@ function renderAbaCursos() {
           <p class="text-xs text-slate-500 dark:text-neutral-400 truncate" title="${esc(c.resumo)}">${esc(c.resumo)}</p>
         </td>
         ${comTurmas ? `<td class="${TH}">${celulaTurmas(c)}</td>` : ''}
-        <td class="${TD}">${eixoDe(c.eixoId) ? `<span class="flex items-center gap-1.5 min-w-0">${pontoEixo(c.eixoId)}<span class="truncate">${esc(eixoDe(c.eixoId))}</span></span><span class="block text-xs text-slate-500 dark:text-neutral-400">${esc(nivelDe(c.nivel))}</span>` : esc(nivelDe(c.nivel))}</td>
+        <td class="${TD}">${esc(nivelDe(c.nivel))}</td>
         <td class="${TD} text-right tabular-nums whitespace-nowrap">
           ${editavel ? `<button type="button" data-carga="${c.id}" title="Editar a carga horária deste curso só nesta formação (catálogo: ${fmtHoras(c.cargaHoraria)})" class="inline-flex items-center gap-1 rounded text-slate-800 dark:text-neutral-100 hover:text-petrol-800 dark:hover:text-sky-300 hover:underline decoration-dotted underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30"><span class="text-slate-400">${ICONE.lapis}</span>${fmtHoras(i.horas)}</button>` : `<span class="text-slate-800 dark:text-neutral-100">${fmtHoras(i.horas)}</span>`}
           ${ajustada ? `<span class="block text-xs ${AVISO}" title="Carga horária ajustada nesta formação">catálogo: ${fmtHoras(c.cargaHoraria)}</span>` : ''}
@@ -689,7 +641,7 @@ function renderAbaCursos() {
       </tr>`;
   };
 
-  // Antes da carga: #, curso, turmas (quando há), eixo. Depois: "na formação" (só em rascunho) e as ações.
+  // Antes da carga: #, curso, turmas (quando há), nível. Depois: "na formação" (só em rascunho) e as ações.
   const antes = comTurmas ? 4 : 3;
   const depois = editavel ? 2 : 1;
   const cabecalho = `
@@ -698,7 +650,7 @@ function renderAbaCursos() {
         <th class="pl-3 pr-1 py-2.5 ${editavel ? 'w-[84px]' : 'w-[48px]'}"><span class="sr-only">Posição</span>#</th>
         <th class="${TH}">Curso</th>
         ${comTurmas ? `<th class="${TH} w-[200px]">Turmas</th>` : ''}
-        <th class="${TH} w-[136px]">Eixo e nível</th>
+        <th class="${TH} w-[120px]">Nível</th>
         <th class="${TH} w-[88px] text-right" title="Carga horária nesta formação">Carga</th>
         ${editavel ? `<th class="${TH} w-[136px]">Na formação</th>` : ''}
         <th class="pl-1 pr-3 py-2.5 ${editavel ? 'w-[76px]' : 'w-[48px]'}"><span class="sr-only">Ações</span></th>
@@ -713,32 +665,15 @@ function renderAbaCursos() {
       </tr>
     </tfoot>`;
 
-  let corpo;
-  if (porEixo) {
-    corpo = Formacoes.porEixo(f, estado.cursos).map((g) => {
-      const horas = Formacoes.somaHoras(g.itens);
-      return `
-        <tbody class="divide-y divide-slate-100 dark:divide-neutral-900">
-          <tr class="${LINHA_GRUPO}">
-            <td colspan="${antes}" class="px-4 py-2 text-sm"><span class="inline-flex items-center gap-1.5 font-medium text-slate-700 dark:text-neutral-200">${pontoEixo(g.area.id)}${esc(g.area.nome)}</span> <span class="text-xs text-slate-500 dark:text-neutral-400 tabular-nums">· ${plural(g.itens.length, 'curso')} · ${Math.round((horas / t.horas) * 100)}% da formação</span></td>
-            <td class="px-4 py-2 text-right text-sm font-semibold tabular-nums whitespace-nowrap text-slate-800 dark:text-neutral-100">${fmtHoras(horas)}</td>
-            <td colspan="${depois}"></td>
-          </tr>
-          ${g.itens.map((i) => linha(i, itens.findIndex((x) => x.cursoId === i.cursoId), false)).join('')}
-        </tbody>`;
-    }).join('');
-  } else {
-    corpo = `<tbody class="divide-y divide-slate-100 dark:divide-neutral-900">${itens.map((i, idx) => linha(i, idx, true)).join('')}</tbody>`;
-  }
+  const corpo = `<tbody class="divide-y divide-slate-100 dark:divide-neutral-900">${itens.map((i, idx) => linha(i, idx)).join('')}</tbody>`;
 
   // O motivo da trava é a frase de contexto do cartão: sem ela, ▲▼ e o interruptor sumiriam sem explicação.
   const semTurma = podeCriarTurma ? itens.filter((i) => !Turmas.turmasDoCursoNaFormacao(estado.turmas, i.curso.id, f.id).length).length : 0;
   const contexto = editavel
-    ? (porEixo ? 'Agrupado por eixo, com subtotal. A ordem e o arrasto ficam em Em sequência.' : 'A ordem é a sequência sugerida ao aluno: arraste pela alça ou use as setas. Turmas nascem na linha de cada curso, com a formação ativa.')
+    ? 'A ordem é a sequência sugerida ao aluno: arraste pela alça ou use as setas. Turmas nascem na linha de cada curso, com a formação ativa.'
     : `${esc(motivoTrava)}${semTurma ? ` ${plural(semTurma, 'curso')} ainda sem turma: abra pelo + da linha.` : ''}`;
 
   el.innerHTML = `
-    ${resumo}
     <section class="${CARTAO} overflow-hidden">
       <div class="px-4 pt-4 flex items-start gap-2">
         ${editavel ? '' : `<span class="mt-0.5 shrink-0 text-slate-400 dark:text-neutral-500">${ICONE.cadeado}</span>`}
@@ -761,9 +696,9 @@ function renderAbaCursos() {
     persistir(); renderAbaCursos();
   }));
 
-  // Arrastar e soltar (só em rascunho e na visão em sequência — agrupado por eixo a ordem é da formação, não do grupo).
+  // Arrastar e soltar (só em rascunho).
   // Solta acima da metade da linha alvo = fica antes dela; abaixo = depois. Indicador é uma borda petróleo na linha alvo.
-  if (editavel && !estado.agruparPorEixo) {
+  if (editavel) {
     let arrastando = null;
     const limpar = () => el.querySelectorAll('.solta-antes, .solta-depois').forEach((tr) => tr.classList.remove('solta-antes', 'solta-depois'));
     el.querySelectorAll('tr.linha-arrastavel').forEach((tr) => {
@@ -861,7 +796,7 @@ function renderAbaDados() {
         <div class="p-4 grid grid-cols-3 gap-4">
           ${campo('Código', `<span class="font-mono">${esc(f.codigo)}</span>`)}
           ${campo('Nome', esc(f.nome), 'col-span-2')}
-          ${campo('Área', pilulaArea(f.areaId), 'col-span-3')}
+          ${campo('Área', valorOuVazio(f.area), 'col-span-3')}
           ${campo('Resumo (uma linha)', valorOuVazio(f.resumo), 'col-span-3')}
           ${campo('Descrição', `<p class="whitespace-pre-line">${valorOuVazio(f.descricao)}</p>`, 'col-span-3')}
           ${campo('Público-alvo', valorOuVazio(f.publicoAlvo), 'col-span-3')}
@@ -938,7 +873,7 @@ const cartoesRadio = (name, opcoes, valor, colunas = 'grid-cols-3') => `
 
 function abrirModalFormacao(id = null) {
   const f = id ? Formacoes.porId(estado.lista, id) : null;
-  const d = f ?? { codigo: '', nome: '', areaId: '', resumo: '', descricao: '', publicoAlvo: '', status: null };
+  const d = f ?? { codigo: '', nome: '', area: '', resumo: '', descricao: '', publicoAlvo: '', status: null };
   modalFormulario({
     id: 'form-formacao',
     titulo: f ? 'Editar dados da formação' : 'Nova formação',
@@ -951,11 +886,8 @@ function abrirModalFormacao(id = null) {
         ${campoTexto('codigo', 'Código', d.codigo, { placeholder: 'Ex.: FULL', max: 10, extra: 'autocapitalize="characters"' })}
         <div class="col-span-2">${campoTexto('nome', 'Nome', d.nome, { placeholder: 'Ex.: Desenvolvedor Full Stack', max: 100 })}</div>
       </div>
-      <div>
-        <label class="rotulo" for="f-areaId">Área</label>
-        ${campoCombo('areaId', Areas.opcoes(estado.areas, d.areaId), d.areaId, { vazio: 'Escolha a área' })}
-        ${ERRO('areaId')}
-      </div>
+      ${campoTexto('area', 'Área', d.area, { placeholder: 'Ex.: Desenvolvimento', max: 100, opcional: true, extra: 'list="areas-usadas" autocomplete="off"' })}
+      <datalist id="areas-usadas">${Cursos.areasUsadas(estado.cursos, estado.lista).map((a) => `<option value="${esc(a)}">`).join('')}</datalist>
       ${campoTexto('resumo', 'Resumo (uma linha)', d.resumo, { max: 160, opcional: true, placeholder: 'Chamada curta para o catálogo' })}
       ${campoArea('descricao', 'Descrição', d.descricao, { rows: 5, max: 2000, opcional: true, placeholder: 'Para quem é, o que o aluno sai sabendo fazer' })}
       ${campoArea('publicoAlvo', 'Público-alvo', d.publicoAlvo, { rows: 2, max: 300, opcional: true })}
@@ -966,7 +898,7 @@ function abrirModalFormacao(id = null) {
         ${ERRO('status')}
       </fieldset>` : ''}`,
     aoSalvar: (fd) => {
-      const novo = { codigo: fd.get('codigo') ?? '', nome: fd.get('nome') ?? '', areaId: fd.get('areaId') ?? '', resumo: fd.get('resumo') ?? '', descricao: fd.get('descricao') ?? '', publicoAlvo: fd.get('publicoAlvo') ?? '', status: f ? fd.get('status') : null };
+      const novo = { codigo: fd.get('codigo') ?? '', nome: fd.get('nome') ?? '', area: fd.get('area') ?? '', resumo: fd.get('resumo') ?? '', descricao: fd.get('descricao') ?? '', publicoAlvo: fd.get('publicoAlvo') ?? '', status: f ? fd.get('status') : null };
       const erros = Formacoes.validarDados(novo, estado.lista, id);
       if (erros.length) return erros;
       if (f) {
@@ -1279,7 +1211,7 @@ function confirmarExclusao(id) {
   });
 }
 
-// ---------- Seletor de cursos (modal, seleção múltipla, filtro por eixo) ----------
+// ---------- Seletor de cursos (modal, seleção múltipla, filtro por área) ----------
 
 function abrirSeletorCursos() {
   const f = atual();
@@ -1301,7 +1233,7 @@ function abrirSeletorCursos() {
     </div>
     <div class="px-5 pt-4 pb-2 flex flex-wrap items-center gap-2">
       ${busca('busca-sel', '', 'Buscar curso', 'flex-1 min-w-48')}
-      ${campoCombo('filtro-eixo-sel', EIXOS, '', { id: 'filtro-eixo-sel', vazio: 'Eixo', filtro: true })}
+      ${campoCombo('filtro-area-sel', Cursos.areasUsadas(disponiveis).map((a) => ({ id: a, nome: a })), '', { id: 'filtro-area-sel', vazio: 'Área', filtro: true })}
       <button type="button" id="btn-marcar" class="${BOTAO_SEC} shrink-0"></button>
     </div>
     <div id="lista-sel" class="max-h-96 overflow-y-auto px-3 pb-2"></div>
@@ -1318,7 +1250,7 @@ function abrirSeletorCursos() {
 
   const lista = root.querySelector('#lista-sel');
   const campoBusca = root.querySelector('#busca-sel');
-  const selEixo = root.querySelector('[data-name="filtro-eixo-sel"] input[type="hidden"]');
+  const selArea = root.querySelector('[data-name="filtro-area-sel"] input[type="hidden"]');
   ativarCombos(root);
   const btnMarcar = root.querySelector('#btn-marcar');
   const btnConfirmar = root.querySelector('#btn-confirmar-sel');
@@ -1338,11 +1270,11 @@ function abrirSeletorCursos() {
 
   const render = () => {
     const termo = Formacoes.normalizar(campoBusca.value);
-    visiveis = disponiveis.filter((c) => (!termo || Formacoes.normalizar(`${c.codigo} ${c.nome} ${c.resumo}`).includes(termo)) && (!filtroArea || c.eixoId === filtroArea));
-    // Agrupa por eixo para o usuário enxergar a mistura (técnicas, humanas, idiomas…).
-    const grupos = EIXOS.map((a) => ({ a, cursos: visiveis.filter((c) => c.eixoId === a.id) })).filter((g) => g.cursos.length);
+    visiveis = disponiveis.filter((c) => (!termo || Formacoes.normalizar(`${c.codigo} ${c.nome} ${c.resumo}`).includes(termo)) && (!filtroArea || Formacoes.normalizar(c.area) === Formacoes.normalizar(filtroArea)));
+    // Agrupa por área para o usuário enxergar a mistura (técnicas, humanas, idiomas…); sem área fica por último.
+    const grupos = [...Cursos.areasUsadas(visiveis), ''].map((a) => ({ a, cursos: visiveis.filter((c) => Formacoes.normalizar(c.area) === Formacoes.normalizar(a)) })).filter((g) => g.cursos.length);
     lista.innerHTML = grupos.length ? grupos.map((g) => `
-      <p class="px-2 pt-3 pb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-neutral-400">${pontoEixo(g.a.id)}${esc(g.a.nome)}</p>
+      <p class="px-2 pt-3 pb-1 text-xs font-medium text-slate-500 dark:text-neutral-400">${esc(g.a || 'Sem área')}</p>
       ${g.cursos.map((c) => {
         const on = marcados.has(c.id);
         return `
@@ -1380,7 +1312,7 @@ function abrirSeletorCursos() {
     toast(`${plural(ids.length, 'curso')} adicionado${ids.length === 1 ? '' : 's'} (+${fmtHoras(horas)}) — total ${fmtHoras(Formacoes.totais(atual(), estado.cursos).horas)}.`);
   });
   campoBusca.addEventListener('input', render);
-  selEixo.addEventListener('change', () => { filtroArea = selEixo.value; render(); });
+  selArea.addEventListener('change', () => { filtroArea = selArea.value; render(); });
   render();
   campoBusca.focus();
 }

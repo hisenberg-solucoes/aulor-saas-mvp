@@ -4,7 +4,7 @@
 // ============================================================
 
 const Cursos = (() => {
-  const CHAVE = 'aulor-v1-cursos-v7'; // v6 (03/09/2026): sugestões de requisitos vindas dos instrutores
+  const CHAVE = 'aulor-v1-cursos-v8'; // v8 (28/10/2026): área em texto livre e sem eixo
 
   function clonar(x) {
     return JSON.parse(JSON.stringify(x));
@@ -79,16 +79,22 @@ const Cursos = (() => {
 
   // ---------- Lista ----------
 
-  function filtrar(lista, { busca = '', areaId = '', eixoId = '', status = '', formato = '', nivel = '' } = {}) {
+  function filtrar(lista, { busca = '', area = '', status = '', formato = '', nivel = '' } = {}) {
     const termo = normalizar(busca);
     return lista
       .filter((c) => !termo || normalizar(`${c.codigo} ${c.nome} ${c.resumo}`).includes(termo))
-      .filter((c) => !areaId || c.areaId === areaId)
-      .filter((c) => !eixoId || c.eixoId === eixoId)
+      .filter((c) => !area || normalizar(c.area) === normalizar(area))
       .filter((c) => !status || c.status === status)
       .filter((c) => !formato || c.formatos.includes(formato))
       .filter((c) => !nivel || c.nivel === nivel)
       .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  }
+
+  // Área é texto livre (como na API, sem cadastro): sugestões e filtro saem dos nomes já usados, sem repetir por caixa ou acento.
+  function areasUsadas(...listas) {
+    const porChave = new Map();
+    listas.flat().forEach((x) => { const nome = String(x.area ?? '').trim(); if (nome && !porChave.has(normalizar(nome))) porChave.set(normalizar(nome), nome); });
+    return [...porChave.values()].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   }
 
   // ---------- Relações (só leitura) ----------
@@ -160,8 +166,6 @@ const Cursos = (() => {
     else if (outros.some((c) => normalizar(c.codigo) === normalizar(codigo))) erros.push({ campo: 'codigo', mensagem: 'Já existe um curso com esse código.' });
     if (!nome) erros.push({ campo: 'nome', mensagem: 'Informe o nome do curso.' });
     else if (outros.some((c) => normalizar(c.nome) === normalizar(nome))) erros.push({ campo: 'nome', mensagem: 'Já existe um curso com esse nome.' });
-    if (!dados.areaId) erros.push({ campo: 'areaId', mensagem: 'Escolha a área.' });
-    if (!dados.eixoId) erros.push({ campo: 'eixoId', mensagem: 'Escolha o eixo.' });
     if (!dados.nivel) erros.push({ campo: 'nivel', mensagem: 'Escolha o nível.' });
     const ch = numero(dados.cargaHoraria);
     if (ch == null || Number.isNaN(ch) || ch <= 0) erros.push({ campo: 'cargaHoraria', mensagem: 'Carga horária deve ser maior que zero.' });
@@ -219,7 +223,7 @@ const Cursos = (() => {
       certificado: { emite: true, frequenciaMinima: 75, exigeAprovacao: false, notaMinima: null },
       infraestrutura: { sala: null, softwares: [], requisitosMaquina: '' },
       sugestoesRequisitos: [],
-      areaId: null,
+      area: '',
       comercial: { precoReferencia: null, parcelasMax: null, vagasMin: null, vagasMax: null },
       ...dados,
     };
@@ -229,8 +233,7 @@ const Cursos = (() => {
     return {
       codigo: String(dados.codigo).trim().toUpperCase(),
       nome: String(dados.nome).trim(),
-      areaId: dados.areaId,
-      eixoId: dados.eixoId,
+      area: String(dados.area ?? '').trim(),
       nivel: dados.nivel,
       cargaHoraria: numero(dados.cargaHoraria),
       encontros: numero(dados.encontros),
@@ -499,7 +502,7 @@ const Cursos = (() => {
 
   return {
     carregar, salvar, normalizar, porId, numero,
-    filtrar, formacoesDoCurso, todasTurmas, turmasDoCurso, podeExcluir,
+    filtrar, areasUsadas, formacoesDoCurso, todasTurmas, turmasDoCurso, podeExcluir,
     horasDistribuidas, situacaoHoras, pendencias,
     validarDados, validarModulo, validarCertificado, validarComercial,
     incluir, atualizarDados, remover, nomeDeCopia, codigoDeCopia, duplicar,

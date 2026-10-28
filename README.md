@@ -23,7 +23,7 @@ Abra `http://localhost:8770/`. A entrada pede primeiro o portal (administrativo,
 node --test tests/*.mjs
 ```
 
-`tests/links.test.mjs` acusa qualquer página ou script citado que não existe; os outros cobrem os motores (vendas, turmas e aulas, feriados, financeiro, centros de receita, instrutores, materiais e modelos de contrato).
+`tests/links.test.mjs` acusa qualquer página ou script citado que não existe; os outros cobrem os motores (vendas, turmas e aulas, feriados, financeiro, centros de receita, instrutores, materiais, modelos de contrato e área do curso).
 
 ## Estrutura
 

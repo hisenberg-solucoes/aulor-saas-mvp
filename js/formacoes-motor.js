@@ -5,7 +5,7 @@
 // ============================================================
 
 const Formacoes = (() => {
-  const CHAVE = 'aulor-v1-formacoes-v7'; // v7 (15/10/2026): resumos da semente sem código, horas e cursos
+  const CHAVE = 'aulor-v1-formacoes-v8'; // v8 (28/10/2026): área em texto livre e sem eixo
 
   function clonar(x) {
     return JSON.parse(JSON.stringify(x));
@@ -50,21 +50,11 @@ const Formacoes = (() => {
   const horasItem = (item, curso) => (item.cargaHoraria != null ? Number(item.cargaHoraria) : Number(curso?.cargaHoraria) || 0);
   const somaHoras = (itens) => itens.reduce((s, i) => s + (Number(i.horas) || 0), 0);
 
-  // Curso sem eixo (ou com um eixo que saiu da matriz) cai num grupo próprio, por último:
-  // sem ele, sumia dos totais por eixo e da visão agrupada da aba Cursos.
-  const SEM_EIXO = { id: '', nome: 'Sem eixo' };
-  const eixoDoItem = (i) => (EIXOS.some((e) => e.id === i.curso.eixoId) ? i.curso.eixoId : '');
-  const gruposDeEixo = () => [...EIXOS, SEM_EIXO];
-
-  // Totalizadores: geral, por obrigatoriedade e por eixo (ordenadas por horas, desc).
+  // Totalizadores: geral e por obrigatoriedade.
   function totais(formacao, cursos) {
     const itens = cursosDe(formacao, cursos);
     const soma = somaHoras;
     const total = soma(itens);
-    const porEixo = gruposDeEixo().map((a) => {
-      const doGrupo = itens.filter((i) => eixoDoItem(i) === a.id);
-      return { area: a, n: doGrupo.length, horas: soma(doGrupo), obrigatorias: soma(doGrupo.filter((i) => i.obrigatorio)), pct: total ? soma(doGrupo) / total : 0 };
-    }).filter((x) => x.n).sort((a, b) => (a.area === SEM_EIXO) - (b.area === SEM_EIXO) || b.horas - a.horas || a.area.nome.localeCompare(b.area.nome, 'pt-BR'));
     return {
       n: itens.length,
       obrigatorios: itens.filter((i) => i.obrigatorio).length,
@@ -72,17 +62,10 @@ const Formacoes = (() => {
       horas: total,
       horasObrigatorias: soma(itens.filter((i) => i.obrigatorio)),
       horasOptativas: soma(itens.filter((i) => !i.obrigatorio)),
-      porEixo,
       formatosComuns: FORMATOS.filter((f) => itens.length && itens.every((i) => i.curso.formatos.includes(f.id))).map((f) => f.id),
       somaPrecos: itens.reduce((s, i) => s + (i.curso.comercial.precoReferencia ?? 0), 0),
       semPreco: itens.filter((i) => i.curso.comercial.precoReferencia == null).length,
     };
-  }
-
-  // Cursos agrupados por eixo, mantendo a ordem da formação dentro de cada grupo.
-  function porEixo(formacao, cursos) {
-    const itens = cursosDe(formacao, cursos);
-    return gruposDeEixo().map((a) => ({ area: a, itens: itens.filter((i) => eixoDoItem(i) === a.id) })).filter((g) => g.itens.length);
   }
 
   const temAgenda = (f) => Boolean(f?.agenda?.periodos?.length && f.agenda.formato);
@@ -102,13 +85,12 @@ const Formacoes = (() => {
 
   // ---------- Lista ----------
 
-  function filtrar(lista, cursos, { busca = '', status = '', areaId = '', eixoId = '' } = {}) {
+  function filtrar(lista, cursos, { busca = '', status = '', area = '' } = {}) {
     const termo = normalizar(busca);
     return lista
       .filter((f) => !termo || normalizar(`${f.codigo} ${f.nome} ${f.resumo}`).includes(termo))
       .filter((f) => !status || f.status === status)
-      .filter((f) => !areaId || f.areaId === areaId)
-      .filter((f) => !eixoId || cursosDe(f, cursos).some((i) => i.curso.eixoId === eixoId))
+      .filter((f) => !area || normalizar(f.area) === normalizar(area))
       .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   }
 
@@ -124,7 +106,6 @@ const Formacoes = (() => {
     else if (outros.some((f) => normalizar(f.codigo) === normalizar(codigo))) erros.push({ campo: 'codigo', mensagem: 'Já existe uma formação com esse código.' });
     if (!nome) erros.push({ campo: 'nome', mensagem: 'Informe o nome da formação.' });
     else if (outros.some((f) => normalizar(f.nome) === normalizar(nome))) erros.push({ campo: 'nome', mensagem: 'Já existe uma formação com esse nome.' });
-    if (!dados.areaId) erros.push({ campo: 'areaId', mensagem: 'Escolha a área.' });
     if (dados.status && !STATUS_FORMACAO.some((s) => s.id === dados.status)) erros.push({ campo: 'status', mensagem: 'Status inválido.' });
     return erros;
   }
@@ -154,7 +135,7 @@ const Formacoes = (() => {
     return {
       codigo: String(dados.codigo).trim().toUpperCase(),
       nome: String(dados.nome).trim(),
-      areaId: dados.areaId,
+      area: String(dados.area ?? '').trim(),
       resumo: String(dados.resumo ?? '').trim(),
       descricao: String(dados.descricao ?? '').trim(),
       publicoAlvo: String(dados.publicoAlvo ?? '').trim(),
@@ -363,7 +344,7 @@ const Formacoes = (() => {
 
   return {
     carregar, salvar, porId, normalizar,
-    cursosDe, totais, porEixo, pendencias, filtrar,
+    cursosDe, totais, pendencias, filtrar,
     alunosDaFormacao, edicoesDe, filtrarAlunos,
     validarDados, validarCertificado, validarComercial,
     incluir, atualizarDados, remover, nomeDeCopia, codigoDeCopia, duplicar, alterarStatus,

@@ -254,7 +254,6 @@ const PortalAluno = (() => {
     const formacoes = typeof Formacoes !== 'undefined' ? Formacoes.carregar() : [];
     const instrutores = typeof Instrutores !== 'undefined' ? Instrutores.carregar() : [];
     const salas = typeof Salas !== 'undefined' ? Salas.carregar() : [];
-    const areas = typeof Areas !== 'undefined' ? Areas.carregar() : [];
     const linhas = [];
     Contratos.contratosDoAluno(Contratos.carregar(), alunoId).forEach((c) => {
       if (c.status === 'rascunho') return;
@@ -275,7 +274,7 @@ const PortalAluno = (() => {
           contrato: c, item, turma, curso, formacao,
           instrutor: instrutores.find((i) => i.id === turma.instrutorId) ?? null,
           sala: salas.find((s) => s.id === turma.salaId) ?? null,
-          area: curso?.areaId ? Areas.porId(areas, curso.areaId) : null,
+          area: curso?.area || null,
           aulas, realizadas: realizadas.length,
           progresso: aulas.length ? Math.round((realizadas.length / aulas.length) * 100) : 0,
           situacao, situacaoAluno, horas, horasConcluidas,

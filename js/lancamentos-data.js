@@ -535,18 +535,3 @@ const SAQUES_ASAAS_SEED_CONFIG = { ativo: true, diasUteis: true, horario: '17:00
 // Compatibilidade com o nome previsto na especificação: a semente do extrato
 // depende dos lançamentos, então é uma função e não uma constante.
 const EXTRATO_ASAAS_SEED = gerarExtratoAsaasSeed;
-
-// ---------- Vendas por área (FICTÍCIO) ----------
-// [sup.] Só para o gráfico de pizza "Vendas por área" dos dashboards: participação de cada área
-// no mês, determinística por mês (mesmo mês → mesmos números), sem ligação com os lançamentos.
-// `areas` = Areas.carregar() (usa nome e cor); devolve [{ area, valor, pct }] ordenado por valor.
-function gerarVendasPorAreaFicticio(mes, areas, totalMes = 120000) {
-  const rnd = lancPrng(lancHash(`vendas-area-${mes}`));
-  const pesoBase = { dev: 34, infra: 12, design: 14, marketing: 11, produtividade: 13, gestao: 8, engenharia: 8 };
-  const ativas = (areas ?? []).filter((a) => a.status !== 'inativa');
-  const brutos = ativas.map((a) => ({ area: a, peso: (pesoBase[a.id] ?? 6) * (0.7 + rnd() * 0.6) }));
-  const soma = brutos.reduce((t, b) => t + b.peso, 0) || 1;
-  const itens = brutos.map((b) => ({ area: b.area, valor: lancArred(totalMes * b.peso / soma) }));
-  const total = itens.reduce((t, i) => t + i.valor, 0) || 1;
-  return itens.map((i) => ({ ...i, pct: Math.round((i.valor / total) * 1000) / 10 })).sort((a, b) => b.valor - a.valor);
-}

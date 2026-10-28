@@ -12,18 +12,6 @@
 // ementas vêm dos PDFs "matrizes curriculares" (agosto/2026).
 // ============================================================
 
-// Eixos pedagógicos usados nas matrizes do Super DEV (classificação do curso dentro da formação).
-// A ÁREA de negócio (Desenvolvimento, Infra, Design, Marketing…) é outro conceito: js/areas-data.js.
-const EIXOS = [
-  { id: 'frontend', nome: 'Front-end' },
-  { id: 'backend', nome: 'Back-end' },
-  { id: 'ia', nome: 'Inteligência artificial' },
-  { id: 'cross', nome: 'Cross (ferramentas)' },
-  { id: 'carreira', nome: 'Carreira' },
-  { id: 'tcc', nome: 'TCC' },
-  { id: 'complementar', nome: 'Complementar (aulões)' },
-];
-
 const NIVEIS = [
   { id: 'basico', nome: 'Básico', descricao: 'Não exige conhecimento prévio.' },
   { id: 'intermediario', nome: 'Intermediário', descricao: 'Exige base no assunto.' },
@@ -584,7 +572,7 @@ function cursoSeed(dados) {
     infraestrutura: { sala: null, softwares: [], requisitosMaquina: '' },
     sugestoesRequisitos: [], // pedidos dos instrutores para o catálogo do curso (docs/cursos.md RN9)
     instrutorIds: [],
-    areaId: 'dev', // área de negócio (js/areas-data.js) — todo o Super DEV é Desenvolvimento
+    area: 'Desenvolvimento', // texto livre, sem cadastro (como na API) — todo o Super DEV é Desenvolvimento
     comercial: { precoReferencia: null, parcelasMax: null, vagasMin: null, vagasMax: null, turmaAberta: false, inCompany: false, publicadoSite: false },
     ...dados,
   };
@@ -614,7 +602,7 @@ const comercial = (preco, parcelas = 6, vagasMax = 16, extra = {}) => ({ precoRe
 const CURSOS_SEED = [
   // ======================= Base web (comum às trilhas) =======================
   cursoSeed({
-    id: 'ht5', codigo: 'HT5', nome: 'HTML5', eixoId: 'frontend', nivel: 'basico', status: 'ativo',
+    id: 'ht5', codigo: 'HT5', nome: 'HTML5', nivel: 'basico', status: 'ativo',
     resumo: 'Estrutura de páginas web: tags, listas, links, imagens, tabelas, formulários e semântica.',
     descricao: 'Neste curso de HTML você aprende a criar a estrutura básica de páginas web, entendendo a função de cada elemento e atributo para tornar seu conteúdo claro, acessível e semanticamente correto. Ao dominar tags de texto, listas, links, imagens, tabelas e formulários, você estará preparado para construir sites estáticos profissionais e ter base sólida para avançar em CSS, JavaScript e Angular.',
     publicoAlvo: 'Iniciantes em programação e alunos da formação Super DEV.',
@@ -631,7 +619,7 @@ const CURSOS_SEED = [
     comercial: comercial(690, 4, 20),
   }),
   cursoSeed({
-    id: 'css', codigo: 'CSS', nome: 'CSS3', eixoId: 'frontend', nivel: 'basico', status: 'ativo',
+    id: 'css', codigo: 'CSS', nome: 'CSS3', nivel: 'basico', status: 'ativo',
     resumo: 'Do box model a Flexbox, Grid, animações e variáveis: layouts modernos e responsivos.',
     descricao: 'Transforme páginas estáticas em interfaces visuais atraentes, responsivas e acessíveis, dominando desde a sintaxe básica e o modelo de caixas até Flexbox, Grid, animações e variáveis CSS. Você verá como organizar estilos, aplicar tipografia e cores, implementar transições e garantir compatibilidade e performance — preparando-se para estilizar aplicações Angular.',
     publicoAlvo: 'Quem já conhece HTML e quer dominar layout e estilo.',
@@ -648,7 +636,7 @@ const CURSOS_SEED = [
     comercial: comercial(790, 4, 20),
   }),
   cursoSeed({
-    id: 'git', codigo: 'GIT', nome: 'Git e GitHub', eixoId: 'cross', nivel: 'basico', status: 'ativo',
+    id: 'git', codigo: 'GIT', nome: 'Git e GitHub', nivel: 'basico', status: 'ativo',
     resumo: 'Versionamento profissional: branches, PRs, workflows, GitHub Actions, Pages e Projects.',
     descricao: 'Do básico de versionamento — repositórios, commits, branches e conflitos — até repositórios remotos com SSH, pull requests, issues, GitHub Flow/Git Flow, CI/CD com GitHub Actions, GitHub Pages e gestão de entregas com GitHub Projects. Ao final você versiona código de forma profissional e colabora em equipes ágeis.',
     publicoAlvo: 'Qualquer pessoa que programe; entra cedo nas formações para criar o hábito de versionar.',
@@ -664,7 +652,7 @@ const CURSOS_SEED = [
     comercial: comercial(690, 4, 20),
   }),
   cursoSeed({
-    id: 'pjs', codigo: 'PJS', nome: 'JavaScript e Lógica de Programação', eixoId: 'frontend', nivel: 'basico', status: 'ativo',
+    id: 'pjs', codigo: 'PJS', nome: 'JavaScript e Lógica de Programação', nivel: 'basico', status: 'ativo',
     resumo: 'Pensamento computacional e JavaScript: variáveis, controle de fluxo, funções, arrays, erros e DOM.',
     descricao: 'Introdução ao pensamento computacional e aos fundamentos da linguagem: algoritmos a partir de pseudocódigo e fluxogramas executados no navegador ou em Node.js; variáveis, tipos e operadores; decisão e repetição para problemas matemáticos e de lógica; funções, arrays com métodos de iteração, tratamento de exceções e debugging; DOM, eventos e criação/remoção de nós; Fetch API, Web Storage e JSON.',
     publicoAlvo: 'Quem nunca programou ou quer consolidar a lógica antes de avançar.',
@@ -683,7 +671,7 @@ const CURSOS_SEED = [
     comercial: comercial(1890, 10, 16),
   }),
   cursoSeed({
-    id: 'ajs', codigo: 'AJS', nome: 'Angular e TypeScript', eixoId: 'frontend', nivel: 'intermediario', status: 'ativo',
+    id: 'ajs', codigo: 'AJS', nome: 'Angular e TypeScript', nivel: 'intermediario', status: 'ativo',
     resumo: 'Aplicações modernas com componentes standalone, data binding, serviços, HTTP, CRUD, rotas e deploy.',
     descricao: 'Crie aplicações Angular do zero com componentes standalone, dominando data binding, controle de fluxo em templates, injeção de dependência e consumo de APIs REST, com CRUD em modais customizados e padrão Master-Detail. Rotas protegidas por guards, lazy loading e build/deploy contínuo com GitHub Actions.',
     publicoAlvo: 'Quem já domina JavaScript e quer front-end profissional.',
@@ -703,7 +691,7 @@ const CURSOS_SEED = [
 
   // ======================= Trilha Python (Super DEV 7 e 9) =======================
   cursoSeed({
-    id: 'py1', codigo: 'PY1', nome: 'Python Fundamentos', eixoId: 'backend', nivel: 'basico', status: 'ativo',
+    id: 'py1', codigo: 'PY1', nome: 'Python Fundamentos', nivel: 'basico', status: 'ativo',
     resumo: 'Ambiente, sintaxe, coleções, funções, exceções, arquivos, módulos e ambientes virtuais.',
     descricao: 'Instale e configure seu ambiente, domine a sintaxe básica, tipos, operadores e estruturas de controle; trabalhe com listas, tuplas, dicionários e conjuntos; crie funções, trate exceções e manipule arquivos; organize o código em módulos e pacotes com virtualenv e PEP 8. Culmina numa ferramenta de linha de comando.',
     publicoAlvo: 'Alunos da trilha Python ou quem quer começar em back-end.',
@@ -720,7 +708,7 @@ const CURSOS_SEED = [
     comercial: comercial(790, 4, 16),
   }),
   cursoSeed({
-    id: 'pyo', codigo: 'PYO', nome: 'Python: Orientado a Objetos', eixoId: 'backend', nivel: 'intermediario', status: 'ativo',
+    id: 'pyo', codigo: 'PYO', nome: 'Python: Orientado a Objetos', nivel: 'intermediario', status: 'ativo',
     resumo: 'Classes, encapsulamento, herança, polimorfismo, magic methods, composição, serialização e type hints.',
     descricao: 'Modele sistemas com classes e objetos aplicando os pilares da POO; propriedades com getters/setters, métodos especiais, composição, classes abstratas, serialização com json/pickle e tipagem estática com type hints e mypy, culminando num projeto prático.',
     publicoAlvo: 'Quem concluiu Python Fundamentos.',
@@ -737,7 +725,7 @@ const CURSOS_SEED = [
     comercial: comercial(790, 4, 16),
   }),
   cursoSeed({
-    id: 'msq', codigo: 'MSQ', nome: 'Banco de Dados: MySQL', eixoId: 'backend', nivel: 'basico', status: 'ativo',
+    id: 'msq', codigo: 'MSQ', nome: 'Banco de Dados: MySQL', nivel: 'basico', status: 'ativo',
     resumo: 'Modelagem ER e normalização, DDL/DML, consultas avançadas, joins, views, índices, transações e backup.',
     descricao: 'Instale e configure servidor e clientes, modele bancos relacionais a partir de diagramas ER com normalização até a 3ª forma; defina tabelas e integridade; insira, consulte, atualize e remova registros; agrupamentos, subqueries e joins; views, índices, transações e rotinas de backup e restore.',
     publicoAlvo: 'Alunos da trilha Python e analistas que precisam de SQL.',
@@ -753,7 +741,7 @@ const CURSOS_SEED = [
     comercial: comercial(690, 4, 16),
   }),
   cursoSeed({
-    id: 'py2', codigo: 'PY2', nome: 'Python: Banco de Dados e ORM', eixoId: 'backend', nivel: 'intermediario', status: 'ativo',
+    id: 'py2', codigo: 'PY2', nome: 'Python: Banco de Dados e ORM', nivel: 'intermediario', status: 'ativo',
     resumo: 'Conexão com MySQL, CRUD com SQL puro e parametrizado, transações e SQLAlchemy com relacionamentos.',
     descricao: 'Conecte a aplicação ao MySQL, execute CRUD com SQL em Python controlando transações e prevenindo injeção com consultas parametrizadas; migre para o SQLAlchemy mapeando classes em tabelas, gerenciando sessões e relacionamentos 1:1, 1:N e N:N; consultas avançadas e migrações com Alembic.',
     publicoAlvo: 'Quem concluiu Python OO e MySQL.',
@@ -769,7 +757,7 @@ const CURSOS_SEED = [
     comercial: comercial(790, 4, 16),
   }),
   cursoSeed({
-    id: 'pya', codigo: 'PYA', nome: 'Python: API RESTful com Angular', eixoId: 'backend', nivel: 'avancado', status: 'ativo',
+    id: 'pya', codigo: 'PYA', nome: 'Python: API RESTful com Angular', nivel: 'avancado', status: 'ativo',
     resumo: 'FastAPI + SQLAlchemy + Pydantic, CSV/JSON, imagens, JWT, front Angular, Swagger e deploy com Actions.',
     descricao: 'Projete e implemente serviços web completos: princípios REST e JSON, projeto com FastAPI, entidades e relacionamentos 1×1, 1×N e N×N com SQLAlchemy e Pydantic, importação/exportação em CSV/JSON, upload de imagens multipart, autenticação JWT com renovação de tokens; no Angular, consumo HTTP com interceptors, formulários dinâmicos e listas/detalhes sincronizados. Documentação OpenAPI e CI/CD com GitHub Actions.',
     publicoAlvo: 'Alunos da trilha Python que já fizeram Angular e ORM.',
@@ -793,7 +781,7 @@ const CURSOS_SEED = [
     comercial: comercial(1790, 10, 14),
   }),
   cursoSeed({
-    id: 'mlp', codigo: 'MLP', nome: 'Machine Learning em Python', eixoId: 'ia', nivel: 'intermediario', status: 'ativo',
+    id: 'mlp', codigo: 'MLP', nome: 'Machine Learning em Python', nivel: 'intermediario', status: 'ativo',
     resumo: 'Introdução prática a ML com scikit-learn: dados, regressão, classificação, validação e deploy simples.',
     descricao: 'Módulo de inteligência artificial da trilha Python: preparação de dados com Pandas, modelos de regressão e classificação com scikit-learn, métricas e validação, e como expor um modelo numa API.',
     publicoAlvo: 'Alunos da trilha Python.',
@@ -812,7 +800,7 @@ const CURSOS_SEED = [
   // ======================= Trilha Java (Super DEV 8) =======================
   // Carga horária espelhada na trilha .NET (24 · 24 · 28 · 28 · 62) — não há matriz publicada para Java.
   cursoSeed({
-    id: 'jva', codigo: 'JVA', nome: 'Java Fundamentos', eixoId: 'backend', nivel: 'basico', status: 'ativo',
+    id: 'jva', codigo: 'JVA', nome: 'Java Fundamentos', nivel: 'basico', status: 'ativo',
     resumo: 'JDK, sintaxe, tipos, controle de fluxo, coleções, métodos, exceções, arquivos e Maven.',
     descricao: 'Instale e configure o ambiente com JDK e IntelliJ, domine a sintaxe, tipos, operadores e estruturas de controle; arrays, List e Map; métodos, exceções e manipulação de arquivos; organização em pacotes e projetos Maven. Primeiro contato com tipagem estática, reforçando a lógica vista em JavaScript.',
     publicoAlvo: 'Alunos da trilha Java ou quem quer começar em back-end.',
@@ -829,7 +817,7 @@ const CURSOS_SEED = [
     comercial: comercial(790, 4, 16),
   }),
   cursoSeed({
-    id: 'ptg', codigo: 'PTG', nome: 'Banco de Dados: PostgreSQL', eixoId: 'backend', nivel: 'basico', status: 'ativo',
+    id: 'ptg', codigo: 'PTG', nome: 'Banco de Dados: PostgreSQL', nivel: 'basico', status: 'ativo',
     resumo: 'Modelagem, DDL/DML com UPSERT, joins, subqueries e CTEs, views, índices, EXPLAIN, transações e pg_dump.',
     descricao: 'Instale e configure servidor e clientes (pgAdmin, psql, DBeaver), modele bancos relacionais com normalização, domine tabelas, tipos e integridade; JOINs, agrupamentos, subqueries e CTEs; views, índices e transações — base para Entity Framework Core ou JPA.',
     publicoAlvo: 'Alunos das trilhas Java e .NET; analistas que precisam de SQL.',
@@ -845,7 +833,7 @@ const CURSOS_SEED = [
     comercial: comercial(790, 4, 16),
   }),
   cursoSeed({
-    id: 'jvo', codigo: 'JVO', nome: 'Java: Orientado a Objetos', eixoId: 'backend', nivel: 'intermediario', status: 'ativo',
+    id: 'jvo', codigo: 'JVO', nome: 'Java: Orientado a Objetos', nivel: 'intermediario', status: 'ativo',
     resumo: 'Classes, encapsulamento, herança, interfaces, generics, coleções avançadas, records e serialização JSON.',
     descricao: 'Modele sistemas com os pilares da POO em Java: construtores, propriedades, interfaces e classes abstratas, equals/hashCode, Comparable, generics, coleções (Set, Queue, Deque), composição, records e serialização com Jackson. Prepara para JPA e Spring.',
     publicoAlvo: 'Quem concluiu Java Fundamentos.',
@@ -865,7 +853,7 @@ const CURSOS_SEED = [
     comercial: comercial(890, 4, 16),
   }),
   cursoSeed({
-    id: 'jv2', codigo: 'JV2', nome: 'Java: Banco de Dados e ORM (JPA/Hibernate)', eixoId: 'backend', nivel: 'intermediario', status: 'ativo',
+    id: 'jv2', codigo: 'JV2', nome: 'Java: Banco de Dados e ORM (JPA/Hibernate)', nivel: 'intermediario', status: 'ativo',
     resumo: 'JDBC com PostgreSQL, transações e prepared statements; JPA/Hibernate com relacionamentos, JPQL e Flyway.',
     descricao: 'Conecte a aplicação ao PostgreSQL com JDBC, execute CRUD controlando transações e prevenindo injeção; migre para JPA/Hibernate mapeando entidades, EntityManager e relacionamentos 1:1, 1:N e N:N; consultas JPQL e Criteria; migrações com Flyway.',
     publicoAlvo: 'Quem concluiu Java OO e PostgreSQL.',
@@ -882,7 +870,7 @@ const CURSOS_SEED = [
     comercial: comercial(890, 4, 16),
   }),
   cursoSeed({
-    id: 'jvs', codigo: 'JVS', nome: 'Java: API RESTful com Spring Boot e Angular', eixoId: 'backend', nivel: 'avancado', status: 'ativo',
+    id: 'jvs', codigo: 'JVS', nome: 'Java: API RESTful com Spring Boot e Angular', nivel: 'avancado', status: 'ativo',
     resumo: 'Spring Boot + Spring Data JPA, camadas, DTOs, CSV/JSON, upload, JWT com Spring Security, Angular, Swagger e deploy.',
     descricao: 'Projete e implemente APIs REST com Spring Boot: entidades e relacionamentos com Spring Data JPA, arquitetura em camadas (controller, service, repository), DTOs e validação, importação/exportação CSV/JSON, upload de imagens, autenticação JWT com Spring Security; no Angular, consumo com interceptors, formulários reativos e master-detail. Springdoc/Swagger, tratamento global de erros e CI/CD com GitHub Actions. Ponto de convergência da trilha.',
     publicoAlvo: 'Alunos da trilha Java que já fizeram Angular e JPA.',
@@ -902,7 +890,7 @@ const CURSOS_SEED = [
 
   // ======================= Trilha .NET / C# (Super DEV 10 — proposta) =======================
   cursoSeed({
-    id: 'csf', codigo: 'CSF', nome: 'C# Fundamentos', eixoId: 'backend', nivel: 'basico', status: 'ativo',
+    id: 'csf', codigo: 'CSF', nome: 'C# Fundamentos', nivel: 'basico', status: 'ativo',
     resumo: '.NET SDK e VS Code, sintaxe, tipos, controle de fluxo, coleções, métodos, exceções, arquivos e NuGet.',
     descricao: 'Instale e configure o ambiente com .NET SDK e VS Code, domine sintaxe, tipos, operadores e estruturas de controle; arrays, List<T> e Dictionary; métodos, exceções e arquivos; namespaces, projetos e NuGet. Primeiro contato com C# e tipagem estática, reforçando a lógica por variação com JavaScript.',
     publicoAlvo: 'Alunos da trilha .NET.',
@@ -919,7 +907,7 @@ const CURSOS_SEED = [
     comercial: comercial(790, 4, 16),
   }),
   cursoSeed({
-    id: 'cso', codigo: 'CSO', nome: 'C# Orientado a Objetos', eixoId: 'backend', nivel: 'intermediario', status: 'ativo',
+    id: 'cso', codigo: 'CSO', nome: 'C# Orientado a Objetos', nivel: 'intermediario', status: 'ativo',
     resumo: 'Classes, propriedades, herança, interfaces, null safety, generics, coleções, IDisposable, records e System.Text.Json.',
     descricao: 'Modele sistemas com os pilares da POO em C#: propriedades, construtores, interfaces e classes abstratas, composição, coleções avançadas e gerenciamento de recursos; serialização com System.Text.Json. Absorve sobrecarga de métodos, operadores de null safety, coleções especializadas e IDisposable no contexto adequado.',
     publicoAlvo: 'Quem concluiu C# Fundamentos.',
@@ -936,7 +924,7 @@ const CURSOS_SEED = [
     comercial: comercial(890, 4, 16),
   }),
   cursoSeed({
-    id: 'cs2', codigo: 'CS2', nome: 'C#: Banco de Dados e ORM (EF Core)', eixoId: 'backend', nivel: 'intermediario', status: 'ativo',
+    id: 'cs2', codigo: 'CS2', nome: 'C#: Banco de Dados e ORM (EF Core)', nivel: 'intermediario', status: 'ativo',
     resumo: 'Npgsql/ADO.NET com transações; Entity Framework Core com DbContext, Fluent API, relacionamentos, LINQ e migrações.',
     descricao: 'Conecte a aplicação ao PostgreSQL, execute CRUD com SQL via Npgsql controlando transações e prevenindo injeção; migre para o EF Core mapeando classes em tabelas, DbContext, Data Annotations e Fluent API, relacionamentos 1:1, 1:N e N:N, consultas LINQ com Include e migrações.',
     publicoAlvo: 'Quem concluiu C# OO e PostgreSQL.',
@@ -953,7 +941,7 @@ const CURSOS_SEED = [
     comercial: comercial(890, 4, 16),
   }),
   cursoSeed({
-    id: 'csa', codigo: 'CSA', nome: 'C# API RESTful com Angular', eixoId: 'backend', nivel: 'avancado', status: 'ativo',
+    id: 'csa', codigo: 'CSA', nome: 'C# API RESTful com Angular', nivel: 'avancado', status: 'ativo',
     resumo: 'ASP.NET Core, camadas com Repository/Unit of Work, DTOs, consultas avançadas, arquivos, JWT, Angular, Swagger e deploy.',
     descricao: 'Projete e implemente serviços web com ASP.NET Core: entidades e relacionamentos com EF Core, camadas com Repository e Unit of Work, consultas avançadas com FromSqlRaw, importação/exportação de dados, upload com IFormFile, JWT com refresh token e políticas; no Angular, interceptors, CORS, formulários e master-detail. Middleware de erros, Problem Details, Swashbuckle e CI/CD com GitHub Actions. Ponto de convergência da trilha.',
     publicoAlvo: 'Alunos da trilha .NET que já fizeram Angular e EF Core.',
@@ -973,7 +961,7 @@ const CURSOS_SEED = [
 
   // ======================= Carreira, TCC e aulões (comuns) =======================
   cursoSeed({
-    id: 'pp360', codigo: 'PP360', nome: 'Perfil Profissional 360: Gerenciando sua Carreira', eixoId: 'carreira', nivel: 'basico', status: 'ativo',
+    id: 'pp360', codigo: 'PP360', nome: 'Perfil Profissional 360: Gerenciando sua Carreira', nivel: 'basico', status: 'ativo',
     resumo: 'Currículo, LinkedIn, portfólio no GitHub, entrevistas técnicas e comportamentais, plano de carreira.',
     descricao: 'Módulo de carreira da formação: posicionamento profissional, currículo e LinkedIn, portfólio e README de projetos, simulação de entrevistas técnicas e comportamentais, negociação e plano de desenvolvimento individual.',
     publicoAlvo: 'Alunos das formações Super DEV.',
@@ -989,7 +977,7 @@ const CURSOS_SEED = [
     comercial: comercial(590, 3, 20, { inCompany: true }),
   }),
   cursoSeed({
-    id: 'stc1', codigo: 'STC1', nome: 'Pré-TCC (Planejamento)', eixoId: 'tcc', nivel: 'intermediario', status: 'ativo',
+    id: 'stc1', codigo: 'STC1', nome: 'Pré-TCC (Planejamento)', nivel: 'intermediario', status: 'ativo',
     resumo: 'Escolha do tema, levantamento de requisitos, protótipo de telas e planejamento do TCC.',
     descricao: 'Planejamento do projeto de conclusão: definição do problema e do público, requisitos, modelagem de dados inicial, protótipo do front-end e cronograma. Antecede o desenvolvimento do TCC.',
     publicoAlvo: 'Alunos das formações Super DEV.',
@@ -1001,7 +989,7 @@ const CURSOS_SEED = [
     comercial: COM_FORMACAO,
   }),
   cursoSeed({
-    id: 'stc', codigo: 'STC', nome: 'TCC (Desenvolvimento)', eixoId: 'tcc', nivel: 'avancado', status: 'ativo',
+    id: 'stc', codigo: 'STC', nome: 'TCC (Desenvolvimento)', nivel: 'avancado', status: 'ativo',
     resumo: 'Desenvolvimento do projeto full stack de conclusão com orientação e banca.',
     descricao: 'Desenvolvimento do projeto de conclusão (API + front-end + banco + deploy) com encontros de orientação, revisão de código e apresentação final para banca.',
     publicoAlvo: 'Alunos das formações Super DEV.',
@@ -1013,7 +1001,7 @@ const CURSOS_SEED = [
     comercial: COM_FORMACAO,
   }),
   cursoSeed({
-    id: 'aul', codigo: 'AUL', nome: 'Aulões temáticos (UX e bate-papo com DEVs)', eixoId: 'complementar', nivel: 'basico', status: 'ativo',
+    id: 'aul', codigo: 'AUL', nome: 'Aulões temáticos (UX e bate-papo com DEVs)', nivel: 'basico', status: 'ativo',
     resumo: 'Quatro encontros de 4 h: bate-papo com DEVs, UX parte I, UX parte II e tema a definir.',
     descricao: 'Encontros complementares ao longo da formação: conversa com desenvolvedores do mercado, dois aulões de UX e um tema definido com a turma.',
     publicoAlvo: 'Alunos das formações Super DEV.',
@@ -1026,7 +1014,7 @@ const CURSOS_SEED = [
 
   // ======================= Legado =======================
   cursoSeed({
-    id: 'wjj', codigo: 'WJJ', nome: 'JavaScript, jQuery e Ajax (descontinuado)', eixoId: 'frontend', nivel: 'intermediario', status: 'inativo',
+    id: 'wjj', codigo: 'WJJ', nome: 'JavaScript, jQuery e Ajax (descontinuado)', nivel: 'intermediario', status: 'inativo',
     resumo: 'Curso antigo de JavaScript; substituído por "JavaScript e Lógica de Programação".',
     descricao: 'Descontinuado em 2025 com a reformulação do Super DEV (Lógica I e II + WJJ + JavaScript Avançado viraram um curso único de 70 h).',
     cargaHoraria: 20, encontros: 5, duracaoAula: 4, formatos: ['presencial'],
@@ -1039,7 +1027,7 @@ const CURSOS_SEED = [
 // >>> CATALOGO-PROWAY cursos (gerado por _tools/semente-catalogo/gerar.py — não editar à mão)
 CURSOS_SEED.push(
   cursoSeed({
-    id: 'dtp', codigo: 'DTP', nome: 'Direção de Arte e Produção Gráfica', eixoId: 'ferramenta', areaId: 'design', nivel: 'intermediario', status: 'ativo',
+    id: 'dtp', codigo: 'DTP', nome: 'Direção de Arte e Produção Gráfica', area: 'Design', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso apresenta fundamentos e práticas do design gráfico aplicados ao desenvolvimento de peças impressas.',
     descricao: 'Este curso apresenta fundamentos e práticas do design gráfico aplicados ao desenvolvimento de peças impressas. Alunos(as) aprendem conceitos de cor, tipografia, composição e criatividade, além de técnicas de layout e organização visual. A formação também aborda processos de impressão, escolha de papéis, acabamentos e finalização de arquivos, preparando alunos(as) para desenvolver projetos gráficos com qualidade técnica e estética.',
     publicoAlvo: 'Alunos(as), designers iniciantes, profissionais de comunicação, publicidade e marketing, produtores(as) gráficos(as) e pessoas interessadas em desenvolver habilidades em direção de arte, criação de peças gráficas e processos de produção para materiais impressos.',
@@ -1054,7 +1042,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/direcao-de-arte-e-producao-grafica',
   }),
   cursoSeed({
-    id: 'ill', codigo: 'ILL', nome: 'Illustrator Básico', eixoId: 'ferramenta', areaId: 'design', nivel: 'basico', status: 'ativo',
+    id: 'ill', codigo: 'ILL', nome: 'Illustrator Básico', area: 'Design', nivel: 'basico', status: 'ativo',
     resumo: 'Este curso é voltado ao desenvolvimento dos fundamentos do Adobe Illustrator, capacitando o(a) participante a criar, editar e organizar projetos vetoriais com precisão técnica.',
     descricao: 'Este curso é voltado ao desenvolvimento dos fundamentos do Adobe Illustrator, capacitando o(a) participante a criar, editar e organizar projetos vetoriais com precisão técnica. Com abordagem prática, constrói a base essencial para atuação em design gráfico, identidade visual, materiais impressos e mídias digitais, consolidando domínio das principais ferramentas e da lógica do design vetorial.',
     publicoAlvo: 'A formação é indicada para pessoas que desejam iniciar na área de design gráfico e criação vetorial, incluindo estudantes, profissionais em transição de carreira, empreendedores(as) e interessados em aprender a produzir projetos visuais digitais ou impressos. É ideal para quem busca construir uma base sólida em Illustrator e desenvolver autonomia criativa e técnica.',
@@ -1074,7 +1062,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/illustrator-basico',
   }),
   cursoSeed({
-    id: 'ila', codigo: 'ILA', nome: 'Illustrator Avançado', eixoId: 'ferramenta', areaId: 'design', nivel: 'avancado', status: 'ativo',
+    id: 'ila', codigo: 'ILA', nome: 'Illustrator Avançado', area: 'Design', nivel: 'avancado', status: 'ativo',
     resumo: 'Módulo voltado ao aprofundamento técnico do Illustrator, onde o(a) participante aprende a organizar documentos, trabalhar com camadas, objetos, estilos, máscaras, efeitos e automações.',
     descricao: 'Módulo voltado ao aprofundamento técnico do Illustrator, onde o(a) participante aprende a organizar documentos, trabalhar com camadas, objetos, estilos, máscaras, efeitos e automações. Desenvolve domínio em edição vetorial avançada, gráficos, cores, textos e perspectivas, elevando criatividade, precisão técnica e capacidade de produzir projetos profissionais com padrão de mercado.',
     publicoAlvo: 'Indicado para designers, ilustradores(as), profissionais de marketing, social media, estudantes ou qualquer pessoa que já possui conhecimentos básicos em Illustrator e deseja elevar sua performance técnica e criativa, produzindo projetos visuais profissionais e complexos.',
@@ -1091,7 +1079,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/illustrator-avancado',
   }),
   cursoSeed({
-    id: 'psb', codigo: 'PSB', nome: 'Photoshop Básico', eixoId: 'ferramenta', areaId: 'design', nivel: 'basico', status: 'ativo',
+    id: 'psb', codigo: 'PSB', nome: 'Photoshop Básico', area: 'Design', nivel: 'basico', status: 'ativo',
     resumo: 'O curso de Photoshop Básico oferece uma introdução prática e estruturada ao principal software de edição de imagens do mercado.',
     descricao: 'O curso de Photoshop Básico oferece uma introdução prática e estruturada ao principal software de edição de imagens do mercado. Ao longo das aulas, o(a) aluno(a) aprende a utilizar as ferramentas essenciais, realizar tratamentos de imagem, criar composições visuais e preparar arquivos para web e impressão, desenvolvendo domínio técnico e criatividade aplicada.',
     publicoAlvo: 'Indicado para pessoas que desejam iniciar no universo da edição e tratamento de imagens, estudantes, empreendedores(as), profissionais de marketing, social media, designers iniciantes ou qualquer pessoa que queira aprender a criar e editar artes com qualidade profissional.',
@@ -1110,7 +1098,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/photoshop-basico',
   }),
   cursoSeed({
-    id: 'psa', codigo: 'PSA', nome: 'Photoshop Avançado', eixoId: 'ferramenta', areaId: 'design', nivel: 'avancado', status: 'ativo',
+    id: 'psa', codigo: 'PSA', nome: 'Photoshop Avançado', area: 'Design', nivel: 'avancado', status: 'ativo',
     resumo: 'O curso de Photoshop Avançado aprofunda o domínio das ferramentas profissionais de edição e manipulação de imagens.',
     descricao: 'O curso de Photoshop Avançado aprofunda o domínio das ferramentas profissionais de edição e manipulação de imagens. Voltado para quem já possui conhecimentos básicos, explora recursos avançados de tratamento, composição, automação e integração com outros softwares, ampliando a capacidade criativa e técnica do(a) aluno(a) para produções de alto nível.',
     publicoAlvo: 'Indicado para designers, social media, fotógrafos(as), profissionais de marketing, criadores(as) de conteúdo e aluno(a)s que já possuem conhecimento básico em Photoshop e desejam evoluir para um nível avançado, ampliando repertório técnico e criativo.',
@@ -1130,7 +1118,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/photoshop-avancado',
   }),
   cursoSeed({
-    id: 'idb', codigo: 'IDB', nome: 'InDesign Básico', eixoId: 'ferramenta', areaId: 'design', nivel: 'basico', status: 'ativo',
+    id: 'idb', codigo: 'IDB', nome: 'InDesign Básico', area: 'Design', nivel: 'basico', status: 'ativo',
     resumo: 'O módulo InDesign Básico desenvolve os fundamentos da editoração profissional, capacitando o(a) participante a criar e organizar layouts para materiais impressos e digitais.',
     descricao: 'O módulo InDesign Básico desenvolve os fundamentos da editoração profissional, capacitando o(a) participante a criar e organizar layouts para materiais impressos e digitais. Com abordagem prática, o curso ensina a estruturar documentos, trabalhar com páginas-mestre, textos, imagens e objetos gráficos, construindo base sólida para projetos editoriais como livros, revistas, catálogos e materiais institucionais.',
     publicoAlvo: 'Indicado para estudantes, designers iniciantes, profissionais de marketing, social media, assistentes editoriais e empreendedores(as) que desejam aprender a diagramar materiais impressos e digitais com organização e padrão profissional. Ideal para quem busca estruturar livros, revistas, catálogos e materiais institucionais com qualidade técnica e autonomia na editoração.',
@@ -1150,7 +1138,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/indesign-basico',
   }),
   cursoSeed({
-    id: 'ida', codigo: 'IDA', nome: 'InDesign Avançado', eixoId: 'ferramenta', areaId: 'design', nivel: 'avancado', status: 'ativo',
+    id: 'ida', codigo: 'IDA', nome: 'InDesign Avançado', area: 'Design', nivel: 'avancado', status: 'ativo',
     resumo: 'O módulo InDesign Avançado aprofunda os recursos técnicos e estratégicos da editoração profissional, capacitando o(a) aluno(a) a trabalhar com automação, dados variáveis, múltiplos…',
     descricao: 'O módulo InDesign Avançado aprofunda os recursos técnicos e estratégicos da editoração profissional, capacitando o(a) aluno(a) a trabalhar com automação, dados variáveis, múltiplos usuários e publicações interativas. O foco está na produtividade, padronização e criação de materiais editoriais complexos para impressão e ambiente digital.',
     publicoAlvo: 'Indicado para designers, diagramadores(as), profissionais editoriais, equipes de marketing e comunicação que já possuem conhecimento básico em InDesign e desejam elevar sua performance técnica, automatizar processos e produzir materiais editoriais complexos, interativos e colaborativos.',
@@ -1170,7 +1158,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/indesign-avancado',
   }),
   cursoSeed({
-    id: 'ppv', codigo: 'PPV', nome: 'Pré-Produção e Produção de Vídeos com Premiere', eixoId: 'ferramenta', areaId: 'design', nivel: 'intermediario', status: 'ativo',
+    id: 'ppv', codigo: 'PPV', nome: 'Pré-Produção e Produção de Vídeos com Premiere', area: 'Design', nivel: 'intermediario', status: 'ativo',
     resumo: 'Curso completo que integra planejamento, captação e edição de vídeos para ambientes digitais, utilizando o Adobe Premiere como ferramenta central.',
     descricao: 'Curso completo que integra planejamento, captação e edição de vídeos para ambientes digitais, utilizando o Adobe Premiere como ferramenta central. O aluno aprende desde a construção da ideia até a finalização com tratamento de cor e identidade visual, alinhado às linguagens contemporâneas e estratégias de distribuição online.',
     publicoAlvo: 'Este curso é direcionado a criadores de conteúdo digital que desejam elevar a qualidade de suas produções, profissionais de marketing e comunicação que buscam dominar o vídeo como ferramenta estratégica, empreendedores e infoprodutores que querem fortalecer sua presença digital, além de designers, motion designers e iniciantes no audiovisual que desejam ingressar ou evoluir no universo da produção de vídeos.',
@@ -1189,7 +1177,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/pre-producao-e-producao-de-videos-com-premiere',
   }),
   cursoSeed({
-    id: 'fpv', codigo: 'FPV', nome: 'Finalização Profissional de Vídeos com Adobe Premiere', eixoId: 'ferramenta', areaId: 'design', nivel: 'avancado', status: 'ativo',
+    id: 'fpv', codigo: 'FPV', nome: 'Finalização Profissional de Vídeos com Adobe Premiere', area: 'Design', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a realizar a finalização completa de vídeos, integrando elementos gráficos, animações, áudio e exportação profissional, utilizando o Adobe Premiere em…',
     descricao: 'Este curso capacita o(a) aluno(a) a realizar a finalização completa de vídeos, integrando elementos gráficos, animações, áudio e exportação profissional, utilizando o Adobe Premiere em conjunto com Photoshop, Illustrator e Media Encoder, seguindo padrões atuais de mercado.',
     publicoAlvo: 'Este curso é destinado a estudantes e profissionais das áreas de design, audiovisual e marketing, além de criadores de conteúdo digital e editores de vídeo que já possuem conhecimentos básicos e desejam elevar o nível de acabamento e qualidade técnica de seus projetos.',
@@ -1207,7 +1195,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/finalizacao-profissional-de-videos-com-adobe-premiere',
   }),
   cursoSeed({
-    id: 'afp', codigo: 'AFP', nome: 'Efeitos Visuais Avançados com After Effects', eixoId: 'ferramenta', areaId: 'design', nivel: 'avancado', status: 'ativo',
+    id: 'afp', codigo: 'AFP', nome: 'Efeitos Visuais Avançados com After Effects', area: 'Design', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a criar efeitos visuais avançados utilizando o After Effects, explorando técnicas de composição, correção de cor, chroma key, tracking e integração com…',
     descricao: 'Este curso capacita o(a) aluno(a) a criar efeitos visuais avançados utilizando o After Effects, explorando técnicas de composição, correção de cor, chroma key, tracking e integração com elementos 3D, alinhados aos padrões da indústria audiovisual.',
     publicoAlvo: 'Este curso é destinado a estudantes e profissionais das áreas de audiovisual, design e produção de conteúdo que desejam aprofundar seus conhecimentos em efeitos visuais e composição avançada, elevando o nível técnico e estético de seus projetos.',
@@ -1225,7 +1213,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/efeitos-visuais-avancados-com-after-effects',
   }),
   cursoSeed({
-    id: 'afe', codigo: 'AFE', nome: 'Criação de Vinhetas e Animações com After Effects', eixoId: 'ferramenta', areaId: 'design', nivel: 'intermediario', status: 'ativo',
+    id: 'afe', codigo: 'AFE', nome: 'Criação de Vinhetas e Animações com After Effects', area: 'Design', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a criar vinhetas e animações gráficas utilizando o After Effects, explorando recursos de motion design, composição, efeitos visuais e integração com…',
     descricao: 'Este curso capacita o(a) aluno(a) a criar vinhetas e animações gráficas utilizando o After Effects, explorando recursos de motion design, composição, efeitos visuais e integração com projetos audiovisuais, alinhados às práticas contemporâneas do mercado.',
     publicoAlvo: 'Este curso é voltado para estudantes e profissionais das áreas de design, audiovisual e comunicação, além de criadores de conteúdo que desejam incorporar animações e vinhetas em seus projetos, elevando o nível visual e criativo de suas produções.',
@@ -1244,7 +1232,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/criacao-de-vinhetas-e-animacoes-com-after-effects',
   }),
   cursoSeed({
-    id: 'afa', codigo: 'AFA', nome: 'Animação Profissional com After Effects', eixoId: 'ferramenta', areaId: 'design', nivel: 'avancado', status: 'ativo',
+    id: 'afa', codigo: 'AFA', nome: 'Animação Profissional com After Effects', area: 'Design', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a criar animações profissionais de personagens utilizando o After Effects, explorando técnicas de rigging, controle de movimentos e a aplicação dos…',
     descricao: 'Este curso capacita o(a) aluno(a) a criar animações profissionais de personagens utilizando o After Effects, explorando técnicas de rigging, controle de movimentos e a aplicação dos princípios clássicos da animação, com o objetivo de desenvolver cenas expressivas, dinâmicas e visualmente impactantes.',
     publicoAlvo: 'Este curso é destinado a estudantes e profissionais das áreas de design, animação e audiovisual, além de criadores de conteúdo que desejam aprofundar suas habilidades em animação digital e desenvolver personagens com maior expressividade, controle e qualidade técnica.',
@@ -1263,7 +1251,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/animacao-profissional-com-after-effects',
   }),
   cursoSeed({
-    id: 'tif', codigo: 'TIF', nome: 'Lightroom para Fotógrafos: Edição e Tratamento de Imagens', eixoId: 'ferramenta', areaId: 'design', nivel: 'intermediario', status: 'ativo',
+    id: 'tif', codigo: 'TIF', nome: 'Lightroom para Fotógrafos: Edição e Tratamento de Imagens', area: 'Design', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso apresenta ferramentas e técnicas para que alunos(as) organizem, editem e finalizem fotografias de forma profissional.',
     descricao: 'Este curso apresenta ferramentas e técnicas para que alunos(as) organizem, editem e finalizem fotografias de forma profissional. Durante a formação, alunos(as) aprendem a otimizar o fluxo de trabalho, aplicar ajustes de cor e luz, utilizar predefinições, integrar o Lightroom com o Photoshop e explorar recursos criativos. O curso também aborda estudos de caso e efeitos fotográficos aplicados a diferentes estilos de fotografia.',
     publicoAlvo: 'Alunos(as), fotógrafos(as) iniciantes ou profissionais, produtores(as) de conteúdo, designers e entusiastas da fotografia que desejam aprimorar o tratamento e a organização de imagens utilizando o Adobe Lightroom para obter resultados visuais mais profissionais.',
@@ -1278,7 +1266,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/lightroom-para-fotografos-edicao-e-tratamento-de-imagens',
   }),
   cursoSeed({
-    id: 'aub', codigo: 'AUB', nome: 'AutoCAD 2D Autodesk®: Desenho Técnico Digital', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'aub', codigo: 'AUB', nome: 'AutoCAD 2D Autodesk®: Desenho Técnico Digital', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Curso voltado ao desenvolvimento de competências para criação, edição e documentação de projetos técnicos em ambiente digital utilizando o AutoCAD® em 2D.',
     descricao: 'Curso voltado ao desenvolvimento de competências para criação, edição e documentação de projetos técnicos em ambiente digital utilizando o AutoCAD® em 2D. Ao longo das aulas, os participantes exploram os principais recursos do software para elaboração de desenhos técnicos com organização, precisão e aplicação de boas práticas utilizadas no mercado. O conteúdo contempla desde a interface e ferramentas essenciais até a produção de pranchas e documentação técnica.',
     publicoAlvo: 'Indicado para estudantes e profissionais das áreas de engenharia, arquitetura, design de interiores, construção civil, mecânica e demais áreas que necessitam criar e interpretar desenhos técnicos em ambiente digital.',
@@ -1300,7 +1288,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/autocad-2d-autodesk-desenho-tecnico-digital',
   }),
   cursoSeed({
-    id: 'aua', codigo: 'AUA', nome: 'AutoCAD 3D Autodesk®: Modelagem Tridimensional', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'aua', codigo: 'AUA', nome: 'AutoCAD 3D Autodesk®: Modelagem Tridimensional', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Curso voltado ao desenvolvimento de competências para criação e modelagem de projetos tridimensionais utilizando o AutoCAD®.',
     descricao: 'Curso voltado ao desenvolvimento de competências para criação e modelagem de projetos tridimensionais utilizando o AutoCAD®. Ao longo das aulas, os participantes exploram recursos para construção, edição, visualização e organização de modelos 3D, aplicando conceitos espaciais e técnicas utilizadas na representação digital de projetos. O conteúdo contempla desde os fundamentos do ambiente tridimensional até a criação de modelos com maior precisão e qualidade visual.',
     publicoAlvo: 'Profissionais, estudantes e interessados nas áreas de engenharia, arquitetura, design, edificações, manufatura, projetos técnicos e demais áreas que desejam ampliar suas competências em modelagem tridimensional aplicada ao desenvolvimento de projetos.',
@@ -1319,7 +1307,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/autocad-3d-autodesk-modelagem-tridimensional',
   }),
   cursoSeed({
-    id: 'c3d', codigo: 'C3D', nome: 'AutoCAD Civil 3D Autodesk®: Projetos de Infraestrutura', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'c3d', codigo: 'C3D', nome: 'AutoCAD Civil 3D Autodesk®: Projetos de Infraestrutura', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver projetos de infraestrutura utilizando o AutoCAD Civil 3D Autodesk®, explorando recursos voltados à modelagem de terreno, análise…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver projetos de infraestrutura utilizando o AutoCAD Civil 3D Autodesk®, explorando recursos voltados à modelagem de terreno, análise topográfica e representação técnica aplicada à engenharia. Ao longo do curso, o(a) participante aprende a organizar dados, interpretar superfícies e estruturar projetos com maior precisão, integrando informações para desenvolvimento e documentação técnica.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e iniciantes das áreas de engenharia civil, infraestrutura, arquitetura, construção civil, topografia e áreas correlatas que desejam ampliar conhecimentos em modelagem técnica e desenvolvimento de projetos utilizando o AutoCAD Civil 3D Autodesk®.',
@@ -1338,7 +1326,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/autocad-civil-3d-autodesk-projetos-de-infraestrutura',
   }),
   cursoSeed({
-    id: 'rvt', codigo: 'RVT', nome: 'REVIT Autodesk®: Modelagem de Projetos', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'rvt', codigo: 'RVT', nome: 'REVIT Autodesk®: Modelagem de Projetos', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver modelos tridimensionais e documentação técnica utilizando o Revit Autodesk®, explorando fluxos de trabalho baseados em modelagem integrada…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver modelos tridimensionais e documentação técnica utilizando o Revit Autodesk®, explorando fluxos de trabalho baseados em modelagem integrada de projetos. Ao longo do curso, o(a) participante desenvolve domínio do ambiente de trabalho, criação e organização de elementos construtivos, modelagem arquitetônica e estruturação técnica aplicada ao desenvolvimento de projetos digitais.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e iniciantes das áreas de arquitetura, engenharia, interiores, construção civil e demais interessados em desenvolver competências em modelagem de projetos utilizando o Revit Autodesk®.',
@@ -1359,7 +1347,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/revit-autodesk-modelagem-de-projetos',
   }),
   cursoSeed({
-    id: 'rvf', codigo: 'RVF', nome: 'REVIT Autodesk®: Criação de Famílias Paramétricas', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'rvf', codigo: 'RVF', nome: 'REVIT Autodesk®: Criação de Famílias Paramétricas', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a criar famílias paramétricas personalizadas no Revit Autodesk®, ampliando a flexibilidade, organização e produtividade no desenvolvimento de projetos.',
     descricao: 'Este curso capacita o(a) aluno(a) a criar famílias paramétricas personalizadas no Revit Autodesk®, ampliando a flexibilidade, organização e produtividade no desenvolvimento de projetos. Ao longo das aulas, o(a) participante aprende a estruturar componentes inteligentes, configurar parâmetros, integrar arquivos externos e desenvolver elementos reutilizáveis aplicados a diferentes contextos de projeto.',
     publicoAlvo: 'Este curso é destinado a estudantes e profissionais das áreas de arquitetura, engenharia, interiores, construção civil e demais usuários do Revit Autodesk® que desejam ampliar conhecimentos em parametrização e criação de componentes personalizados.',
@@ -1378,7 +1366,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/revit-autodesk-criacao-de-familias-parametricas',
   }),
   cursoSeed({
-    id: 'rvh', codigo: 'RVH', nome: 'REVIT MEP Autodesk®: Instalações Hidráulicas', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'rvh', codigo: 'RVH', nome: 'REVIT MEP Autodesk®: Instalações Hidráulicas', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver modelos de instalações hidráulicas utilizando o REVIT MEP Autodesk®, explorando recursos para criação, organização e documentação de…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver modelos de instalações hidráulicas utilizando o REVIT MEP Autodesk®, explorando recursos para criação, organização e documentação de sistemas prediais. Ao longo das aulas, o(a) participante aprende a estruturar projetos com integração entre disciplinas, configurar elementos hidráulicos e gerar documentação técnica aplicada ao fluxo de trabalho BIM.',
     publicoAlvo: 'Este curso é destinado a estudantes e profissionais das áreas de engenharia civil, arquitetura, instalações prediais, construção civil e demais interessados em desenvolver competências em modelagem hidráulica utilizando o REVIT MEP Autodesk®.',
@@ -1395,7 +1383,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/revit-mep-autodesk-instalacoes-hidraulicas',
   }),
   cursoSeed({
-    id: 'rve', codigo: 'RVE', nome: 'REVIT MEP Autodesk®: Projetos Elétricos', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'rve', codigo: 'RVE', nome: 'REVIT MEP Autodesk®: Projetos Elétricos', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver modelos de instalações elétricas utilizando o REVIT MEP Autodesk®, explorando recursos para criação, organização e documentação de…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver modelos de instalações elétricas utilizando o REVIT MEP Autodesk®, explorando recursos para criação, organização e documentação de sistemas prediais. Ao longo das aulas, o(a) participante aprende a estruturar circuitos, configurar elementos elétricos e produzir documentação técnica integrada ao fluxo de trabalho de projetos.',
     publicoAlvo: 'Este curso é destinado a estudantes e profissionais das áreas de engenharia elétrica, engenharia civil, arquitetura, instalações prediais, construção civil e demais interessados em desenvolver competências em modelagem elétrica utilizando o REVIT MEP Autodesk®.',
@@ -1413,7 +1401,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/revit-mep-autodesk-projetos-eletricos',
   }),
   cursoSeed({
-    id: 'rvc', codigo: 'RVC', nome: 'REVIT MEP Autodesk®: Sistemas de Climatização', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'rvc', codigo: 'RVC', nome: 'REVIT MEP Autodesk®: Sistemas de Climatização', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver modelos de sistemas de climatização utilizando o REVIT MEP Autodesk®, explorando recursos para modelagem, coordenação e documentação de…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver modelos de sistemas de climatização utilizando o REVIT MEP Autodesk®, explorando recursos para modelagem, coordenação e documentação de instalações prediais. Ao longo das aulas, o(a) participante aprende a estruturar sistemas de distribuição de ar, organizar elementos técnicos e gerar documentação integrada ao fluxo de desenvolvimento de projetos.',
     publicoAlvo: 'Este curso é destinado a estudantes e profissionais das áreas de engenharia mecânica, engenharia civil, arquitetura, instalações prediais, construção civil e demais interessados em desenvolver competências em modelagem de sistemas de climatização utilizando o REVIT MEP Autodesk®.',
@@ -1431,7 +1419,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/revit-mep-autodesk-sistemas-de-climatizacao',
   }),
   cursoSeed({
-    id: 'pip', codigo: 'PIP', nome: 'Projetos de Interiores com Promob', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'pip', codigo: 'PIP', nome: 'Projetos de Interiores com Promob', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver projetos de interiores utilizando o Promob, explorando desde a construção do ambiente e modelagem do mobiliário até a documentação…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver projetos de interiores utilizando o Promob, explorando desde a construção do ambiente e modelagem do mobiliário até a documentação técnica, orçamento e apresentação visual dos projetos. Ao longo do curso, o(a) participante desenvolve domínio progressivo das ferramentas para criação de ambientes funcionais, organizados e alinhados às práticas do mercado.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e iniciantes das áreas de interiores, arquitetura, design, mobiliário planejado e demais interessados em desenvolver competências em projetos digitais e representação de ambientes utilizando o Promob.',
@@ -1453,7 +1441,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/projetos-de-interiores-com-promob',
   }),
   cursoSeed({
-    id: 'svr', codigo: 'SVR', nome: 'SketchUp & V-Ray: Projetos 3D e Renderização', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'svr', codigo: 'SVR', nome: 'SketchUp & V-Ray: Projetos 3D e Renderização', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver projetos tridimensionais utilizando SketchUp e V-Ray, explorando desde a modelagem de ambientes até a criação de imagens renderizadas para…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver projetos tridimensionais utilizando SketchUp e V-Ray, explorando desde a modelagem de ambientes até a criação de imagens renderizadas para apresentação profissional. Ao longo do curso, o(a) participante desenvolve domínio progressivo das ferramentas para construção, detalhamento, documentação e visualização de projetos com qualidade visual e aplicação prática.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e iniciantes das áreas de arquitetura, interiores, design, engenharia e demais interessados em desenvolver competências em modelagem tridimensional e apresentação visual de projetos.',
@@ -1475,7 +1463,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/sketchup-v-ray-projetos-3d-e-renderizacao',
   }),
   cursoSeed({
-    id: 'swx', codigo: 'SWX', nome: 'Projetos Mecânicos e Desenvolvimento Industrial com SolidWorks', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'swx', codigo: 'SWX', nome: 'Projetos Mecânicos e Desenvolvimento Industrial com SolidWorks', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Esta formação capacita o(a) aluno(a) a desenvolver projetos mecânicos utilizando SolidWorks, explorando desde a modelagem tridimensional e documentação técnica até o desenvolvimento de…',
     descricao: 'Esta formação capacita o(a) aluno(a) a desenvolver projetos mecânicos utilizando SolidWorks, explorando desde a modelagem tridimensional e documentação técnica até o desenvolvimento de estruturas metálicas, chapas, moldes e superfícies avançadas. Ao longo da formação, o(a) participante desenvolve domínio progressivo dos recursos de modelagem e engenharia aplicados ao desenvolvimento industrial e criação de soluções mecânicas.',
     publicoAlvo: 'Esta formação é destinada a estudantes, profissionais e iniciantes das áreas de engenharia mecânica, metal mecânica, manufatura, desenvolvimento de produto, automação industrial e demais interessados em desenvolver competências em modelagem tridimensional e desenvolvimento mecânico aplicado à indústria.',
@@ -1501,7 +1489,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/projetos-mecanicos-e-desenvolvimento-industrial-com-solidworks',
   }),
   cursoSeed({
-    id: 'swp', codigo: 'SWP', nome: 'SolidWorks Profissional: Do Desenho ao Projeto Mecânico', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'avancado', status: 'ativo',
+    id: 'swp', codigo: 'SWP', nome: 'SolidWorks Profissional: Do Desenho ao Projeto Mecânico', area: 'Engenharia/Arquitetura', nivel: 'avancado', status: 'ativo',
     resumo: 'Esta formação capacita o(a) aluno(a) a desenvolver projetos mecânicos utilizando desenho técnico e modelagem tridimensional com SolidWorks.',
     descricao: 'Esta formação capacita o(a) aluno(a) a desenvolver projetos mecânicos utilizando desenho técnico e modelagem tridimensional com SolidWorks. Ao longo da jornada, o(a) participante evolui desde a interpretação e documentação técnica até o desenvolvimento de peças, conjuntos, estruturas metálicas, chapas, moldes e superfícies avançadas, aplicando práticas utilizadas na indústria para criação, detalhamento e desenvolvimento de projetos mecânicos.',
     publicoAlvo: 'Esta formação é destinada a estudantes, profissionais e iniciantes das áreas de engenharia mecânica, metal mecânica, manufatura, desenvolvimento de produto, automação industrial e demais interessados em desenvolver competências em desenho técnico e modelagem mecânica digital.',
@@ -1541,7 +1529,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/solidworks-profissional-do-desenho-ao-projeto-mecanico',
   }),
   cursoSeed({
-    id: 'i3d', codigo: 'I3D', nome: 'Prototipagem e Impressão 3D', eixoId: 'ferramenta', areaId: 'engenharia', nivel: 'intermediario', status: 'ativo',
+    id: 'i3d', codigo: 'I3D', nome: 'Prototipagem e Impressão 3D', area: 'Engenharia/Arquitetura', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a compreender e aplicar os fundamentos da prototipagem e impressão 3D, explorando desde os conceitos da tecnologia e preparação dos arquivos até a…',
     descricao: 'Este curso capacita o(a) aluno(a) a compreender e aplicar os fundamentos da prototipagem e impressão 3D, explorando desde os conceitos da tecnologia e preparação dos arquivos até a produção e acabamento de peças físicas. Ao longo do curso, o(a) participante desenvolve conhecimentos sobre materiais, configuração de impressão e boas práticas para utilização e manutenção de equipamentos.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e iniciantes interessados em conhecer e aplicar tecnologias de fabricação digital, prototipagem e impressão 3D para fins educacionais, profissionais ou pessoais.',
@@ -1559,7 +1547,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/prototipagem-e-impressao-3d',
   }),
   cursoSeed({
-    id: 'pbi', codigo: 'PBI', nome: 'Power BI: Análise e Visualização de Dados', eixoId: 'dados', areaId: 'produtividade', nivel: 'intermediario', status: 'ativo',
+    id: 'pbi', codigo: 'PBI', nome: 'Power BI: Análise e Visualização de Dados', area: 'Ferramentas de produtividade', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver soluções analíticas utilizando Power BI, explorando desde a conexão e transformação de dados até a construção de dashboards e modelos…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver soluções analíticas utilizando Power BI, explorando desde a conexão e transformação de dados até a construção de dashboards e modelos analíticos avançados. Ao longo do curso, o(a) participante desenvolve competências para estruturar bases de dados, criar indicadores, automatizar processos e gerar visualizações aplicadas à análise e tomada de decisão.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e usuários que desejam desenvolver competências em análise de dados, construção de dashboards, visualização de indicadores e aplicação de ferramentas de Business Intelligence em ambientes corporativos.',
@@ -1583,7 +1571,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/power-bi-analise-e-visualizacao-de-dados',
   }),
   cursoSeed({
-    id: 'exd', codigo: 'EXD', nome: 'Excel: Gráficos e Dashboards', eixoId: 'ferramenta', areaId: 'produtividade', nivel: 'intermediario', status: 'ativo',
+    id: 'exd', codigo: 'EXD', nome: 'Excel: Gráficos e Dashboards', area: 'Ferramentas de produtividade', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a criar dashboards e relatórios visuais utilizando Excel, explorando recursos para organização, análise e apresentação de dados.',
     descricao: 'Este curso capacita o(a) aluno(a) a criar dashboards e relatórios visuais utilizando Excel, explorando recursos para organização, análise e apresentação de dados. Ao longo do curso, o(a) participante aprende a estruturar painéis, construir gráficos interativos, organizar informações e aplicar práticas de visualização para apoiar análises e tomada de decisão.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e usuários que já possuem conhecimentos avançados em Excel e desejam desenvolver competências para criação de dashboards, construção de relatórios visuais e apresentação estratégica de dados.',
@@ -1601,7 +1589,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/excel-graficos-e-dashboards',
   }),
   cursoSeed({
-    id: 'ex1', codigo: 'EX1', nome: 'Excel: Recursos Avançados', eixoId: 'ferramenta', areaId: 'produtividade', nivel: 'avancado', status: 'ativo',
+    id: 'ex1', codigo: 'EX1', nome: 'Excel: Recursos Avançados', area: 'Ferramentas de produtividade', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a ampliar o uso do Excel por meio de recursos avançados voltados à análise, transformação e automação de dados.',
     descricao: 'Este curso capacita o(a) aluno(a) a ampliar o uso do Excel por meio de recursos avançados voltados à análise, transformação e automação de dados. Ao longo do curso, o(a) participante desenvolve competências para trabalhar com funções avançadas, matrizes dinâmicas, integração de dados, Power Query, Power Pivot e automação com macros, aplicando recursos utilizados em cenários profissionais e tomada de decisão.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e usuários que já possuem conhecimentos intermediários em Excel e desejam ampliar sua capacidade de análise, integração e automação de dados utilizando recursos avançados da ferramenta.',
@@ -1621,7 +1609,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/excel-recursos-avancados',
   }),
   cursoSeed({
-    id: 'exi', codigo: 'EXI', nome: 'Excel: Recursos Intermediários', eixoId: 'ferramenta', areaId: 'produtividade', nivel: 'intermediario', status: 'ativo',
+    id: 'exi', codigo: 'EXI', nome: 'Excel: Recursos Intermediários', area: 'Ferramentas de produtividade', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a ampliar o uso do Excel por meio de recursos voltados à organização, análise e interpretação de dados.',
     descricao: 'Este curso capacita o(a) aluno(a) a ampliar o uso do Excel por meio de recursos voltados à organização, análise e interpretação de dados. Ao longo do curso, o(a) participante desenvolve competências para trabalhar com funções intermediárias, filtros avançados, tabelas dinâmicas, automação de tarefas e construção de análises aplicadas às rotinas profissionais.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e usuários que já possuem conhecimentos fundamentais em Excel e desejam ampliar sua capacidade de organização, análise de informações e automação de atividades utilizando planilhas.',
@@ -1641,7 +1629,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/excel-recursos-intermediarios',
   }),
   cursoSeed({
-    id: 'exb', codigo: 'EXB', nome: 'Excel: Fundamentos', eixoId: 'ferramenta', areaId: 'produtividade', nivel: 'basico', status: 'ativo',
+    id: 'exb', codigo: 'EXB', nome: 'Excel: Fundamentos', area: 'Ferramentas de produtividade', nivel: 'basico', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver competências fundamentais para criação, organização e análise de planilhas utilizando o Excel.',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver competências fundamentais para criação, organização e análise de planilhas utilizando o Excel. Ao longo do curso, o(a) participante aprende a estruturar dados, aplicar fórmulas, utilizar recursos de formatação, organizar informações e construir representações visuais para apoiar atividades acadêmicas, administrativas e profissionais.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e iniciantes que desejam desenvolver competências para utilização de planilhas eletrônicas, organização de informações e apoio às rotinas acadêmicas, administrativas e profissionais.',
@@ -1659,7 +1647,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/excel-fundamentos',
   }),
   cursoSeed({
-    id: 'mby', codigo: 'MBY', nome: 'Office & Google: Domine os Recursos Avançados da Nuvem', eixoId: 'ferramenta', areaId: 'produtividade', nivel: 'avancado', status: 'ativo',
+    id: 'mby', codigo: 'MBY', nome: 'Office & Google: Domine os Recursos Avançados da Nuvem', area: 'Ferramentas de produtividade', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver competências para utilização de recursos digitais aplicados à produtividade, colaboração e organização em ambientes locais e em nuvem.',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver competências para utilização de recursos digitais aplicados à produtividade, colaboração e organização em ambientes locais e em nuvem. Ao longo do curso, o(a) participante aprende desde fundamentos do ambiente computacional até criação de documentos, planilhas e apresentações utilizando ferramentas Microsoft e Google, aplicando práticas de compartilhamento, comunicação e trabalho colaborativo.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e usuários que desejam desenvolver competências em informática, produtividade digital, utilização de ferramentas Office e colaboração em ambientes baseados em nuvem.',
@@ -1692,7 +1680,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/office-google-domine-os-recursos-avancados-da-nuvem',
   }),
   cursoSeed({
-    id: 'iaf', codigo: 'IAF', nome: 'Inteligência Artificial: dos Fundamentos ao Intermediário', eixoId: 'ia', areaId: 'produtividade', nivel: 'basico', status: 'ativo',
+    id: 'iaf', codigo: 'IAF', nome: 'Inteligência Artificial: dos Fundamentos ao Intermediário', area: 'Ferramentas de produtividade', nivel: 'basico', status: 'ativo',
     resumo: 'Neste curso, você aprenderá os principais fundamentos da Inteligência Artificial, técnicas de engenharia de prompt, criação e uso de agentes de IA, aplicação prática do Gemini, produção…',
     descricao: 'Neste curso, você aprenderá os principais fundamentos da Inteligência Artificial, técnicas de engenharia de prompt, criação e uso de agentes de IA, aplicação prática do Gemini, produção de apresentações com IA e outras ferramentas que facilitam a automação, a produtividade e a criação de conteúdos inteligentes.',
     publicoAlvo: 'Para pessoas que querem entender e aplicar Inteligência Artificial no trabalho, nos estudos e no dia a dia. Não é necessário conhecimento prévio em IA ou programação.',
@@ -1707,7 +1695,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/inteligencia-artificial-dos-fundamentos-ao-intermediario',
   }),
   cursoSeed({
-    id: 'mkd', codigo: 'MKD', nome: 'Alta Performance em Marketing Digital e Redes Sociais', eixoId: 'negocios', areaId: 'marketing', nivel: 'intermediario', status: 'ativo',
+    id: 'mkd', codigo: 'MKD', nome: 'Alta Performance em Marketing Digital e Redes Sociais', area: 'Marketing', nivel: 'intermediario', status: 'ativo',
     resumo: 'O curso Alta Performance em Marketing Digital e Redes Sociais prepara profissionais para planejar, executar e otimizar estratégias avançadas com foco em resultados mensuráveis.',
     descricao: 'O curso Alta Performance em Marketing Digital e Redes Sociais prepara profissionais para planejar, executar e otimizar estratégias avançadas com foco em resultados mensuráveis. Com abordagem prática e estratégica, integra copywriting, funil de vendas, mídia paga, neuromarketing, inteligência artificial e análise de dados.',
     publicoAlvo: 'Destinado a empresários(as) e líderes que desejam gerir estrategicamente o marketing de seus negócios, profissionais de marketing que buscam elevar sua performance e entregar resultados mais consistentes, social media, gestores(as) de tráfego e consultores(as) que querem ampliar suas competências e se destacar no mercado, além de profissionais em transição de carreira que desejam atuar com marketing digital de forma estruturada, estratégica e orientada a resultados.',
@@ -1727,7 +1715,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/alta-performance-em-marketing-digital-e-redes-sociais',
   }),
   cursoSeed({
-    id: 'smd', codigo: 'SMD', nome: 'Social Media e Produção de Conteúdo para Redes Sociais', eixoId: 'negocios', areaId: 'marketing', nivel: 'intermediario', status: 'ativo',
+    id: 'smd', codigo: 'SMD', nome: 'Social Media e Produção de Conteúdo para Redes Sociais', area: 'Marketing', nivel: 'intermediario', status: 'ativo',
     resumo: 'O módulo Social Media e Produção de Conteúdo desenvolve habilidades práticas para planejar, criar e organizar conteúdos estratégicos para redes sociais.',
     descricao: 'O módulo Social Media e Produção de Conteúdo desenvolve habilidades práticas para planejar, criar e organizar conteúdos estratégicos para redes sociais. Com foco em posicionamento, engajamento e performance, o curso ensina a estruturar perfis profissionais, produzir conteúdos relevantes e analisar resultados para fortalecer a presença digital de marcas e negócios.',
     publicoAlvo: 'Indicado para empreendedores(as), criadores(as) de conteúdo, profissionais de marketing, iniciantes na área digital e pessoas que desejam atuar profissionalmente com redes sociais ou estruturar melhor sua própria marca no ambiente online.',
@@ -1747,7 +1735,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/social-media-e-producao-de-conteudo-para-redes-sociais',
   }),
   cursoSeed({
-    id: 'gda', codigo: 'GDA', nome: 'Google Ads: Estratégias Avançadas de Tráfego e Conversão', eixoId: 'negocios', areaId: 'marketing', nivel: 'avancado', status: 'ativo',
+    id: 'gda', codigo: 'GDA', nome: 'Google Ads: Estratégias Avançadas de Tráfego e Conversão', area: 'Marketing', nivel: 'avancado', status: 'ativo',
     resumo: 'O curso une conceitos avançados de Google Ads, preparando profissionais para planejar, executar e otimizar campanhas de tráfego pago com foco em resultados reais e mensuráveis.',
     descricao: 'O curso une conceitos avançados de Google Ads, preparando profissionais para planejar, executar e otimizar campanhas de tráfego pago com foco em resultados reais e mensuráveis. O curso abrange tipos de campanhas, segmentação, criação de públicos, Performance Max, Google Shopping, análise de métricas, criativos, ajustes estratégicos e otimização de conversão, conectando teoria e prática de forma objetiva e aplicável.',
     publicoAlvo: 'Profissionais de marketing digital, social media, gestores(as) de tráfego, consultores(as) e empreendedores(as) que desejam aprimorar a performance das campanhas no Google Ads, aumentar conversões e gerar resultados consistentes para e-commerce, negócios locais ou marcas com presença digital.',
@@ -1772,7 +1760,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/google-ads-estrategias-avancadas-de-trafego-e-conversao',
   }),
   cursoSeed({
-    id: 'gla', codigo: 'GLA', nome: 'Google Analytics: Análise de Dados e Performance Digital', eixoId: 'negocios', areaId: 'marketing', nivel: 'intermediario', status: 'ativo',
+    id: 'gla', codigo: 'GLA', nome: 'Google Analytics: Análise de Dados e Performance Digital', area: 'Marketing', nivel: 'intermediario', status: 'ativo',
     resumo: 'Neste curso, o(a) aluno(a) transforma dados em inteligência estratégica.',
     descricao: 'Neste curso, o(a) aluno(a) transforma dados em inteligência estratégica. Com foco no Google Analytics (GA4), o(a) aluno(a) aprende a interpretar métricas, compreender o comportamento dos usuários e mensurar resultados reais de marketing, vendas e performance digital. A abordagem é prática, conectada a cenários reais e orientada à tomada de decisão baseada em dados.',
     publicoAlvo: 'Profissionais de marketing, gestores(as) de tráfego, analistas de dados, empreendedores(as) e estrategistas digitais que desejam aprofundar o uso de dados para mensuração de resultados, otimização de campanhas e crescimento sustentável de negócios digitais.',
@@ -1790,7 +1778,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/google-analytics-analise-de-dados-e-performance-digital',
   }),
   cursoSeed({
-    id: 'seo', codigo: 'SEO', nome: 'SEO: Otimização de Sites para Google e Mecanismos de Busca', eixoId: 'negocios', areaId: 'marketing', nivel: 'intermediario', status: 'ativo',
+    id: 'seo', codigo: 'SEO', nome: 'SEO: Otimização de Sites para Google e Mecanismos de Busca', area: 'Marketing', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso prepara o(a) aluno(a) para estruturar, otimizar e analisar sites com foco em posicionamento orgânico e performance nos mecanismos de busca, especialmente no Google.',
     descricao: 'Este curso prepara o(a) aluno(a) para estruturar, otimizar e analisar sites com foco em posicionamento orgânico e performance nos mecanismos de busca, especialmente no Google. Com abordagem prática e estratégica, o curso conecta fundamentos de SEO, algoritmos, conteúdo, experiência do usuário e análise de dados, formando uma base sólida para atuação profissional em marketing digital e performance orgânica.',
     publicoAlvo: 'Profissionais de marketing digital, social media, analistas de tráfego, criadores(as) de conteúdo, empreendedores(as), desenvolvedores(as) web e pessoas que desejam atuar ou evoluir na área de SEO e performance digital.',
@@ -1809,7 +1797,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/seo-otimizacao-de-sites-para-google-e-mecanismos-de-busca',
   }),
   cursoSeed({
-    id: 'trp', codigo: 'TRP', nome: 'Tráfego Pago Para Redes Sociais', eixoId: 'negocios', areaId: 'marketing', nivel: 'intermediario', status: 'ativo',
+    id: 'trp', codigo: 'TRP', nome: 'Tráfego Pago Para Redes Sociais', area: 'Marketing', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso apresenta estratégias e ferramentas para criação e gestão de campanhas de anúncios nas principais plataformas digitais.',
     descricao: 'Este curso apresenta estratégias e ferramentas para criação e gestão de campanhas de anúncios nas principais plataformas digitais. Os(as) alunos(as) aprendem a identificar o público ideal, estruturar campanhas eficientes, criar anúncios atrativos e analisar resultados. A formação prepara profissionais e empreendedores para utilizar a publicidade online como ferramenta para aumentar a visibilidade de marcas e gerar oportunidades de negócio.',
     publicoAlvo: 'Profissionais de marketing digital, social media, gestores(as) de tráfego, consultores(as), empreendedores(as) e proprietários(as) de pequenos e médios negócios que desejam aprender a planejar e gerenciar campanhas de anúncios nas principais plataformas digitais. Indicado também para quem busca ampliar a presença online, atrair clientes e gerar resultados por meio de estratégias de tráfego pago para negócios digitais ou locais.',
@@ -1824,7 +1812,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/trafego-pago-para-redes-sociais',
   }),
   cursoSeed({
-    id: 'mti', codigo: 'MTI', nome: 'Metodologias Ágeis: Fundamentos e Aplicação Prática', eixoId: 'negocios', areaId: 'gestao', nivel: 'basico', status: 'ativo',
+    id: 'mti', codigo: 'MTI', nome: 'Metodologias Ágeis: Fundamentos e Aplicação Prática', area: 'Gestão', nivel: 'basico', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a compreender e aplicar conceitos fundamentais das metodologias ágeis para organização de projetos, adaptação a mudanças e melhoria contínua.',
     descricao: 'Este curso capacita o(a) aluno(a) a compreender e aplicar conceitos fundamentais das metodologias ágeis para organização de projetos, adaptação a mudanças e melhoria contínua. Ao longo do curso, o(a) participante desenvolve competências para atuar em ambientes dinâmicos, compreender papéis ágeis, planejar entregas, acompanhar resultados e aplicar práticas voltadas à colaboração, eficiência e geração de valor.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais, líderes, gestores e pessoas interessadas em compreender e aplicar metodologias ágeis em projetos, equipes e processos organizacionais.',
@@ -1844,7 +1832,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/metodologias-ageis-fundamentos-e-aplicacao-pratica',
   }),
   cursoSeed({
-    id: 'cgc', codigo: 'CGC', nome: 'Perfil Profissional: Marca Pessoal, Posicionamento e Gestão de Carreira', eixoId: 'carreira', areaId: 'gestao', nivel: 'avancado', status: 'ativo',
+    id: 'cgc', codigo: 'CGC', nome: 'Perfil Profissional: Marca Pessoal, Posicionamento e Gestão de Carreira', area: 'Gestão', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver uma visão estratégica sobre sua trajetória profissional, fortalecendo autoconhecimento, posicionamento e construção de oportunidades no…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver uma visão estratégica sobre sua trajetória profissional, fortalecendo autoconhecimento, posicionamento e construção de oportunidades no mercado de trabalho. Ao longo do curso, o(a) participante desenvolve competências para reconhecer diferenciais, construir uma marca pessoal consistente, fortalecer presença profissional e aplicar estratégias para planejamento, desenvolvimento e gestão contínua da carreira.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais, pessoas em início ou transição de carreira e interessados em fortalecer posicionamento profissional, ampliar oportunidades no mercado e desenvolver competências relacionadas à construção e gestão da própria trajetória profissional.',
@@ -1862,7 +1850,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/perfil-profissional-marca-pessoal-posicionamento-e-gestao-de-carreira',
   }),
   cursoSeed({
-    id: 'ofs', codigo: 'OFS', nome: 'Educação Financeira e Investimentos: Do Planejamento à Ação', eixoId: 'negocios', areaId: 'gestao', nivel: 'intermediario', status: 'ativo',
+    id: 'ofs', codigo: 'OFS', nome: 'Educação Financeira e Investimentos: Do Planejamento à Ação', area: 'Gestão', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver hábitos financeiros mais conscientes, superar dificuldades relacionadas à organização do dinheiro e compreender princípios básicos de…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver hábitos financeiros mais conscientes, superar dificuldades relacionadas à organização do dinheiro e compreender princípios básicos de investimento e planejamento financeiro. Ao longo do curso, o(a) participante aprende a estruturar objetivos financeiros, controlar recursos, avaliar oportunidades e tomar decisões mais seguras para construção de estabilidade e desenvolvimento financeiro no longo prazo.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais e pessoas que desejam desenvolver conhecimentos sobre organização financeira, planejamento pessoal e investimentos, construindo maior autonomia e consciência para decisões financeiras no dia a dia.',
@@ -1879,7 +1867,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/educacao-financeira-e-investimentos-do-planejamento-a-acao',
   }),
   cursoSeed({
-    id: 'ecs', codigo: 'ECS', nome: 'Comunicação Eficiente', eixoId: 'negocios', areaId: 'gestao', nivel: 'intermediario', status: 'ativo',
+    id: 'ecs', codigo: 'ECS', nome: 'Comunicação Eficiente', area: 'Gestão', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver competências para se comunicar com mais clareza, segurança e intencionalidade em diferentes contextos profissionais e pessoais.',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver competências para se comunicar com mais clareza, segurança e intencionalidade em diferentes contextos profissionais e pessoais. Ao longo do curso, o(a) participante aprende técnicas para gerar conexão, compreender perfis, conduzir conversas, transmitir mensagens com mais impacto e fortalecer sua presença na comunicação verbal e visual.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais, líderes, empreendedores e pessoas que desejam desenvolver habilidades de comunicação para melhorar relacionamentos, apresentações, negociações e interações no ambiente profissional e social.',
@@ -1897,7 +1885,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/comunicacao-eficiente',
   }),
   cursoSeed({
-    id: 'clp', codigo: 'CLP', nome: 'Liderança na Prática: Gestão de Pessoas e Equipes', eixoId: 'negocios', areaId: 'gestao', nivel: 'intermediario', status: 'ativo',
+    id: 'clp', codigo: 'CLP', nome: 'Liderança na Prática: Gestão de Pessoas e Equipes', area: 'Gestão', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver competências para enfrentar desafios relacionados à liderança de pessoas e gestão de equipes no ambiente profissional.',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver competências para enfrentar desafios relacionados à liderança de pessoas e gestão de equipes no ambiente profissional. Ao longo do curso, o(a) participante aprende a compreender perfis, fortalecer relacionamentos, lidar com conflitos, estabelecer metas e conduzir equipes de forma mais organizada, promovendo engajamento, produtividade e melhores resultados.',
     publicoAlvo: 'Este curso é destinado a profissionais que atuam ou desejam atuar em posições de liderança, supervisão, coordenação ou gestão de equipes, bem como pessoas interessadas em desenvolver competências relacionadas à condução de pessoas e ambientes colaborativos.',
@@ -1914,7 +1902,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/lideranca-na-pratica-gestao-de-pessoas-e-equipes',
   }),
   cursoSeed({
-    id: 'bre', codigo: 'BRE', nome: 'Branding Estratégico: Gestão e Posicionamento de Marca', eixoId: 'negocios', areaId: 'gestao', nivel: 'intermediario', status: 'ativo',
+    id: 'bre', codigo: 'BRE', nome: 'Branding Estratégico: Gestão e Posicionamento de Marca', area: 'Gestão', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso apresenta os fundamentos do branding estratégico, capacitando o(a) aluno(a) a compreender, estruturar e posicionar marcas de forma consistente no mercado.',
     descricao: 'Este curso apresenta os fundamentos do branding estratégico, capacitando o(a) aluno(a) a compreender, estruturar e posicionar marcas de forma consistente no mercado. Ao longo do curso, são explorados conceitos de público-alvo, proposta de valor, comunicação e gestão de marca, conectando estratégia e prática.',
     publicoAlvo: 'Indicado para estudantes, profissionais de marketing, comunicação, publicidade, empreendedores e interessados em desenvolver estratégias de marca e posicionamento no mercado.',
@@ -1933,7 +1921,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/branding-estrategico-gestao-e-posicionamento-de-marca',
   }),
   cursoSeed({
-    id: 'brv', codigo: 'BRV', nome: 'Branding Visual: Criação de Identidade e Aplicação Profissional', eixoId: 'negocios', areaId: 'gestao', nivel: 'avancado', status: 'ativo',
+    id: 'brv', codigo: 'BRV', nome: 'Branding Visual: Criação de Identidade e Aplicação Profissional', area: 'Gestão', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver identidades visuais estratégicas e consistentes, desde a interpretação do briefing até a apresentação final do projeto.',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver identidades visuais estratégicas e consistentes, desde a interpretação do briefing até a apresentação final do projeto. Ao longo do curso, o(a) participante aprende a criar logotipos, definir diretrizes visuais, construir um Branding Book profissional e aplicar a identidade em materiais reais, conectando conceito, estética e mercado.',
     publicoAlvo: 'Esta formação é destinada a estudantes, designers, criadores de conteúdo, empreendedores e iniciantes que desejam aprender a criar identidades visuais profissionais, fortalecendo marcas e projetos com consistência e estratégia.',
@@ -1953,7 +1941,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/branding-visual-criacao-de-identidade-e-aplicacao-profissional',
   }),
   cursoSeed({
-    id: 'dmd', codigo: 'DMD', nome: 'Design de Estampas Têxteis', eixoId: 'ferramenta', areaId: 'moda', nivel: 'intermediario', status: 'ativo',
+    id: 'dmd', codigo: 'DMD', nome: 'Design de Estampas Têxteis', area: 'Moda & Têxtil', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver estampas têxteis digitais, explorando conceitos de design, teoria das cores, criação de padrões e processos produtivos da estamparia,…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver estampas têxteis digitais, explorando conceitos de design, teoria das cores, criação de padrões e processos produtivos da estamparia, utilizando ferramentas como Illustrator e Photoshop para criação, simulação e finalização de estampas com qualidade profissional.',
     publicoAlvo: 'Este curso é destinado a estudantes e profissionais das áreas de moda, design e comunicação visual, além de empreendedores e criadores que desejam desenvolver estampas autorais e aplicar conceitos de superfície têxtil em seus projetos.',
@@ -1973,7 +1961,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/design-de-estampas-texteis',
   }),
   cursoSeed({
-    id: 'dma', codigo: 'DMA', nome: 'Finalização Profissional de Estampas Têxteis', eixoId: 'ferramenta', areaId: 'moda', nivel: 'avancado', status: 'ativo',
+    id: 'dma', codigo: 'DMA', nome: 'Finalização Profissional de Estampas Têxteis', area: 'Moda & Têxtil', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a preparar e finalizar artes para estamparia têxtil, aplicando técnicas de separação de cores, definição de processos de impressão e adequação de…',
     descricao: 'Este curso capacita o(a) aluno(a) a preparar e finalizar artes para estamparia têxtil, aplicando técnicas de separação de cores, definição de processos de impressão e adequação de arquivos para produção, garantindo qualidade, fidelidade visual e viabilidade técnica.',
     publicoAlvo: 'Este curso é destinado a estudantes e profissionais das áreas de moda, design gráfico e estamparia que desejam aprimorar seus conhecimentos técnicos na preparação de artes para produção têxtil, garantindo maior precisão, qualidade e eficiência nos resultados.',
@@ -1992,7 +1980,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/finalizacao-profissional-de-estampas-texteis',
   }),
   cursoSeed({
-    id: 'dmt', codigo: 'DMT', nome: 'Desenho Técnico de Moda com Illustrator', eixoId: 'ferramenta', areaId: 'moda', nivel: 'intermediario', status: 'ativo',
+    id: 'dmt', codigo: 'DMT', nome: 'Desenho Técnico de Moda com Illustrator', area: 'Moda & Têxtil', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver desenhos técnicos de moda utilizando o Adobe Illustrator, aplicando padrões de representação profissional para diferentes tipos de peças e…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver desenhos técnicos de moda utilizando o Adobe Illustrator, aplicando padrões de representação profissional para diferentes tipos de peças e explorando recursos gráficos que permitem simular acabamentos, texturas e detalhes têxteis com precisão.',
     publicoAlvo: 'Este curso é destinado a estudantes e profissionais das áreas de moda, design e confecção, além de empreendedores e criadores que desejam representar tecnicamente suas peças com maior precisão, organização e qualidade visual.',
@@ -2010,7 +1998,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/desenho-tecnico-de-moda-com-illustrator',
   }),
   cursoSeed({
-    id: 'dmi', codigo: 'DMI', nome: 'Ilustração de Moda com Illustrator', eixoId: 'ferramenta', areaId: 'moda', nivel: 'intermediario', status: 'ativo',
+    id: 'dmi', codigo: 'DMI', nome: 'Ilustração de Moda com Illustrator', area: 'Moda & Têxtil', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a criar ilustrações de moda digitais utilizando o Adobe Illustrator, explorando técnicas de construção de croquis, aplicação de cores, texturas e…',
     descricao: 'Este curso capacita o(a) aluno(a) a criar ilustrações de moda digitais utilizando o Adobe Illustrator, explorando técnicas de construção de croquis, aplicação de cores, texturas e efeitos visuais, com o objetivo de desenvolver representações estilizadas e expressivas de peças e coleções.',
     publicoAlvo: 'Este curso é destinado a estudantes e profissionais das áreas de moda, design e ilustração, além de pessoas interessadas em desenvolver sua expressão criativa por meio da representação visual de peças e conceitos de vestuário.',
@@ -2028,7 +2016,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/ilustracao-de-moda-com-illustrator',
   }),
   cursoSeed({
-    id: 'zla', codigo: 'ZLA', nome: 'Do Zero à Lógica: Fundamentos da Programação', eixoId: 'cross', areaId: 'dev', nivel: 'basico', status: 'ativo',
+    id: 'zla', codigo: 'ZLA', nome: 'Do Zero à Lógica: Fundamentos da Programação', area: 'Desenvolvimento', nivel: 'basico', status: 'ativo',
     resumo: 'Este curso é o primeiro passo para quem deseja entrar no mundo da tecnologia.',
     descricao: 'Este curso é o primeiro passo para quem deseja entrar no mundo da tecnologia. Ao longo da jornada, raciocínio lógico e criatividade se unem para transformar ideias em soluções reais. O(a) participante aprende conceitos fundamentais de computação, estrutura algoritmos, organiza dados e desenvolve o pensamento lógico essencial para compreender como sistemas funcionam e construir bases sólidas para evolução em diferentes linguagens de programação e carreiras em tecnologia.',
     publicoAlvo: 'Este curso é destinado a estudantes, iniciantes em tecnologia, profissionais em transição de carreira e pessoas interessadas em iniciar seus estudos em programação e desenvolvimento de software por meio de fundamentos computacionais e raciocínio lógico.',
@@ -2051,7 +2039,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/do-zero-a-logica-fundamentos-da-programacao',
   }),
   cursoSeed({
-    id: 'pjv', codigo: 'PJV', nome: 'Programação em Java', eixoId: 'backend', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'pjv', codigo: 'PJV', nome: 'Programação em Java', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações utilizando Java, evoluindo dos fundamentos da linguagem até conceitos aplicados de orientação a objetos, persistência de dados…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações utilizando Java, evoluindo dos fundamentos da linguagem até conceitos aplicados de orientação a objetos, persistência de dados e construção de aplicações utilizando tecnologias do ecossistema Java. Ao longo da jornada, o(a) participante aprende estruturas da linguagem, manipulação de dados, integração com banco de dados e boas práticas utilizadas no desenvolvimento de software moderno.',
     publicoAlvo: 'Este curso é destinado a estudantes, iniciantes em tecnologia, desenvolvedores e profissionais interessados em construir conhecimentos sólidos em programação utilizando Java e ampliar competências para desenvolvimento de aplicações.',
@@ -2078,7 +2066,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/programacao-em-java',
   }),
   cursoSeed({
-    id: 'jvw', codigo: 'JVW', nome: 'Java para Desenvolvimento Web', eixoId: 'backend', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'jvw', codigo: 'JVW', nome: 'Java para Desenvolvimento Web', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações web utilizando Java e tecnologias amplamente utilizadas no mercado.',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações web utilizando Java e tecnologias amplamente utilizadas no mercado. Ao longo da jornada, o(a) participante aprende a estruturar aplicações, construir interfaces dinâmicas, integrar banco de dados e aplicar conceitos modernos de arquitetura web utilizando JSP, Servlets, Spring MVC e Spring Boot para desenvolvimento de soluções organizadas e escaláveis.',
     publicoAlvo: 'Este curso é destinado a estudantes, desenvolvedores iniciantes, profissionais de tecnologia e pessoas interessadas em ampliar conhecimentos em desenvolvimento web utilizando Java e frameworks aplicados ao desenvolvimento de aplicações.',
@@ -2099,7 +2087,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/java-para-desenvolvimento-web',
   }),
   cursoSeed({
-    id: 'pcn', codigo: 'PCN', nome: 'Programação em C# e .NET', eixoId: 'backend', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'pcn', codigo: 'PCN', nome: 'Programação em C# e .NET', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações utilizando C# e .NET, evoluindo dos fundamentos da programação até conceitos avançados de desenvolvimento orientado a objetos e…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações utilizando C# e .NET, evoluindo dos fundamentos da programação até conceitos avançados de desenvolvimento orientado a objetos e construção de software. Ao longo da jornada, o(a) participante aprende estruturas da linguagem, manipulação de dados, arquitetura de aplicações, modelagem e boas práticas utilizadas no mercado, construindo bases sólidas para atuar no desenvolvimento de sistemas modernos.',
     publicoAlvo: 'Este curso é destinado a estudantes, iniciantes em tecnologia, desenvolvedores e profissionais interessados em construir conhecimentos sólidos em programação utilizando C# e ampliar competências para desenvolvimento de aplicações e software.',
@@ -2127,7 +2115,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/programacao-em-c-e-net',
   }),
   cursoSeed({
-    id: 'asp', codigo: 'ASP', nome: 'ASP.NET Core para Desenvolvimento Web', eixoId: 'backend', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'asp', codigo: 'ASP', nome: 'ASP.NET Core para Desenvolvimento Web', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Esta formação capacita o(a) aluno(a) a desenvolver aplicações web utilizando ASP.NET Core e recursos modernos do ecossistema .NET.',
     descricao: 'Esta formação capacita o(a) aluno(a) a desenvolver aplicações web utilizando ASP.NET Core e recursos modernos do ecossistema .NET. Ao longo da jornada, o(a) participante aprende conceitos de arquitetura MVC, criação de interfaces, construção de controllers, desenvolvimento de serviços, integração com banco de dados e utilização do Entity Framework para criação de aplicações web organizadas, escaláveis e alinhadas às práticas atuais do mercado.',
     publicoAlvo: 'Este curso é destinado a estudantes, desenvolvedores iniciantes, profissionais de tecnologia e pessoas interessadas em ampliar conhecimentos em desenvolvimento web utilizando C# e ASP.NET Core.',
@@ -2152,7 +2140,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/asp-net-core-para-desenvolvimento-web',
   }),
   cursoSeed({
-    id: 'py3', codigo: 'PY3', nome: 'Aplicações Web com Python', eixoId: 'backend', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'py3', codigo: 'PY3', nome: 'Aplicações Web com Python', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações web utilizando Python e Django, evoluindo da construção das primeiras páginas até a criação de aplicações integradas com banco…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações web utilizando Python e Django, evoluindo da construção das primeiras páginas até a criação de aplicações integradas com banco de dados. Ao longo da jornada, o(a) participante aprende estruturação de projetos web, desenvolvimento em arquitetura MVC, criação de interfaces, integração com banco de dados e implementação de funcionalidades completas para aplicações modernas.',
     publicoAlvo: 'Este curso é destinado a estudantes, desenvolvedores iniciantes, profissionais de tecnologia e pessoas interessadas em desenvolver aplicações web utilizando Python e frameworks modernos para construção de sistemas.',
@@ -2180,7 +2168,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/aplicacoes-web-com-python',
   }),
   cursoSeed({
-    id: 'ad3', codigo: 'AD3', nome: 'Análise de Dados em Python', eixoId: 'dados', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'ad3', codigo: 'AD3', nome: 'Análise de Dados em Python', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a transformar dados em informações estratégicas utilizando Python e ferramentas amplamente utilizadas no mercado.',
     descricao: 'Este curso capacita o(a) aluno(a) a transformar dados em informações estratégicas utilizando Python e ferramentas amplamente utilizadas no mercado. Ao longo da jornada, o(a) participante aprende processos de preparação, limpeza, análise exploratória, visualização e interpretação de dados, aplicando fundamentos estatísticos e construindo análises orientadas à tomada de decisão baseada em evidências.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais de tecnologia, analistas, gestores e pessoas interessadas em desenvolver competências em análise de dados utilizando Python para apoio à tomada de decisão e geração de valor por meio dos dados.',
@@ -2205,7 +2193,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/analise-de-dados-em-python',
   }),
   cursoSeed({
-    id: 'ad1', codigo: 'AD1', nome: 'Automações em Python: Robotic Process Automation', eixoId: 'dados', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'ad1', codigo: 'AD1', nome: 'Automações em Python: Robotic Process Automation', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver automações utilizando Python e conceitos de Robotic Process Automation (RPA), aplicando recursos para automatizar tarefas repetitivas,…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver automações utilizando Python e conceitos de Robotic Process Automation (RPA), aplicando recursos para automatizar tarefas repetitivas, integrar sistemas e aumentar eficiência operacional. Ao longo da jornada, o(a) participante aprende automação de interfaces, consumo de APIs, manipulação de arquivos, integração com aplicações web e desenvolvimento de soluções automatizadas preparadas para cenários reais.',
     publicoAlvo: 'Este curso é destinado a estudantes, desenvolvedores, profissionais de tecnologia, analistas de processos e pessoas interessadas em automatizar tarefas e construir soluções utilizando Python e conceitos de automação.',
@@ -2228,7 +2216,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/automacoes-em-python-robotic-process-automation',
   }),
   cursoSeed({
-    id: 'ad4', codigo: 'AD4', nome: 'Machine Learning em Python', eixoId: 'ia', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'ad4', codigo: 'AD4', nome: 'Machine Learning em Python', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver soluções utilizando técnicas de Machine Learning aplicadas com Python, explorando desde fundamentos da área até algoritmos clássicos e…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver soluções utilizando técnicas de Machine Learning aplicadas com Python, explorando desde fundamentos da área até algoritmos clássicos e conceitos introdutórios de Deep Learning. Ao longo da jornada, o(a) participante aprende preparação de dados, construção de modelos preditivos, análise exploratória, mineração de texto e desenvolvimento de projetos orientados à geração de valor por meio de inteligência artificial.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais de tecnologia, analistas de dados, desenvolvedores e pessoas interessadas em ampliar conhecimentos em inteligência artificial e aprendizado de máquina utilizando Python.',
@@ -2248,7 +2236,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/machine-learning-em-python',
   }),
   cursoSeed({
-    id: 'oca', codigo: 'OCA', nome: 'Banco de Dados Oracle: Configuração e Administração', eixoId: 'dados', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'oca', codigo: 'OCA', nome: 'Banco de Dados Oracle: Configuração e Administração', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a administrar ambientes Oracle Database, compreendendo desde arquitetura e configuração até estratégias de segurança, backup, recuperação e otimização…',
     descricao: 'Este curso capacita o(a) aluno(a) a administrar ambientes Oracle Database, compreendendo desde arquitetura e configuração até estratégias de segurança, backup, recuperação e otimização de desempenho. Ao longo da jornada, o(a) participante aprende a configurar instâncias, administrar armazenamento, controlar acessos, monitorar ambientes e aplicar práticas utilizadas na sustentação e operação de bancos de dados corporativos.',
     publicoAlvo: 'Este curso é destinado a estudantes, administradores de banco de dados, profissionais de infraestrutura, analistas de sistemas, desenvolvedores e pessoas interessadas em ampliar conhecimentos em administração de ambientes Oracle.',
@@ -2274,7 +2262,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/banco-de-dados-oracle-configuracao-e-administracao',
   }),
   cursoSeed({
-    id: 'od1', codigo: 'OD1', nome: 'SQL com Oracle: Consultas e Modelagem de Dados', eixoId: 'dados', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'od1', codigo: 'OD1', nome: 'SQL com Oracle: Consultas e Modelagem de Dados', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver competências em modelagem e manipulação de bancos de dados utilizando SQL e Oracle.',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver competências em modelagem e manipulação de bancos de dados utilizando SQL e Oracle. Ao longo da jornada, o(a) participante aprende conceitos de bancos relacionais, criação e administração de estruturas de dados, construção de consultas, integração com SQL*Plus e aplicação de recursos para gerenciamento, automação e organização de informações em cenários reais.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais de tecnologia, desenvolvedores, analistas e pessoas interessadas em construir conhecimentos em bancos de dados relacionais utilizando SQL e Oracle para desenvolvimento e administração de aplicações.',
@@ -2296,7 +2284,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/sql-com-oracle-consultas-e-modelagem-de-dados',
   }),
   cursoSeed({
-    id: 'od2', codigo: 'OD2', nome: 'PL/SQL Oracle: Programação para Banco de Dados', eixoId: 'dados', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'od2', codigo: 'OD2', nome: 'PL/SQL Oracle: Programação para Banco de Dados', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver rotinas e automatizações em banco de dados utilizando PL/SQL no ecossistema Oracle.',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver rotinas e automatizações em banco de dados utilizando PL/SQL no ecossistema Oracle. Ao longo da jornada, o(a) participante aprende a estruturar blocos de código, manipular dados, criar subprogramas, implementar regras de negócio e automatizar processos diretamente no banco de dados utilizando recursos amplamente aplicados em ambientes corporativos.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais de tecnologia, desenvolvedores, analistas de sistemas e pessoas interessadas em ampliar conhecimentos em programação aplicada a bancos de dados utilizando Oracle.',
@@ -2315,7 +2303,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/pl-sql-oracle-programacao-para-banco-de-dados',
   }),
   cursoSeed({
-    id: 'ang', codigo: 'ANG', nome: 'Desenvolvimento Web Com Angular', eixoId: 'frontend', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'ang', codigo: 'ANG', nome: 'Desenvolvimento Web Com Angular', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações web utilizando Angular, aplicando conceitos modernos de construção de interfaces, componentização e organização de aplicações…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações web utilizando Angular, aplicando conceitos modernos de construção de interfaces, componentização e organização de aplicações front-end. Ao longo da jornada, o(a) participante aprende a estruturar projetos, criar componentes reutilizáveis, gerenciar rotas e aplicar recursos do framework para construção de aplicações mais dinâmicas, escaláveis e alinhadas às práticas atuais do mercado.',
     publicoAlvo: 'Este curso é destinado a estudantes, desenvolvedores iniciantes, profissionais de tecnologia e pessoas interessadas em ampliar conhecimentos em desenvolvimento front-end utilizando Angular para construção de aplicações web modernas.',
@@ -2334,7 +2322,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/desenvolvimento-web-com-angular',
   }),
   cursoSeed({
-    id: 'tys', codigo: 'TYS', nome: 'TypeScript para Desenvolvimento Web', eixoId: 'frontend', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'tys', codigo: 'TYS', nome: 'TypeScript para Desenvolvimento Web', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações web utilizando TypeScript, ampliando a segurança, organização e manutenção do código por meio de recursos de tipagem e…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações web utilizando TypeScript, ampliando a segurança, organização e manutenção do código por meio de recursos de tipagem e programação orientada a objetos. Ao longo da jornada, o(a) participante aprende fundamentos da linguagem, estruturação de projetos, modularização e boas práticas utilizadas no desenvolvimento moderno, construindo bases para aplicações mais escaláveis e sustentáveis.',
     publicoAlvo: 'Este curso é destinado a estudantes, desenvolvedores iniciantes, profissionais de tecnologia e pessoas interessadas em ampliar conhecimentos em desenvolvimento web utilizando TypeScript e recursos modernos de programação.',
@@ -2353,7 +2341,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/typescript-para-desenvolvimento-web',
   }),
   cursoSeed({
-    id: 'njw', codigo: 'NJW', nome: 'Node.js para Desenvolvimento Web', eixoId: 'backend', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'njw', codigo: 'NJW', nome: 'Node.js para Desenvolvimento Web', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações e serviços para web utilizando Node.js, aplicando conceitos modernos de desenvolvimento back-end, integração entre sistemas e…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações e serviços para web utilizando Node.js, aplicando conceitos modernos de desenvolvimento back-end, integração entre sistemas e construção de APIs. Ao longo da jornada, o(a) participante aprende a estruturar aplicações, integrar bancos de dados, implementar autenticação, automatizar processos e publicar soluções para ambientes de produção.',
     publicoAlvo: 'Este curso é destinado a estudantes, desenvolvedores iniciantes, profissionais de tecnologia e pessoas interessadas em ampliar conhecimentos em desenvolvimento web utilizando Node.js para criação de aplicações e serviços modernos.',
@@ -2371,7 +2359,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/node-js-para-desenvolvimento-web',
   }),
   cursoSeed({
-    id: 'rjw', codigo: 'RJW', nome: 'React para Desenvolvimento Web', eixoId: 'frontend', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'rjw', codigo: 'RJW', nome: 'React para Desenvolvimento Web', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações web modernas utilizando React, aplicando conceitos de componentização, reatividade e organização de interfaces.',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver aplicações web modernas utilizando React, aplicando conceitos de componentização, reatividade e organização de interfaces. Ao longo da jornada, o(a) participante aprende a construir aplicações reutilizáveis, gerenciar estados, estruturar projetos e integrar bibliotecas amplamente utilizadas no mercado, desenvolvendo competências para criação de experiências web mais dinâmicas e escaláveis.',
     publicoAlvo: 'Este curso é destinado a estudantes, desenvolvedores iniciantes, profissionais de tecnologia e pessoas interessadas em ampliar conhecimentos em desenvolvimento front-end utilizando React para criação de aplicações web modernas.',
@@ -2390,7 +2378,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/react-para-desenvolvimento-web',
   }),
   cursoSeed({
-    id: 'rnm', codigo: 'RNM', nome: 'Desenvolvimento de Aplicativos Mobile com React Native', eixoId: 'frontend', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'rnm', codigo: 'RNM', nome: 'Desenvolvimento de Aplicativos Mobile com React Native', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver aplicativos mobile utilizando React Native, evoluindo dos fundamentos da construção de aplicações híbridas até recursos avançados para…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver aplicativos mobile utilizando React Native, evoluindo dos fundamentos da construção de aplicações híbridas até recursos avançados para criação de experiências completas para dispositivos móveis. Ao longo da jornada, o(a) participante aprende desenvolvimento com React, integração com APIs, consumo de serviços, armazenamento de dados, testes e publicação de aplicações modernas para ambientes Android e iOS.',
     publicoAlvo: 'Esta formação é destinada a estudantes, desenvolvedores, profissionais de tecnologia e pessoas interessadas em desenvolver aplicações para dispositivos móveis utilizando React Native e tecnologias modernas do ecossistema JavaScript.',
@@ -2406,7 +2394,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/desenvolvimento-de-aplicativos-mobile-com-react-native',
   }),
   cursoSeed({
-    id: 'uxp', codigo: 'UXP', nome: 'UX/UI na Prática: Experiência e Interface para Produtos Digitais', eixoId: 'frontend', areaId: 'dev', nivel: 'intermediario', status: 'ativo',
+    id: 'uxp', codigo: 'UXP', nome: 'UX/UI na Prática: Experiência e Interface para Produtos Digitais', area: 'Desenvolvimento', nivel: 'intermediario', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a projetar experiências e interfaces para produtos digitais, aplicando processos utilizados no mercado de UX/UI Design.',
     descricao: 'Este curso capacita o(a) aluno(a) a projetar experiências e interfaces para produtos digitais, aplicando processos utilizados no mercado de UX/UI Design. Ao longo da jornada, o(a) participante aprende a investigar problemas reais, compreender comportamentos dos usuários, estruturar jornadas, criar protótipos e desenvolver soluções digitais centradas em pessoas, conectando estratégia, experiência e construção visual.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais de tecnologia, design, marketing, negócios e pessoas interessadas em atuar na criação de produtos digitais, experiência do usuário, interfaces e áreas relacionadas ao ecossistema de inovação.',
@@ -2433,7 +2421,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/ux-ui-na-pratica-experiencia-e-interface-para-produtos-digitais',
   }),
   cursoSeed({
-    id: 'hta', codigo: 'HTA', nome: 'HTML5 Avançado: Desenvolvimento Web', eixoId: 'frontend', areaId: 'dev', nivel: 'avancado', status: 'ativo',
+    id: 'hta', codigo: 'HTA', nome: 'HTML5 Avançado: Desenvolvimento Web', area: 'Desenvolvimento', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a ampliar conhecimentos em desenvolvimento web utilizando recursos avançados do HTML5 e práticas aplicadas à construção de experiências digitais modernas.',
     descricao: 'Este curso capacita o(a) aluno(a) a ampliar conhecimentos em desenvolvimento web utilizando recursos avançados do HTML5 e práticas aplicadas à construção de experiências digitais modernas. Ao longo da jornada, o(a) participante aprende conceitos relacionados à estrutura semântica, acessibilidade, otimização para mecanismos de busca, segurança e tecnologias que apoiam a evolução da web, desenvolvendo páginas mais organizadas, acessíveis e preparadas para cenários atuais.',
     publicoAlvo: 'Este curso é destinado a estudantes, desenvolvedores iniciantes, profissionais de tecnologia e pessoas interessadas em aprofundar conhecimentos em desenvolvimento web por meio da utilização de recursos avançados do HTML5 e boas práticas de construção de aplicações web.',
@@ -2453,7 +2441,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/html5-avancado-desenvolvimento-web',
   }),
   cursoSeed({
-    id: 'cssa', codigo: 'CSSA', nome: 'CSS Avançado: Desenvolvimento de Interfaces Web', eixoId: 'frontend', areaId: 'dev', nivel: 'avancado', status: 'ativo',
+    id: 'cssa', codigo: 'CSSA', nome: 'CSS Avançado: Desenvolvimento de Interfaces Web', area: 'Desenvolvimento', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a ampliar conhecimentos em estilização e construção de interfaces web utilizando técnicas avançadas de CSS.',
     descricao: 'Este curso capacita o(a) aluno(a) a ampliar conhecimentos em estilização e construção de interfaces web utilizando técnicas avançadas de CSS. Ao longo da jornada, o(a) participante aprende recursos para organização de código, criação de layouts responsivos, animações, efeitos visuais e utilização de ferramentas modernas para desenvolvimento de interfaces mais organizadas, escaláveis e alinhadas às práticas do mercado.',
     publicoAlvo: 'Este curso é destinado a estudantes, desenvolvedores iniciantes, profissionais de tecnologia e pessoas interessadas em aprofundar conhecimentos em estilização, organização visual e desenvolvimento de interfaces web modernas.',
@@ -2472,7 +2460,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/css-avancado-desenvolvimento-de-interfaces-web',
   }),
   cursoSeed({
-    id: 'jsf', codigo: 'JSF', nome: 'JavaScript: Fundamentos para Desenvolvimento Web', eixoId: 'frontend', areaId: 'dev', nivel: 'basico', status: 'ativo',
+    id: 'jsf', codigo: 'JSF', nome: 'JavaScript: Fundamentos para Desenvolvimento Web', area: 'Desenvolvimento', nivel: 'basico', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a compreender os fundamentos do JavaScript e desenvolver comportamentos interativos para aplicações web.',
     descricao: 'Este curso capacita o(a) aluno(a) a compreender os fundamentos do JavaScript e desenvolver comportamentos interativos para aplicações web. Ao longo da jornada, o(a) participante aprende conceitos da linguagem, lógica aplicada ao navegador, manipulação de elementos da página e utilização de recursos para criação de experiências mais dinâmicas e funcionais, construindo bases sólidas para evolução em desenvolvimento front-end.',
     publicoAlvo: 'Este curso é destinado a estudantes, iniciantes em tecnologia, futuros desenvolvedores e pessoas interessadas em aprender programação para web por meio da utilização do JavaScript.',
@@ -2491,7 +2479,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/javascript-fundamentos-para-desenvolvimento-web',
   }),
   cursoSeed({
-    id: 'jsa', codigo: 'JSA', nome: 'JavaScript Avançado: Desenvolvimento Web', eixoId: 'frontend', areaId: 'dev', nivel: 'avancado', status: 'ativo',
+    id: 'jsa', codigo: 'JSA', nome: 'JavaScript Avançado: Desenvolvimento Web', area: 'Desenvolvimento', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a ampliar conhecimentos em JavaScript utilizando recursos modernos para construção de aplicações web mais dinâmicas, escaláveis e alinhadas às práticas…',
     descricao: 'Este curso capacita o(a) aluno(a) a ampliar conhecimentos em JavaScript utilizando recursos modernos para construção de aplicações web mais dinâmicas, escaláveis e alinhadas às práticas atuais do mercado. Ao longo da jornada, o(a) participante aprende programação assíncrona, modularização, consumo de APIs, testes e conceitos avançados da linguagem, desenvolvendo competências para criar soluções web mais robustas e preparadas para ambientes modernos.',
     publicoAlvo: 'Este curso é destinado a estudantes, desenvolvedores iniciantes, profissionais de tecnologia e pessoas interessadas em aprofundar conhecimentos em JavaScript e ampliar competências para desenvolvimento web moderno.',
@@ -2510,7 +2498,7 @@ CURSOS_SEED.push(
     site: 'https://www.proway.com.br/curso/javascript-avancado-desenvolvimento-web',
   }),
   cursoSeed({
-    id: 'fhd', codigo: 'FHD', nome: 'Suporte Técnico Profissional: Atendimento, Processos e Soluções', eixoId: 'cross', areaId: 'dev', nivel: 'avancado', status: 'ativo',
+    id: 'fhd', codigo: 'FHD', nome: 'Suporte Técnico Profissional: Atendimento, Processos e Soluções', area: 'Desenvolvimento', nivel: 'avancado', status: 'ativo',
     resumo: 'Este curso capacita o(a) aluno(a) a desenvolver competências profissionais para atuação em suporte técnico, combinando práticas de atendimento, organização de processos e resolução de…',
     descricao: 'Este curso capacita o(a) aluno(a) a desenvolver competências profissionais para atuação em suporte técnico, combinando práticas de atendimento, organização de processos e resolução de problemas em ambientes cada vez mais dinâmicos e orientados ao usuário. Ao longo do curso, o(a) participante fortalece habilidades técnicas e comportamentais para entregar experiências mais eficientes, colaborar com equipes e gerar valor por meio do suporte.',
     publicoAlvo: 'Este curso é destinado a estudantes, profissionais de tecnologia, analistas de suporte, atendentes técnicos e pessoas interessadas em desenvolver competências relacionadas ao atendimento, processos, relacionamento com usuários e evolução profissional na área de suporte técnico.',

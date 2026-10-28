@@ -10,10 +10,9 @@ const MODO = document.body.dataset.modo === 'detalhe' ? 'detalhe' : 'lista';
 
 const estado = {
   lista: Cursos.carregar(),
-  areas: Areas.carregar(),
   selecionado: null, // id do curso aberto | null = lista
   aba: 'dados',
-  filtros: { busca: '', areaId: parametroUrl('area') ?? '', eixoId: '', status: '', formato: '', nivel: '' }, // ?area= vem da contagem em Áreas
+  filtros: { busca: '', area: '', status: '', formato: '', nivel: '' },
   fechados: new Set(), // módulos minimizados (abertos por padrão)
 };
 
@@ -116,13 +115,6 @@ function nomeDe(lista, id, campo = 'nome') {
   return lista.find((x) => x.id === id)?.[campo] ?? '';
 }
 
-const eixoDe = (id) => nomeDe(EIXOS, id);
-const areaObj = (id) => Areas.porId(estado.areas, id);
-// Área: marca quadrada na cor dela + nome em texto (vazada quando a área foi removida). Quadrada para não se passar por ponto de eixo ou de ciclo de vida.
-function pilulaArea(id) {
-  const a = areaObj(id);
-  return `<span title="Área" class="inline-flex items-center gap-1.5 whitespace-nowrap text-sm text-slate-600 dark:text-neutral-300"><span class="h-2 w-2 shrink-0 rounded-[2px] ${Areas.cor(a).ponto}"></span>${esc(a?.nome ?? 'Área removida')}</span>`;
-}
 const nivelDe = (id) => NIVEIS.find((n) => n.id === id);
 const statusDe = (id) => STATUS_CURSO.find((s) => s.id === id);
 const formatoDe = (id) => nomeDe(FORMATOS, id);
@@ -190,7 +182,7 @@ function renderLista() {
   const el = document.getElementById('tela');
   const f = estado.filtros;
   const visiveis = Cursos.filtrar(estado.lista, f);
-  const filtrando = f.areaId || f.eixoId || f.status || f.formato || f.nivel || f.busca;
+  const filtrando = f.area || f.status || f.formato || f.nivel || f.busca;
   const select = (id, rotulo, opcoes, valor) => campoCombo(id, opcoes, valor, { id, vazio: rotulo, filtro: true, classe: valor ? 'border-petrol-800 dark:border-sky-400 text-petrol-800 dark:text-sky-300' : '' });
 
   // Ativo é o comum: só rascunho e inativo ganham pílula; a segunda linha troca o resumo pelo que falta, quando falta.
@@ -206,8 +198,8 @@ function renderLista() {
             ? `<p class="text-xs ${AVISO} truncate" title="${esc(pend.join(' · '))}">${plural(pend.length, 'pendência')}: ${esc(pend.join(' · '))}</p>`
             : `<p class="text-xs text-slate-500 dark:text-neutral-400 truncate" title="${esc(c.resumo)}">${esc(c.resumo) || 'sem resumo'}</p>`}
         </td>
-        <td class="${TD}">${pilulaArea(c.areaId)}</td>
-        <td class="${TD}">${eixoDe(c.eixoId) ? `${esc(eixoDe(c.eixoId))}<span class="block text-xs text-slate-500 dark:text-neutral-400">${esc(nivel?.nome ?? '')}</span>` : esc(nivel?.nome ?? '')}</td>
+        <td class="${TD} truncate" title="${esc(c.area)}">${valorOuVazio(c.area, '—')}</td>
+        <td class="${TD}">${esc(nivel?.nome ?? '')}</td>
         <td class="${TD} text-right tabular-nums whitespace-nowrap">${fmtHoras(c.cargaHoraria)}</td>
         <td class="${TD} text-right tabular-nums whitespace-nowrap">${fmtMoeda(c.comercial.precoReferencia)}</td>
       </tr>`;
@@ -223,8 +215,7 @@ function renderLista() {
     <div class="mb-4 flex flex-wrap items-center gap-2">
       ${busca('busca-curso', f.busca, 'Buscar por código, nome ou resumo', 'w-64')}
       <div class="ml-auto flex flex-wrap items-center gap-2">
-        ${select('filtro-area', 'Área', Areas.opcoes(estado.areas, f.areaId), f.areaId)}
-        ${select('filtro-eixo', 'Eixo', EIXOS, f.eixoId)}
+        ${select('filtro-area', 'Área', Cursos.areasUsadas(estado.lista).map((a) => ({ id: a, nome: a })), f.area)}
         ${select('filtro-nivel', 'Nível', NIVEIS, f.nivel)}
         ${select('filtro-formato', 'Formato', FORMATOS, f.formato)}
         ${select('filtro-status', 'Status', STATUS_CURSO, f.status)}
@@ -239,7 +230,7 @@ function renderLista() {
           <tr>
             <th class="${TH}">Curso</th>
             <th class="${TH} w-[150px]">Área</th>
-            <th class="${TH} w-[140px]">Eixo e nível</th>
+            <th class="${TH} w-[120px]">Nível</th>
             <th class="${TH} w-[76px] text-right" title="Carga horária">Carga</th>
             <th class="${TH} w-[112px] text-right" title="Preço de referência">Preço ref.</th>
           </tr>
@@ -257,11 +248,11 @@ function renderLista() {
 
   const campoBusca = el.querySelector('#busca-curso');
   campoBusca.addEventListener('input', () => { estado.filtros.busca = campoBusca.value; const [ini, fim] = [campoBusca.selectionStart, campoBusca.selectionEnd]; renderLista(); const novo = document.getElementById('busca-curso'); novo.focus(); novo.setSelectionRange(ini, fim); });
-  [['filtro-area', 'areaId'], ['filtro-eixo', 'eixoId'], ['filtro-nivel', 'nivel'], ['filtro-formato', 'formato'], ['filtro-status', 'status']].forEach(([id, chave]) => {
+  [['filtro-area', 'area'], ['filtro-nivel', 'nivel'], ['filtro-formato', 'formato'], ['filtro-status', 'status']].forEach(([id, chave]) => {
     el.querySelector(`[data-name="${id}"] input[type="hidden"]`).addEventListener('change', (e) => { estado.filtros[chave] = e.target.value; renderLista(); });
   });
   ativarCombos(el);
-  el.querySelector('#btn-limpar-filtros')?.addEventListener('click', () => { estado.filtros = { busca: '', areaId: '', eixoId: '', status: '', formato: '', nivel: '' }; renderLista(); });
+  el.querySelector('#btn-limpar-filtros')?.addEventListener('click', () => { estado.filtros = { busca: '', area: '', status: '', formato: '', nivel: '' }; renderLista(); });
   el.querySelector('#btn-novo').addEventListener('click', () => abrirModalCurso());
   el.querySelector('#btn-novo-vazio')?.addEventListener('click', () => abrirModalCurso());
   // O nome é o link (teclado, ⌘-clique); o resto da linha abre o mesmo curso, a não ser que a pessoa esteja selecionando texto.
@@ -314,8 +305,8 @@ function renderCurso() {
           </div>
           ${c.resumo ? `<p class="text-sm text-slate-600 dark:text-neutral-300 mt-1">${esc(c.resumo)}</p>` : ''}
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
-            ${pilulaArea(c.areaId).replace('text-sm', 'text-[13px]')}
-            ${chip(ICONE.lista, [eixoDe(c.eixoId), nivelDe(c.nivel)?.nome].filter(Boolean).map(esc).join(' · '), 'Eixo na matriz · nível')}
+            ${c.area ? `<span title="Área" class="text-[13px] text-slate-600 dark:text-neutral-300">${esc(c.area)}</span>` : ''}
+            ${chip(ICONE.lista, esc(nivelDe(c.nivel)?.nome ?? ''), 'Nível')}
             ${chip(ICONE.relogio, `${fmtHoras(c.cargaHoraria)}${c.encontros ? ` · ${plural(c.encontros, 'encontro')}` : ''}`, 'Carga horária')}
             ${chip(ICONE.local, c.formatos.map(formatoDe).join(' · ') || 'sem formato', 'Formatos')}
           </div>
@@ -396,8 +387,7 @@ function renderAbaDados() {
         <div class="p-4 grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-4">
           ${campo('Código', `<span class="font-mono">${esc(c.codigo)}</span>`)}
           ${campo('Nome', esc(c.nome), 'col-span-2')}
-          ${campo('Área', pilulaArea(c.areaId))}
-          ${campo('Eixo na matriz', esc(eixoDe(c.eixoId)))}
+          ${campo('Área', valorOuVazio(c.area))}
           ${campo('Nível', `${esc(nivelDe(c.nivel)?.nome ?? '')} <span class="text-xs text-slate-500 dark:text-neutral-400">· ${esc(nivelDe(c.nivel)?.descricao ?? '')}</span>`)}
           ${campo('Carga horária', fmtHoras(c.cargaHoraria))}
           ${campo('Encontros sugeridos', c.encontros ? plural(c.encontros, 'aula') : valorOuVazio(null))}
@@ -656,7 +646,7 @@ const cartoesRadio = (name, opcoes, valor, colunas = 'grid-cols-3') => `
 
 function abrirModalCurso(id = null) {
   const c = id ? Cursos.porId(estado.lista, id) : null;
-  const d = c ?? { codigo: '', nome: '', areaId: '', eixoId: '', nivel: null, cargaHoraria: '', encontros: '', duracaoAula: '', formatos: [], resumo: '', status: null };
+  const d = c ?? { codigo: '', nome: '', area: '', nivel: null, cargaHoraria: '', encontros: '', duracaoAula: '', formatos: [], resumo: '', status: null };
   modalFormulario({
     id: 'form-curso',
     titulo: c ? 'Editar dados do curso' : 'Novo curso',
@@ -669,18 +659,8 @@ function abrirModalCurso(id = null) {
         ${campoTexto('codigo', 'Código', d.codigo, { placeholder: 'Ex.: HT5', max: 10, extra: 'autocapitalize="characters"' })}
         <div class="col-span-2">${campoTexto('nome', 'Nome', d.nome, { placeholder: 'Ex.: HTML5, CSS3 e JavaScript', max: 100 })}</div>
       </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="rotulo" for="f-areaId">Área</label>
-          ${campoCombo('areaId', Areas.opcoes(estado.areas, d.areaId), d.areaId, { vazio: 'Escolha a área' })}
-          ${ERRO('areaId')}
-        </div>
-        <div>
-          <label class="rotulo" for="f-eixoId">Eixo na matriz</label>
-          ${campoCombo('eixoId', EIXOS, d.eixoId, { vazio: 'Escolha o eixo' })}
-          ${ERRO('eixoId')}
-        </div>
-      </div>
+      ${campoTexto('area', 'Área', d.area, { placeholder: 'Ex.: Desenvolvimento', max: 100, opcional: true, extra: 'list="areas-usadas" autocomplete="off"' })}
+      <datalist id="areas-usadas">${Cursos.areasUsadas(estado.lista).map((a) => `<option value="${esc(a)}">`).join('')}</datalist>
       <fieldset>
         <legend class="rotulo">Nível</legend>
         ${cartoesRadio('nivel', NIVEIS, d.nivel)}
@@ -711,7 +691,7 @@ function abrirModalCurso(id = null) {
       </fieldset>` : ''}`,
     aoSalvar: (fd) => {
       const novo = {
-        codigo: fd.get('codigo') ?? '', nome: fd.get('nome') ?? '', areaId: fd.get('areaId') ?? '', eixoId: fd.get('eixoId') ?? '', nivel: fd.get('nivel'),
+        codigo: fd.get('codigo') ?? '', nome: fd.get('nome') ?? '', area: fd.get('area') ?? '', nivel: fd.get('nivel'),
         cargaHoraria: fd.get('cargaHoraria'), encontros: fd.get('encontros'), duracaoAula: fd.get('duracaoAula'),
         formatos: fd.getAll('formatos'), resumo: fd.get('resumo') ?? '', status: c ? fd.get('status') : null,
       };
