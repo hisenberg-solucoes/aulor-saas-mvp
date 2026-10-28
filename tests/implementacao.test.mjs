@@ -2,16 +2,28 @@
 // integrações que existem), porque um id errado some do mapa em silêncio.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 
 const D = new Function(readFileSync(new URL('../js/implementacao-data.js', import.meta.url), 'utf8') + '; return IMPLEMENTACAO;')();
 const telas = [D.entrada, ...D.raias.flatMap((r) => r.grupos.flatMap((g) => g.telas))];
 const SITUACOES = ['ok', 'parcial', 'falta', 'na'];
 
-test('ids das telas e das integrações são únicos', () => {
+// O id vai para o endereço (#id ou #int-id) sem decode: só minúsculas, dígitos e hífen, e tela não começa com int-.
+test('ids das telas e das integrações são únicos e cabem no endereço', () => {
   for (const ids of [telas.map((t) => t.id), D.integracoes.map((i) => i.id)]) {
     assert.deepEqual(ids.filter((id, i) => ids.indexOf(id) !== i), []);
+    assert.deepEqual(ids.filter((id) => !/^[a-z0-9-]+$/.test(id)), []);
   }
+  assert.deepEqual(telas.map((t) => t.id).filter((id) => id.startsWith('int-')), []);
+});
+
+// O disco do Mac não distingue maiúsculas; o GitHub Pages sim.
+test('os arquivos do protótipo existem com a grafia exata', () => {
+  const faltando = telas.flatMap((t) => t.prototipo).filter((p) => {
+    const i = p.lastIndexOf('/');
+    return !readdirSync(new URL(`../${p.slice(0, i + 1)}`, import.meta.url)).includes(p.slice(i + 1));
+  });
+  assert.deepEqual(faltando, []);
 });
 
 test('a Entrada desce para pelo menos uma raia de portal', () => {

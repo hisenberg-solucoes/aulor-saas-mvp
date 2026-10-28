@@ -40,13 +40,14 @@
 
   const completo = (c) => c.feitas === c.total;
   const comecada = (c) => c.feitas + c.parciais > 0;
+  // Os filtros são sobre as features das telas; as integrações só ficam em destaque em "todas".
   const FILTROS = {
-    todas: { telas: () => true, integracoes: () => true },
-    web: { telas: (t) => comecada(t.c.web), integracoes: () => false },
-    api: { telas: (t) => comecada(t.c.api), integracoes: (i) => i.situacao === 'ok' },
-    'so-web': { telas: (t) => completo(t.c.api) && !completo(t.c.web), integracoes: () => false },
+    todas: () => true,
+    web: (t) => comecada(t.c.web),
+    api: (t) => comecada(t.c.api),
+    'so-web': (t) => t.c.api.total > 0 && completo(t.c.api) && !completo(t.c.web),
   };
-  const soFaltaWeb = FILTROS['so-web'].telas;
+  const soFaltaWeb = FILTROS['so-web'];
 
   // ---------- Peças ----------
   function medidor(c) {
@@ -61,7 +62,7 @@
     const so = soFaltaWeb(t);
     const ints = (t.integracoes ?? []).map((id) => integracoes[id].nome);
     const rotulo = `${t.nome}. Web: ${resumo(t.c.web)}. API: ${resumo(t.c.api)}.${so ? ' Só falta o web.' : ''}`;
-    return `<button type="button" class="no${so ? ' so-web' : ''}" data-id="${t.id}" aria-controls="ficha" aria-expanded="false" aria-label="${esc(rotulo)}">
+    return `<button type="button" class="no${so ? ' so-web' : ''}" data-id="${esc(t.id)}" aria-controls="ficha" aria-expanded="false" aria-label="${esc(rotulo)}">
       <span class="no-nome">${esc(t.nome)}</span>
       <span class="no-sub">${esc(t.prototipo.join(' · '))}</span>
       <span class="no-lados">${LADOS.map(([lado, nome]) => ladoLinha(t.c[lado], nome)).join('')}</span>
@@ -72,7 +73,7 @@
   function cartaoIntegracao(i) {
     const n = usam(i.id).length;
     const situacao = i.situacao === 'ok' ? fase('ok', 'Integrada') : fase('falta', 'Falta');
-    return `<button type="button" class="no" data-int="${i.id}" aria-controls="ficha" aria-expanded="false" aria-label="${esc(`${i.nome}. ${i.situacao === 'ok' ? 'Integrada' : 'Falta'}. Usada em ${n} telas.`)}">
+    return `<button type="button" class="no" data-int="${esc(i.id)}" aria-controls="ficha" aria-expanded="false" aria-label="${esc(`${i.nome}. ${i.situacao === 'ok' ? 'Integrada' : 'Falta'}. Usada em ${n} ${n === 1 ? 'tela' : 'telas'}.`)}">
       <span class="no-nome">${esc(i.nome)}</span>
       <span class="no-uso">${esc(i.uso)}</span>
       <span class="no-situacao">${situacao}</span>
@@ -81,7 +82,8 @@
   }
 
   function cabecaRaia(id, nome, descricao, c) {
-    return `<button type="button" class="raia-cabeca" data-aproximar="${id}" aria-label="Aproximar ${esc(nome)}">
+    const rotulo = `Aproximar ${nome}: ${descricao}.${c ? ` Web: ${resumo(c.web)}. API: ${resumo(c.api)}.` : ''}`;
+    return `<button type="button" class="raia-cabeca" data-aproximar="${esc(id)}" aria-label="${esc(rotulo)}">
       <span class="raia-nome">${esc(nome)}</span>
       <span class="raia-desc">${esc(descricao)}</span>
       ${c ? `<span class="raia-lados">${LADOS.map(([lado, n]) => ladoLinha(c[lado], n)).join('')}</span>` : ''}
@@ -91,7 +93,7 @@
   function raia(r, coluna) {
     const ts = telas.filter((t) => t.raia === r);
     const unica = r.grupos.length === 1;
-    return `<section class="raia${unica ? ' raia-unica' : ''}" data-raia="${r.id}" style="grid-column:${coluna};grid-row:2" aria-label="${esc(r.nome)}">
+    return `<section class="raia${unica ? ' raia-unica' : ''}" data-raia="${esc(r.id)}" style="grid-column:${coluna};grid-row:2" aria-label="${esc(r.nome)}">
       ${cabecaRaia(r.id, r.nome, `${r.descricao} · ${ts.length} ${ts.length === 1 ? 'tela' : 'telas'}`, somar(ts))}
       <div class="raia-grupos">${r.grupos.map((g) => `
         <div class="grupo">
@@ -131,13 +133,14 @@
   let ligacoes = mundo.querySelector('.arestas-ligacoes');
 
   const { data, web, api } = D.retrato;
-  document.getElementById('retrato').innerHTML = `Retrato de ${new Date(`${data}T12:00`).toLocaleDateString('pt-BR')}<span class="topo-repos"> · <a href="${web.url}" target="_blank" rel="noopener">${web.repo} ${web.commit}</a> · <a href="${api.url}" target="_blank" rel="noopener">${api.repo} ${api.commit}</a></span>`;
+  const repo = (r) => `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(`${r.repo} ${r.commit}`)}</a>`;
+  document.getElementById('retrato').innerHTML = `Retrato de ${new Date(`${data}T12:00`).toLocaleDateString('pt-BR')}<span class="topo-repos"> · ${repo(web)} · ${repo(api)}</span>`;
 
   // ---------- Indicadores que destacam ----------
   let filtro = 'todas';
   function indicadores() {
     const t = somar(telas);
-    const n = (f) => telas.filter(FILTROS[f].telas).length;
+    const n = (f) => telas.filter(FILTROS[f]).length;
     const telasTxt = (k) => `${k}<small>${k === 1 ? 'tela' : 'telas'}</small>`;
     const comecadas = (k) => `${k} ${k === 1 ? 'tela começada' : 'telas começadas'}`;
     const celulas = [
@@ -147,7 +150,7 @@
       { f: 'so-web', rotulo: 'Só falta o web', valor: telasTxt(n('so-web')), ctx: 'A API já cobre a tela inteira', pendencia: true },
     ];
     document.getElementById('indicadores').innerHTML = celulas.map((c) => `
-      <button type="button" class="indicador${c.pendencia ? ' indicador-pendencia' : ''}" data-filtro="${c.f}" aria-pressed="${c.f === filtro}">
+      <button type="button" class="indicador${c.pendencia ? ' indicador-pendencia' : ''}${c.f === filtro ? ' ativo' : ''}" data-filtro="${c.f}"${c.f === 'todas' ? '' : ` aria-pressed="${c.f === filtro}"`}>
         <span class="indicador-rotulo">${c.rotulo}</span>
         <span class="indicador-valor">${c.valor}</span>
         <span class="indicador-contexto">${c.ctx}</span>
@@ -156,10 +159,14 @@
 
   function filtrar(f) {
     filtro = f;
-    document.querySelectorAll('[data-filtro]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filtro === f)));
+    // "Telas no mapa" não é um filtro que liga e desliga: é a volta a todas, sem aria-pressed.
+    document.querySelectorAll('[data-filtro]').forEach((b) => {
+      b.classList.toggle('ativo', b.dataset.filtro === f);
+      if (b.hasAttribute('aria-pressed')) b.setAttribute('aria-pressed', String(b.dataset.filtro === f));
+    });
     let n = 0;
     mundo.querySelectorAll('.no').forEach((el) => {
-      const ok = el.dataset.id ? FILTROS[f].telas(porId[el.dataset.id]) : FILTROS[f].integracoes(integracoes[el.dataset.int]);
+      const ok = el.dataset.id ? FILTROS[f](porId[el.dataset.id]) : f === 'todas';
       el.classList.toggle('apagado', !ok);
       if (ok && el.dataset.id) n += 1;
     });
@@ -175,7 +182,8 @@
   const v = { x: 0, y: 0, s: 1 };
   const LIMITE = [0.15, 2];
   const reduzido = matchMedia('(prefers-reduced-motion: reduce)');
-  const movel = () => matchMedia('(max-width: 767px)').matches;
+  const telaMovel = matchMedia('(max-width: 767px)');
+  const movel = () => telaMovel.matches;
   const limitar = (s) => Math.min(LIMITE[1], Math.max(LIMITE[0], s));
   let animacao = 0;
 
@@ -448,12 +456,12 @@
   }
 
   // A raia vai junto: há telas de mesmo nome em portais diferentes (Financeiro, Início).
-  const linhaTela = (u) => `<li><span><button type="button" class="link" data-ir="${u.id}">${esc(u.nome)}</button><small>${esc(u.raia.nome)}</small></span><span class="no-conta">Web ${u.c.web.feitas}/${u.c.web.total} · API ${u.c.api.feitas}/${u.c.api.total}</span></li>`;
+  const linhaTela = (u) => `<li><span><button type="button" class="link" data-ir="${esc(u.id)}">${esc(u.nome)}</button><small>${esc(u.raia.nome)}</small></span><span class="no-conta">Web ${u.c.web.feitas}/${u.c.web.total} · API ${u.c.api.feitas}/${u.c.api.total}</span></li>`;
 
   function fichaTela(t) {
     const trilha = [t.raia.nome, t.grupo && t.grupo.nome !== t.raia.nome && t.grupo.nome !== t.nome ? t.grupo.nome : null].filter(Boolean).join(' › ');
     const webTxt = t.web ? `${t.web}${t.webSituacao ? ` · ${t.webSituacao}` : ''}` : t.webSituacao ?? 'Sem rota no web';
-    const arquivos = (t.webArquivos ?? []).map((a) => `<li><a class="link" href="https://github.com/hisenberg-solucoes/aulor-web/blob/${D.retrato.web.commit}/src/app/${a}" target="_blank" rel="noopener">${esc(a)}</a></li>`).join('');
+    const arquivos = (t.webArquivos ?? []).map((a) => `<li><a class="link" href="${esc(`https://github.com/hisenberg-solucoes/aulor-web/blob/${D.retrato.web.commit}/src/app/${a}`)}" target="_blank" rel="noopener">${esc(a)}</a></li>`).join('');
     const ints = (t.integracoes ?? []).map((id) => integracoes[id]);
     const rel = ligadas(t).map((id) => porId[id]);
     return `
@@ -462,7 +470,7 @@
         <h2 id="ficha-titulo" class="ficha-titulo" tabindex="-1">${esc(t.nome)}</h2>
         <p class="ficha-chips">
           <span>${svg('raia')}${esc(trilha)}</span>
-          <span>${svg('pagina')}<span>${t.prototipo.map((p) => `<a class="link" href="${p}" target="_blank" rel="noopener">${esc(p)}</a>`).join(', ')}</span></span>
+          <span>${svg('pagina')}<span>${t.prototipo.map((p) => `<a class="link" href="${esc(p)}" target="_blank" rel="noopener">${esc(p)}</a>`).join(', ')}</span></span>
           <span>${svg('rota')}${esc(webTxt)}</span>
         </p>
       </div>
@@ -536,11 +544,12 @@
     if (devolverFoco && el) el.focus({ preventScroll: true });
   }
 
-  // O clique que termina um arrasto não abre nada.
+  // O clique que termina um arrasto não abre nada; Enter e Espaço (detail 0) abrem mesmo depois de uma pinça,
+  // que não termina em clique.
   mapa.addEventListener('click', (e) => {
     if (moveu) {
       moveu = false;
-      return;
+      if (e.detail) return;
     }
     const no = e.target.closest('.no');
     if (no) {
@@ -572,16 +581,22 @@
       if (el !== aberto) abrir(el, { focar: false });
     } else if (aberto) fechar(false);
   }
+  const enquadrarTudo = () => enquadrar(tudo(), { ms: 0, min: movel() ? 0.36 : 0.2 });
   function iniciar() {
     desenharFixas();
-    enquadrar(tudo(), { ms: 0, min: movel() ? 0.36 : 0.2 });
+    enquadrarTudo();
     abrirDoEndereco();
   }
   window.addEventListener('hashchange', abrirDoEndereco);
-  // As medidas dependem da fonte; desenha de novo se ela chegar depois.
+  // Ao passar de computador para celular (ou girar a tela), o enquadramento e a ficha mudam de forma.
+  telaMovel.addEventListener('change', () => {
+    enquadrarTudo();
+    if (aberto) mostrar(aberto);
+  });
+  // As medidas dependem da fonte; redesenha só as arestas se ela chegar depois, sem refazer a ficha nem mexer no foco.
   iniciar();
   document.fonts?.ready.then(() => {
     desenharFixas();
-    if (aberto) abrir(aberto, { focar: false });
+    if (aberto) desenharLigacoes(aberto, [...mundo.querySelectorAll('.no.ligado')]);
   });
 })();

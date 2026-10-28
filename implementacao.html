@@ -12,44 +12,39 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" type="image/svg+xml" href="img/aulor-favicon.svg">
   <style>
-    /* Papéis do DESIGN.md do aulor-web usados no mapa, em par claro/escuro. A tinta vem de styles.css (--f-tinta*). */
+    /* Papéis do DESIGN.md do aulor-web usados no mapa, em par claro/escuro. O que coincide com styles.css vem de lá
+       (--f-*, que já troca no escuro); aqui fica só o chão frio do aulor-web, que o protótipo não tem. */
     :root {
+      --m-cartao: var(--f-elevado);
+      --m-dado: var(--f-tinta);
+      --m-trilho: var(--f-etiqueta);
+      --m-marca: var(--f-marca-tinta);
+      --m-cobre: var(--f-cobre);
+      --m-aviso: var(--f-cobre-tinta);
+      --m-bom: var(--f-bom);
       --m-chao: #F3F5F6;
-      --m-cartao: #FFFFFF;
       --m-contorno: rgb(226 232 240 / 0.8);
       --m-contorno-forte: #CBD5E1;
       --m-linha: #E2E8F0;
       --m-aresta: #A8B4BE;
       --m-ponto: #D3DAE0;
       --m-realce: #F1F5F9;
-      --m-dado: #071E2C;
-      --m-trilho: #EAE3D7;
-      --m-marca: #0F3D4E;
-      --m-selecao: #DFE8EB;
-      --m-cobre: #C47A3A;
-      --m-aviso: #985824;
+      --m-trilho-contorno: #87949F;
       --m-aviso-fundo: #F9F2EB;
-      --m-bom: #2F7A55;
       --m-sombra: 0 1px 2px rgb(7 30 44 / 0.05);
       --m-flutua: 0 12px 32px -12px rgba(0, 0, 0, 0.28);
     }
 
     html.dark {
       --m-chao: #122938;
-      --m-cartao: #143040;
       --m-contorno: #2A4858;
       --m-contorno-forte: #2A4858;
       --m-linha: #1E3947;
       --m-aresta: #3E6073;
       --m-ponto: #1E3947;
       --m-realce: #173444;
-      --m-dado: #F5F0E8;
-      --m-trilho: #183847;
-      --m-marca: #9CC3D1;
-      --m-selecao: #1B4253;
-      --m-aviso: #E2A56D;
+      --m-trilho-contorno: #61808F;
       --m-aviso-fundo: #263840;
-      --m-bom: #6CC496;
       --m-sombra: none;
     }
 
@@ -116,10 +111,10 @@
       bottom: 10px;
       border-left: 1px solid var(--m-linha);
     }
-    .indicador[aria-pressed="true"]::before,
-    .indicador[aria-pressed="true"] + .indicador::before { display: none; }
+    .indicador.ativo::before,
+    .indicador.ativo + .indicador::before { display: none; }
     .indicador:hover { background: var(--m-realce); }
-    .indicador[aria-pressed="true"] {
+    .indicador.ativo {
       background: var(--m-cartao);
       border-color: var(--m-contorno);
       box-shadow: 0 1px 2px rgb(7 30 44 / 0.08);
@@ -138,7 +133,8 @@
     .legenda i.medidor-parcial { background: repeating-linear-gradient(-45deg, var(--m-dado) 0 1.5px, transparent 1.5px 4px), var(--m-trilho); }
 
     /* ---------- Medidor: trilho em etiqueta, feito em tinta, parcial em hachura de tinta ---------- */
-    .medidor { display: flex; gap: 1px; height: 6px; border-radius: 9999px; background: var(--m-trilho); overflow: hidden; }
+    /* O contorno do trilho dá 3:1 sobre o cartão: de longe, sem os números, 0/6 ainda se lê como medidor vazio. */
+    .medidor { display: flex; gap: 1px; height: 6px; border-radius: 9999px; background: var(--m-trilho); box-shadow: inset 0 0 0 var(--l, 1px) var(--m-trilho-contorno); overflow: hidden; }
     .medidor-feito { background: var(--m-dado); }
     .medidor-parcial { background: repeating-linear-gradient(-45deg, var(--m-dado) 0 1.5px, transparent 1.5px 4px); }
     .medidor-feito, .medidor-parcial { flex-shrink: 0; }
@@ -178,6 +174,8 @@
     .arestas-ligacoes path.caminho { stroke-width: 2; stroke-dasharray: none; }
     .arestas-ligacoes circle { fill: var(--m-marca); }
     @keyframes ligar { from { opacity: 0; } to { opacity: 1; } }
+    /* No celular a ficha é uma folha de baixo: entra subindo, não de lado como a .drawer-anim. */
+    @keyframes folha-sobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
     .entrada { grid-row: 1; justify-self: center; }
 
     /* Cartão: a tela da V1. Tamanho fixo, para o mapa não mudar de forma ao trocar o nível de zoom. */
@@ -408,7 +406,7 @@
       .indicador-contexto { display: none; }
       .mapa-ajuda { top: 8px; bottom: auto; }
       .legenda { flex-wrap: wrap; gap: 4px 12px; }
-      .ficha-tela { top: auto; left: 0; width: auto; height: 72%; border-left: 0; border-top: 1px solid var(--m-contorno); border-radius: 12px 12px 0 0; }
+      .ficha-tela { top: auto; left: 0; width: auto; height: 72%; border-left: 0; border-top: 1px solid var(--m-contorno); border-radius: 12px 12px 0 0; animation-name: folha-sobe; }
       .area.com-ficha .zoom { right: 16px; }
       .area.com-ficha .zoom, .area.com-ficha .mapa-ajuda { visibility: hidden; }
       .ficha-cabeca { border-radius: 12px 12px 0 0; }
@@ -447,7 +445,7 @@
       <div id="mundo" class="mundo"></div>
     </div>
     <p id="mapa-ajuda" class="mapa-ajuda">
-      <span class="ajuda-mouse">Arraste para mover; Ctrl e a roda aproximam. Teclas + e − dão zoom, 0 ajusta.</span>
+      <span class="ajuda-mouse">Arraste ou use as setas para mover; Ctrl e a roda aproximam. Teclas + e − dão zoom, 0 ajusta.</span>
       <span class="ajuda-toque">Arraste para mover; pince para aproximar.</span>
     </p>
     <div class="zoom" role="group" aria-label="Zoom do mapa">
