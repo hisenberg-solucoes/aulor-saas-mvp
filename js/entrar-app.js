@@ -153,7 +153,10 @@ const Entrada = (() => {
       const c = cols.find((x) => s.usuarios.find((u) => u.id === x.acesso.usuarioId)?.perfis[0] === perfilId);
       return c && { nome: c.nome, email: c.contato.email, papel: s.perfis.find((p) => p.id === perfilId).nome, portal: 'equipe' };
     });
-    const ins = Instrutores.carregar().find((i) => i.status !== 'inativo' && i.contato?.email);
+    // Professor da demonstração: o da turma que já tem as aulas geradas e materiais (AULAS_GRAVADAS_SEED).
+    const professores = Instrutores.carregar().filter((i) => i.status !== 'inativo' && i.contato?.email);
+    const comAulas = TURMAS_CURSO.find((t) => AULAS_GRAVADAS_SEED.includes(t.id))?.instrutorId;
+    const ins = professores.find((i) => i.id === comAulas) ?? professores[0];
     const alu = Clientes.carregar().alunos.find((a) => a.status !== 'inativo' && a.email);
     return [...porPerfil, ins && { nome: ins.nome, email: ins.contato.email, papel: 'Professor', portal: 'professor' }, alu && { nome: alu.nome, email: alu.email, papel: 'Aluno', portal: 'aluno' }]
       .filter((x) => x && x.portal === PORTAL);
