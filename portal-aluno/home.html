@@ -77,8 +77,8 @@
           <p id="data-hoje" class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5"></p>
         </div>
 
-        <!-- Sala da turma no Google Meet (só quando a turma tem link) -->
-        <section id="sala-meet" class="hidden surgir" style="animation-delay: 40ms"></section>
+        <!-- Pendências: contrato a assinar, parcela vencida, material novo (só quando há alguma) -->
+        <section id="pendencias" class="hidden surgir" style="animation-delay: 40ms"></section>
 
         <!-- Destaques: próxima aula, financeiro -->
         <section id="destaques" class="grid grid-cols-1 md:grid-cols-2 gap-4 surgir" style="animation-delay: 60ms"></section>
@@ -103,8 +103,6 @@
     </div>
   </div>
 
-  <div id="toasts" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 items-end pointer-events-none" role="status" aria-live="polite"></div>
-
   <script src="../js/agenda.js"></script>
   <script src="../js/cursos-data.js"></script>
   <script src="../js/cursos-motor.js"></script>
@@ -122,6 +120,7 @@
   <script src="../js/turmas-motor.js"></script>
   <script src="../js/instrutores-data.js"></script>
   <script src="../js/instrutores-motor.js"></script>
+  <script src="../js/materiais-motor.js"></script>
   <script src="js/portal-aluno-motor.js"></script>
   <script src="js/home-app.js"></script>
 </body>

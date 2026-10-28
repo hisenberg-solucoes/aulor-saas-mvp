@@ -81,7 +81,22 @@
     menu.querySelector('[data-sair]').addEventListener('click', MENU_PORTAL.sair);
   }
 
+  // Celular: cada célula das tabelas .tabela leva o rótulo da coluna, e styles.css (.tabela-cartoes)
+  // empilha a linha como cartão. As telas redesenham as tabelas, então o observador rotula as linhas novas.
+  function rotularTabelas() {
+    document.querySelectorAll('table.tabela tbody tr:not([data-rotulada])').forEach((tr) => {
+      const tabela = tr.closest('table');
+      const rotulos = [...tabela.querySelectorAll('thead th')].map((th) => th.textContent.trim());
+      let col = 0;
+      [...tr.cells].forEach((td) => { td.dataset.rotulo = td.colSpan > 1 ? '' : rotulos[col] ?? ''; col += td.colSpan; });
+      tr.dataset.rotulada = '';
+      tabela.classList.add('tabela-cartoes');
+    });
+  }
+
   function iniciar() {
+    rotularTabelas();
+    new MutationObserver(rotularTabelas).observe(document.body, { childList: true, subtree: true });
     const nav = document.querySelector('aside[data-sidebar] nav');
     if (!nav) return;
     const p = pagina();

@@ -24,6 +24,7 @@
   const FORMATO = { presencial: 'Presencial', online: 'Online ao vivo', hibrido: 'Híbrido', ead: 'EAD' };
   const TIPO_MATERIAL = { video: 'Vídeo', arquivo: 'Arquivo', link: 'Link' };
   const ICONE_CAMERA = '<svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" /></svg>';
+  const ICONE_RELOGIO = '<svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
   const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
   const traco = '<span class="text-slate-400">—</span>';
   const vazio = (msg) => `<div class="cartao p-8 text-center text-sm text-slate-500 dark:text-neutral-400">${msg}</div>`;
@@ -79,6 +80,7 @@
           instrutor: (a.instrutorId ? instrutores.find((i) => i.id === a.instrutorId) : null) ?? m.instrutor,
           modulos: (a.moduloIds ?? []).map((id) => (m.curso?.modulos ?? []).find((mod) => mod.id === id)).filter(Boolean),
           horas: Turmas.horasAula(a),
+          ...PortalAluno.materiaisDaAula(m.turma.id, a.id, hoje),
           ambigua: base.filter((b) => b.data === a.data).length > 1,
           chave: `${m.turma.id}|${a.data}|${a.inicio}`,
         });
@@ -102,6 +104,9 @@
     const s = SITUACAO[a.situacaoAula];
     return ponto(s.ponto, s.nome);
   };
+  // Aula por vir sem material liberado: o professor escolhe quando liberar (mesmo vocabulário da aba Aulas do curso).
+  const porLiberar = (a) => !a.materiaisLiberados.length && (a.situacaoAula === 'prevista' || a.situacaoAula === 'hoje');
+  const estadoMateriais = (a) => `<span class="inline-flex items-start gap-1 text-slate-500 dark:text-neutral-400">${ICONE_RELOGIO}${a.liberaMateriaisEm ? `Libera em ${data(a.liberaMateriaisEm)}` : 'Ainda não liberado'}</span>`;
 
   // ============================================================
   // LISTA
@@ -110,7 +115,7 @@
   function renderLista() {
     const { matriculas, aulas } = montarAulas();
     $('tela-lista').classList.remove('hidden');
-    $('subtitulo').textContent = `Referência ${PortalAluno.fmtData(hoje)}`;
+    $('subtitulo').textContent = `Situação em ${PortalAluno.fmtData(hoje)}`;
     if (params.get('erro') === 'nao-encontrada') { toast('Aula não encontrada entre as suas turmas.'); history.replaceState(null, '', location.pathname); }
 
     // ----- Cartões-resumo -----
@@ -174,19 +179,20 @@
       const conteudo = a.conteudo || a.modulos.map((m) => m.titulo).join(' · ');
       const classe = cancelada ? 'text-slate-400 dark:text-neutral-500' : '';
       return `<tr data-abrir="${urlAula(a)}" class="cursor-pointer hover:bg-petrol-800/5 dark:hover:bg-sky-400/10 transition ${classe}">
-        <td class="whitespace-nowrap tabular-nums ${cancelada ? 'line-through' : ''}"><span class="${a.situacaoAula === 'hoje' ? 'font-semibold text-petrol-800 dark:text-sky-300' : ''}">${a.situacaoAula === 'hoje' || (estado.aba !== 'realizadas' && PortalAluno.rotuloDia(a.data, hoje) === 'Amanhã') ? esc(PortalAluno.rotuloDia(a.data, hoje)) : data(a.data)}</span> <span class="text-xs text-slate-500 dark:text-neutral-400">${esc(diaCurto(a.data))}</span></td>
+        <td class="whitespace-nowrap tabular-nums ${cancelada ? 'line-through' : ''}"><a href="${urlAula(a)}" class="hover:underline ${a.situacaoAula === 'hoje' ? 'font-semibold text-petrol-800 dark:text-sky-300' : ''}">${a.situacaoAula === 'hoje' || (estado.aba !== 'realizadas' && PortalAluno.rotuloDia(a.data, hoje) === 'Amanhã') ? esc(PortalAluno.rotuloDia(a.data, hoje)) : data(a.data)}</a> <span class="text-xs text-slate-500 dark:text-neutral-400">${esc(diaCurto(a.data))}</span></td>
         <td class="whitespace-nowrap tabular-nums ${cancelada ? 'line-through' : ''}">${esc(a.inicio)}–${esc(a.fim)}</td>
         <td><p class="font-medium ${cancelada ? '' : 'text-slate-900 dark:text-neutral-100'}">${esc(a.curso?.nome ?? a.turma.codigo)}</p><p class="text-xs text-slate-500 dark:text-neutral-400"><span class="font-mono">${esc(a.turma.codigo)}</span>${a.n ? ` · aula ${a.n}` : ''}</p></td>
         <td class="max-w-xs">${conteudo ? `<span class="${cancelada ? 'line-through' : ''}">${esc(conteudo)}</span>` : traco}${a.conteudo && a.modulos.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(a.modulos.map((m) => m.titulo).join(' · '))}</p>` : ''}${cancelada ? `<p class="text-xs text-red-600 dark:text-red-400">${esc(motivoTexto(a.motivo) || 'Aula cancelada')}${rep ? ` · reposição em ${data(rep.data)}` : ''}</p>` : ''}</td>
         <td class="whitespace-nowrap">${esc(localTexto(a))}${!cancelada && a.turma.meetLink ? ` <span class="ml-1">${linkMeet(a)}</span>` : ''}</td>
         <td>${a.instrutor ? esc(a.instrutor.nome) : traco}</td>
         <td>${situacaoTexto(a)}</td>
+        <td>${a.materiaisLiberados.length ? `<span class="font-medium text-petrol-800 dark:text-sky-300 whitespace-nowrap">${plural(a.materiaisLiberados.length, 'material', 'materiais')}</span>` : porLiberar(a) ? estadoMateriais(a) : traco}</td>
       </tr>`;
     }
 
     function renderAbas() {
       $('abas').innerHTML = ABAS.map((x) => `
-        <button type="button" data-aba="${x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo}<span class="ml-1 text-xs text-slate-400 tabular-nums">${x.n}</span></button>`).join('');
+        <button type="button" data-aba="${x.id}" aria-current="${estado.aba === x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo}<span class="ml-1 text-xs text-slate-400 tabular-nums">${x.n}</span></button>`).join('');
     }
 
     function renderTabela() {
@@ -198,7 +204,7 @@
         : 'Nenhuma aula com esses filtros.';
       $('tabela').innerHTML = ordenadas.length
         ? `<div class="cartao overflow-hidden"><div class="overflow-x-auto"><table class="tabela w-full">
-            <thead><tr><th>Data</th><th>Horário</th><th>Curso</th><th>Conteúdo</th><th>Local</th><th>Instrutor</th><th>Situação</th></tr></thead>
+            <thead><tr><th>Data</th><th>Horário</th><th>Curso</th><th>Conteúdo</th><th>Local</th><th>Instrutor</th><th>Situação</th><th>Materiais</th></tr></thead>
             <tbody>${ordenadas.map(linha).join('')}</tbody>
           </table></div></div>
           <p class="text-xs text-slate-500 dark:text-neutral-400 mt-2">${plural(ordenadas.length, 'aula', 'aulas')}${estado.aba === 'realizadas' ? ', da mais recente para a mais antiga' : ', em ordem cronológica'}. Clique na linha para ver a aula.</p>`
@@ -212,7 +218,7 @@
         <div class="flex flex-wrap items-center gap-2 mb-3">
           <label class="relative">
             <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-            <input type="search" data-busca value="${esc(estado.busca)}" placeholder="Buscar por curso, conteúdo ou instrutor" class="select !pl-8 w-72 max-w-full">
+            <input type="search" data-busca value="${esc(estado.busca)}" aria-label="Buscar aulas" placeholder="Curso, conteúdo ou instrutor" class="select !pl-8 w-72 max-w-full">
           </label>
           <select data-turma class="select">
             <option value="">Todos os cursos</option>
@@ -228,7 +234,7 @@
     }
 
     document.addEventListener('click', (e) => {
-      if (e.target.closest('[data-parar]')) { e.stopPropagation(); return; }
+      if (e.target.closest('a, [data-parar]')) return;
       const b = e.target.closest('[data-aba]');
       if (b) { estado.aba = b.dataset.aba; renderAba(); return; }
       const tr = e.target.closest('tr[data-abrir]');
@@ -325,52 +331,46 @@
         ${a.observacoes ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-3">${esc(a.observacoes)}</p>` : ''}`;
     })();
 
-    // Materiais desta aula (js/materiais-motor.js): só os liberados abrem; antes disso a aula fica bloqueada.
-    const daAula = typeof Materiais !== 'undefined' && a.id != null ? Materiais.daAula(a.turma.id, a.id).filter((x) => Materiais.liberado(x, hoje)) : [];
-    const daAulaHtml = daAula.length
-      ? `<div class="divide-y divide-slate-100 dark:divide-neutral-900">${daAula.map((mt) => `
-          <div class="py-3 first:pt-0 last:pb-0 flex items-center gap-3">
-            <div class="min-w-0 flex-1"><p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(mt.titulo)}</p>${mt.descricao ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(mt.descricao)}</p>` : ''}</div>
-            ${mt.tipo === 'link' ? `<a href="${esc(mt.url)}" target="_blank" rel="noopener" class="link shrink-0">Abrir</a>` : `<button type="button" data-acao="baixar-material" data-nome="${esc(mt.arquivo || mt.titulo)}" class="link shrink-0">Baixar</button>`}
-          </div>`).join('')}</div>`
-      : `<p class="text-sm text-slate-500 dark:text-neutral-400">${cancelada ? 'Aula cancelada.' : 'O professor ainda não liberou materiais para esta aula.'}</p>`;
-
-    const todosMateriais = (m.curso?.materiais ?? []).filter((x) => !Cursos.materialPendente(x));
-    const idsModulos = new Set(a.modulos.map((x) => x.id));
-    const relacionados = todosMateriais.filter((x) => x.moduloId && idsModulos.has(x.moduloId));
-    const materiaisLista = relacionados.length ? relacionados : todosMateriais;
+    // Materiais desta aula (js/materiais-motor.js): só os liberados abrem; o professor escolhe quando liberar.
     const iconeMaterial = { video: 'M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z', arquivo: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z', link: 'M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244' };
     const tamanho = (b) => (b >= 1_000_000 ? `${(b / 1_000_000).toFixed(1).replace('.', ',')} MB` : `${Math.round(b / 1000)} KB`);
-    const materiaisHtml = materiaisLista.length
-      ? `<div class="divide-y divide-slate-100 dark:divide-neutral-900">${materiaisLista.map((mt) => {
-          const mod = mt.moduloId ? (m.curso?.modulos ?? []).find((x) => x.id === mt.moduloId) : null;
-          const sub = [TIPO_MATERIAL[mt.tipo], mt.arquivo ? tamanho(mt.arquivo.tamanho) : '', mt.duracaoMin ? Turmas.duracaoTexto(mt.duracaoMin) : '', mod ? mod.titulo : ''].filter(Boolean).join(' · ');
-          return `<div class="py-3 first:pt-0 last:pb-0 flex items-center gap-3">
-            <div class="shrink-0 h-9 w-9 rounded-lg bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300 grid place-items-center"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="${iconeMaterial[mt.tipo] ?? iconeMaterial.link}" /></svg></div>
-            <div class="min-w-0 flex-1"><p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(mt.nome)}</p><p class="text-xs text-slate-500 dark:text-neutral-400">${esc(sub)}</p></div>
-            ${mt.url ? `<a href="${esc(mt.url)}" target="_blank" rel="noopener" class="link shrink-0">Abrir</a>` : `<button type="button" data-acao="baixar-material" data-nome="${esc(mt.nome)}" class="link shrink-0">Baixar</button>`}
+    const linhaMaterial = (tipo, titulo, sub, acao) => `<div class="py-3 first:pt-0 last:pb-0 flex items-center gap-3">
+            <div class="shrink-0 h-9 w-9 rounded-lg bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300 grid place-items-center"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="${iconeMaterial[tipo] ?? iconeMaterial.link}" /></svg></div>
+            <div class="min-w-0 flex-1"><p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${titulo}</p>${sub ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${sub}</p>` : ''}</div>
+            ${acao}
           </div>`;
-        }).join('')}</div>`
-      : '<p class="text-sm text-slate-500 dark:text-neutral-400">Nenhum material publicado para este curso ainda.</p>';
-    const notaMateriais = relacionados.length
-      ? `${plural(relacionados.length, 'material do módulo', 'materiais dos módulos')} desta aula.`
-      : todosMateriais.length ? 'Os materiais não são separados por aula; estes são os do curso inteiro.' : '';
+    const listaMateriais = (linhas) => `<div class="divide-y divide-slate-100 dark:divide-neutral-900">${linhas.join('')}</div>`;
+    const daAulaHtml = a.materiaisLiberados.length
+      ? listaMateriais(a.materiaisLiberados.map((mt) => linhaMaterial(mt.tipo, esc(mt.titulo), esc(mt.descricao), mt.tipo === 'link'
+        ? `<a href="${esc(mt.url)}" target="_blank" rel="noopener" class="link shrink-0">Abrir</a>`
+        : `<button type="button" data-acao="baixar-material" data-nome="${esc(mt.arquivo || mt.titulo)}" class="link shrink-0">Baixar</button>`)))
+      : `<p class="text-sm text-slate-500 dark:text-neutral-400">${cancelada ? 'Aula cancelada.'
+        : porLiberar(a) ? `${a.liberaMateriaisEm ? `Libera em ${data(a.liberaMateriaisEm)}.` : 'Ainda não liberado.'} O professor escolhe quando liberar os materiais de cada aula.`
+        : 'Nenhum material nesta aula.'}</p>`;
+
+    // Materiais do curso ligados aos módulos desta aula; os demais ficam em Materiais e requisitos do curso.
+    const idsModulos = new Set(a.modulos.map((x) => x.id));
+    const doModulo = (m.curso?.materiais ?? []).filter((x) => !Cursos.materialPendente(x) && x.moduloId && idsModulos.has(x.moduloId));
+    const doModuloHtml = listaMateriais(doModulo.map((mt) => linhaMaterial(mt.tipo, esc(mt.nome),
+      esc([TIPO_MATERIAL[mt.tipo], mt.arquivo ? tamanho(mt.arquivo.tamanho) : '', mt.duracaoMin ? Turmas.duracaoTexto(mt.duracaoMin) : ''].filter(Boolean).join(' · ')),
+      mt.url ? `<a href="${esc(mt.url)}" target="_blank" rel="noopener" class="link shrink-0">Abrir</a>` : `<button type="button" data-acao="baixar-material" data-nome="${esc(mt.nome)}" class="link shrink-0">Baixar</button>`)));
+    const contagem = (n) => (n ? ` <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${n}</span>` : '');
 
     const secao = (titulo, corpo, rodape = '') => `<section class="cartao p-5"><h3 class="titulo-secao mb-3">${titulo}</h3>${corpo}${rodape ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-3">${rodape}</p>` : ''}</section>`;
     $('corpo-aula').innerHTML = `
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div class="lg:col-span-2 space-y-5">
           ${secao(`Conteúdo da aula${a.modulos.length ? ` <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${plural(a.modulos.length, 'módulo', 'módulos')}</span>` : ''}`, conteudoHtml)}
-          ${secao(`Materiais <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${materiaisLista.length}</span>`, materiaisHtml, `${notaMateriais}${notaMateriais ? ' ' : ''}<a href="materiais.html" class="link !text-xs">Todos os materiais</a>`)}
+          ${secao(`Materiais da aula${contagem(a.materiaisLiberados.length)}`, daAulaHtml)}
         </div>
         <div class="space-y-5">
-          ${secao(`Materiais da aula <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${daAula.length}</span>`, daAulaHtml)}
           ${secao('Nesta turma', `
             <div class="space-y-3 text-sm">
               ${anterior ? `<a href="${urlAula(anterior)}" class="block rounded-lg border border-slate-200 dark:border-neutral-800 px-3 py-2 hover:bg-slate-50 dark:hover:bg-neutral-900 transition"><p class="rotulo">Aula anterior</p><p class="text-slate-800 dark:text-neutral-100 mt-0.5">${data(anterior.data)} <span class="text-xs text-slate-500 dark:text-neutral-400">${esc(diaCurto(anterior.data))} · ${esc(anterior.inicio)}–${esc(anterior.fim)}</span></p>${anterior.conteudo || anterior.modulos.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(anterior.conteudo || anterior.modulos.map((x) => x.titulo).join(' · '))}</p>` : ''}</a>` : '<p class="text-xs text-slate-500 dark:text-neutral-400">Esta é a primeira aula da turma.</p>'}
               ${proxima ? `<a href="${urlAula(proxima)}" class="block rounded-lg border border-slate-200 dark:border-neutral-800 px-3 py-2 hover:bg-slate-50 dark:hover:bg-neutral-900 transition"><p class="rotulo">Próxima aula</p><p class="text-slate-800 dark:text-neutral-100 mt-0.5">${esc(PortalAluno.rotuloDia(proxima.data, hoje) === 'Hoje' || PortalAluno.rotuloDia(proxima.data, hoje) === 'Amanhã' ? PortalAluno.rotuloDia(proxima.data, hoje) : PortalAluno.fmtData(proxima.data))} <span class="text-xs text-slate-500 dark:text-neutral-400">${esc(diaCurto(proxima.data))} · ${esc(proxima.inicio)}–${esc(proxima.fim)}</span></p>${proxima.conteudo || proxima.modulos.length ? `<p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${esc(proxima.conteudo || proxima.modulos.map((x) => x.titulo).join(' · '))}</p>` : ''}</a>` : '<p class="text-xs text-slate-500 dark:text-neutral-400">Esta é a última aula da turma.</p>'}
-              <p class="text-xs text-slate-500 dark:text-neutral-400"><a href="curso.html?turma=${encodeURIComponent(a.turma.id)}&aba=aulas" class="link !text-xs">Todas as aulas do curso</a> · <a href="aulas.html?aba=todas" class="link !text-xs">Minhas aulas</a></p>
+              <p class="text-xs text-slate-500 dark:text-neutral-400"><a href="curso.html?turma=${encodeURIComponent(a.turma.id)}&aba=aulas" class="link !text-xs">Todas as aulas do curso</a> · <a href="curso.html?turma=${encodeURIComponent(a.turma.id)}&aba=materiais" class="link !text-xs">Materiais do curso</a></p>
             </div>`)}
+          ${doModulo.length ? secao(`Materiais do módulo${contagem(doModulo.length)}`, doModuloHtml) : ''}
         </div>
       </div>`;
 
