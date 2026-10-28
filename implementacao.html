@@ -165,7 +165,6 @@
       width: max-content;
       transform-origin: 0 0;
       display: grid;
-      grid-template-columns: repeat(5, max-content);
       align-items: start;
       column-gap: 72px;
       row-gap: 88px;
@@ -179,7 +178,7 @@
     .arestas-ligacoes path.caminho { stroke-width: 2; stroke-dasharray: none; }
     .arestas-ligacoes circle { fill: var(--m-marca); }
     @keyframes ligar { from { opacity: 0; } to { opacity: 1; } }
-    .entrada { grid-column: 2 / 5; grid-row: 1; justify-self: center; }
+    .entrada { grid-row: 1; justify-self: center; }
 
     /* Cartão: a tela da V1. Tamanho fixo, para o mapa não mudar de forma ao trocar o nível de zoom. */
     .no {
@@ -203,7 +202,8 @@
     .no:focus-visible, .raia-cabeca:focus-visible { outline: calc(2px / var(--s, 1)) solid var(--f-foco); outline-offset: calc(2px / var(--s, 1)); }
     .no.ligado { box-shadow: 0 0 0 var(--l) var(--m-marca), var(--m-sombra); }
     .no.ativo { border-color: var(--m-marca); box-shadow: 0 0 0 calc(2px / var(--s, 1)) var(--m-marca), var(--m-sombra); }
-    .no.apagado { opacity: 0.32; }
+    /* Apagado a 60%, como a .linha-apagada do styles.css: o cartão continua um botão e o nome fica legível; o cinza o separa dos destacados. */
+    .no.apagado { opacity: 0.6; filter: grayscale(1); }
     .no-nome { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--f-tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .no-sub { font-size: 12px; line-height: 16px; color: var(--f-tinta-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .no-lados { display: grid; gap: 6px; margin-top: 12px; }

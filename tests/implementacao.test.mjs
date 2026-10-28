@@ -8,9 +8,14 @@ const D = new Function(readFileSync(new URL('../js/implementacao-data.js', impor
 const telas = [D.entrada, ...D.raias.flatMap((r) => r.grupos.flatMap((g) => g.telas))];
 const SITUACOES = ['ok', 'parcial', 'falta', 'na'];
 
-test('ids das telas são únicos', () => {
-  const ids = telas.map((t) => t.id);
-  assert.deepEqual(ids.filter((id, i) => ids.indexOf(id) !== i), []);
+test('ids das telas e das integrações são únicos', () => {
+  for (const ids of [telas.map((t) => t.id), D.integracoes.map((i) => i.id)]) {
+    assert.deepEqual(ids.filter((id, i) => ids.indexOf(id) !== i), []);
+  }
+});
+
+test('a Entrada desce para pelo menos uma raia de portal', () => {
+  assert.ok(D.raias.some((r) => r.portal));
 });
 
 test('toda feature diz a situação nos dois lados', () => {

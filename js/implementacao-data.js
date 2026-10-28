@@ -1,5 +1,5 @@
 // ============================================================
-// Implementação da V1: cada tela do escopo (documento de 26/10/2026) e o que dela já existe no
+// Implementação da V1: cada tela do escopo (documento de 26/10/2026, com as decisões do ESCOPO_V1.md) e o que dela já existe no
 // aulor-web e na aulor-api. Retrato à mão, conferido nos commits de RETRATO: rotas e componentes
 // do web (src/app) e endpoints e docs/engineering da API. Ao atualizar, mude o retrato junto.
 // Cada feature diz a situação em cada lado: 'ok' feito, 'parcial', 'falta' ou 'na' (não se aplica).
@@ -23,7 +23,8 @@ const IMPLEMENTACAO = {
     { id: 'arquivos', nome: 'Arquivos dos materiais', uso: 'Armazenamento dos arquivos das aulas', situacao: 'falta', nota: 'Privado, com links assinados.' },
   ],
 
-  // Raias do mapa, da esquerda para a direita; cada grupo é uma coluna, na ordem do menu.
+  // Raias do mapa, da esquerda para a direita; cada grupo é uma coluna, na ordem do menu do protótipo
+  // (js/permissoes-data.js), que o menu do web ainda não segue. As raias com `portal` descem da Entrada.
   raias: [
     {
       id: 'link', nome: 'Cadastro pelo link', descricao: 'Páginas públicas, abertas por um link enviado',
@@ -35,7 +36,7 @@ const IMPLEMENTACAO = {
             liga: ['vendas'],
             features: [
               F('Página', 'Abre pelo link do pacote da venda, sem login', 'falta', 'falta', 'A API só cadastra aluno com a sessão da equipe.'),
-              F('Página', 'Dados do aluno, endereço e quem paga', 'falta', 'parcial', 'As regras existem no POST /v1/students, mas não numa rota pública.'),
+              F('Página', 'Dados do aluno, endereço e quem paga', 'falta', 'parcial', 'As regras existem no POST /v1/students e no PUT /v1/students/{id}/address-and-payment, mas não numa rota pública.'),
               F('Página', 'Responsável Legal quando o aluno é menor', 'falta', 'parcial', 'Regra do menor pronta no cadastro autenticado.'),
               F('Página', 'Aceite do termo (LGPD), que destrava a NF', 'falta', 'falta'),
               F('Venda', 'O aluno cadastrado entra no pacote da venda', 'falta', 'falta', 'Depende de Vendas.'),
@@ -54,7 +55,7 @@ const IMPLEMENTACAO = {
             liga: ['instrutores'],
             features: [
               F('Página', 'Abre pelo link enviado ao instrutor, sem login', 'falta', 'falta'),
-              F('Página', 'Identificação, contato e remuneração', 'falta', 'parcial', 'O cadastro existe só autenticado (POST /v1/instructors).'),
+              F('Página', 'Identificação, contato e remuneração', 'falta', 'parcial', 'O cadastro existe só autenticado (POST /v1/instructors e PUT /v1/instructors/{id}/contact).'),
               F('Página', 'Resolve as pendências (nascimento, e-mail, WhatsApp)', 'falta', 'parcial', 'A API já calcula as pendências do instrutor.'),
             ],
           },
@@ -63,19 +64,19 @@ const IMPLEMENTACAO = {
     },
 
     {
-      id: 'admin', nome: 'Administrativo', descricao: 'Secretaria, coordenação, comercial e financeiro',
+      id: 'admin', nome: 'Administrativo', portal: true, descricao: 'Secretaria, coordenação, comercial e financeiro',
       grupos: [
         {
           id: 'admin-inicio', nome: 'Início',
           telas: [{
             id: 'admin-home', nome: 'Início', prototipo: ['home.html'], web: '/:slug',
-            webArquivos: ['institution/home.ts', 'institution/institution.ts'],
+            webArquivos: ['institution/home.ts', 'institution/institution.ts', 'shell/shell.ts'],
             endpoints: ['GET /v1/users/me', 'GET /v1/users/me/context'],
             features: [
               F('Tela', 'Saudação e unidade em uso', 'ok', 'ok'),
               F('Tela', 'Troca de unidade', 'ok', 'ok'),
-              F('Tela', 'Atalhos para os módulos que o perfil vê', 'falta', 'ok', 'O web tem só a saudação; o menu já esconde o que o perfil não lê.'),
-              F('Tela', 'Aviso de tela fora do perfil', 'ok', 'ok', 'O 403 da API vira estado da tela.'),
+              F('Tela', 'Atalhos para os módulos que o perfil vê', 'falta', 'ok', 'O web tem só a saudação. O menu esconde Alunos, Cursos, Colaboradores, Instrutores e Perfis; Formações e Turmas aparecem para todos.'),
+              F('Tela', 'Aviso de tela fora do perfil', 'parcial', 'ok', 'Só Alunos e Perfis tratam o 403, e com o "Acesso recusado" da escola inteira; não volta ao Início dizendo qual tela.'),
             ],
           }],
         },
@@ -100,8 +101,8 @@ const IMPLEMENTACAO = {
             },
             {
               id: 'alunos', nome: 'Alunos', prototipo: ['alunos.html', 'aluno.html'], web: '/:slug/alunos',
-              webArquivos: ['students/students.ts', 'students/student.ts', 'students/new-student-dialog.ts', 'students/guardian-dialog.ts', 'students/student-address-and-payment.ts'],
-              endpoints: ['POST /v1/students/search', 'POST /v1/students', 'PUT /v1/students/{id}', 'GET /v1/students/{id}', 'PUT /v1/students/{id}/details', 'PUT /v1/students/{id}/address-and-payment', 'POST /v1/students/{id}/guardians', 'DELETE /v1/students/{id}/guardians/{guardianId}'],
+              webArquivos: ['students/students.ts', 'students/student.ts', 'students/new-student-dialog.ts', 'students/student-details.ts', 'students/guardian-dialog.ts', 'students/student-address-and-payment.ts'],
+              endpoints: ['POST /v1/students/search', 'POST /v1/students', 'PUT /v1/students/{id}', 'GET /v1/students/{id}', 'PUT /v1/students/{id}/details', 'PUT /v1/students/{id}/address-and-payment', 'POST /v1/students/{id}/guardians', 'PUT /v1/students/{id}/guardians/{guardianId}', 'DELETE /v1/students/{id}/guardians/{guardianId}'],
               liga: ['responsaveis', 'vendas'],
               features: [
                 F('Lista', 'Busca por nome, nome social, CPF, e-mail e celular', 'ok', 'ok'),
@@ -120,7 +121,7 @@ const IMPLEMENTACAO = {
               features: [
                 F('Lista', 'Responsáveis Legal, Financeiro e de Emergência', 'falta', 'falta', 'Não há busca de responsáveis; eles só aparecem dentro do aluno.'),
                 F('Ficha · Dados', 'Dados do responsável', 'falta', 'parcial', 'Alterados pela ficha de cada aluno.'),
-                F('Ficha · Alunos', 'Os alunos pelos quais responde', 'falta', 'falta'),
+                F('Ficha · Alunos', 'Os alunos pelos quais responde', 'falta', 'falta', 'Na API o responsável pertence a um só aluno (irmãos repetem o mesmo); a lista e esta aba pedem mudar o modelo, não só abrir uma rota.'),
               ],
             },
             {
@@ -166,7 +167,7 @@ const IMPLEMENTACAO = {
             {
               id: 'formacoes', nome: 'Formações', prototipo: ['formacoes.html', 'formacao.html'], web: '/:slug/formacoes',
               webSituacao: 'Em construção',
-              endpoints: ['POST /v1/programs/search', 'POST /v1/programs', 'GET /v1/programs/{id}', 'PUT /v1/programs/{id}', 'PUT /v1/programs/{id}/sequence', 'PUT /v1/programs/{id}/schedule', 'POST /v1/programs/{id}/activation', 'POST /v1/programs/{id}/schedule-changes'],
+              endpoints: ['POST /v1/programs/search', 'POST /v1/programs', 'GET /v1/programs/{id}', 'PUT /v1/programs/{id}', 'PUT /v1/programs/{id}/sequence', 'PUT /v1/programs/{id}/schedule', 'POST /v1/programs/{id}/activation/preview', 'POST /v1/programs/{id}/activation', 'POST /v1/programs/{id}/schedule-changes/preview', 'POST /v1/programs/{id}/schedule-changes', 'POST /v1/programs/{id}/deactivate', 'POST /v1/programs/{id}/reactivate'],
               liga: ['cursos', 'turmas'],
               features: [
                 F('Lista', 'Busca, sem os indicadores do topo', 'falta', 'ok'),
@@ -181,23 +182,23 @@ const IMPLEMENTACAO = {
             {
               id: 'turmas', nome: 'Turmas', prototipo: ['turmas.html', 'turma.html'], web: '/:slug/turmas',
               webSituacao: 'Em construção', integracoes: ['meet'],
-              endpoints: ['POST /v1/classes/search', 'POST /v1/classes', 'GET /v1/classes/{id}', 'PUT /v1/classes/{id}', 'PUT /v1/classes/{id}/settings', 'POST /v1/classes/{id}/meeting-cancellations', 'POST /v1/classes/{id}/meeting-restorations', 'POST /v1/classes/{id}/cancellation', 'POST /v1/classes/{id}/reopening', 'POST /v1/classes/{id}/schedule-changes'],
+              endpoints: ['POST /v1/classes/search', 'POST /v1/classes/course-options/search', 'POST /v1/classes/instructor-options/search', 'POST /v1/classes', 'GET /v1/classes/{id}', 'PUT /v1/classes/{id}', 'PUT /v1/classes/{id}/settings', 'POST /v1/classes/{id}/meeting-cancellations/preview', 'POST /v1/classes/{id}/meeting-cancellations', 'POST /v1/classes/{id}/meeting-restorations/preview', 'POST /v1/classes/{id}/meeting-restorations', 'POST /v1/classes/{id}/cancellation/preview', 'POST /v1/classes/{id}/cancellation', 'POST /v1/classes/{id}/reopening/preview', 'POST /v1/classes/{id}/reopening', 'POST /v1/classes/{id}/schedule-changes/preview', 'POST /v1/classes/{id}/schedule-changes'],
               liga: ['formacoes', 'feriados', 'materiais-coord', 'centros-receita'],
               features: [
                 F('Lista', 'Busca e filtros, sem indicadores nem risco', 'falta', 'ok'),
                 F('Cadastro', 'Turma avulsa: curso, modalidade, agenda, vagas, local e instrutor', 'falta', 'ok'),
                 F('Aulas', 'Aulas geradas pela agenda até a carga do curso', 'falta', 'ok'),
-                F('Aulas', 'Feriados ficam de fora ao gerar as aulas', 'falta', 'falta', 'A API cancela encontros um a um; não lê feriados.'),
+                F('Aulas', 'Feriados ficam de fora ao gerar as aulas', 'falta', 'falta', 'A API cancela os encontros de um período (de–até), mas não há cadastro de feriados.'),
                 F('Aulas', 'Cancelar e desfazer encontros; cancelar e reabrir a turma', 'falta', 'ok'),
                 F('Aulas', 'Link do Google Meet de cada aula', 'falta', 'falta'),
                 F('Requisitos', 'Lista de softwares, a mesma do portal do aluno', 'falta', 'falta'),
                 F('Cadastro', 'Centro de receita da turma', 'falta', 'falta'),
               ],
-              fora: ['Presenças', 'Dossiês', 'Avaliações', 'Indicadores de risco'],
+              fora: ['Presenças', 'Dossiês', 'Avaliações', 'Indicadores de risco', 'Fórum da turma'],
             },
             {
               id: 'materiais-coord', nome: 'Materiais das aulas', prototipo: ['turma.html'], web: '/:slug/turmas',
-              webSituacao: 'Na aba Aulas da turma', integracoes: ['arquivos'],
+              webSituacao: 'Na aba Aulas da turma, ainda em construção', integracoes: ['arquivos'],
               liga: ['turmas', 'prof-materiais', 'aluno-materiais'],
               features: [
                 F('Aba Aulas', 'Quantos materiais cada aula tem e o que falta liberar', 'falta', 'falta'),
@@ -263,7 +264,7 @@ const IMPLEMENTACAO = {
             {
               id: 'instrutores', nome: 'Instrutores', prototipo: ['instrutores.html', 'instrutor.html'], web: '/:slug/instrutores',
               webSituacao: 'Em construção',
-              endpoints: ['POST /v1/instructors/search', 'POST /v1/instructors', 'PUT /v1/instructors/{id}', 'GET /v1/instructors/{id}', 'PUT /v1/instructors/{id}/identification', 'PUT /v1/instructors/{id}/contact', 'PUT /v1/instructors/{id}/notes', 'POST /v1/instructors/{id}/deactivation', 'POST /v1/instructors/{id}/reactivation', 'PUT /v1/instructors/{id}/unit-membership'],
+              endpoints: ['POST /v1/instructors/search', 'POST /v1/instructors', 'PUT /v1/instructors/{id}', 'GET /v1/instructors/{id}', 'PUT /v1/instructors/{id}/identification', 'PUT /v1/instructors/{id}/contact', 'PUT /v1/instructors/{id}/notes', 'POST /v1/instructors/{id}/deactivation', 'POST /v1/instructors/{id}/reactivation', 'PUT /v1/instructors/{id}/unit-membership', 'DELETE /v1/instructors/{id}/unit-membership'],
               liga: ['link-instrutor', 'turmas'],
               features: [
                 F('Lista', 'Busca, remuneração e recortes por pendência', 'falta', 'ok'),
@@ -278,7 +279,7 @@ const IMPLEMENTACAO = {
             {
               id: 'colaboradores', nome: 'Colaboradores', prototipo: ['colaboradores.html', 'colaborador.html'], web: '/:slug/colaboradores',
               webSituacao: 'Em construção',
-              endpoints: ['POST /v1/staff/search', 'GET /v1/staff/departments', 'POST /v1/staff', 'GET /v1/staff/{id}', 'PUT /v1/staff/{id}/personal-details', 'PUT /v1/staff/{id}/contact', 'PUT /v1/staff/{id}/position', 'PUT /v1/staff/{id}/notes', 'POST /v1/staff/{id}/leave', 'POST /v1/staff/{id}/return', 'POST /v1/staff/{id}/dismissal', 'POST /v1/staff/{id}/readmission', 'POST /v1/invitations'],
+              endpoints: ['POST /v1/staff/search', 'GET /v1/staff/departments', 'POST /v1/staff', 'PUT /v1/staff/{id}', 'GET /v1/staff/{id}','PUT /v1/staff/{id}/personal-details', 'PUT /v1/staff/{id}/contact', 'PUT /v1/staff/{id}/position', 'PUT /v1/staff/{id}/notes', 'POST /v1/staff/{id}/leave', 'POST /v1/staff/{id}/return', 'POST /v1/staff/{id}/dismissal', 'POST /v1/staff/{id}/readmission', 'PUT /v1/staff/{id}/unit-membership', 'DELETE /v1/staff/{id}/unit-membership', 'POST /v1/invitations'],
               liga: ['perfis'],
               features: [
                 F('Lista', 'Busca, departamento e recortes (afastados, desligados, com pendência)', 'falta', 'ok'),
@@ -294,16 +295,16 @@ const IMPLEMENTACAO = {
           id: 'configuracoes', nome: 'Configurações',
           telas: [{
             id: 'perfis', nome: 'Perfis de acesso', prototipo: ['perfis.html', 'perfil.html'], web: '/:slug/perfis-de-acesso',
-            webArquivos: ['access-profiles/access-profiles.ts', 'access-profiles/access-profile.ts', 'access-profiles/permissions-matrix.ts', 'access-profiles/members-matrix.ts', 'access-profiles/additional-permissions.ts'],
-            endpoints: ['GET /v1/access/profiles', 'POST /v1/access/profiles', 'GET /v1/access/profiles/{id}', 'PUT /v1/access/profiles/{id}', 'DELETE /v1/access/profiles/{id}', 'POST /v1/access/members/search', 'GET /v1/access/members/{id}', 'PUT /v1/access/members/{id}/permissions/{permission}', 'DELETE /v1/access/members/{id}/profiles/{profileId}'],
-            liga: ['colaboradores'],
+            webArquivos: ['access-profiles/access-profiles.ts', 'access-profiles/access-profile.ts', 'access-profiles/catalog.ts', 'access-profiles/permissions-matrix.ts', 'access-profiles/members-matrix.ts', 'access-profiles/additional-permissions.ts', 'access-profiles/profile-members.ts', 'access-profiles/add-member-dialog.ts'],
+            endpoints: ['GET /v1/users/me/context', 'GET /v1/access/profiles', 'POST /v1/access/profiles', 'GET /v1/access/profiles/{id}', 'PUT /v1/access/profiles/{id}', 'POST /v1/access/profiles/{id}/activate', 'POST /v1/access/profiles/{id}/deactivate', 'DELETE /v1/access/profiles/{id}', 'POST /v1/access/members/search', 'GET /v1/access/members/{id}', 'PUT /v1/access/members/{id}/permissions/{permission}', 'DELETE /v1/access/members/{id}/permissions/{permission}', 'PUT /v1/access/members/{id}/profiles/{profileId}', 'DELETE /v1/access/members/{id}/profiles/{profileId}'],
+            liga: ['colaboradores', 'alunos', 'vendas'],
             features: [
-              F('Lista', 'Perfis: novo, renomear, inativar, reativar e excluir', 'ok', 'ok'),
+              F('Lista e perfil', 'Perfis: novo, renomear, inativar, reativar e excluir', 'ok', 'ok'),
               F('Matriz', 'Permissões × perfis', 'ok', 'ok'),
               F('Matriz', 'Usuários × perfis e permissões adicionais', 'ok', 'ok'),
               F('Perfil', 'Usuários do perfil', 'ok', 'ok'),
-              F('Catálogo', 'Permissões de todas as telas da V1', 'parcial', 'parcial', 'Hoje: alunos, colaboradores, instrutores, cursos, formações, turmas e perfis.'),
-              F('Vendedor externo', 'Vê só as próprias vendas, confirma os alunos dele e não acessa Alunos', 'falta', 'falta', 'Depende de Vendas; relação com o perfil Comercial a definir.'),
+              F('Catálogo', 'Permissões de todas as telas da V1', 'parcial', 'parcial', 'API: usuários, perfis, alunos, colaboradores, instrutores, cursos, formações e turmas. Web: formações e turmas caem em "Outras", com a chave crua.'),
+              F('Vendedor externo', 'Vê só as próprias vendas, confirma os alunos dele e não acessa Alunos', 'falta', 'falta', 'Depende de Vendas; a definir a relação com o perfil Comercial e se ele vê só turmas específicas.'),
             ],
           }],
         },
@@ -311,7 +312,7 @@ const IMPLEMENTACAO = {
     },
 
     {
-      id: 'aluno', nome: 'Portal do aluno', descricao: 'O aluno acompanha cursos, aulas, materiais e pagamentos',
+      id: 'aluno', nome: 'Portal do aluno', portal: true, descricao: 'O aluno acompanha cursos, aulas, materiais e pagamentos',
       grupos: [
         {
           id: 'aluno-inicio', nome: 'Início',
@@ -396,13 +397,13 @@ const IMPLEMENTACAO = {
     },
 
     {
-      id: 'professor', nome: 'Portal do professor', descricao: 'O professor vê as turmas e cadastra os materiais',
+      id: 'professor', nome: 'Portal do professor', portal: true, descricao: 'O professor vê as turmas e cadastra os materiais',
       grupos: [{
         id: 'prof', nome: 'Turmas',
         telas: [
           {
             id: 'prof-turmas', nome: 'Minhas turmas', prototipo: ['portal-professor/turmas.html', 'portal-professor/turma.html'],
-            liga: ['turmas'],
+            integracoes: ['meet'], liga: ['turmas'],
             features: [
               F('Lista', 'Turmas do professor', 'falta', 'parcial', 'A busca de turmas filtra por instrutor, mas só para a equipe.'),
               F('Turma', 'Aulas da turma', 'falta', 'parcial', 'Idem.'),
@@ -427,16 +428,16 @@ const IMPLEMENTACAO = {
 // A Entrada é a porta dos três portais: fica acima deles no mapa, ligada a cada um.
 IMPLEMENTACAO.entrada = {
   id: 'entrada', nome: 'Entrada', prototipo: ['entrar.html'], web: '/-',
-  webArquivos: ['entry/entry.guard.ts', 'entry/callback.ts', 'entry/invitation.ts', 'entry/signed-out.ts'],
+  webArquivos: ['session.ts', 'entry/entry.guard.ts', 'entry/callback.ts', 'entry/invitation.guard.ts', 'entry/invitation.ts', 'entry/signed-out.ts'],
   endpoints: ['GET /v1/users/me', 'GET /v1/users/me/context', 'POST /v1/invitations/confirmations', 'GET /v1/people/me/roles'],
   integracoes: ['auth0'],
   features: [
     F('Login', 'Login pelo Auth0 e saída', 'ok', 'ok'),
     F('Login', 'Escolha da instituição e da unidade', 'ok', 'ok'),
-    F('Login', 'Escolha do portal: administrativo, aluno ou professor', 'falta', 'ok', 'Os papéis da pessoa já vêm em GET /v1/people/me/roles.'),
+    F('Login', 'Escolha do portal: administrativo, aluno ou professor', 'falta', 'parcial', 'GET /v1/people/me/roles só responde a quem tem vínculo com a unidade (colaborador ou instrutor); o aluno não tem vínculo nem convite. O administrativo sai das permissões de /users/me/context.'),
     F('Primeiro acesso', 'Convite da equipe', 'ok', 'ok'),
     F('Primeiro acesso', 'Acesso do aluno', 'falta', 'falta', 'O aluno não tem usuário na API.'),
     F('Primeiro acesso', 'Acesso do professor', 'falta', 'parcial', 'O instrutor já se liga a um usuário da unidade.'),
-    F('Senha', 'Recuperação de senha', 'na', 'na', 'Fica com a tela de login do Auth0.'),
+    F('Senha', 'Recuperação de senha', 'parcial', 'na', 'Fica com o "Esqueceu a senha?" do Auth0, na conexão de e-mail e senha; falta conferir no tenant.'),
   ],
 };

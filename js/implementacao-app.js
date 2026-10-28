@@ -118,9 +118,13 @@
   const zoomValor = document.getElementById('zoom-valor');
   const anuncio = document.getElementById('anuncio');
 
+  // As colunas saem dos dados: uma por raia e a das integrações; a Entrada fica sobre os portais.
+  const PORTAIS = D.raias.filter((r) => r.portal).map((r) => r.id);
+  const colunaDe = (id) => D.raias.findIndex((r) => r.id === id) + 1;
+  mundo.style.gridTemplateColumns = `repeat(${D.raias.length + 1}, max-content)`;
   mundo.innerHTML = `
     <svg class="arestas" aria-hidden="true"><g class="arestas-fixas"></g><g class="arestas-ligacoes"></g></svg>
-    <div class="entrada">${cartao(porId.entrada)}</div>
+    <div class="entrada" style="grid-column:${colunaDe(PORTAIS[0])} / ${colunaDe(PORTAIS.at(-1)) + 1}">${cartao(porId.entrada)}</div>
     ${D.raias.map((r, i) => raia(r, i + 1)).join('')}
     ${raiaIntegracoes(D.raias.length + 1)}`;
   const fixas = mundo.querySelector('.arestas-fixas');
@@ -137,7 +141,7 @@
     const telasTxt = (k) => `${k}<small>${k === 1 ? 'tela' : 'telas'}</small>`;
     const comecadas = (k) => `${k} ${k === 1 ? 'tela começada' : 'telas começadas'}`;
     const celulas = [
-      { f: 'todas', rotulo: 'Telas da V1', valor: telasTxt(telas.length), ctx: 'Acesso, administrativo e os dois portais' },
+      { f: 'todas', rotulo: 'Telas no mapa', valor: telasTxt(telas.length), ctx: 'Entrada, cadastro pelo link, administrativo e os dois portais' },
       { f: 'web', rotulo: 'Feito no web', valor: `${t.web.feitas}<small>de ${t.web.total} features</small>`, ctx: `${medidor(t.web)}${comecadas(n('web'))}` },
       { f: 'api', rotulo: 'Feito na API', valor: `${t.api.feitas}<small>de ${t.api.total} features</small>`, ctx: `${medidor(t.api)}${comecadas(n('api'))}` },
       { f: 'so-web', rotulo: 'Só falta o web', valor: telasTxt(n('so-web')), ctx: 'A API já cobre a tela inteira', pendencia: true },
@@ -369,7 +373,7 @@
 
   function desenharFixas() {
     const e = caixa(mundo.querySelector('.entrada .no'));
-    fixas.innerHTML = ['admin', 'aluno', 'professor'].map((id) => {
+    fixas.innerHTML = PORTAIS.map((id) => {
       const a = caixa(mundo.querySelector(`[data-raia="${id}"] .raia-cabeca`));
       return `<path d="${cotovelo(e.x + e.w / 2, e.y + e.h, a.x + a.w / 2, a.y)}"/>`;
     }).join('');
@@ -380,13 +384,12 @@
     const t = el.dataset.id && porId[el.dataset.id];
     if (!t) return '';
     const e = caixa(mundo.querySelector('.entrada .no'));
-    const portais = ['admin', 'aluno', 'professor'];
     const desce = (id) => {
       const a = caixa(mundo.querySelector(`[data-raia="${id}"] .raia-cabeca`));
       return cotovelo(e.x + e.w / 2, e.y + e.h, a.x + a.w / 2, a.y);
     };
-    if (t.id === 'entrada') return `<path class="caminho" d="${portais.map(desce).join('')}"/>`;
-    let d = portais.includes(t.raia.id) ? desce(t.raia.id) : '';
+    if (t.id === 'entrada') return `<path class="caminho" d="${PORTAIS.map(desce).join('')}"/>`;
+    let d = PORTAIS.includes(t.raia.id) ? desce(t.raia.id) : '';
     if (t.raia.grupos.length > 1) {
       const a = caixa(mundo.querySelector(`[data-raia="${t.raia.id}"] .raia-cabeca`));
       const g = caixa(el.closest('.grupo').querySelector('.grupo-cabeca'));
@@ -561,10 +564,13 @@
   indicadores();
   aplicar();
   // O endereço com #id (ou #int-id) abre a ficha: o link de uma tela pode ser compartilhado.
+  // Os ids são ASCII, então o hash não precisa de decode (que lança erro num hash malformado).
   function abrirDoEndereco() {
-    const hash = decodeURIComponent(location.hash.slice(1));
+    const hash = location.hash.slice(1);
     const el = hash && (hash.startsWith('int-') ? mundo.querySelector(`[data-int="${CSS.escape(hash.slice(4))}"]`) : mundo.querySelector(`[data-id="${CSS.escape(hash)}"]`));
-    if (el && el !== aberto) abrir(el, { focar: false });
+    if (el) {
+      if (el !== aberto) abrir(el, { focar: false });
+    } else if (aberto) fechar(false);
   }
   function iniciar() {
     desenharFixas();
