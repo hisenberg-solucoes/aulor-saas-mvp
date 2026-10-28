@@ -16,7 +16,8 @@ Como cada decisão do documento "Aulor – Escopo da primeira versão (V1)" (26/
 | Financeiro | `financeiro.html`, `contas-bancarias.html`, `conta-bancaria.html` | Contas (a receber, a pagar, pagar × receber), Conciliação Asaas, Extrato, Saque automático e NF. Contas bancárias para a homologação do Asaas |
 | Centros de custo | `centros-custo.html` | Cria e agrupa os centros de custo (departamentos) das despesas |
 | Centros de receita | `centros-receita.html` | Cria e agrupa os centros de receita (B2B, B2C, Orion), escolhidos no lançamento da venda e na turma; as parcelas da venda levam o centro, e a tela mostra o recebido e o a receber de cada um |
-| Pessoas | `instrutores.html`, `instrutor.html`, `colaboradores.html`, `colaborador.html` | Instrutor com cadastro (e cadastro pelo link) e só a aba Dados; colaboradores como equipe e usuários |
+| Pessoas | `instrutores.html`, `instrutor.html`, `colaboradores.html`, `colaborador.html` | Instrutor com cadastro e só a aba Dados; colaboradores como equipe e usuários. As duas fichas têm o cartão Acesso ao sistema |
+| Convite de cadastro (AULOR-007) | `instrutores.html`, `colaboradores.html`, as duas fichas e `convite.html` | "Convidar instrutor" (nome, e-mail, remuneração e perfil) e "Convidar colaborador" (nome, e-mail, cargo, departamento, admissão e perfil). O convite fica no filtro Convidados, com selo (enviando, falha no envio, enviado, expirado em 7 dias, aguardando cadastro, cadastro pela coordenação), Reenviar e Cancelar; ninguém vira instrutor ou colaborador antes de enviar o cadastro. A pessoa entra com o e-mail convidado e completa CPF, nascimento, nome social e contato; o CPF que o acesso não prova vai para a coordenação, sem revelar ninguém. Na ficha de quem não tem usuário, "Enviar convite" liga a pessoa ao acesso no aceite. Acesso nasce só de convite: saíram o link público do instrutor (com endereço, empresa, antecedentes e LGPD) e o "Criar usuário de acesso" |
 | Perfis de acesso | `perfis.html`, `perfil.html` | Catálogo das telas da V1 e o perfil Vendedor externo, que vê só as vendas dele, confirma os alunos pelos quais responde e não acessa Alunos |
 | Entrada (nova) | `entrar.html` | Primeiro a escolha do portal (administrativo, aluno ou professor), depois login, primeiro acesso e recuperação de senha naquele portal |
 
@@ -31,7 +32,7 @@ Os dois portais usam o shell e os papéis do `DESIGN.md` do aulor-web, os mesmos
 
 ## Simulado no protótipo
 
-Asaas, emissor de NF, Clicksign e Google Meet não estão integrados: os botões registram o que aconteceria. O material da aula guarda só o nome do arquivo (na V1 real, armazenamento privado com links assinados). Login e permissões só demonstram, no navegador; na V1 real, o back-end autentica e aplica as permissões.
+Asaas, emissor de NF, Clicksign e Google Meet não estão integrados: os botões registram o que aconteceria. O e-mail do convite de cadastro não sai: "Abrir como o convidado", no convite, faz o papel do link do e-mail. Convidar exige Cadastrar (ou Editar, na ficha) do papel e Editar em Perfis de acesso, que no protótipo faz as vezes de Convidar usuários e Gerenciar perfis. O material da aula guarda só o nome do arquivo (na V1 real, armazenamento privado com links assinados). Login e permissões só demonstram, no navegador; na V1 real, o back-end autentica e aplica as permissões.
 
 ## Pontos em aberto
 
@@ -41,4 +42,4 @@ Asaas, emissor de NF, Clicksign e Google Meet não estão integrados: os botões
 - **Marcar devedor:** saiu do aluno (a marcação existente só aparece) e ficou na empresa, que só perdeu a aba SPC. Confirmar.
 - **Aulas da turma:** geram uma vez, com ou sem Meet; não há regerar nem incluir o Meet depois. Dia de feriado fica de fora (não vira aula cancelada).
 - **Compras:** fora da V1, então as contas a pagar de compras não aparecem no Financeiro.
-- **Pendências do instrutor:** valor hora, antecedentes e LGPD ainda aparecem como pendência, mas só o cadastro pelo link resolve parte delas.
+- **Pendências do instrutor:** valor hora e antecedentes ainda aparecem como pendência e não se resolvem na V1 (ficam com contratos e pagamentos, D11 de AULOR-005); o aceite LGPD saiu com o link (D15 de AULOR-007). A ficha ainda mostra endereço, contato de emergência, tag e empresa do `snorlax-jornada`, que o AULOR-005 também deixa para contratos e pagamentos.

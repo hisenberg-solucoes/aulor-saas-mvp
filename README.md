@@ -23,7 +23,7 @@ Abra `http://localhost:8770/`. A entrada pede primeiro o portal (administrativo,
 node --test tests/*.mjs
 ```
 
-`tests/links.test.mjs` acusa qualquer página ou script citado que não existe; os outros cobrem os motores (vendas, turmas e aulas, feriados, financeiro, centros de receita, instrutores, materiais, modelos de contrato e área do curso).
+`tests/links.test.mjs` acusa qualquer página ou script citado que não existe; os outros cobrem os motores (vendas, turmas e aulas, feriados, financeiro, centros de receita, instrutores, convites de cadastro, materiais, modelos de contrato e área do curso).
 
 ## Estrutura
 
@@ -36,6 +36,9 @@ Cada tela é um `.html` com o shell, os dados (`js/*-data.js`), as regras (`js/*
 | `js/menu-portal.js` | O mesmo shell nos portais do aluno e do professor; cada portal declara os itens em `portal-*/js/menu.js` |
 | `js/acesso.js` | No `<head>` de cada tela do administrativo: sem sessão vai para a entrada; tela fora do perfil volta ao Início |
 | `entrar.html`, `js/entrar-app.js` | Entrada única: login, escolha do portal, primeiro acesso e recuperação de senha |
+| `js/entrada.js` | Quem entra e em qual portal, pelo e-mail; usado pela entrada e pelo convite |
+| `js/convites-cadastro.js`, `js/convites-ui.js` | Convite de cadastro de instrutores e colaboradores (AULOR-007): regras e a UI das listas e do cartão Acesso ao sistema |
+| `convite.html`, `js/convite-app.js` | Onde o e-mail do convite leva: entrar com o e-mail convidado, "Complete seu cadastro" e "Cadastro concluído" |
 | `js/permissoes-data.js` | Catálogo de permissões das telas da V1 e os perfis, com o Vendedor externo |
 | `js/centros-receita.js` | Centros de receita (B2B, B2C, Orion), lidos por Vendas e Turmas |
 | `js/materiais-motor.js` | Materiais das aulas: cadastro e liberação por data |

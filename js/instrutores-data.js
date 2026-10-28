@@ -112,7 +112,7 @@ function instrutorSeed(d) {
     antecedentes: [],
     lgpd: null,
     tagEstacionamento: { possui: false, identificacao: '', cedidaEm: '', devolvidaEm: '' },
-    cadastro: null, // link de auto-cadastro (token) — ver Instrutores.gerarCadastro
+    acesso: { usuarioId: null }, // usuário de acesso (js/permissoes-data.js); o de quem é da equipe mora no colaborador
     observacoes: '',
     historico: [],
     ...d,
@@ -179,7 +179,7 @@ const T_I2_SUP08 = _turmasDo('i2', (t) => t.formacaoId === 'sup08');
 
 const INSTRUTORES_SEED = [
   instrutorSeed({
-    id: 'i1', nome: 'André Fontoura Bastos', apelido: 'André', nascimento: '1987-06-09', cpf: cpfSeed('317204958'), rg: '4.812.337',
+    id: 'i1', acesso: { usuarioId: 'andre' }, nome: 'André Fontoura Bastos', apelido: 'André', nascimento: '1987-06-09', cpf: cpfSeed('317204958'), rg: '4.812.337',
     especialidade: 'Front-end, lógica e Angular', bio: 'Desenvolvedor front-end há 12 anos, instrutor da ProWay desde 2019. Dá a base web e Angular das formações.',
     endereco: { cep: '89025-100', logradouro: 'Rua Engenheiro Paul Werner', numero: '480', complemento: 'Ap. 704', bairro: 'Bom Retiro', cidade: 'Blumenau', uf: 'SC' },
     contato: { email: 'andre.bastos@exemplo.com.br', whatsapp: '47988410101', emergencia: { nome: 'Mariana Bastos', telefone: '47988410102' } },
@@ -195,7 +195,7 @@ const INSTRUTORES_SEED = [
     historico: [evento('2019-03-01', 'Cadastro criado'), evento('2026-01-20', 'Declaração de antecedentes 2026 recebida')],
   }),
   instrutorSeed({
-    id: 'i2', nome: 'Tatiana Bezerra Sartori', apelido: 'Tati', nascimento: '1992-04-03', cpf: cpfSeed('482069137'), rg: '5.903.221',
+    id: 'i2', acesso: { usuarioId: 'tatiana' }, nome: 'Tatiana Bezerra Sartori', apelido: 'Tati', nascimento: '1992-04-03', cpf: cpfSeed('482069137'), rg: '5.903.221',
     especialidade: 'Banco de dados (MySQL e PostgreSQL)', bio: 'DBA e analista de dados; leciona modelagem e SQL nas formações.',
     endereco: { cep: '89052-000', logradouro: 'Rua Progresso', numero: '1240', complemento: '', bairro: 'Progresso', cidade: 'Blumenau', uf: 'SC' },
     contato: { email: 'tatiana.sartori@exemplo.com.br', whatsapp: '47988410203', emergencia: { nome: 'Paulo Sartori', telefone: '47988410204' } },
@@ -227,7 +227,7 @@ const INSTRUTORES_SEED = [
     historico: [evento('2020-02-01', 'Cadastro criado')],
   }),
   instrutorSeed({
-    id: 'i4', nome: 'Adriana Vilela Moraes', apelido: 'Adri', nascimento: '1980-02-11', cpf: cpfSeed('260148739'), rg: '3.220.945',
+    id: 'i4', acesso: { usuarioId: 'adriana' }, nome: 'Adriana Vilela Moraes', apelido: 'Adri', nascimento: '1980-02-11', cpf: cpfSeed('260148739'), rg: '3.220.945',
     especialidade: 'Carreira e soft skills', bio: 'Psicóloga organizacional; conduz o Perfil Profissional 360 e os aulões de carreira.',
     endereco: { cep: '89216-000', logradouro: 'Rua Otto Boehm', numero: '220', complemento: 'Sala 12', bairro: 'América', cidade: 'Joinville', uf: 'SC' },
     contato: { email: 'adriana.moraes@exemplo.com.br', whatsapp: '47988410407', emergencia: { nome: '', telefone: '' } },
