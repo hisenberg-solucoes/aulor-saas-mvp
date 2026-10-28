@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aulor · Implementação da V1</title>
+  <!-- Ferramenta do time, fora dos portais: sem sessão (acesso.js) e sem o menu do administrativo. -->
+  <script src="js/tema.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/svg+xml" href="img/aulor-favicon.svg">
+  <style>
+    /* Papéis do DESIGN.md do aulor-web usados no mapa, em par claro/escuro. O que coincide com styles.css vem de lá
+       (--f-*, que já troca no escuro); aqui fica só o chão frio do aulor-web, que o protótipo não tem. */
+    :root {
+      --m-cartao: var(--f-elevado);
+      --m-dado: var(--f-tinta);
+      --m-trilho: var(--f-etiqueta);
+      --m-marca: var(--f-marca-tinta);
+      --m-cobre: var(--f-cobre);
+      --m-aviso: var(--f-cobre-tinta);
+      --m-bom: var(--f-bom);
+      --m-chao: #F3F5F6;
+      --m-contorno: rgb(226 232 240 / 0.8);
+      --m-contorno-forte: #CBD5E1;
+      --m-linha: #E2E8F0;
+      --m-aresta: #A8B4BE;
+      --m-ponto: #D3DAE0;
+      --m-realce: #F1F5F9;
+      --m-trilho-contorno: #87949F;
+      --m-aviso-fundo: #F9F2EB;
+      --m-sombra: 0 1px 2px rgb(7 30 44 / 0.05);
+      --m-flutua: 0 12px 32px -12px rgba(0, 0, 0, 0.28);
+    }
+
+    html.dark {
+      --m-chao: #122938;
+      --m-contorno: #2A4858;
+      --m-contorno-forte: #2A4858;
+      --m-linha: #1E3947;
+      --m-aresta: #3E6073;
+      --m-ponto: #1E3947;
+      --m-realce: #173444;
+      --m-trilho-contorno: #61808F;
+      --m-aviso-fundo: #263840;
+      --m-sombra: none;
+    }
+
+    *, ::before, ::after { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--m-chao);
+      color: var(--f-tinta);
+      font-family: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, p, ol, ul, dl, dd { margin: 0; padding: 0; }
+    ol, ul { list-style: none; }
+    button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
+    a { color: inherit; }
+    svg { display: block; }
+    ::selection { background: color-mix(in srgb, var(--m-marca) 22%, transparent); }
+    :focus-visible { outline: 2px solid var(--f-foco); outline-offset: 2px; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+    /* ---------- Barra do shell ---------- */
+    .topo-simbolo { width: 28px; height: 28px; flex-shrink: 0; }
+    .topo-wordmark { height: 14px; width: auto; }
+    .topo-divisa { width: 1px; height: 20px; margin: 0 4px; background: var(--f-linha-forte); }
+    .topo-retrato { font-size: 12px; line-height: 16px; color: var(--f-tinta-3); white-space: nowrap; }
+    .topo-retrato a { color: var(--f-tinta-2); text-decoration: none; font-variant-numeric: tabular-nums; }
+    .topo-retrato a:hover { color: var(--f-tinta); text-decoration: underline; text-underline-offset: 3px; }
+
+    /* ---------- Indicadores que filtram (Linha de Indicadores) ---------- */
+    .painel {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 24px;
+      flex-wrap: wrap;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--m-linha);
+    }
+    .indicadores { display: flex; }
+    .indicador {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 180px;
+      padding: 8px 14px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .indicador + .indicador::before {
+      content: '';
+      position: absolute;
+      left: -1px;
+      top: 10px;
+      bottom: 10px;
+      border-left: 1px solid var(--m-linha);
+    }
+    .indicador.ativo::before,
+    .indicador.ativo + .indicador::before { display: none; }
+    .indicador:hover { background: var(--m-realce); }
+    .indicador.ativo {
+      background: var(--m-cartao);
+      border-color: var(--m-contorno);
+      box-shadow: 0 1px 2px rgb(7 30 44 / 0.08);
+    }
+    .indicador-rotulo { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--f-tinta-3); }
+    .indicador-pendencia .indicador-rotulo::before { content: ''; width: 6px; height: 6px; border-radius: 9999px; background: var(--m-cobre); }
+    .indicador-valor { font-size: 20px; line-height: 28px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--f-tinta); }
+        .indicador-valor small { margin-left: 4px; font-size: 13px; font-weight: 500; color: var(--f-tinta-2); }
+    .indicador-contexto { display: flex; align-items: center; gap: 8px; font-size: 12px; line-height: 16px; color: var(--f-tinta-2); white-space: nowrap; }
+    .indicador-contexto .medidor { width: 56px; flex-shrink: 0; }
+
+    .legenda { display: flex; align-items: center; gap: 16px; font-size: 12px; line-height: 16px; color: var(--f-tinta-2); }
+    .legenda span { display: inline-flex; align-items: center; gap: 6px; }
+    .legenda i { width: 16px; height: 6px; border-radius: 9999px; background: var(--m-trilho); }
+    .legenda i.medidor-feito { background: var(--m-dado); }
+    .legenda i.medidor-parcial { background: repeating-linear-gradient(-45deg, var(--m-dado) 0 1.5px, transparent 1.5px 4px), var(--m-trilho); }
+
+    /* ---------- Medidor: trilho em etiqueta, feito em tinta, parcial em hachura de tinta ---------- */
+    /* O contorno do trilho dá 3:1 sobre o cartão: de longe, sem os números, 0/6 ainda se lê como medidor vazio. */
+    .medidor { display: flex; gap: 1px; height: 6px; border-radius: 9999px; background: var(--m-trilho); box-shadow: inset 0 0 0 var(--l, 1px) var(--m-trilho-contorno); overflow: hidden; }
+    .medidor-feito { background: var(--m-dado); }
+    .medidor-parcial { background: repeating-linear-gradient(-45deg, var(--m-dado) 0 1.5px, transparent 1.5px 4px); }
+    .medidor-feito, .medidor-parcial { flex-shrink: 0; }
+
+    /* ---------- Mapa ---------- */
+    .area { position: relative; flex: 1; min-height: 0; }
+    .mapa {
+      position: absolute;
+      inset: 0;
+      overflow: clip; /* nem o foco rola o mapa: quem move é o pan */
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: grab;
+      background-image: radial-gradient(circle, var(--m-ponto) 1px, transparent 1.3px);
+    }
+    .mapa:focus-visible { outline-offset: -2px; }
+    .mapa.arrastando { cursor: grabbing; }
+    .mundo {
+      --l: max(1px, calc(1px / var(--s, 1))); /* traço que não some ao afastar */
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: max-content;
+      transform-origin: 0 0;
+      display: grid;
+      align-items: start;
+      column-gap: 72px;
+      row-gap: 88px;
+      padding: 48px;
+    }
+    .arestas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+    .arestas path { fill: none; vector-effect: non-scaling-stroke; }
+    .arestas-fixas path { stroke: var(--m-aresta); stroke-width: 1; }
+    .arestas-ligacoes { animation: ligar 0.24s ease-out; }
+    .arestas-ligacoes path { stroke: var(--m-marca); stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .arestas-ligacoes path.caminho { stroke-width: 2; stroke-dasharray: none; }
+    .arestas-ligacoes circle { fill: var(--m-marca); }
+    @keyframes ligar { from { opacity: 0; } to { opacity: 1; } }
+    /* No celular a ficha é uma folha de baixo: entra subindo, não de lado como a .drawer-anim. */
+    @keyframes folha-sobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .entrada { grid-row: 1; justify-self: center; }
+
+    /* Cartão: a tela da V1. Tamanho fixo, para o mapa não mudar de forma ao trocar o nível de zoom. */
+    .no {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      width: 248px;
+      height: 156px;
+      padding: 12px 14px;
+      overflow: hidden;
+      background: var(--m-cartao);
+      border: var(--l) solid var(--m-contorno);
+      border-radius: 12px;
+      box-shadow: var(--m-sombra);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+    }
+    .no:hover { border-color: var(--m-contorno-forte); }
+    .no:focus-visible, .raia-cabeca:focus-visible { outline: calc(2px / var(--s, 1)) solid var(--f-foco); outline-offset: calc(2px / var(--s, 1)); }
+    .no.ligado { box-shadow: 0 0 0 var(--l) var(--m-marca), var(--m-sombra); }
+    .no.ativo { border-color: var(--m-marca); box-shadow: 0 0 0 calc(2px / var(--s, 1)) var(--m-marca), var(--m-sombra); }
+    /* Apagado a 60%, como a .linha-apagada do styles.css: o cartão continua um botão e o nome fica legível; o cinza o separa dos destacados. */
+    .no.apagado { opacity: 0.6; filter: grayscale(1); }
+    .no-nome { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--f-tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .no-sub { font-size: 12px; line-height: 16px; color: var(--f-tinta-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .no-lados { display: grid; gap: 6px; margin-top: 12px; }
+    .no-lado { display: grid; grid-template-columns: 28px 1fr 36px; align-items: center; gap: 8px; font-size: 12px; line-height: 16px; }
+    .no-lado-nome { font-weight: 500; color: var(--f-tinta-2); }
+    .no-conta { text-align: right; font-variant-numeric: tabular-nums; color: var(--f-tinta-2); }
+    .no-pe { display: flex; align-items: center; gap: 8px; min-width: 0; margin-top: auto; font-size: 12px; line-height: 16px; color: var(--f-tinta-3); }
+    .no-pe > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .no-pe svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .no-uso { margin-top: 4px; font-size: 12px; line-height: 16px; color: var(--f-tinta-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .no-situacao { margin-top: 10px; }
+
+    /* Pílula (exceção) e fase (ponto + texto), do DESIGN.md. */
+    .pilula { display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 12px; line-height: 16px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+    .pilula::before { content: ''; width: 6px; height: 6px; border-radius: 9999px; background: currentColor; }
+    .pilula-aviso { color: var(--m-aviso); background: var(--m-aviso-fundo); }
+    .pilula-aviso::before { background: var(--m-cobre); }
+    .fase { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; color: var(--f-tinta-2); white-space: nowrap; }
+    .fase::before { content: ''; width: 8px; height: 8px; border-radius: 9999px; flex-shrink: 0; }
+    .fase-ok::before { background: var(--m-bom); }
+    .fase-parcial::before { background: var(--m-cobre); }
+    .fase-falta::before { box-shadow: inset 0 0 0 1.5px var(--f-tinta-3); }
+    .fase-na { color: var(--f-tinta-3); }
+    .fase-na::before { display: none; }
+
+    /* Raia (portal) e grupo (módulo do menu), ligados em árvore por bordas finas. */
+    .raia { display: flex; flex-direction: column; }
+    .raia-cabeca {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      width: 100%;
+      height: 160px;
+      padding: 14px 16px;
+      contain: inline-size; /* a largura vem dos grupos, não do texto */
+      background: var(--m-cartao);
+      border: var(--l) solid var(--m-contorno);
+      border-radius: 12px;
+      box-shadow: var(--m-sombra);
+      cursor: zoom-in;
+      transition: border-color 0.15s ease;
+    }
+    .raia-cabeca:hover { border-color: var(--m-contorno-forte); }
+    .raia-nome { font-size: 16px; line-height: 24px; font-weight: 600; color: var(--f-tinta); }
+    .raia-desc { font-size: 12px; line-height: 16px; color: var(--f-tinta-3); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .raia-lados { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 4px 24px; max-width: 520px; margin-top: 8px; }
+    .raia-grupos { display: flex; gap: 24px; padding-top: 40px; }
+    .raia-unica .raia-grupos { padding-top: 12px; }
+    .raia:not(.raia-unica) .raia-cabeca::after { content: ''; position: absolute; left: 50%; top: 100%; height: 20px; border-left: var(--l) solid var(--m-aresta); }
+    .grupo { position: relative; width: 248px; }
+    .raia:not(.raia-unica) .grupo::before { content: ''; position: absolute; top: -20px; left: -12px; right: -12px; border-top: var(--l) solid var(--m-aresta); }
+    .raia:not(.raia-unica) .grupo:first-child::before { left: 50%; }
+    .raia:not(.raia-unica) .grupo:last-child::before { right: 50%; }
+    .raia:not(.raia-unica) .grupo::after { content: ''; position: absolute; top: -20px; left: 50%; height: 20px; border-left: var(--l) solid var(--m-aresta); }
+    .grupo-cabeca {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      height: 44px;
+      padding: 0 12px;
+      background: var(--m-cartao);
+      border: var(--l) solid var(--m-contorno);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--f-tinta);
+    }
+    .grupo-conta { font-size: 12px; font-weight: 500; color: var(--f-tinta-3); font-variant-numeric: tabular-nums; }
+    .grupo-telas { position: relative; margin-top: 12px; padding-left: 20px; }
+    .raia-unica .grupo-telas { margin-top: 0; }
+    .grupo-telas > li { position: relative; }
+    .grupo-telas > li + li { margin-top: 12px; }
+    .grupo-telas > li::before { content: ''; position: absolute; left: -12px; top: -12px; width: 12px; height: 40px; border-left: var(--l) solid var(--m-aresta); border-bottom: var(--l) solid var(--m-aresta); border-bottom-left-radius: 8px; }
+    .grupo-telas > li:not(:last-child)::after { content: ''; position: absolute; left: -12px; top: 20px; bottom: -12px; border-left: var(--l) solid var(--m-aresta); }
+
+    /* O caminho do cartão aberto, em petróleo: raia, grupo e o tronco até ele. */
+    .raia:has(.no.ativo) .raia-cabeca,
+    .grupo:has(.no.ativo) .grupo-cabeca { border-color: var(--m-marca); }
+    .raia:has(.no.ativo) .raia-cabeca::after,
+    .grupo:has(.no.ativo)::after,
+    .grupo-telas > li:has(.no.ativo)::before { border-color: var(--m-marca); }
+    .grupo-telas > li:has(~ li .no.ativo)::before,
+    .grupo-telas > li:has(~ li .no.ativo)::after { border-left-color: var(--m-marca); }
+
+    /* De longe: o nome e os dois medidores (web em cima, API embaixo), com o corpo calculado pelo zoom para
+       ficar em ~12px na tela; o cobre de "só falta o web" vira ponto ao lado do medidor do web. */
+    .longe .no-sub, .longe .no-pe, .longe .no-conta, .longe .no-uso, .longe .raia-desc, .longe .no-lado-nome, .longe .grupo-conta { display: none; }
+    .longe .no { padding: 10px; }
+    .longe .no-nome { font-size: clamp(20px, calc(12.5px / var(--s)), 33px); line-height: 1.15; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .longe .no.so-web .no-lado:first-child { grid-template-columns: 16px 1fr; gap: 6px; }
+    .longe .no.so-web .no-lado:first-child::before { content: ''; width: 16px; height: 16px; border-radius: 9999px; background: var(--m-cobre); }
+    .longe .no-lados { margin-top: auto; gap: 10px; }
+    .longe .no-lado { grid-template-columns: 1fr; }
+    .longe .medidor { height: 16px; }
+    .longe .no-situacao { margin-top: auto; }
+    .longe .no-situacao .fase { font-size: clamp(16px, calc(12.5px / var(--s)), 33px); line-height: 1.2; gap: 0.4em; }
+    .longe .no-situacao .fase::before { width: 0.6em; height: 0.6em; }
+    .longe .raia-nome { font-size: clamp(28px, calc(16px / var(--s)), 44px); line-height: 1.1; }
+    .longe .raia-unica .raia-nome { font-size: clamp(24px, calc(14px / var(--s)), 36px); }
+    .longe .raia-lados { grid-template-columns: 1fr; gap: 6px; max-width: 640px; margin-top: 12px; }
+    .longe .raia-lados .no-lado { grid-template-columns: 1fr; }
+    .longe .grupo-cabeca { font-size: clamp(16px, calc(12.5px / var(--s)), 33px); line-height: 1.1; }
+
+    /* ---------- Zoom e ajuda ---------- */
+    .zoom {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px;
+      background: var(--m-cartao);
+      border: 1px solid var(--m-contorno);
+      border-radius: 10px;
+      box-shadow: var(--m-flutua);
+    }
+    .zoom button { display: grid; place-items: center; min-width: 32px; height: 32px; padding: 0 8px; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--f-tinta-2); transition: background-color 0.15s ease, color 0.15s ease; }
+    .zoom button:hover { background: var(--m-realce); color: var(--m-marca); }
+    .zoom button svg { width: 16px; height: 16px; }
+    .zoom output { min-width: 44px; text-align: center; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--f-tinta-3); }
+    .zoom-divisa { width: 1px; height: 20px; margin: 0 2px; background: var(--m-linha); }
+    .mapa-ajuda {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      z-index: 3;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--m-chao) 88%, transparent);
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--f-tinta-3);
+      pointer-events: none;
+    }
+    .ajuda-toque { display: none; }
+    @media (pointer: coarse) { .ajuda-toque { display: inline; } .ajuda-mouse { display: none; } }
+
+    /* ---------- Ficha da tela ---------- */
+    .ficha-tela {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 4;
+      width: 440px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      background: var(--m-cartao);
+      border-left: 1px solid var(--m-contorno);
+      box-shadow: var(--m-flutua);
+      scrollbar-color: var(--m-contorno-forte) transparent;
+    }
+    .ficha-tela:focus { outline: none; }
+    .area.com-ficha .zoom { right: 456px; }
+    .ficha-cabeca { position: sticky; top: 0; z-index: 1; padding: 16px 20px 14px; background: var(--m-cartao); border-bottom: 1px solid var(--m-linha); }
+    .ficha-fechar { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 6px; color: var(--f-tinta-3); transition: background-color 0.15s ease, color 0.15s ease; }
+    .ficha-fechar:hover { background: var(--m-realce); color: var(--f-tinta); }
+    .ficha-fechar svg { width: 18px; height: 18px; }
+    .ficha-titulo { margin-top: 2px; padding-right: 40px; font-size: 20px; line-height: 28px; font-weight: 600; color: var(--f-tinta); }
+    .ficha-titulo:focus { outline: none; }
+    .ficha-chips { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px; font-size: 13px; line-height: 20px; color: var(--f-tinta-2); }
+    .ficha-chips > span { display: inline-flex; align-items: center; gap: 6px; }
+    .ficha-chips svg { width: 14px; height: 14px; color: var(--f-tinta-3); flex-shrink: 0; }
+    .link { color: var(--m-marca); font-weight: 500; text-decoration: none; }
+    .link:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .ficha-corpo { display: grid; gap: 24px; padding: 16px 20px 32px; }
+    .ficha-medidores { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .ficha-medidor { display: grid; gap: 4px; }
+    .ficha-medidor-rotulo { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--f-tinta-3); }
+    .ficha-medidor-valor { font-size: 15px; line-height: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .ficha-medidor-valor small { margin-left: 4px; font-size: 12px; font-weight: 400; color: var(--f-tinta-2); }
+    .ficha-secao h3 { margin-bottom: 6px; font-size: 13px; line-height: 20px; font-weight: 600; color: var(--f-tinta); }
+    .ficha-secao > p { font-size: 13px; line-height: 20px; color: var(--f-tinta-2); }
+    .tabela { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; line-height: 18px; }
+    .tabela th[scope="col"] { padding: 0 8px 6px; border-bottom: 1px solid var(--m-linha); text-align: left; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--f-tinta-3); }
+    .tabela th[scope="col"]:first-child, .tabela td:first-child, .tabela-parte th { padding-left: 0; }
+    .tabela-parte th { padding: 14px 8px 4px 0; text-align: left; font-size: 12px; line-height: 16px; font-weight: 600; color: var(--f-tinta-2); }
+    .tabela td { padding: 8px; border-bottom: 1px solid var(--m-linha); vertical-align: top; color: var(--f-tinta); }
+    .tabela td .fase { margin-top: 1px; }
+    .tabela-nota { display: block; margin-top: 2px; font-size: 12px; line-height: 16px; color: var(--f-tinta-3); }
+    .lista-simples > li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--m-linha); font-size: 13px; line-height: 20px; }
+    .lista-simples .fase { flex-shrink: 0; }
+    .lista-simples small { display: block; font-size: 12px; line-height: 16px; color: var(--f-tinta-3); }
+    .lista-codigo { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 20px; color: var(--f-tinta-2); }
+    .lista-codigo > li { overflow-wrap: anywhere; }
+    .lista-fora { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; line-height: 20px; color: var(--f-tinta-3); }
+
+    @media (max-width: 767px) {
+      .topo-wordmark, .topo-divisa, .topo-repos { display: none; }
+      .painel { padding: 8px 12px; }
+      .indicadores { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+      .indicador { min-width: 0; padding: 6px 10px; }
+      .indicador + .indicador::before { display: none; }
+      .indicador-contexto { display: none; }
+      .mapa-ajuda { top: 8px; bottom: auto; }
+      .legenda { flex-wrap: wrap; gap: 4px 12px; }
+      .ficha-tela { top: auto; left: 0; width: auto; height: 72%; border-left: 0; border-top: 1px solid var(--m-contorno); border-radius: 12px 12px 0 0; animation-name: folha-sobe; }
+      .area.com-ficha .zoom { right: 16px; }
+      .area.com-ficha .zoom, .area.com-ficha .mapa-ajuda { visibility: hidden; }
+      .ficha-cabeca { border-radius: 12px 12px 0 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell shell-topo">
+    <div class="shell-contexto">
+      <img src="img/aulor-simbolo.svg" alt="" class="topo-simbolo">
+      <img src="img/aulor-wordmark-claro.svg" alt="Aulor" class="topo-wordmark">
+      <span class="topo-divisa" aria-hidden="true"></span>
+      <h1 class="shell-titulo">Implementação da V1</h1>
+    </div>
+    <div class="shell-acoes">
+      <p id="retrato" class="topo-retrato"></p>
+      <button type="button" data-toggle-tema title="Tema escuro" class="shell-icone">
+        <svg class="shell-tema-lua" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
+        <svg class="shell-tema-sol" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="painel" aria-label="Resumo e filtros">
+    <div id="indicadores" class="indicadores" role="group" aria-label="Destacar no mapa"></div>
+    <p class="legenda" aria-hidden="true">
+      <span><i class="medidor-feito"></i>Feito</span>
+      <span><i class="medidor-parcial"></i>Parcial</span>
+      <span><i></i>Falta</span>
+      <span>Web em cima, API embaixo</span>
+    </p>
+  </section>
+
+  <div id="area" class="area">
+    <div id="mapa" class="mapa" role="region" tabindex="0" aria-label="Mapa das telas da V1" aria-describedby="mapa-ajuda">
+      <div id="mundo" class="mundo"></div>
+    </div>
+    <p id="mapa-ajuda" class="mapa-ajuda">
+      <span class="ajuda-mouse">Arraste ou use as setas para mover; Ctrl e a roda aproximam. Teclas + e − dão zoom, 0 ajusta.</span>
+      <span class="ajuda-toque">Arraste para mover; pince para aproximar.</span>
+    </p>
+    <div class="zoom" role="group" aria-label="Zoom do mapa">
+      <button type="button" data-zoom="0.8" aria-label="Afastar" title="Afastar (−)">
+        <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" d="M5 12h14" /></svg>
+      </button>
+      <output id="zoom-valor" aria-live="off">100%</output>
+      <button type="button" data-zoom="1.25" aria-label="Aproximar" title="Aproximar (+)">
+        <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" d="M12 5v14M5 12h14" /></svg>
+      </button>
+      <span class="zoom-divisa" aria-hidden="true"></span>
+      <button type="button" data-ajustar title="Ver o mapa inteiro (0)">Ajustar</button>
+    </div>
+    <aside id="ficha" class="ficha-tela drawer-anim" tabindex="-1" aria-labelledby="ficha-titulo" hidden></aside>
+  </div>
+  <p id="anuncio" class="sr" role="status"></p>
+
+  <script src="js/implementacao-data.js"></script>
+  <script src="js/implementacao-app.js"></script>
+</body>
+</html>

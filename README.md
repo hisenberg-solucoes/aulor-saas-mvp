@@ -3,6 +3,7 @@
 Protótipo navegável da primeira versão do Aulor, no escopo que a ProWay aprovou em 26/10/2026 ("Aulor – Escopo da primeira versão (V1)"). As telas vêm do protótipo [`snorlax-jornada`](https://github.com/hisenberg-solucoes/snorlax-jornada), de onde o escopo foi tirado, cortadas tela a tela para a V1, no visual do `DESIGN.md` do [`aulor-web`](https://github.com/hisenberg-solucoes/aulor-web) ("Ficha em cartões"). Os dados são os do protótipo original.
 
 - [ESCOPO_V1.md](ESCOPO_V1.md): o que entrou, onde está cada decisão do documento e os pontos em aberto.
+- [`implementacao.html`](implementacao.html): para o time, o mapa das telas da V1 com o que cada uma já tem no aulor-web e na aulor-api, feature por feature. Os dados são um retrato à mão em `js/implementacao-data.js`, com os commits conferidos; ao atualizar, mude o retrato junto.
 
 **Demonstração online:** https://hisenberg-solucoes.github.io/aulor-saas-mvp/ (os dados ficam no navegador de quem abre).
 
