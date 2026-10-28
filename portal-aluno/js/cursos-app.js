@@ -86,7 +86,7 @@
     const estado = { filtro: 'todos', aberto: {} };
     dados.grupos.forEach((g) => { estado.aberto[g.chave] = true; });
     $('tela-lista').classList.remove('hidden');
-    $('subtitulo').textContent = `Referência ${PortalAluno.fmtData(hoje)}`;
+    $('subtitulo').textContent = `Situação em ${PortalAluno.fmtData(hoje)}`;
 
     const t = dados.totais;
     $('totais').innerHTML = [
@@ -110,8 +110,7 @@
       return `<tr class="${encerrada ? 'opacity-60' : ''} hover:bg-slate-100/70 dark:hover:bg-neutral-900 cursor-pointer transition" data-href="curso.html?turma=${encodeURIComponent(m.turma.id)}" tabindex="0">
         <td class="tabular-nums text-slate-500 dark:text-neutral-400 w-10">${i + 1}</td>
         <td><p class="font-medium text-slate-900 dark:text-neutral-100">${esc(m.curso?.nome ?? m.turma.codigo)}</p><p class="text-xs text-slate-500 dark:text-neutral-400"><span class="font-mono">${esc(m.turma.codigo)}</span> · ${esc(horas(m.horas))}${mostrarContrato ? ` · <a href="contrato.html?id=${encodeURIComponent(m.contrato.id)}" class="link !text-xs">Contrato ${esc(m.contrato.codigo)}</a>` : ''}</p></td>
-        <td class="tabular-nums whitespace-nowrap">${data(m.turma.inicio)} – ${data(m.turma.fim)}</td>
-        <td class="whitespace-nowrap">${esc(m.turma.turno || '—')}</td>
+        <td class="whitespace-nowrap"><p class="tabular-nums">${data(m.turma.inicio)} – ${data(m.turma.fim)}</p>${m.turma.turno ? `<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(m.turma.turno)}</p>` : ''}</td>
         <td class="whitespace-nowrap">${esc(FORMATO[m.turma.formato] ?? m.turma.formato ?? '—')}</td>
         <td>${esc(m.instrutor?.nome ?? '—')}</td>
         <td class="min-w-36"><div class="flex items-center gap-2"><div class="flex-1">${barra(total ? (feitas / total) * 100 : 0, concluido)}</div><span class="text-xs tabular-nums text-slate-500 dark:text-neutral-400 shrink-0">${feitas}/${total}</span></div></td>
@@ -121,7 +120,7 @@
     }
 
     const tabela = (itens, mostrarContrato) => `<div class="overflow-x-auto"><table class="tabela w-full">
-      <thead><tr><th>Nº</th><th>Curso</th><th>Período</th><th>Horário</th><th>Formato</th><th>Instrutor</th><th>Aulas</th><th>Situação</th><th></th></tr></thead>
+      <thead><tr><th>Nº</th><th>Curso</th><th>Período e horário</th><th>Formato</th><th>Instrutor</th><th>Aulas</th><th>Situação</th><th></th></tr></thead>
       <tbody>${itens.map((m, i) => linha(m, i, mostrarContrato)).join('')}</tbody>
     </table></div>`;
 
@@ -266,7 +265,7 @@
           ${dado('Contrato', `<a href="contrato.html?id=${encodeURIComponent(d.contrato.id)}" class="link">${esc(d.contrato.codigo)}</a><p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(d.contratante)}</p>`)}
           ${dado('Situação', situacao(d.situacaoAluno))}
         </div>
-        ${d.curso?.resumo ? `<div class="cartao p-5 mt-5"><p class="rotulo mb-1.5">Sobre o curso</p><p class="text-sm text-slate-700 dark:text-neutral-200">${esc(d.curso.descricao || d.curso.resumo)}</p></div>` : ''}`;
+        ${d.curso?.resumo ? `<div class="cartao p-5 mt-5"><p class="rotulo mb-1.5">Sobre o curso</p><p class="text-sm text-slate-700 dark:text-neutral-200 max-w-prose">${esc(d.curso.descricao || d.curso.resumo)}</p></div>` : ''}`;
     }
 
     // Materiais da aula (js/materiais-motor.js): só os liberados abrem; aula por vir sem nada liberado espera o
@@ -378,7 +377,7 @@
 
     function renderAbas() {
       $('abas').innerHTML = ABAS.map((x) => `
-        <button type="button" data-aba="${x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo}${x.n != null ? ` <span class="ml-1 text-xs text-slate-400 tabular-nums">${x.n}</span>` : ''}</button>`).join('');
+        <button type="button" data-aba="${x.id}" aria-current="${estado.aba === x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo}${x.n != null ? ` <span class="ml-1 text-xs text-slate-400 tabular-nums">${x.n}</span>` : ''}</button>`).join('');
     }
     function renderAba() {
       renderAbas();

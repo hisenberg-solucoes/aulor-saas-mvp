@@ -283,6 +283,16 @@ html.dark {
   border-right: 1px solid var(--f-linha);
 }
 
+/* Abas dos portais: rolam de lado no celular, sem barra. O -mb-px do sublinhado da aba ativa fazia
+   o navegador desenhar uma barra vertical inútil. */
+#abas {
+  scrollbar-width: none;
+}
+
+#abas::-webkit-scrollbar {
+  display: none;
+}
+
 /* Abaixo de 768px a sidebar vira gaveta sobre o conteúdo: fechada a cada página, abre pelo botão do
    menu (classe menu-movel-aberto no <html>, posta por js/tema.js) e fecha no véu ou no Esc. A
    preferência de recolher do desktop (sidebar-fechada) não vale aqui. */
@@ -312,6 +322,16 @@ html.dark {
     inset: 0;
     z-index: 30;
     background: var(--f-veu);
+  }
+
+  /* Na barra fica só o avatar; o nome segue como nome acessível do botão. */
+  .shell-usuario-nome {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   /* Select com opção longa (nome do curso) não passa da largura da tela. */

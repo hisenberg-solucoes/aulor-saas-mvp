@@ -82,8 +82,8 @@
   const parcelaDe = (id, n) => blocoDe(id)?.parcelas.find((p) => p.n === Number(n));
 
   $('subtitulo').textContent = fin.contratos.length
-    ? `${fin.contratos.length === 1 ? '1 contrato' : `${fin.contratos.length} contratos`} · referência ${PortalAluno.fmtData(hoje)}`
-    : `Referência ${PortalAluno.fmtData(hoje)}`;
+    ? `${fin.contratos.length === 1 ? '1 contrato' : `${fin.contratos.length} contratos`} · situação em ${PortalAluno.fmtData(hoje)}`
+    : `Situação em ${PortalAluno.fmtData(hoje)}`;
 
   // ---------- Faixa do pagador ----------
 
@@ -185,7 +185,7 @@
   function renderAbas() {
     const n = (id) => (id === 'parcelas' ? todasParcelas().length : fin.contratos.reduce((s, b) => s + b.historico.length, 0));
     $('abas').innerHTML = ABAS.map((x) => `
-      <button type="button" data-aba="${x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo} <span class="ml-1 text-xs text-slate-400 tabular-nums">${n(x.id)}</span></button>`).join('');
+      <button type="button" data-aba="${x.id}" aria-current="${estado.aba === x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo} <span class="ml-1 text-xs text-slate-400 tabular-nums">${n(x.id)}</span></button>`).join('');
   }
 
   function renderParcelas() {

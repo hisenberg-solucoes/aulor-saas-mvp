@@ -136,7 +136,7 @@
 
   function renderAbas() {
     $('abas').innerHTML = ABAS.map((x) => `
-      <button type="button" data-aba="${x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo} <span class="ml-1 text-xs text-slate-400 tabular-nums">${x.n}</span></button>`).join('');
+      <button type="button" data-aba="${x.id}" aria-current="${estado.aba === x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo} <span class="ml-1 text-xs text-slate-400 tabular-nums">${x.n}</span></button>`).join('');
   }
 
   // ---------- Aba Materiais: barra única + tabela zebrada ----------
@@ -147,7 +147,7 @@
       <div class="cartao px-4 py-3 flex flex-wrap items-center gap-3">
         <label class="relative flex-1 min-w-56">
           <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-          <input type="search" data-busca value="${esc(estado.busca)}" placeholder="Buscar por nome do material" class="w-full rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 pl-9 pr-3 py-1.5 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-petrol-800/40">
+          <input type="search" data-busca value="${esc(estado.busca)}" aria-label="Buscar materiais" placeholder="Buscar por nome do material" class="w-full rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 pl-9 pr-3 py-1.5 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-petrol-800/40">
         </label>
         <select data-filtro="curso" class="select max-w-72">
           <option value="todos" ${estado.curso === 'todos' ? 'selected' : ''}>Todos os cursos</option>

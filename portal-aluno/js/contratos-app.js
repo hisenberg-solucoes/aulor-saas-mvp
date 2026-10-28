@@ -125,7 +125,7 @@
     const el = $('lista');
     el.classList.remove('hidden');
     if (!blocos.length) {
-      $('subtitulo').textContent = `Referência ${PortalAluno.fmtData(hoje)}`;
+      $('subtitulo').textContent = `Situação em ${PortalAluno.fmtData(hoje)}`;
       el.innerHTML = `<div class="cartao p-10 text-center">
         <div class="mx-auto h-12 w-12 rounded-full bg-slate-100 dark:bg-neutral-900 grid place-items-center text-slate-400"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg></div>
         <p class="font-display font-semibold text-slate-900 dark:text-neutral-100 mt-3">Você ainda não tem contratos</p>
@@ -134,7 +134,7 @@
       </div>`;
       return;
     }
-    $('subtitulo').textContent = `${plural(blocos.length, 'contrato')} · referência ${PortalAluno.fmtData(hoje)}`;
+    $('subtitulo').textContent = `${plural(blocos.length, 'contrato')} · situação em ${PortalAluno.fmtData(hoje)}`;
     el.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">${blocos.map(cartaoLista).join('')}</div>`;
   }
 
@@ -201,7 +201,7 @@
   function renderAbas(b) {
     const n = (id) => (id === 'evolucao' ? b.matriculas.length : id === 'solicitacoes' ? PortalAluno.solicitacoesDoAluno(aluno.id, b.contrato.id).length : null);
     $('abas').innerHTML = ABAS.map((x) => `
-      <button type="button" data-aba="${x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo}${n(x.id) != null ? ` <span class="ml-1 text-xs text-slate-400 tabular-nums">${n(x.id)}</span>` : ''}</button>`).join('');
+      <button type="button" data-aba="${x.id}" aria-current="${estado.aba === x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo}${n(x.id) != null ? ` <span class="ml-1 text-xs text-slate-400 tabular-nums">${n(x.id)}</span>` : ''}</button>`).join('');
   }
 
   // ----- Aba Resumo -----
@@ -708,7 +708,7 @@
     $('trilha').classList.toggle('hidden', !varios);
     $('trilha').innerHTML = varios ? `<a href="contratos.html" data-voltar-lista class="link text-xs">Contratos</a> <span class="mx-1">›</span> <span class="font-mono">${esc(b.codigo)}</span>` : '';
     $('titulo').textContent = varios ? `Contrato ${b.codigo}` : 'Contrato';
-    $('subtitulo').textContent = `${b.descricao} · referência ${PortalAluno.fmtData(hoje)}`;
+    $('subtitulo').textContent = `${b.descricao} · situação em ${PortalAluno.fmtData(hoje)}`;
     $('acoes-topo').innerHTML = varios ? `<a href="contratos.html" data-voltar-lista class="botao-sec">Todos os contratos</a>` : '';
     renderFaixa(b);
     renderCabecalho(b);

@@ -21,7 +21,7 @@
   const hora = new Date().getHours();
   const periodo = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
   $('saudacao').textContent = `${periodo}, ${PortalAluno.primeiroNome(aluno.nome)}`;
-  $('data-hoje').textContent = PortalAluno.fmtDataLonga(hoje).replace(/^./, (c) => c.toUpperCase());
+  $('data-hoje').textContent = new Date(`${hoje}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^./, (c) => c.toUpperCase());
 
 
   // ---------- Dados ----------

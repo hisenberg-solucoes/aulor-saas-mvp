@@ -102,7 +102,7 @@
     const pend = C.pendenciasAluno(a, estado.dados.empresas);
     if (a.status === 'inativo') return { cor: 'bg-slate-400', texto: 'Cadastro inativo' };
     if (a.inadimplencia?.devedor) return { cor: 'bg-red-500', texto: 'Pendência financeira — veja em Financeiro' };
-    if (pend.length) return { cor: 'bg-amber-500', texto: `Cadastro incompleto: ${pend.join(', ').toLowerCase()}` };
+    if (pend.length) return { cor: 'bg-amber-500', texto: `Cadastro incompleto: ${pend.map((x) => x.replace(/^[A-Z](?![A-Z])/, (c) => c.toLowerCase())).join(', ')}` };
     return null; // o que está certo não se anuncia (DESIGN.md)
   }
 
@@ -115,8 +115,8 @@
     $('cab-nome').textContent = nome;
     $('cab-email').textContent = a.email || 'Sem e-mail cadastrado';
     const s = situacaoCadastro(a);
-    $('cab-situacao').innerHTML = s ? `<span class="inline-flex items-center gap-1.5 text-slate-700 dark:text-neutral-200"><span class="h-2 w-2 rounded-full ${s.cor}"></span>${esc(s.texto)}</span>` : '';
-    $('cab-acoes').innerHTML = `<button type="button" data-acao="editar-contato" class="botao-sec">Editar contato</button><button type="button" data-acao="senha" class="botao-pri">Alterar senha</button>`;
+    $('cab-situacao').innerHTML = s ? `<span class="inline-flex items-start gap-1.5 text-slate-700 dark:text-neutral-200"><span class="h-2 w-2 mt-1.5 shrink-0 rounded-full ${s.cor}"></span>${esc(s.texto)}</span>` : '';
+    $('cab-acoes').innerHTML = `<button type="button" data-acao="editar-contato" class="botao-sec">Editar contato</button><button type="button" data-acao="senha" class="botao-sec">Alterar senha</button>`;
   }
 
   // ---------- Abas ----------
@@ -136,7 +136,7 @@
     const a = aluno();
     const n = (id) => (id === 'responsaveis' ? C.responsaveisDoAluno(estado.dados, a.id).length || null : id === 'necessidades' ? a.necessidades.tipos.length || null : null);
     $('abas').innerHTML = ABAS.map((x) => `
-      <button type="button" data-aba="${x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo}${n(x.id) ? ` <span class="ml-1 text-xs text-slate-400 tabular-nums">${n(x.id)}</span>` : ''}</button>`).join('');
+      <button type="button" data-aba="${x.id}" aria-current="${estado.aba === x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo}${n(x.id) ? ` <span class="ml-1 text-xs text-slate-400 tabular-nums">${n(x.id)}</span>` : ''}</button>`).join('');
   }
 
   function render() {
@@ -187,7 +187,7 @@
   function modalFoto() {
     const a = aluno();
     let nova = null;
-    const caixa = abrirModal(`${cabecalhoModal(a.foto ? 'Trocar foto' : 'Enviar foto', 'Aparece no portal, na chamada do instrutor e no seu cadastro na secretaria.')}
+    const caixa = abrirModal(`${cabecalhoModal(a.foto ? 'Trocar foto' : 'Enviar foto', 'Aparece no portal e no seu cadastro na secretaria.')}
       <form id="form-foto" novalidate>
         <div class="p-5 flex flex-col sm:flex-row items-center gap-5">
           <div id="foto-previa" class="h-32 w-32 shrink-0 rounded-full bg-petrol-800 dark:bg-sky-600 text-white grid place-items-center text-3xl font-display font-semibold overflow-hidden">${avatarHtml(a, a.nomeSocial || a.nome)}</div>
@@ -238,7 +238,7 @@
         ${cartaoSecao('Foto', `
           <div class="flex items-center gap-5">
             <div class="h-20 w-20 shrink-0 rounded-full bg-petrol-800 dark:bg-sky-600 text-white grid place-items-center text-2xl font-display font-semibold overflow-hidden">${avatarHtml(a, a.nomeSocial || a.nome)}</div>
-            <div class="text-sm text-slate-600 dark:text-neutral-300">${a.foto ? 'Sua foto aparece no portal, na chamada do instrutor e no seu cadastro na secretaria.' : 'Você ainda não enviou uma foto — o instrutor a usa para reconhecer a turma na chamada.'}</div>
+            <div class="text-sm text-slate-600 dark:text-neutral-300">${a.foto ? 'Sua foto aparece no portal e no seu cadastro na secretaria.' : 'Você ainda não enviou uma foto. Ela aparece no portal e no seu cadastro na secretaria.'}</div>
           </div>`,
           `<button type="button" data-acao="foto" class="${a.foto ? 'botao-sec' : 'botao-pri'}">${a.foto ? 'Trocar foto' : 'Enviar foto'}</button>`)}
         ${cartaoSecao('Identificação', `
@@ -442,7 +442,7 @@
     $('conteudo-aba').innerHTML = `
       <div class="space-y-5">
         ${cartaoSecao('Responsáveis', corpo)}
-        <p class="text-sm text-slate-500 dark:text-neutral-400">Responsável legal assina por você quando menor de idade; responsável financeiro recebe contrato e boleto; contato de emergência recebe avisos de falta e ocorrências. Para incluir, trocar ou corrigir um responsável, fale com a secretaria.</p>
+        <p class="text-sm text-slate-500 dark:text-neutral-400">Responsável legal assina por você quando menor de idade; responsável financeiro recebe contrato e boleto; contato de emergência é quem a escola procura numa emergência. Para incluir, trocar ou corrigir um responsável, fale com a secretaria.</p>
       </div>`;
   }
 

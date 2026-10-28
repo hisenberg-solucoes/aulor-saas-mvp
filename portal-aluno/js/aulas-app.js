@@ -115,7 +115,7 @@
   function renderLista() {
     const { matriculas, aulas } = montarAulas();
     $('tela-lista').classList.remove('hidden');
-    $('subtitulo').textContent = `Referência ${PortalAluno.fmtData(hoje)}`;
+    $('subtitulo').textContent = `Situação em ${PortalAluno.fmtData(hoje)}`;
     if (params.get('erro') === 'nao-encontrada') { toast('Aula não encontrada entre as suas turmas.'); history.replaceState(null, '', location.pathname); }
 
     // ----- Cartões-resumo -----
@@ -192,7 +192,7 @@
 
     function renderAbas() {
       $('abas').innerHTML = ABAS.map((x) => `
-        <button type="button" data-aba="${x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo}<span class="ml-1 text-xs text-slate-400 tabular-nums">${x.n}</span></button>`).join('');
+        <button type="button" data-aba="${x.id}" aria-current="${estado.aba === x.id}" class="px-1 pb-2.5 -mb-px text-sm border-b-2 transition whitespace-nowrap ${estado.aba === x.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${x.titulo}<span class="ml-1 text-xs text-slate-400 tabular-nums">${x.n}</span></button>`).join('');
     }
 
     function renderTabela() {
@@ -218,7 +218,7 @@
         <div class="flex flex-wrap items-center gap-2 mb-3">
           <label class="relative">
             <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-            <input type="search" data-busca value="${esc(estado.busca)}" placeholder="Buscar por curso, conteúdo ou instrutor" class="select !pl-8 w-72 max-w-full">
+            <input type="search" data-busca value="${esc(estado.busca)}" aria-label="Buscar aulas" placeholder="Curso, conteúdo ou instrutor" class="select !pl-8 w-72 max-w-full">
           </label>
           <select data-turma class="select">
             <option value="">Todos os cursos</option>

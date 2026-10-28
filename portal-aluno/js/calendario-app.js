@@ -74,9 +74,9 @@
   // ---------- Grade ----------
 
   const chipAula = (a) => `
-    <button type="button" data-dia="${a.data}" title="${esc(`${a.inicio}–${a.fim} · ${a.matricula.curso?.nome ?? a.matricula.turma.codigo}`)}"
+    <button type="button" data-dia="${a.data}" title="${esc(`${a.inicio}–${a.fim} · ${a.matricula.curso?.nome ?? a.matricula.turma.codigo}`)}" aria-label="${esc(`${a.inicio}–${a.fim} · ${a.matricula.curso?.nome ?? a.matricula.turma.codigo}`)}"
       class="w-full flex items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] leading-tight bg-petrol-800/10 text-petrol-900 dark:bg-sky-500/20 dark:text-sky-200 hover:bg-petrol-800/20 dark:hover:bg-sky-500/30 transition">
-      <span class="tabular-nums shrink-0">${esc(a.inicio)}</span><span class="font-mono font-medium truncate">${esc(a.matricula.turma.codigo.split(' ')[0])}</span>
+      <span class="tabular-nums shrink-0">${esc(a.inicio)}</span><span class="font-medium truncate">${esc(a.matricula.curso?.nome ?? a.matricula.turma.codigo)}</span>
     </button>${a.data === hoje && meetDe(a.matricula) ? `<a href="${esc(meetDe(a.matricula))}" target="_blank" rel="noopener" data-meet class="block rounded px-1.5 py-0.5 text-[11px] font-medium text-white bg-petrol-800 dark:bg-sky-600 hover:bg-petrol-900 dark:hover:bg-sky-500 transition">Entrar no Meet</a>` : ''}`;
 
   function renderGrade() {
@@ -168,7 +168,7 @@
   function abrirDia(iso) {
     const as = aulasDoDia(iso);
     const feriado = typeof Feriados !== 'undefined' ? Feriados.nome(iso) : null;
-    const titulo = PortalAluno.fmtDataLonga(iso).replace(/^./, (c) => c.toUpperCase());
+    const titulo = new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^./, (c) => c.toUpperCase());
     $('modal-root').innerHTML = `
       <div class="fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-4" data-fundo>
         <div role="dialog" aria-modal="true" aria-labelledby="modal-titulo" class="cartao modal-anim w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
