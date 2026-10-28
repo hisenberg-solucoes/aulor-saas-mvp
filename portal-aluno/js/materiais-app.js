@@ -1,6 +1,6 @@
-// Portal do Aluno — Materiais (UI). Só leitura: materiais e softwares vêm do cadastro de cursos do administrativo;
-// os materiais das aulas, do que o professor já liberou (js/materiais-motor.js).
-// Junta os materiais de todos os cursos do aluno (do curso + das aulas) (matrículas ativas, a iniciar e concluídas) numa tabela única
+// Portal do Aluno — Materiais (UI). Só leitura: os materiais vêm das aulas, do que o professor já liberou
+// (js/materiais-motor.js); os softwares, do cadastro de cursos do administrativo.
+// Junta os materiais das aulas de todos os cursos do aluno (matrículas ativas, a iniciar e concluídas) numa tabela única
 // com busca + filtro por curso e por tipo; a aba "Softwares necessários" lista os programas por curso.
 (() => {
   const aluno = PortalAluno.alunoLogado();
@@ -18,18 +18,14 @@
   const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
   const situacao = (id) => ponto(PONTO[id] ?? 'bg-slate-400', SIT[id]?.nome ?? id);
 
-  // Tipos do material (js/cursos-motor.js): video | arquivo | link. "Apostila" é arquivo PDF — vira subtipo só de exibição.
+  // Tipos do material da aula (js/materiais-motor.js).
   const TIPOS = {
-    apostila: { nome: 'Apostila', icone: 'M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25' },
     arquivo: { nome: 'Arquivo', icone: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z' },
-    video: { nome: 'Vídeo', icone: 'M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z' },
     link: { nome: 'Link', icone: 'M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244' },
   };
-  const ORDEM_TIPO = ['apostila', 'arquivo', 'video', 'link'];
+  const ORDEM_TIPO = ['arquivo', 'link'];
   const icone = (tipo) => `<span class="shrink-0 h-8 w-8 rounded-lg bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300 grid place-items-center"><svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="${TIPOS[tipo]?.icone ?? TIPOS.link.icone}" /></svg></span>`;
-  const tamanho = (b) => (b >= 1_000_000 ? `${(b / 1_000_000).toFixed(1).replace('.', ',')} MB` : `${Math.round(b / 1000)} KB`);
   const dominio = (url) => String(url).replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '');
-  const duracao = (min) => (typeof Turmas !== 'undefined' && Turmas.duracaoTexto ? Turmas.duracaoTexto(min) : `${min} min`);
 
   function toast(msg) {
     const el = document.createElement('div');
@@ -39,38 +35,9 @@
     setTimeout(() => el.remove(), 3200);
   }
 
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharModal(); });
-
-  // ---------- Modal centralizado (prévia de vídeo) ----------
-
-  function abrirModal(html) {
-    $('modal-caixa').innerHTML = html;
-    $('modal').classList.remove('hidden');
-    $('modal-caixa').querySelector('[data-fechar]')?.focus();
-  }
-  function fecharModal() { $('modal').classList.add('hidden'); $('modal-caixa').innerHTML = ''; }
-  $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) fecharModal(); });
-  $('modal-caixa').addEventListener('click', (e) => { if (e.target.closest('[data-fechar]')) fecharModal(); });
-  const cabecalhoModal = (titulo, sub = '') => `
-    <div class="px-5 py-4 border-b border-slate-100 dark:border-neutral-900 flex items-start justify-between gap-3">
-      <div><p class="titulo-secao">${esc(titulo)}</p>${sub ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${sub}</p>` : ''}</div>
-      <button type="button" data-fechar title="Fechar" class="-mr-1 p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-neutral-100 hover:bg-slate-100 dark:hover:bg-neutral-900"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
-    </div>`;
-  const rodapeModal = (extra = '') => `<div class="px-5 py-3 border-t border-slate-100 dark:border-neutral-900 flex justify-end gap-2">${extra}<button type="button" data-fechar class="botao-sec">Fechar</button></div>`;
-
-  // YouTube (watch?v= / youtu.be/) vira embed; outros vídeos abrem em nova aba.
-  function embedVideo(url) {
-    try {
-      const u = new URL(url);
-      const id = u.hostname.includes('youtu.be') ? u.pathname.slice(1) : u.hostname.includes('youtube.com') ? u.searchParams.get('v') : null;
-      return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}` : null;
-    } catch (_) { return null; }
-  }
-
   // ---------- Consulta (local a esta tela: o motor do portal não muda) ----------
   // Materiais de todas as matrículas do aluno, menos desistência/cancelamento. Cada linha carrega a matrícula
-  // (curso, turma, situação) para o filtro por curso e para a coluna Curso. Materiais pendentes no administrativo
-  // (arquivo sem upload / link sem endereço) ficam de fora, como no detalhe do curso.
+  // (curso, turma, situação) para o filtro por curso e para a coluna Curso.
 
   function carregar() {
     const catalogo = typeof SOFTWARES_CATALOGO !== 'undefined' ? SOFTWARES_CATALOGO : [];
@@ -79,16 +46,7 @@
       .filter((m) => m.situacaoAluno !== 'desistiu' && m.situacaoAluno !== 'cancelada')
       .sort((a, b) => (ordemSit[a.situacaoAluno] ?? 9) - (ordemSit[b.situacaoAluno] ?? 9) || a.turma.inicio.localeCompare(b.turma.inicio) || a.ordem - b.ordem);
     const cursos = ms.map((m) => {
-      const materiais = (m.curso?.materiais ?? []).filter((x) => !Cursos.materialPendente(x)).map((mt) => {
-        const apostila = mt.tipo === 'arquivo' && (mt.arquivo?.mime === 'application/pdf' || /apostila/i.test(mt.nome));
-        const tipoTela = apostila ? 'apostila' : mt.tipo;
-        const modulo = mt.moduloId ? (m.curso?.modulos ?? []).find((x) => x.id === mt.moduloId) : null;
-        const detalhe = mt.tipo === 'video' ? (mt.duracaoMin ? duracao(mt.duracaoMin) : 'Vídeo')
-          : mt.tipo === 'arquivo' ? [mt.arquivo?.nome?.split('.').pop()?.toUpperCase(), mt.arquivo?.tamanho ? tamanho(mt.arquivo.tamanho) : ''].filter(Boolean).join(' · ')
-            : dominio(mt.url);
-        return { ...mt, tipoTela, modulo, detalhe, turmaId: m.turma.id };
-      });
-      // Materiais das aulas já liberados (só o que Materiais.doAluno devolve), na mesma tabela dos do curso.
+      // Materiais das aulas já liberados (só o que Materiais.doAluno devolve).
       const agendadas = Turmas.aulasAgendadas(m.turma) ?? [];
       const daAulas = (typeof Materiais !== 'undefined' ? Materiais.doAluno(m.turma.id, hoje) : []).map((mt) => {
         const aula = agendadas.find((a) => a.id === mt.aulaId);
@@ -96,7 +54,7 @@
         return { id: mt.id, nome: mt.titulo, tipo: mt.tipo, tipoTela: mt.tipo, url: mt.url, descricao: [origem, mt.descricao].filter(Boolean).join(' · '), detalhe: mt.tipo === 'link' ? dominio(mt.url) : mt.arquivo, turmaId: m.turma.id };
       });
       const softwares = (m.curso?.infraestrutura?.softwares ?? []).map((s) => ({ ...s, catalogo: s.softwareId ? catalogo.find((c) => c.id === s.softwareId) ?? null : null }));
-      return { matricula: m, nome: m.curso?.nome ?? m.turma.codigo, materiais: [...materiais, ...daAulas], softwares };
+      return { matricula: m, nome: m.curso?.nome ?? m.turma.codigo, materiais: daAulas, softwares };
     });
     const linhas = cursos.flatMap((c) => c.materiais.map((mt) => ({ ...mt, curso: c })));
     return { cursos, linhas };
@@ -114,9 +72,7 @@
   const programas = new Set(dados.cursos.flatMap((c) => c.softwares.map((s) => s.softwareId ?? `livre:${normalizar(s.nome)}`))).size;
   $('totais').innerHTML = [
     cartaoTotal('Materiais', dados.linhas.length, dados.cursos.length ? `em ${plural(cursosComMaterial, 'curso', 'cursos')} de ${dados.cursos.length}` : 'Nenhuma matrícula'),
-    cartaoTotal('Apostilas', porTipo('apostila'), 'PDF para estudar'),
     cartaoTotal('Arquivos', porTipo('arquivo'), 'exercícios, projetos, bases'),
-    cartaoTotal('Vídeos', porTipo('video'), 'aulas extras e tutoriais'),
     cartaoTotal('Links', porTipo('link'), 'repositórios e referências'),
     cartaoTotal('Programas', programas, cursosComSoftware ? `pedidos por ${plural(cursosComSoftware, 'curso', 'cursos')}` : 'Nenhum curso exige instalação'),
   ].join('');
@@ -168,7 +124,6 @@
   }
 
   function acaoMaterial(l) {
-    if (l.tipo === 'video') return `<button type="button" data-acao="video" data-id="${esc(l.id)}" data-turma="${esc(l.turmaId)}" class="botao-sec !py-1">Assistir</button>`;
     if (l.url) return `<a href="${esc(l.url)}" target="_blank" rel="noopener" class="botao-sec !py-1">Abrir</a>`;
     return `<button type="button" data-acao="baixar" data-nome="${esc(l.nome)}" class="botao-sec !py-1">Baixar</button>`;
   }
@@ -187,7 +142,7 @@
 
   function abaMateriais() {
     if (!dados.cursos.length) return vazio('Você ainda não está matriculado em nenhum curso, então não há materiais por aqui. Dúvidas? Fale com a secretaria.');
-    if (!dados.linhas.length) return vazio('Os seus cursos ainda não têm materiais publicados. Assim que a secretaria liberar apostilas, arquivos ou vídeos, eles aparecem aqui.');
+    if (!dados.linhas.length) return vazio('Nenhum material liberado nas aulas dos seus cursos ainda. Assim que o professor liberar, eles aparecem aqui.');
     const itens = filtrar();
     const filtrando = estado.busca.trim() || estado.curso !== 'todos' || estado.tipo !== 'todos';
     const aIniciar = dados.linhas.filter((l) => l.curso.matricula.situacaoAluno === 'a_iniciar').length;
@@ -275,15 +230,6 @@
     else if (acao === 'limpar') { estado.busca = ''; estado.curso = 'todos'; estado.tipo = 'todos'; renderAba(); }
     else if (acao === 'baixar') toast(`"${btn.dataset.nome}": download simulado no protótipo — o arquivo fica para a integração com o armazenamento.`);
     else if (acao === 'sem-site') toast(`"${btn.dataset.nome}" não tem site de download cadastrado. Peça o instalador à secretaria.`);
-    else if (acao === 'video') {
-      const l = dados.linhas.find((x) => x.id === btn.dataset.id && x.turmaId === btn.dataset.turma);
-      if (!l) return;
-      const embed = embedVideo(l.url);
-      if (!embed) { window.open(l.url, '_blank', 'noopener'); return; }
-      abrirModal(`${cabecalhoModal(l.nome, `${esc(l.curso.nome)}${l.duracaoMin ? ` · ${esc(duracao(l.duracaoMin))}` : ''}`)}
-        <div class="aspect-video bg-black"><iframe src="${esc(embed)}" title="${esc(l.nome)}" class="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
-        ${rodapeModal(`<a href="${esc(l.url)}" target="_blank" rel="noopener" class="botao-sec">Abrir em nova aba</a>`)}`);
-    }
   });
   document.addEventListener('change', (e) => {
     const sel = e.target.closest('[data-filtro]');

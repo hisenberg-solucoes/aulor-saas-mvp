@@ -347,7 +347,7 @@ const PortalAluno = (() => {
   }
 
   // Detalhe de um curso do aluno (turma): todas as aulas (passadas e futuras) com situação e os materiais
-  // que o professor já liberou (js/materiais-motor.js), módulos marcados como dados e softwares/materiais/pré-requisitos.
+  // que o professor já liberou (js/materiais-motor.js), módulos marcados como dados e softwares.
   function detalheCurso(alunoId, turmaId, ref = hoje()) {
     const m = todasMatriculas(alunoId, ref).find((x) => x.turma.id === turmaId);
     if (!m) return null;
@@ -377,11 +377,9 @@ const PortalAluno = (() => {
     });
     const catalogo = typeof SOFTWARES_CATALOGO !== 'undefined' ? SOFTWARES_CATALOGO : [];
     const softwares = (m.curso?.infraestrutura?.softwares ?? []).map((s) => ({ ...s, catalogo: s.softwareId ? catalogo.find((c) => c.id === s.softwareId) ?? null : null }));
-    const preRequisitos = (m.curso?.preRequisitoCursoIds ?? []).map((id) => Cursos.porId(cursos, id)).filter(Boolean);
-    const materiais = (m.curso?.materiais ?? []).filter((x) => !Cursos.materialPendente(x));
     const { ctx } = contextoFinanceiro();
     return {
-      ...m, aulas, realizadasLista: realizadas, modulos, softwares, preRequisitos, materiais,
+      ...m, aulas, realizadasLista: realizadas, modulos, softwares,
       contratante: Contratos.responsavelFinanceiro(ctx, m.contrato).nome,
       formacaoItens: m.formacao ? Formacoes.cursosDe(m.formacao, cursos) : [],
     };

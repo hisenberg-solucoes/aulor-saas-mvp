@@ -137,7 +137,6 @@ function selecionar(id) {
   location.href = id ? `instrutor.html?id=${encodeURIComponent(id)}` : 'instrutores.html';
 }
 const turmaLink = (t) => (t ? `<a href="turma.html?id=${encodeURIComponent(t.id)}" class="${LINK}">${esc(t.codigo)}</a>` : '<span class="text-slate-500 dark:text-neutral-400">turma removida</span>');
-const cursoLink = (c) => (c ? `<a href="curso.html?id=${encodeURIComponent(c.id)}" class="${LINK}">${esc(c.codigo)} · ${esc(c.nome)}</a>` : '<span class="text-slate-500 dark:text-neutral-400">—</span>');
 
 // ---------- Lista ----------
 
@@ -356,7 +355,6 @@ function alterarStatus(id, status) {
 
 function renderAbaDados(el, i) {
   const e = i.endereco; const c = i.contato; const tag = i.tagEstacionamento;
-  const cursosHab = Instrutores.cursosHabilitados(i.id);
   const turmas = Instrutores.turmasDoInstrutor(i.id);
   const pessoa = Instrutores.pessoaDe(i);
   const idade = Instrutores.idade(pessoa.nascimento);
@@ -404,11 +402,6 @@ function renderAbaDados(el, i) {
           ${tag.possui ? campo('Identificação', vazio(tag.identificacao)) : ''}
           ${tag.possui ? campo('Cedida em', tag.cedidaEm ? `<span class="tabular-nums">${esc(fmtData(tag.cedidaEm))}</span>` : vazio(null)) : (tag.devolvidaEm ? campo('Devolvida em', `<span class="tabular-nums">${esc(fmtData(tag.devolvidaEm))}</span>`) : '')}
         </div>
-      </section>
-
-      <section class="${CARTAO}">
-        ${cabecalhoSecao('Cursos habilitados', 'Definido em cada curso, na aba Requisitos.', null)}
-        ${cursosHab.length ? `<ul class="border-t border-slate-100 dark:border-neutral-900 divide-y divide-slate-100 dark:divide-neutral-900">${cursosHab.map((cu) => `<li class="px-4 py-2 text-sm">${cursoLink(cu)} <span class="${APOIO} tabular-nums">· ${cu.cargaHoraria} h</span></li>`).join('')}</ul>` : listaVazia('Nenhum curso habilita este instrutor ainda.')}
       </section>
 
       <section class="${CARTAO} overflow-hidden">

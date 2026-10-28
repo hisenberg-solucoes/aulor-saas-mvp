@@ -21,7 +21,6 @@
     prevista: { nome: 'Prevista', ponto: 'bg-sky-500' },
     cancelada: { nome: 'Cancelada', ponto: 'bg-red-500' },
   };
-  const TIPO_MATERIAL = { video: 'Vídeo', arquivo: 'Arquivo', link: 'Link' };
   const ICONE_RELOGIO = '<svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
   const ponto =(cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
   const situacao = (id) => ponto(PONTO[id] ?? 'bg-slate-400', SIT[id]?.nome ?? id);
@@ -218,7 +217,7 @@
       { id: 'visao', titulo: 'Visão geral' },
       { id: 'aulas', titulo: 'Aulas', n: d.aulas.length },
       { id: 'conteudo', titulo: 'Conteúdo', n: d.modulos.length },
-      { id: 'materiais', titulo: 'Materiais e requisitos', n: d.materiais.length + materiaisAulas.length + d.softwares.length },
+      { id: 'materiais', titulo: 'Materiais e requisitos', n: materiaisAulas.length + d.softwares.length },
     ];
     const abaUrl = params.get('aba');
     const estado = { aba: ABAS.some((x) => x.id === abaUrl) ? abaUrl : 'visao' };
@@ -328,19 +327,7 @@
     }
 
     function abaMateriais() {
-      const iconeMaterial = { video: 'M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z', arquivo: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z', link: 'M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244' };
-      const tamanho = (b) => (b >= 1_000_000 ? `${(b / 1_000_000).toFixed(1).replace('.', ',')} MB` : `${Math.round(b / 1000)} KB`);
-      const materiais = d.materiais.length
-        ? `<div class="cartao divide-y divide-slate-100 dark:divide-neutral-900">${d.materiais.map((mt) => {
-            const mod = mt.moduloId ? d.modulos.find((m) => m.id === mt.moduloId) : null;
-            const sub = [TIPO_MATERIAL[mt.tipo], mt.arquivo ? tamanho(mt.arquivo.tamanho) : '', mt.duracaoMin ? Turmas.duracaoTexto(mt.duracaoMin) : '', mod ? mod.titulo : ''].filter(Boolean).join(' · ');
-            return `<div class="px-5 py-3 flex items-center gap-4">
-              <div class="shrink-0 h-9 w-9 rounded-lg bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300 grid place-items-center"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="${iconeMaterial[mt.tipo] ?? iconeMaterial.link}" /></svg></div>
-              <div class="min-w-0 flex-1"><p class="text-sm font-medium text-slate-900 dark:text-neutral-100 truncate">${esc(mt.nome)}</p><p class="text-xs text-slate-500 dark:text-neutral-400">${esc(sub)}${mt.descricao ? ` · ${esc(mt.descricao)}` : ''}</p></div>
-              ${mt.url ? `<a href="${esc(mt.url)}" target="_blank" rel="noopener" class="link shrink-0">Abrir</a>` : `<button type="button" data-acao="baixar-material" data-nome="${esc(mt.nome)}" class="link shrink-0">Baixar</button>`}
-            </div>`;
-          }).join('')}</div>`
-        : vazio('Nenhum material publicado para este curso ainda.');
+      const iconeMaterial = { arquivo: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z', link: 'M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244' };
       const daAulas = materiaisAulas.length
         ? `<div class="cartao divide-y divide-slate-100 dark:divide-neutral-900">${materiaisAulas.map(({ mt, aula }) => `<div class="px-5 py-3 flex items-center gap-4">
               <div class="shrink-0 h-9 w-9 rounded-lg bg-petrol-800/10 dark:bg-petrol-700/40 text-petrol-800 dark:text-sky-300 grid place-items-center"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="${iconeMaterial[mt.tipo] ?? iconeMaterial.link}" /></svg></div>
@@ -360,18 +347,15 @@
           </table></div></div>`
         : vazio('Este curso não exige instalação de softwares.');
       const req = d.curso;
-      const preReq = d.preRequisitos.length || req?.preRequisitosTexto;
       const requisitos = `
-        <div class="cartao p-5 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          ${dado('Pré-requisitos', preReq ? `${d.preRequisitos.length ? `<ol class="list-decimal list-inside space-y-0.5">${d.preRequisitos.map((c) => `<li>${esc(c.nome)} <span class="font-mono text-xs text-slate-400">${esc(c.codigo)}</span></li>`).join('')}</ol>` : ''}${req?.preRequisitosTexto ? `<p class="${d.preRequisitos.length ? 'mt-1.5 ' : ''}text-slate-600 dark:text-neutral-300">${esc(req.preRequisitosTexto)}</p>` : ''}` : '<span class="text-slate-500 dark:text-neutral-400">Nenhum — o curso não exige conhecimento prévio.</span>')}
-          ${dado('Público-alvo', req?.publicoAlvo ? esc(req.publicoAlvo) : '—')}
+        <div class="cartao p-5 text-sm text-slate-800 dark:text-neutral-100">
+          ${req?.publicoAlvo ? esc(req.publicoAlvo) : '<span class="text-slate-500 dark:text-neutral-400">Não informado.</span>'}
         </div>`;
       return `
         <div class="space-y-6">
           <section><h3 class="titulo-secao mb-3">Softwares requeridos <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${d.softwares.length}</span></h3>${softwares}<p class="text-xs text-slate-500 dark:text-neutral-400 mt-2">Nos laboratórios da ProWay tudo já vem instalado; a lista é para quem quer praticar em casa ou assiste online.</p></section>
-          <section><h3 class="titulo-secao mb-3">Materiais do curso <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${d.materiais.length}</span></h3>${materiais}</section>
           <section><h3 class="titulo-secao mb-3">Materiais das aulas <span class="text-xs font-sans font-normal text-slate-400 tabular-nums ml-1">${materiaisAulas.length}</span></h3>${daAulas}</section>
-          <section><h3 class="titulo-secao mb-3">Pré-requisitos e público-alvo</h3>${requisitos}</section>
+          <section><h3 class="titulo-secao mb-3">Público-alvo</h3>${requisitos}</section>
         </div>`;
     }
 

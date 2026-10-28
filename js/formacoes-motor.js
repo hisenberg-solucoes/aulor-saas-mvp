@@ -304,19 +304,6 @@ const Formacoes = (() => {
     return atualizar(lista, id, { itens });
   }
 
-  // Pré-requisitos de um curso que não estão na formação nem vêm antes dele — aviso, não bloqueio.
-  function preRequisitosForaDeOrdem(formacao, cursos) {
-    const avisos = new Map();
-    formacao.itens.forEach((i, idx) => {
-      const curso = Cursos.porId(cursos, i.cursoId);
-      if (!curso) return;
-      const antes = formacao.itens.slice(0, idx).map((x) => x.cursoId);
-      const faltando = curso.preRequisitoCursoIds.filter((p) => !antes.includes(p)).map((p) => Cursos.porId(cursos, p)).filter(Boolean);
-      if (faltando.length) avisos.set(i.cursoId, faltando);
-    });
-    return avisos;
-  }
-
   // ---------- Alunos da formação (via contratos) ----------
 
   // Só funciona quando a página carregou Clientes/Contratos (formacao.html carrega).
@@ -381,6 +368,6 @@ const Formacoes = (() => {
     validarDados, validarCertificado, validarComercial,
     incluir, atualizarDados, remover, nomeDeCopia, codigoDeCopia, duplicar, alterarStatus,
     atualizarCertificado, atualizarComercial, validarAgenda, temAgenda, atualizarAgenda,
-    podeEditarCursos, adicionarCursos, removerCurso, alternarObrigatorio, moverCurso, reordenarCurso, horasItem, somaHoras, validarCargaHoraria, definirCargaHoraria, preRequisitosForaDeOrdem,
+    podeEditarCursos, adicionarCursos, removerCurso, alternarObrigatorio, moverCurso, reordenarCurso, horasItem, somaHoras, validarCargaHoraria, definirCargaHoraria,
   };
 })();

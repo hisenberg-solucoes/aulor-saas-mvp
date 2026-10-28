@@ -14,7 +14,7 @@
 // porque as turmas e o login do portal do professor leem do instrutor.
 //
 // Os ids (i0–i8) são os mesmos de `INSTRUTORES` em js/cursos-data.js, que as
-// turmas apontam (`turma.instrutorId`) e os cursos habilitam (`curso.instrutorIds`).
+// turmas apontam (`turma.instrutorId`).
 // Dados pessoais/bancários da semente são fictícios (LGPD).
 // ============================================================
 

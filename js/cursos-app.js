@@ -2,7 +2,7 @@
 // UI da tela "Cursos". Regras no motor (Cursos.*); aqui só se monta
 // HTML, reage a cliques e persiste.
 // Fluxo: lista (cursos.html, busca + filtros) → curso aberto em página própria
-// (curso.html?id=&aba=) com abas Dados gerais | Conteúdo programático | Material didático | Requisitos | Onde é oferecido.
+// (curso.html?id=&aba=) com abas Dados gerais | Conteúdo programático | Requisitos.
 // ============================================================
 
 // Modo da página: `cursos.html` (lista) ou `curso.html?id=` (detalhe). Mesmo JS nas duas.
@@ -20,9 +20,7 @@ const estado = {
 const ABAS = [
   { id: 'dados', titulo: 'Dados gerais' },
   { id: 'conteudo', titulo: 'Conteúdo programático' },
-  { id: 'material', titulo: 'Material didático' },
   { id: 'requisitos', titulo: 'Requisitos' },
-  { id: 'oferta', titulo: 'Onde é oferecido' },
 ];
 
 const ICONE = {
@@ -36,15 +34,10 @@ const ICONE = {
   fechar: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>',
   chevron: '<svg class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>',
   relogio: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
-  pessoa: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>',
   lista: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>',
   local: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>',
-  turmas: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>',
   alerta: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>',
   check: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>',
-  video: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-2.36a.75.75 0 011.03.67v6.38a.75.75 0 01-1.03.67L15.75 13.5m-13.5-4.5A2.25 2.25 0 014.5 6.75h9a2.25 2.25 0 012.25 2.25v6a2.25 2.25 0 01-2.25 2.25h-9A2.25 2.25 0 012.25 15V9z"/></svg>',
-  arquivo: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>',
-  link: '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>',
   dinheiro: '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" /></svg>',
 };
 
@@ -66,7 +59,7 @@ const AVISO = 'text-[color:var(--f-aviso)]';
 const CARTAO_OPCAO = 'cursor-pointer rounded-lg border p-3 has-[:checked]:border-petrol-800 dark:has-[:checked]:border-sky-400 has-[:checked]:bg-petrol-800/5 dark:has-[:checked]:bg-sky-950/40 border-slate-300 dark:border-neutral-700 hover:border-slate-400 dark:hover:border-neutral-500 transition';
 const CHECK = 'check';
 
-// Pílula só de exceção (Regra da Pílula de Exceção): ativo e "no site" são o comum e não se anunciam.
+// Pílula só de exceção (Regra da Pílula de Exceção): ativo é o comum e não se anuncia.
 const PILULA = {
   ativo: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
   rascunho: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
@@ -133,7 +126,6 @@ function pilulaArea(id) {
 const nivelDe = (id) => NIVEIS.find((n) => n.id === id);
 const statusDe = (id) => STATUS_CURSO.find((s) => s.id === id);
 const formatoDe = (id) => nomeDe(FORMATOS, id);
-const instrutorDe = (id) => INSTRUTORES.find((i) => i.id === id);
 
 function valorOuVazio(v, fallback = '<span class="text-slate-500 dark:text-neutral-400">não informado</span>') {
   return v == null || v === '' ? fallback : esc(v);
@@ -147,16 +139,14 @@ function atual() {
   return Cursos.porId(estado.lista, estado.selecionado);
 }
 
-function urlCurso(id, aba = 'dados', sub = '') {
-  return `curso.html?id=${encodeURIComponent(id)}${aba && aba !== 'dados' ? `&aba=${encodeURIComponent(aba)}` : ''}${sub ? `&sub=${encodeURIComponent(sub)}` : ''}`;
+function urlCurso(id, aba = 'dados') {
+  return `curso.html?id=${encodeURIComponent(id)}${aba && aba !== 'dados' ? `&aba=${encodeURIComponent(aba)}` : ''}`;
 }
 
 // Só no detalhe: mantém `id` e atualiza o parâmetro secundário `aba`.
 function atualizarUrl() {
   if (MODO !== 'detalhe' || !estado.selecionado) return;
-  // Cada parte de Requisitos guarda o próprio id na URL (Regra da Linha de Abas); a primeira é o padrão.
-  const sub = estado.aba === 'requisitos' && estado.subRequisitos && estado.subRequisitos !== 'pre' ? estado.subRequisitos : '';
-  history.replaceState(null, '', urlCurso(estado.selecionado, estado.aba, sub));
+  history.replaceState(null, '', urlCurso(estado.selecionado, estado.aba));
 }
 
 // Navega entre páginas: null → lista; id → página de detalhe (curso.html?id=).
@@ -288,24 +278,21 @@ function renderCurso() {
   const el = document.getElementById('tela');
   const c = atual();
   const pend = c.status === 'inativo' ? [] : Cursos.pendencias(c);
-  const turmas = Cursos.turmasDoCurso(c.id);
-  const formacoes = Cursos.formacoesDoCurso(c.id);
   const podeExcluir = Cursos.podeExcluir(c.id);
   const sugestoes = sugestoesSoftware(c).filter((x) => x.status === 'pendente').length;
   const subAba = (a) => {
-    const n = a.id === 'conteudo' ? c.modulos.length : a.id === 'material' ? c.materiais.length : a.id === 'oferta' ? turmas.length + formacoes.length : null;
+    const n = a.id === 'conteudo' ? c.modulos.length : null;
     return `
     <button type="button" data-aba="${a.id}"
       class="px-0.5 pb-2.5 text-sm border-b-2 transition whitespace-nowrap ${estado.aba === a.id ? 'border-[color:var(--f-marca-tinta)] text-slate-900 dark:text-neutral-100 font-medium' : 'border-transparent text-slate-600 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-200'}">${a.titulo}${n != null ? ` <span class="ml-1 text-xs text-slate-600 dark:text-neutral-400 tabular-nums">${n}</span>` : ''}${a.id === 'requisitos' && sugestoes ? ` <span class="ml-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 px-1.5 text-[11px] tabular-nums" title="${esc(plural(sugestoes, 'sugestão de instrutor esperando resposta', 'sugestões de instrutores esperando resposta'))}">${sugestoes}</span>` : ''}</button>`;
   };
-  // Pílula só de exceção: inativo, e ativo fora do site (o comum é estar publicado). Rascunho fica na faixa.
-  const pilulas = c.status === 'inativo' ? pilula(PILULA.inativo, 'Inativo', statusDe('inativo').descricao)
-    : c.status === 'ativo' && !c.comercial.publicadoSite ? pilula(PILULA.neutra, 'Fora do site', 'Ativo, mas não publicado no site da ProWay') : '';
+  // Pílula só de exceção: inativo. Rascunho fica na faixa.
+  const pilulas = c.status === 'inativo' ? pilula(PILULA.inativo, 'Inativo', statusDe('inativo').descricao) : '';
   // Uma ação à vista; o resto no "Mais", com o motivo de cada item travado.
   const itensMais = [
     { nome: 'Duplicar', detalhe: 'Cópia em rascunho com tudo igual', acao: () => abrirModalDuplicar(c.id) },
     c.status === 'ativo'
-      ? { nome: 'Inativar', detalhe: 'Sai do catálogo e do site; turmas e histórico continuam', acao: () => alterarStatus(c.id, 'inativo') }
+      ? { nome: 'Inativar', detalhe: 'Sai do catálogo; turmas e histórico continuam', acao: () => alterarStatus(c.id, 'inativo') }
       : { nome: 'Ativar', detalhe: pend.length ? `Libera para o comercial mesmo com ${plural(pend.length, 'pendência')}` : 'Libera para o comercial', acao: () => alterarStatus(c.id, 'ativo') },
     'sep',
     { nome: 'Excluir curso', perigo: true, desabilitado: !podeExcluir, detalhe: podeExcluir ? '' : 'Tem turmas ou formações vinculadas — inative em vez de excluir', acao: () => confirmarExclusao(c.id) },
@@ -331,8 +318,6 @@ function renderCurso() {
             ${chip(ICONE.lista, [eixoDe(c.eixoId), nivelDe(c.nivel)?.nome].filter(Boolean).map(esc).join(' · '), 'Eixo na matriz · nível')}
             ${chip(ICONE.relogio, `${fmtHoras(c.cargaHoraria)}${c.encontros ? ` · ${plural(c.encontros, 'encontro')}` : ''}`, 'Carga horária')}
             ${chip(ICONE.local, c.formatos.map(formatoDe).join(' · ') || 'sem formato', 'Formatos')}
-            ${chip(ICONE.pessoa, c.instrutorIds.length ? plural(c.instrutorIds.length, 'instrutor', 'instrutores') : 'sem instrutor', 'Instrutores habilitados')}
-            ${chip(ICONE.turmas, `${plural(formacoes.length, 'formação', 'formações')} · ${plural(turmas.length, 'turma')}`, 'Onde é oferecido')}
           </div>
         </div>
       </div>
@@ -356,7 +341,7 @@ function renderCurso() {
   el.querySelector('#btn-ativar')?.addEventListener('click', () => alterarStatus(c.id, 'ativo'));
   el.querySelectorAll('[data-aba]').forEach((b) => b.addEventListener('click', () => { estado.aba = b.dataset.aba; atualizarUrl(); renderCurso(); }));
 
-  ({ dados: renderAbaDados, conteudo: renderAbaConteudo, material: renderAbaMaterial, requisitos: renderAbaRequisitos, oferta: renderAbaOferta })[estado.aba]();
+  ({ dados: renderAbaDados, conteudo: renderAbaConteudo, requisitos: renderAbaRequisitos })[estado.aba]();
 }
 
 // Rascunho pede uma decisão (ativar); curso ativo incompleto pede o que falta. Inativo e completo não têm faixa.
@@ -394,7 +379,7 @@ function alterarStatus(id, status) {
   estado.lista = Cursos.alterarStatus(estado.lista, id, status);
   persistir();
   renderCurso();
-  toast(`"${atual().nome}" ${status === 'ativo' ? 'ativado.' : 'inativado — sai do catálogo e do site.'}`);
+  toast(`"${atual().nome}" ${status === 'ativo' ? 'ativado.' : 'inativado — sai do catálogo.'}`);
 }
 
 // ---------- Aba Dados gerais ----------
@@ -403,7 +388,6 @@ function renderAbaDados() {
   const c = atual();
   document.getElementById('acoes-aba').innerHTML = '';
   const k = c.comercial;
-  const canais = [k.turmaAberta ? 'Turma aberta' : null, k.inCompany ? 'In company' : null].filter(Boolean);
   const precoHora = k.precoReferencia != null && c.cargaHoraria ? k.precoReferencia / c.cargaHoraria : null;
   document.getElementById('conteudo-aba').innerHTML = `
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -428,7 +412,6 @@ function renderAbaDados() {
           ${campo('Resumo (uma linha)', valorOuVazio(c.resumo))}
           ${campo('Descrição / objetivo', `<p class="whitespace-pre-line">${valorOuVazio(c.descricao)}</p>`)}
           ${campo('Público-alvo', valorOuVazio(c.publicoAlvo))}
-          ${campo('Pré-requisitos (texto livre)', valorOuVazio(c.preRequisitosTexto, '<span class="text-slate-500 dark:text-neutral-400">nenhum</span>'))}
         </div>
       </section>
 
@@ -438,8 +421,6 @@ function renderAbaDados() {
           ${campo('Preço de referência', k.precoReferencia == null ? valorOuVazio(null) : `<span class="tabular-nums">${fmtMoeda(k.precoReferencia)}</span>${precoHora == null ? '' : ` <span class="text-xs text-slate-500 dark:text-neutral-400 tabular-nums">· ${fmtMoeda(precoHora)} por hora</span>`}`)}
           ${campo('Parcelamento máximo', k.parcelasMax ? `<span class="tabular-nums">${k.parcelasMax}×${k.precoReferencia != null ? ` de ${fmtMoeda(k.precoReferencia / k.parcelasMax)}` : ''}</span>` : valorOuVazio(null))}
           ${campo('Vagas para abrir · máximo', k.vagasMin == null && k.vagasMax == null ? valorOuVazio(null) : `<span class="tabular-nums">${k.vagasMin ?? '—'} · ${k.vagasMax ?? '—'}</span>`)}
-          ${campo('Como é vendido', canais.length ? canais.join(' · ') : valorOuVazio(null))}
-          ${campo('Site da ProWay', k.publicadoSite ? 'Publicado' : `<span class="text-slate-500 dark:text-neutral-400">${c.status === 'ativo' ? 'não publicado' : 'só curso ativo é publicado'}</span>`)}
         </div>
       </section>
     </div>`;
@@ -556,205 +537,73 @@ function confirmarExclusaoModulo(moduloId) {
 
 // ---------- Aba Requisitos ----------
 
-// ---------- Aba Material didático ----------
-
-function fmtTamanho(bytes) {
-  if (bytes == null) return '';
-  if (bytes >= 1_000_000) return `${(bytes / 1_000_000).toFixed(1).replace('.', ',')} MB`;
-  return `${Math.max(1, Math.round(bytes / 1000))} KB`;
-}
-
-function dominioDe(url) {
-  try { return new URL(url).hostname.replace(/^www\./, ''); } catch (_) { return url; }
-}
-
-function renderAbaMaterial() {
-  const c = atual();
-  const acoes = document.getElementById('acoes-aba');
-  const termo = Cursos.normalizar(estado.buscaMaterial ?? '');
-  const tipoFiltro = estado.tipoMaterial ?? '';
-  const moduloDe = (id) => c.modulos.find((m) => m.id === id);
-  const itens = c.materiais
-    .filter((m) => (!tipoFiltro || m.tipo === tipoFiltro) && (!termo || Cursos.normalizar(`${m.nome} ${m.descricao} ${m.url} ${m.arquivo?.nome ?? ''}`).includes(termo)))
-    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-  const pendentes = c.materiais.filter(Cursos.materialPendente).length;
-  const totais = TIPOS_MATERIAL.map((t) => `${c.materiais.filter((m) => m.tipo === t.id).length} ${t.nome.toLowerCase()}${c.materiais.filter((m) => m.tipo === t.id).length === 1 ? '' : 's'}`).join(' · ');
-
-  acoes.innerHTML = `
-    <span class="text-sm text-slate-600 dark:text-neutral-400 tabular-nums">${c.materiais.length ? totais : 'Nenhum material'}${pendentes ? ` · <span class="${AVISO}">${plural(pendentes, 'pendente')}</span>` : ''}</span>
-    <div class="ml-auto flex items-center gap-2">
-      ${busca('busca-material', estado.buscaMaterial ?? '', 'Buscar material', 'w-56')}
-      ${campoCombo('filtro-tipo-material', TIPOS_MATERIAL.map((t) => ({ id: t.id, nome: t.nome })), tipoFiltro, { id: 'filtro-tipo-material', vazio: 'Todos os tipos', filtro: true })}
-      <button type="button" id="btn-novo-material" class="${BOTAO_PRI}">${ICONE.mais} Novo material</button>
-    </div>`;
-
-  const meta = (m) => {
-    const p = Cursos.materialPendente(m);
-    if (p) return `<span class="${AVISO}">${p}</span>`;
-    if (m.tipo === 'arquivo') return `${esc(m.arquivo.nome)} · ${fmtTamanho(m.arquivo.tamanho)}`;
-    if (m.tipo === 'video') return `${esc(dominioDe(m.url))}${m.duracaoMin ? ` · ${m.duracaoMin} min` : ''}`;
-    return esc(dominioDe(m.url));
-  };
-
-  document.getElementById('conteudo-aba').innerHTML = `
-    <section class="${CARTAO}">
-      <ul class="divide-y divide-slate-100 dark:divide-neutral-900">
-        ${itens.length ? itens.map((m) => {
-          const mod = moduloDe(m.moduloId);
-          const abrir = m.tipo === 'arquivo' ? (m.arquivo ? `<button type="button" data-baixar-material="${m.id}" class="${BOTAO_LINK}">Baixar</button>` : '') : (m.url ? `<a href="${esc(m.url)}" target="_blank" rel="noopener" class="${BOTAO_LINK}">Abrir</a>` : '');
-          return `
-          <li class="flex items-center gap-3 px-4 py-2.5">
-            <span class="h-8 w-8 rounded-lg grid place-items-center shrink-0 bg-slate-100 dark:bg-neutral-900 text-slate-500 dark:text-neutral-400">${ICONE[m.tipo]}</span>
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-slate-800 dark:text-neutral-100 truncate">${esc(m.nome)}</p>
-              <p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${meta(m)}${mod ? ` · <span title="Módulo">${esc(mod.titulo)}</span>` : ''}${m.descricao ? ` · ${esc(m.descricao)}` : ''}</p>
-            </div>
-            ${pilula(PILULA.neutra, nomeDe(TIPOS_MATERIAL, m.tipo))}
-            ${abrir}
-            <button type="button" data-editar-material="${m.id}" title="Editar" class="${ICONE_BOTAO}">${ICONE.lapis}</button>
-            <button type="button" data-remover-material="${m.id}" title="Remover material" class="${ICONE_BOTAO_VERMELHO}">${ICONE.lixeira}</button>
-          </li>`;
-        }).join('') : `<li class="px-4 py-10 text-center text-sm text-slate-500 dark:text-neutral-400">${c.materiais.length ? 'Nenhum material com esse filtro.' : 'Nenhum material — adicione vídeos, arquivos e links que o aluno recebe.'}</li>`}
-      </ul>
-    </section>`;
-
-  acoes.querySelector('#busca-material').addEventListener('input', (e) => { estado.buscaMaterial = e.target.value; renderAbaMaterial(); acoes.querySelector('#busca-material').focus(); acoes.querySelector('#busca-material').setSelectionRange(e.target.value.length, e.target.value.length); });
-  acoes.querySelector('[data-name="filtro-tipo-material"] input[type="hidden"]').addEventListener('change', (e) => { estado.tipoMaterial = e.target.value; renderAbaMaterial(); });
-  ativarCombos(acoes);
-  acoes.querySelector('#btn-novo-material').addEventListener('click', () => abrirModalMaterial());
-  const el = document.getElementById('conteudo-aba');
-  el.querySelectorAll('[data-editar-material]').forEach((b) => b.addEventListener('click', () => abrirModalMaterial(b.dataset.editarMaterial)));
-  el.querySelectorAll('[data-baixar-material]').forEach((b) => b.addEventListener('click', () => {
-    const m = c.materiais.find((x) => x.id === b.dataset.baixarMaterial);
-    toast(`Download de "${m.arquivo.nome}" simulado — o protótipo não guarda o conteúdo do arquivo.`);
-  }));
-  el.querySelectorAll('[data-remover-material]').forEach((b) => b.addEventListener('click', () => {
-    const m = c.materiais.find((x) => x.id === b.dataset.removerMaterial);
-    removerComDesfazer(Cursos.removerMaterial(estado.lista, c.id, m.id), `"${m.nome}" removido.`);
-  }));
-}
-
-const SUB_REQUISITOS = [
-  { id: 'pre', titulo: 'Pré-requisitos' },
-  { id: 'instrutores', titulo: 'Instrutores' },
-  { id: 'infra', titulo: 'Softwares' }, // id antigo mantido: links ?sub=infra continuam abrindo aqui
-];
-
-// Requisitos é dividido em partes (controle segmentado) para cada lista crescer sem empurrar as outras.
+// Só a lista de softwares (escopo da V1): o aluno vê para instalar os programas antes das aulas.
 function renderAbaRequisitos() {
   const c = atual();
-  const sub = SUB_REQUISITOS.some((x) => x.id === estado.subRequisitos) ? estado.subRequisitos : 'pre';
-  estado.subRequisitos = sub;
-  const pre = c.preRequisitoCursoIds.map((id) => Cursos.porId(estado.lista, id)).filter(Boolean).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-  const instrutores = c.instrutorIds.map(instrutorDe).filter(Boolean).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-  const infra = c.infraestrutura;
-  const softwares = infra.softwares
+  const softwares = c.infraestrutura.softwares
     .map((item) => ({ item, cat: item.softwareId ? softwareDoCatalogo(item.softwareId) : null, chave: Cursos.chaveSoftware(item) }))
     .sort((a, b) => a.item.nome.localeCompare(b.item.nome, 'pt-BR'));
   const sugestoes = sugestoesSoftware(c);
   const pendentes = sugestoes.filter((x) => x.status === 'pendente');
   const respondidas = sugestoes.filter((x) => x.status !== 'pendente');
-  const contagem = { pre: pre.length, instrutores: instrutores.length, infra: softwares.length };
   const listaVazia = (texto) => `<li class="px-4 py-8 text-center text-sm text-slate-500 dark:text-neutral-400">${texto}</li>`;
   const LISTA = 'mt-3 border-t border-slate-100 dark:border-neutral-900 divide-y divide-slate-100 dark:divide-neutral-900';
 
-  const acoesSub = {
-    pre: `<button type="button" id="btn-add-pre" class="${BOTAO_PRI}">${ICONE.mais} Adicionar cursos</button>`,
-    instrutores: `<button type="button" id="btn-add-instrutor" class="${BOTAO_PRI}">${ICONE.mais} Adicionar instrutores</button>`,
-    infra: `<button type="button" id="btn-add-software-livre" class="${BOTAO_SEC}">Fora do catálogo</button>
-            <button type="button" id="btn-add-software" class="${BOTAO_PRI}">${ICONE.mais} Adicionar do catálogo</button>`,
-  };
   const acoes = document.getElementById('acoes-aba');
-  const parte = (x) => `
-      <button type="button" data-sub="${x.id}" aria-pressed="${sub === x.id}" class="h-7 px-2.5 rounded-md text-[12.5px] font-medium whitespace-nowrap transition ${sub === x.id ? 'bg-[color:var(--f-elevado)] text-[color:var(--f-tinta)] shadow-[0_1px_2px_rgb(7_30_44/0.08)]' : 'text-[color:var(--f-tinta-2)] hover:text-[color:var(--f-tinta)]'}">${x.titulo}<span class="ml-1 text-xs tabular-nums text-[color:var(--f-tinta-3)]">${contagem[x.id]}</span>${x.id === 'infra' && pendentes.length ? `<span class="ml-1.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-1.5 text-[11px] font-semibold tabular-nums" title="${esc(plural(pendentes.length, 'sugestão de instrutor esperando resposta', 'sugestões de instrutores esperando resposta'))}">${pendentes.length}</span>` : ''}</button>`;
   acoes.innerHTML = `
-    <div class="inline-flex rounded-lg bg-[color:var(--f-etiqueta)] p-0.5">${SUB_REQUISITOS.map(parte).join('')}</div>
-    <div class="ml-auto flex items-center gap-2">${acoesSub[sub]}</div>`;
-  acoes.querySelectorAll('[data-sub]').forEach((b) => b.addEventListener('click', () => { estado.subRequisitos = b.dataset.sub; atualizarUrl(); renderAbaRequisitos(); }));
-
-  const conteudo = {
-    pre: `
-      <section class="${CARTAO}">
-        ${cabecalhoSecao('Cursos exigidos', 'O aluno precisa ter concluído estes cursos antes. O texto livre de pré-requisitos fica em Dados gerais › Descrição.')}
-        <ul class="${LISTA}">
-          ${pre.length ? pre.map((p) => `
-          <li class="flex items-center gap-3 px-4 py-2.5">
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-slate-800 dark:text-neutral-100"><span class="font-mono text-xs text-slate-500 dark:text-neutral-400 mr-1.5">${esc(p.codigo)}</span>${esc(p.nome)}</p>
-              <p class="text-xs text-slate-500 dark:text-neutral-400">${esc(eixoDe(p.eixoId))} · ${fmtHoras(p.cargaHoraria)} · ${esc(nivelDe(p.nivel)?.nome ?? '')}</p>
-            </div>
-            <button type="button" data-abrir-curso="${p.id}" class="${BOTAO_LINK}">Abrir</button>
-            <button type="button" data-remover-pre="${p.id}" title="Remover pré-requisito" class="${ICONE_BOTAO_VERMELHO}">${ICONE.lixeira}</button>
-          </li>`).join('') : listaVazia('Nenhum curso como pré-requisito.')}
-        </ul>
-      </section>`,
-    instrutores: `
-      <section class="${CARTAO}">
-        ${cabecalhoSecao('Instrutores habilitados', 'Quem pode ser alocado nas turmas deste curso.')}
-        <ul class="${LISTA}">
-          ${instrutores.length ? instrutores.map((i) => `
-          <li class="flex items-center gap-3 px-4 py-2.5">
-            <div class="h-8 w-8 rounded-full bg-petrol-800 text-white grid place-items-center text-xs font-semibold shrink-0">${esc(i.nome.split(' ').map((p) => p[0]).slice(0, 2).join(''))}</div>
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(i.nome)}</p>
-              <p class="text-xs text-slate-500 dark:text-neutral-400">${esc(i.especialidade)}</p>
-            </div>
-            <button type="button" data-remover-instrutor="${i.id}" title="Remover habilitação" class="${ICONE_BOTAO_VERMELHO}">${ICONE.lixeira}</button>
-          </li>`).join('') : listaVazia('Nenhum instrutor habilitado — sem isso não dá para abrir turma.')}
-        </ul>
-      </section>`,
-    infra: `
-      ${sugestoes.length ? `
-      <section class="${CARTAO} mb-4">
-        ${cabecalhoSecao(`Sugestões dos instrutores${pendentes.length ? ` <span class="ml-1 text-sm font-medium ${AVISO} tabular-nums">${pendentes.length}</span>` : ''}`, 'Vieram das turmas, pelo Portal do Professor. O instrutor já ajustou a turma dele; aceitar leva a mudança para o catálogo do curso — e para as próximas turmas.')}
-        <ul class="${LISTA}">
-          ${pendentes.length ? pendentes.map((sg) => `
-          <li class="flex items-start gap-3 px-4 py-3">
-            <div class="min-w-0 flex-1">
-              <p class="text-sm text-slate-800 dark:text-neutral-100">${esc(Cursos.textoSugestao(sg))}</p>
-              ${sg.observacao ? `<p class="text-xs text-slate-700 dark:text-neutral-300 mt-0.5">${esc(sg.observacao)}</p>` : ''}
-              ${sg.site ? `<p class="text-xs mt-0.5"><a href="${esc(sg.site)}" target="_blank" rel="noopener" class="${BOTAO_LINK}">${esc(sg.site.replace(/^https?:\/\//, ''))}</a></p>` : ''}
-              <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(sg.instrutorNome || 'Instrutor')}${sg.turmaCodigo ? ` · turma ${esc(sg.turmaCodigo)}` : ''} · ${esc(fmtDataHora(sg.em))}</p>
-            </div>
-            <div class="flex items-center gap-2 shrink-0">
-              <button type="button" data-recusar-sug="${esc(sg.id)}" class="${BOTAO_FANTASMA}">Recusar</button>
-              <button type="button" data-aceitar-sug="${esc(sg.id)}" class="${BOTAO_SEC}">Aceitar</button>
-            </div>
-          </li>`).join('') : `<li class="px-4 py-3 text-sm text-slate-500 dark:text-neutral-400">Nenhuma sugestão esperando resposta.</li>`}
-        </ul>
-        ${respondidas.length ? `
-        <details class="px-4 py-2.5 border-t border-slate-100 dark:border-neutral-900">
-          <summary class="cursor-pointer text-xs text-slate-500 dark:text-neutral-400">${plural(respondidas.length, 'sugestão já respondida', 'sugestões já respondidas')}</summary>
-          <ul class="mt-2 space-y-1.5">
-            ${respondidas.map((sg) => `<li class="text-xs text-slate-500 dark:text-neutral-400">${pilula(sg.status === 'aceita' ? PILULA.ativo : PILULA.neutra, sg.status === 'aceita' ? 'aceita' : 'recusada')} ${esc(Cursos.textoSugestao(sg))} — ${esc(sg.instrutorNome || 'Instrutor')}${sg.turmaCodigo ? ` · ${esc(sg.turmaCodigo)}` : ''}${sg.motivo ? ` · ${esc(sg.motivo)}` : ''}</li>`).join('')}
-          </ul>
-        </details>` : ''}
-      </section>` : ''}
-      <section class="${CARTAO}">
-        ${cabecalhoSecao('Softwares', 'O aluno vê esta lista para instalar os programas no computador antes das aulas.')}
-        <ul class="${LISTA}">
-          ${softwares.length ? softwares.map(({ item, cat, chave }) => `
-          <li class="flex items-center gap-3 px-4 py-2">
-            <div class="min-w-0 flex-1 flex flex-wrap items-baseline gap-x-2">
-              <span class="text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(item.nome)}</span>
-              ${cat?.versao ? `<span class="text-xs text-slate-500 dark:text-neutral-400">${esc(cat.versao)}</span>` : ''}
-              <span class="text-xs text-slate-500 dark:text-neutral-400 truncate">${cat ? esc(cat.grupo) + (cat.requisitos ? ` · requer ${esc(cat.requisitos)}` : '') : 'sem roteiro de instalação no suporte'}${item.observacao ? ` · <span class="text-slate-700 dark:text-neutral-300">${esc(item.observacao)}</span>` : ''}</span>
-            </div>
-            ${cat ? '' : pilula(PILULA.neutra, 'fora do catálogo')}
-            ${cat?.site || item.site ? `<a href="${esc(cat?.site || item.site)}" target="_blank" rel="noopener" class="${BOTAO_LINK}" title="${esc(cat?.site || item.site)}">Site</a>` : ''}
-            <button type="button" data-obs-software="${esc(chave)}" title="Observação (versão, configuração, licença…)" class="${ICONE_BOTAO}">${ICONE.lapis}</button>
-            <button type="button" data-remover-software="${esc(chave)}" title="Remover software" class="${ICONE_BOTAO_VERMELHO}">${ICONE.lixeira}</button>
-          </li>`).join('') : listaVazia('Nenhum software requerido.')}
-        </ul>
-      </section>`,
-  };
+    <span class="text-sm text-slate-600 dark:text-neutral-400 tabular-nums">${softwares.length ? plural(softwares.length, 'software') : 'Nenhum software'}</span>
+    <div class="ml-auto flex items-center gap-2">
+      <button type="button" id="btn-add-software-livre" class="${BOTAO_SEC}">Fora do catálogo</button>
+      <button type="button" id="btn-add-software" class="${BOTAO_PRI}">${ICONE.mais} Adicionar do catálogo</button>
+    </div>`;
   const el = document.getElementById('conteudo-aba');
-  el.innerHTML = conteudo[sub];
+  el.innerHTML = `
+    ${sugestoes.length ? `
+    <section class="${CARTAO} mb-4">
+      ${cabecalhoSecao(`Sugestões dos instrutores${pendentes.length ? ` <span class="ml-1 text-sm font-medium ${AVISO} tabular-nums">${pendentes.length}</span>` : ''}`, 'Vieram das turmas, pelo Portal do Professor. O instrutor já ajustou a turma dele; aceitar leva a mudança para o catálogo do curso — e para as próximas turmas.')}
+      <ul class="${LISTA}">
+        ${pendentes.length ? pendentes.map((sg) => `
+        <li class="flex items-start gap-3 px-4 py-3">
+          <div class="min-w-0 flex-1">
+            <p class="text-sm text-slate-800 dark:text-neutral-100">${esc(Cursos.textoSugestao(sg))}</p>
+            ${sg.observacao ? `<p class="text-xs text-slate-700 dark:text-neutral-300 mt-0.5">${esc(sg.observacao)}</p>` : ''}
+            ${sg.site ? `<p class="text-xs mt-0.5"><a href="${esc(sg.site)}" target="_blank" rel="noopener" class="${BOTAO_LINK}">${esc(sg.site.replace(/^https?:\/\//, ''))}</a></p>` : ''}
+            <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">${esc(sg.instrutorNome || 'Instrutor')}${sg.turmaCodigo ? ` · turma ${esc(sg.turmaCodigo)}` : ''} · ${esc(fmtDataHora(sg.em))}</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" data-recusar-sug="${esc(sg.id)}" class="${BOTAO_FANTASMA}">Recusar</button>
+            <button type="button" data-aceitar-sug="${esc(sg.id)}" class="${BOTAO_SEC}">Aceitar</button>
+          </div>
+        </li>`).join('') : `<li class="px-4 py-3 text-sm text-slate-500 dark:text-neutral-400">Nenhuma sugestão esperando resposta.</li>`}
+      </ul>
+      ${respondidas.length ? `
+      <details class="px-4 py-2.5 border-t border-slate-100 dark:border-neutral-900">
+        <summary class="cursor-pointer text-xs text-slate-500 dark:text-neutral-400">${plural(respondidas.length, 'sugestão já respondida', 'sugestões já respondidas')}</summary>
+        <ul class="mt-2 space-y-1.5">
+          ${respondidas.map((sg) => `<li class="text-xs text-slate-500 dark:text-neutral-400">${pilula(sg.status === 'aceita' ? PILULA.ativo : PILULA.neutra, sg.status === 'aceita' ? 'aceita' : 'recusada')} ${esc(Cursos.textoSugestao(sg))} — ${esc(sg.instrutorNome || 'Instrutor')}${sg.turmaCodigo ? ` · ${esc(sg.turmaCodigo)}` : ''}${sg.motivo ? ` · ${esc(sg.motivo)}` : ''}</li>`).join('')}
+        </ul>
+      </details>` : ''}
+    </section>` : ''}
+    <section class="${CARTAO}">
+      ${cabecalhoSecao('Softwares', 'O aluno vê esta lista para instalar os programas no computador antes das aulas.')}
+      <ul class="${LISTA}">
+        ${softwares.length ? softwares.map(({ item, cat, chave }) => `
+        <li class="flex items-center gap-3 px-4 py-2">
+          <div class="min-w-0 flex-1 flex flex-wrap items-baseline gap-x-2">
+            <span class="text-sm font-medium text-slate-800 dark:text-neutral-100">${esc(item.nome)}</span>
+            ${cat?.versao ? `<span class="text-xs text-slate-500 dark:text-neutral-400">${esc(cat.versao)}</span>` : ''}
+            <span class="text-xs text-slate-500 dark:text-neutral-400 truncate">${cat ? esc(cat.grupo) + (cat.requisitos ? ` · requer ${esc(cat.requisitos)}` : '') : 'sem roteiro de instalação no suporte'}${item.observacao ? ` · <span class="text-slate-700 dark:text-neutral-300">${esc(item.observacao)}</span>` : ''}</span>
+          </div>
+          ${cat ? '' : pilula(PILULA.neutra, 'fora do catálogo')}
+          ${cat?.site || item.site ? `<a href="${esc(cat?.site || item.site)}" target="_blank" rel="noopener" class="${BOTAO_LINK}" title="${esc(cat?.site || item.site)}">Site</a>` : ''}
+          <button type="button" data-obs-software="${esc(chave)}" title="Observação (versão, configuração, licença…)" class="${ICONE_BOTAO}">${ICONE.lapis}</button>
+          <button type="button" data-remover-software="${esc(chave)}" title="Remover software" class="${ICONE_BOTAO_VERMELHO}">${ICONE.lixeira}</button>
+        </li>`).join('') : listaVazia('Nenhum software requerido.')}
+      </ul>
+    </section>`;
 
-  acoes.querySelector('#btn-add-pre')?.addEventListener('click', () => abrirSeletorPreRequisitos());
-  acoes.querySelector('#btn-add-instrutor')?.addEventListener('click', () => abrirSeletorInstrutores());
-  acoes.querySelector('#btn-add-software')?.addEventListener('click', () => abrirSeletorSoftwares());
-  acoes.querySelector('#btn-add-software-livre')?.addEventListener('click', () => abrirModalSoftwareLivre());
+  acoes.querySelector('#btn-add-software').addEventListener('click', () => abrirSeletorSoftwares());
+  acoes.querySelector('#btn-add-software-livre').addEventListener('click', () => abrirModalSoftwareLivre());
   el.querySelectorAll('[data-aceitar-sug]').forEach((b) => b.addEventListener('click', () => {
     const sg = Cursos.sugestoesRequisitos(c).find((x) => x.id === b.dataset.aceitarSug);
     estado.lista = Cursos.aceitarSugestao(estado.lista, c.id, b.dataset.aceitarSug, AUTOR_SUGESTOES);
@@ -767,55 +616,6 @@ function renderAbaRequisitos() {
     const item = c.infraestrutura.softwares.find((x) => Cursos.chaveSoftware(x) === b.dataset.removerSoftware);
     removerComDesfazer(Cursos.removerSoftware(estado.lista, c.id, b.dataset.removerSoftware), `"${item.nome}" removido dos softwares requeridos.`);
   }));
-  el.querySelectorAll('[data-abrir-curso]').forEach((b) => b.addEventListener('click', () => selecionar(b.dataset.abrirCurso)));
-  el.querySelectorAll('[data-remover-pre]').forEach((b) => b.addEventListener('click', () => {
-    const p = Cursos.porId(estado.lista, b.dataset.removerPre);
-    removerComDesfazer(Cursos.definirPreRequisitos(estado.lista, c.id, c.preRequisitoCursoIds.filter((x) => x !== p.id)), `"${p.nome}" removido dos pré-requisitos.`);
-  }));
-  el.querySelectorAll('[data-remover-instrutor]').forEach((b) => b.addEventListener('click', () => {
-    const i = instrutorDe(b.dataset.removerInstrutor);
-    removerComDesfazer(Cursos.definirInstrutores(estado.lista, c.id, c.instrutorIds.filter((x) => x !== i.id)), `${i.nome} não está mais habilitado para este curso.`);
-  }));
-}
-
-// ---------- Aba Onde é oferecido (só leitura) ----------
-
-function renderAbaOferta() {
-  const c = atual();
-  document.getElementById('acoes-aba').innerHTML = '';
-  const formacoes = Cursos.formacoesDoCurso(c.id);
-  const turmas = Cursos.turmasDoCurso(c.id);
-  const tabela = (titulo, sub, colunas, linhas, vazio) => `
-    <section class="${CARTAO} overflow-x-auto">
-      ${cabecalhoSecao(titulo, sub)}
-      <table class="mt-3 w-full text-left">
-        <thead class="${THEAD} border-t">
-          <tr>${colunas.map((x) => `<th class="${TH}">${x}</th>`).join('')}</tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-neutral-900">
-          ${linhas.length ? linhas.join('') : `<tr><td colspan="${colunas.length}" class="px-4 py-6 text-center text-sm text-slate-500 dark:text-neutral-400">${vazio}</td></tr>`}
-        </tbody>
-      </table>
-    </section>`;
-  const td = (x, extra = '') => `<td class="px-4 py-2.5 text-sm text-slate-600 dark:text-neutral-300 ${extra}">${x}</td>`;
-
-  document.getElementById('conteudo-aba').innerHTML = `
-    <div class="space-y-4">
-        ${tabela(`Formações <span class="ml-1 text-sm font-normal text-slate-500 dark:text-neutral-400 tabular-nums">${formacoes.length}</span>`, 'Formações que incluem este curso. Cadastro e grade ficam em <a href="formacoes.html" class="text-petrol-800 dark:text-sky-300 hover:underline">Formações</a>.', ['Sigla', 'Formação'], [...formacoes].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map((f) => `
-          <tr>
-            ${td(`<a href="formacao.html?id=${encodeURIComponent(f.id)}" class="font-mono font-medium text-slate-800 dark:text-neutral-100 hover:underline">${esc(f.codigo || '—')}</a>`, 'whitespace-nowrap w-px')}
-            ${td(`<a href="formacao.html?id=${encodeURIComponent(f.id)}" class="font-medium text-slate-800 dark:text-neutral-100 hover:underline">${esc(f.nome)}</a>`)}
-          </tr>`), 'Este curso não faz parte de nenhuma formação.')}
-        ${tabela(`Turmas <span class="ml-1 text-sm font-normal text-slate-500 dark:text-neutral-400 tabular-nums">${turmas.length}</span>`, 'Turmas abertas deste curso. São cadastradas em <a href="turmas.html" class="text-petrol-800 dark:text-sky-300 hover:underline">Turmas</a>.', ['Turma', 'Tipo', 'Instrutor', 'Turno · formato', 'Período', 'Vagas'], turmas.map((t) => `
-          <tr>
-            ${td(`<a href="turma.html?id=${t.id}" target="_blank" class="font-medium text-slate-800 dark:text-neutral-100 hover:underline">${esc(t.codigo)}</a>`)}
-            ${td(pilula(PILULA.neutra, TIPOS_TURMA[t.tipo]))}
-            ${td(esc(instrutorDe(t.instrutorId)?.nome ?? ''))}
-            ${td(`${esc(t.turno)} · ${esc(formatoDe(t.formato))}`, 'whitespace-nowrap')}
-            ${td(`${dataCurta(t.inicio)} → ${dataCurta(t.fim)}`, 'tabular-nums whitespace-nowrap text-xs')}
-            ${td(String(t.vagas), 'tabular-nums')}
-          </tr>`), 'Nenhuma turma deste curso.')}
-    </div>`;
 }
 
 // ---------- Formulários ----------
@@ -841,12 +641,6 @@ const campoArea = (name, rotulo, valor, { rows = 3, placeholder = '', max = '', 
     ${ajuda ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">${ajuda}</p>` : ''}
     ${ERRO(name)}
   </div>`;
-
-const campoSwitch = (name, rotulo, descricao, marcado, extra = '') => `
-  <label class="flex items-center justify-between gap-3 cursor-pointer">
-    <span><span class="text-sm font-medium text-slate-800 dark:text-neutral-100">${rotulo}</span><br><span class="text-xs text-slate-500 dark:text-neutral-400">${descricao}</span></span>
-    <input type="checkbox" name="${name}" class="${CHECK}" ${marcado ? 'checked' : ''} ${extra}>
-  </label>`;
 
 const cartoesRadio = (name, opcoes, valor, colunas = 'grid-cols-3') => `
   <div class="grid ${colunas} gap-2">
@@ -945,7 +739,7 @@ function abrirModalDuplicar(origemId) {
   const { form } = modalFormulario({
     id: 'form-duplicar',
     titulo: 'Duplicar curso',
-    subtitulo: `Cópia de <strong>${esc(origem.nome)}</strong> com tudo igual (${plural(origem.modulos.length, 'módulo')}, requisitos, comercial), em <strong>rascunho</strong> e fora do site.`,
+    subtitulo: `Cópia de <strong>${esc(origem.nome)}</strong> com tudo igual (${plural(origem.modulos.length, 'módulo')}, requisitos, comercial), em <strong>rascunho</strong>.`,
     rotulo: 'Criar cópia',
     foco: '#f-nome',
     corpo: `
@@ -967,14 +761,12 @@ function abrirModalDuplicar(origemId) {
 
 function confirmarExclusao(id) {
   const c = Cursos.porId(estado.lista, id);
-  const dep = Cursos.dependentes(estado.lista, id);
   const root = abrirModal(`
     <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800">
       <h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100">Excluir curso</h3>
     </div>
     <div class="px-5 py-4 text-sm text-slate-700 dark:text-neutral-200 space-y-2">
-      <p>Excluir <strong>${esc(c.codigo)} · ${esc(c.nome)}</strong> com ${plural(c.modulos.length, 'módulo')} e ${plural(c.materiais.length, 'material', 'materiais')}?</p>
-      ${dep.length ? `<p class="text-slate-500 dark:text-neutral-400">Deixa de ser pré-requisito de: ${dep.map((d) => esc(d.nome)).join(', ')}.</p>` : ''}
+      <p>Excluir <strong>${esc(c.codigo)} · ${esc(c.nome)}</strong> com ${plural(c.modulos.length, 'módulo')}?</p>
       <p class="text-slate-500 dark:text-neutral-400">Não tem turmas nem formações vinculadas, por isso pode ser excluído. Se quiser só tirar do catálogo, prefira <em>inativar</em>.</p>
     </div>
     <div class="px-5 py-3 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-end gap-2">
@@ -1004,88 +796,12 @@ function abrirModalDescricao() {
     corpo: `
       ${campoTexto('resumo', 'Resumo (uma linha)', c.resumo, { max: 140, opcional: true, placeholder: 'Chamada curta para o catálogo' })}
       ${campoArea('descricao', 'Descrição / objetivo', c.descricao, { rows: 6, max: 2000, placeholder: 'O que o aluno vai ser capaz de fazer ao final' })}
-      ${campoArea('publicoAlvo', 'Público-alvo', c.publicoAlvo, { rows: 2, max: 300, opcional: true })}
-      ${campoArea('preRequisitosTexto', 'Pré-requisitos (texto livre)', c.preRequisitosTexto, { rows: 2, max: 300, opcional: true, ajuda: 'Cursos da ProWay como pré-requisito ficam na aba Requisitos.' })}`,
+      ${campoArea('publicoAlvo', 'Público-alvo', c.publicoAlvo, { rows: 2, max: 300, opcional: true })}`,
     aoSalvar: (fd) => {
       estado.lista = Cursos.atualizarDescricao(estado.lista, c.id, Object.fromEntries(fd));
       persistir(); renderCurso();
       toast('Descrição atualizada.');
     },
-  });
-}
-
-function abrirModalMaterial(materialId = null) {
-  const c = atual();
-  const m = materialId ? c.materiais.find((x) => x.id === materialId) : null;
-  let arquivoNovo = null;
-  const { form } = modalFormulario({
-    id: 'form-material',
-    titulo: m ? 'Editar material' : 'Novo material',
-    subtitulo: `Em <strong>${esc(c.nome)}</strong> · o que o aluno recebe.`,
-    rotulo: m ? 'Salvar alterações' : 'Adicionar',
-    largura: 'xl',
-    foco: m ? '#f-nome' : null,
-    corpo: `
-      <fieldset>
-        <legend class="rotulo">Tipo</legend>
-        ${cartoesRadio('tipo', TIPOS_MATERIAL, m?.tipo ?? null)}
-        ${ERRO('tipo')}
-      </fieldset>
-      <div id="mat-campos" class="space-y-5 ${m ? '' : 'hidden'}">
-        ${campoTexto('nome', 'Nome', m?.nome ?? '', { max: 100, placeholder: 'Como o aluno vai ver' })}
-        <div data-tipo="video">
-          ${campoTexto('url', 'Link do vídeo', m?.tipo === 'video' ? m.url : '', { tipo: 'url', placeholder: 'https://www.youtube.com/watch?v=…' })}
-        </div>
-        <div data-tipo="video">
-          ${campoTexto('duracaoMin', 'Duração', m?.duracaoMin ?? '', { tipo: 'number', extra: 'min="1" step="1"', opcional: true, sufixo: 'min' })}
-        </div>
-        <div data-tipo="link">
-          ${campoTexto('url-link', 'Endereço', m?.tipo === 'link' ? m.url : '', { tipo: 'url', placeholder: 'https://…' })}
-        </div>
-        <div data-tipo="arquivo">
-          <label class="rotulo" for="f-arquivo">Arquivo</label>
-          <div id="mat-arquivo-atual" class="${m?.arquivo ? '' : 'hidden'} flex items-center gap-2 text-sm text-slate-700 dark:text-neutral-200 mb-2">
-            ${ICONE.arquivo}<span id="mat-arquivo-nome">${m?.arquivo ? `${esc(m.arquivo.nome)} · ${fmtTamanho(m.arquivo.tamanho)}` : ''}</span>
-          </div>
-          <input id="f-arquivo" type="file" class="block w-full text-sm text-slate-600 dark:text-neutral-300 file:mr-3 file:h-9 file:px-3 file:rounded-lg file:border file:border-slate-300 dark:file:border-neutral-700 file:bg-white dark:file:bg-neutral-950 file:text-sm file:font-medium file:text-slate-600 dark:file:text-neutral-300 hover:file:border-petrol-800 cursor-pointer">
-          <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">${m?.arquivo ? 'Escolha outro arquivo para substituir.' : 'PDF, zip, planilha… O protótipo guarda só nome e tamanho.'}</p>
-          ${ERRO('arquivo')}
-        </div>
-        <div>
-          <label class="rotulo" for="f-moduloId">Módulo ${OPCIONAL}</label>
-          ${campoCombo('moduloId', c.modulos.map((x, i) => ({ id: x.id, nome: `${i + 1}. ${x.titulo}`, descricao: fmtHoras(x.cargaHoraria) })), m?.moduloId ?? '', { vazio: 'Curso inteiro', opcional: true })}
-        </div>
-        ${campoArea('descricao', 'Descrição', m?.descricao ?? '', { rows: 2, max: 200, opcional: true, placeholder: 'Ex.: usar a partir do módulo 2; versão 2026.' })}
-      </div>`,
-    aoSalvar: (fd) => {
-      const tipo = fd.get('tipo');
-      const dados = {
-        nome: fd.get('nome') ?? '', tipo,
-        url: tipo === 'link' ? fd.get('url-link') : fd.get('url'),
-        duracaoMin: fd.get('duracaoMin'), descricao: fd.get('descricao'), moduloId: fd.get('moduloId'),
-        arquivo: arquivoNovo,
-      };
-      const erros = Cursos.validarMaterial(dados, m).map((e) => (e.campo === 'url' && tipo === 'link' ? { ...e, campo: 'url-link' } : e));
-      if (erros.length) return erros;
-      estado.lista = m ? Cursos.atualizarMaterial(estado.lista, c.id, m.id, dados) : Cursos.incluirMaterial(estado.lista, c.id, dados);
-      persistir(); renderCurso();
-      toast(m ? 'Material atualizado.' : `"${dados.nome.trim()}" adicionado.`);
-    },
-  });
-  const mostrarTipo = (tipo) => {
-    form.querySelector('#mat-campos').classList.toggle('hidden', !tipo);
-    form.querySelectorAll('[data-tipo]').forEach((d) => d.classList.toggle('hidden', d.dataset.tipo !== tipo));
-    if (tipo) form.querySelector('#f-nome').focus();
-  };
-  mostrarTipo(m?.tipo ?? null);
-  form.querySelectorAll('[name="tipo"]').forEach((r) => r.addEventListener('change', () => mostrarTipo(r.value)));
-  form.querySelector('#f-arquivo').addEventListener('change', (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    arquivoNovo = { nome: f.name, tamanho: f.size, mime: f.type || 'application/octet-stream' };
-    form.querySelector('#mat-arquivo-atual').classList.remove('hidden');
-    form.querySelector('#mat-arquivo-nome').textContent = `${f.name} · ${fmtTamanho(f.size)}`;
-    if (!form.querySelector('#f-nome').value.trim()) form.querySelector('#f-nome').value = f.name.replace(/\.[^.]+$/, '');
   });
 }
 
@@ -1105,15 +821,9 @@ function abrirModalComercial() {
         ${campoTexto('parcelasMax', 'Parcelamento máximo', k.parcelasMax, { tipo: 'number', extra: 'min="1" step="1"', opcional: true, sufixo: '×' })}
         ${campoTexto('vagasMin', 'Vagas mínimas para abrir', k.vagasMin, { tipo: 'number', extra: 'min="1" step="1"', opcional: true })}
         ${campoTexto('vagasMax', 'Vagas máximas', k.vagasMax, { tipo: 'number', extra: 'min="1" step="1"', opcional: true })}
-      </div>
-      <fieldset class="space-y-4">
-        <legend class="rotulo">Como é vendido</legend>
-        ${campoSwitch('turmaAberta', 'Turma aberta', 'Vendido por vaga, com calendário da ProWay.', k.turmaAberta)}
-        ${campoSwitch('inCompany', 'In company', 'Turma fechada para uma empresa, por proposta.', k.inCompany)}
-      </fieldset>
-      ${campoSwitch('publicadoSite', 'Publicado no site', c.status === 'ativo' ? 'Aparece no catálogo público da ProWay.' : 'Só cursos ativos podem ser publicados no site.', k.publicadoSite, c.status === 'ativo' ? '' : 'disabled')}`,
+      </div>`,
     aoSalvar: (fd) => {
-      const dados = { precoReferencia: fd.get('precoReferencia'), parcelasMax: fd.get('parcelasMax'), vagasMin: fd.get('vagasMin'), vagasMax: fd.get('vagasMax'), turmaAberta: fd.has('turmaAberta'), inCompany: fd.has('inCompany'), publicadoSite: c.status === 'ativo' && fd.has('publicadoSite') };
+      const dados = { precoReferencia: fd.get('precoReferencia'), parcelasMax: fd.get('parcelasMax'), vagasMin: fd.get('vagasMin'), vagasMax: fd.get('vagasMax') };
       const erros = Cursos.validarComercial(dados);
       if (erros.length) return erros;
       estado.lista = Cursos.atualizarComercial(estado.lista, c.id, dados);
@@ -1231,40 +941,6 @@ function abrirSeletorMultiplo({ titulo, subtitulo, singular, plural: pluralTxt, 
   campoBusca.focus();
 }
 
-function abrirSeletorPreRequisitos() {
-  const c = atual();
-  const itens = estado.lista
-    .filter((x) => x.id !== c.id && !c.preRequisitoCursoIds.includes(x.id) && x.status !== 'inativo')
-    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
-    .map((x) => ({ id: x.id, titulo: `${x.codigo} · ${x.nome}`, subtitulo: `${eixoDe(x.eixoId)} · ${fmtHoras(x.cargaHoraria)} · ${nivelDe(x.nivel)?.nome ?? ''}`, lado: x.preRequisitoCursoIds.includes(c.id) ? `<span class="${AVISO}">tem este curso como pré-requisito</span>` : '' }));
-  abrirSeletorMultiplo({
-    titulo: 'Adicionar pré-requisitos', subtitulo: `Cursos que o aluno deve concluir antes de <strong>${esc(c.nome)}</strong>.`,
-    singular: 'curso', plural: 'cursos', itens,
-    aoConfirmar: (ids) => {
-      estado.lista = Cursos.definirPreRequisitos(estado.lista, c.id, [...c.preRequisitoCursoIds, ...ids]);
-      persistir(); renderCurso();
-      toast(`${plural(ids.length, 'pré-requisito')} adicionado${ids.length === 1 ? '' : 's'}.`);
-    },
-  });
-}
-
-function abrirSeletorInstrutores() {
-  const c = atual();
-  const itens = INSTRUTORES
-    .filter((i) => !c.instrutorIds.includes(i.id))
-    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
-    .map((i) => ({ id: i.id, titulo: i.nome, subtitulo: i.especialidade, lado: `${plural(estado.lista.filter((x) => x.instrutorIds.includes(i.id)).length, 'curso')} habilitado${estado.lista.filter((x) => x.instrutorIds.includes(i.id)).length === 1 ? '' : 's'}` }));
-  abrirSeletorMultiplo({
-    titulo: 'Habilitar instrutores', subtitulo: `Quem pode dar aula de <strong>${esc(c.nome)}</strong>.`,
-    singular: 'instrutor', plural: 'instrutores', itens,
-    aoConfirmar: (ids) => {
-      estado.lista = Cursos.definirInstrutores(estado.lista, c.id, [...c.instrutorIds, ...ids]);
-      persistir(); renderCurso();
-      toast(`${plural(ids.length, 'instrutor', 'instrutores')} habilitado${ids.length === 1 ? '' : 's'}.`);
-    },
-  });
-}
-
 function abrirSeletorSoftwares() {
   const c = atual();
   const ja = new Set(c.infraestrutura.softwares.map((s) => s.softwareId).filter(Boolean));
@@ -1376,9 +1052,6 @@ function abrirModalObservacaoSoftware(chave) {
   if (!id || !Cursos.porId(estado.lista, id)) { location.replace('cursos.html?erro=nao-encontrado'); return; }
   estado.selecionado = id;
   estado.aba = abaValida;
-  // `?aba=requisitos&sub=infra` abre direto em Softwares (link vindo da turma).
-  const sub = parametroUrl('sub');
-  if (SUB_REQUISITOS.some((x) => x.id === sub)) estado.subRequisitos = sub;
   renderCurso();
 })();
 

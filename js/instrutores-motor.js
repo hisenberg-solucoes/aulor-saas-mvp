@@ -88,8 +88,6 @@ const Instrutores = (() => {
 
   // Turmas em que o instrutor está escalado (turma.instrutorId).
   const turmasDoInstrutor = (id) => turmas().filter((t) => t.instrutorId === id && t.status !== 'cancelada').sort((a, b) => a.inicio.localeCompare(b.inicio));
-  // Cursos em que o instrutor está habilitado (curso.instrutorIds).
-  const cursosHabilitados = (id) => cursos().filter((c) => (c.instrutorIds ?? []).includes(id)).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   // Turmas já contempladas em algum contrato não cancelado do instrutor.
   function turmasContratadas(i, excetoContratoId = null) {
     const ids = new Set();
@@ -561,7 +559,7 @@ const Instrutores = (() => {
   return {
     CHAVE, carregar, salvar, normalizar, porId, numero, digitos, hoje, anoAtual,
     cpfValido, cnpjValido, fmtCpf, fmtCnpj, fmtCep, fmtTelefone, fmtData, fmtMoeda, idade, iniciais,
-    cursoDe, turmaDe, formacaoDe, formacoes, turmasDoInstrutor, cursosHabilitados, turmasContratadas,
+    cursoDe, turmaDe, formacaoDe, formacoes, turmasDoInstrutor, turmasContratadas,
     valorHoraPara, faixaPadrao, descricaoFaixa, especificidade,
     contratoDe, totalContrato, horasContrato, contratosAtivos, podeEditarContrato, podeGerar, podeEnviarClicksign, podeReabrir, podeCancelarContrato, podeEncerrar, assinaturasPendentes,
     validarContrato, incluirContrato, atualizarItensContrato, ajustarItem, gerarDocumento, reabrirContrato, enviarClicksign, registrarAssinatura, cancelarContrato, encerrarContrato, removerContrato, itemDeTurma,

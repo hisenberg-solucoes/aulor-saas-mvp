@@ -337,7 +337,6 @@ const Turmas = (() => {
     else if (curso.status !== 'ativo') p.push(`Curso ${curso.status === 'rascunho' ? 'em rascunho' : 'inativo'}`);
     if (t.formacaoId && formacao && formacao.status !== 'ativo') p.push(`Formação ${formacao.status === 'rascunho' ? 'em rascunho' : 'inativa'}`);
     if (!t.instrutorId) p.push('Sem instrutor');
-    else if (curso && !curso.instrutorIds.includes(t.instrutorId)) p.push(`${instrutor?.nome ?? 'Instrutor'} não está entre os instrutores habilitados do curso`);
     if (!t.salaId) p.push(t.formato === 'online' ? 'Sem sala virtual' : 'Sem sala');
     else if (sala) {
       if (sala.status !== 'ativa') p.push(`Sala ${sala.nome} ${sala.status === 'manutencao' ? 'em manutenção' : 'inativa'}`);

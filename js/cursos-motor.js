@@ -13,27 +13,9 @@ const Cursos = (() => {
   function carregar() {
     try {
       const salvo = localStorage.getItem(CHAVE);
-      if (salvo) return JSON.parse(salvo).map(migrarSoftwares).map(migrarMateriais).map(migrarSugestoes);
+      if (salvo) return JSON.parse(salvo).map(migrarSoftwares).map(migrarSugestoes);
     } catch (_) { /* volta para a semente */ }
-    return clonar(CURSOS_SEED).map(migrarSoftwares).map(migrarMateriais).map(migrarSugestoes);
-  }
-
-  // ---------- Material didático ----------
-  // Item: { id, nome, tipo: video|arquivo|link, url, arquivo: { nome, tamanho, mime }|null, duracaoMin, descricao, moduloId }.
-  // Tipos antigos (apostila, arquivos, livro, ambiente, outro) viram arquivo/link sem anexo — ficam com pendência.
-
-  function migrarMateriais(curso) {
-    const materiais = (curso.materiais ?? []).map((m) => {
-      if (['video', 'arquivo', 'link'].includes(m.tipo) && 'url' in m) return m;
-      const tipo = ['ambiente', 'outro'].includes(m.tipo) ? 'link' : 'arquivo';
-      return { id: m.id, nome: m.nome, tipo, url: '', arquivo: null, duracaoMin: null, descricao: '', moduloId: null };
-    });
-    return { ...curso, materiais };
-  }
-
-  function materialPendente(m) {
-    if (m.tipo === 'arquivo') return m.arquivo ? null : 'sem arquivo';
-    return m.url ? null : m.tipo === 'video' ? 'sem link do vídeo' : 'sem endereço';
+    return clonar(CURSOS_SEED).map(migrarSoftwares).map(migrarSugestoes);
   }
 
   function urlValida(url) {
@@ -138,11 +120,6 @@ const Cursos = (() => {
     return todasTurmas().filter((t) => t.cursoId === cursoId && t.status !== 'cancelada').sort((a, b) => a.inicio.localeCompare(b.inicio));
   }
 
-  // Cursos que têm este como pré-requisito.
-  function dependentes(lista, cursoId) {
-    return lista.filter((c) => c.preRequisitoCursoIds.includes(cursoId)).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-  }
-
   function podeExcluir(cursoId) {
     return !todasTurmas().some((t) => t.cursoId === cursoId) && formacoesDoCurso(cursoId).length === 0;
   }
@@ -167,9 +144,7 @@ const Cursos = (() => {
     if (!curso.descricao.trim()) p.push('Descrição/objetivo');
     if (!curso.modulos.length) p.push('Conteúdo programático');
     else if (situacaoHoras(curso).situacao !== 'ok') p.push('Horas dos módulos ≠ carga horária');
-    if (!curso.instrutorIds.length) p.push('Instrutor habilitado');
     if (curso.comercial.precoReferencia == null) p.push('Preço de referência');
-    if (!curso.comercial.turmaAberta && !curso.comercial.inCompany) p.push('Como é comercializado');
     return p;
   }
 
@@ -239,14 +214,13 @@ const Cursos = (() => {
 
   function cursoNovo(dados) {
     return {
-      resumo: '', descricao: '', publicoAlvo: '', preRequisitosTexto: '', preRequisitoCursoIds: [],
-      encontros: null, duracaoAula: null, formatos: [], modulos: [], materiais: [],
+      resumo: '', descricao: '', publicoAlvo: '',
+      encontros: null, duracaoAula: null, formatos: [], modulos: [],
       certificado: { emite: true, frequenciaMinima: 75, exigeAprovacao: false, notaMinima: null },
       infraestrutura: { sala: null, softwares: [], requisitosMaquina: '' },
       sugestoesRequisitos: [],
-      instrutorIds: [],
       areaId: null,
-      comercial: { precoReferencia: null, parcelasMax: null, vagasMin: null, vagasMax: null, turmaAberta: false, inCompany: false, publicadoSite: false },
+      comercial: { precoReferencia: null, parcelasMax: null, vagasMin: null, vagasMax: null },
       ...dados,
     };
   }
@@ -281,7 +255,7 @@ const Cursos = (() => {
   }
 
   function remover(lista, id) {
-    return lista.filter((c) => c.id !== id).map((c) => ({ ...c, preRequisitoCursoIds: c.preRequisitoCursoIds.filter((x) => x !== id) }));
+    return lista.filter((c) => c.id !== id);
   }
 
   function nomeDeCopia(lista, nome) {
@@ -299,7 +273,7 @@ const Cursos = (() => {
     return `${raiz}-${n}`;
   }
 
-  // Duplicar: cópia profunda de tudo, em rascunho, sem publicação no site. Nome/código vêm do drawer.
+  // Duplicar: cópia profunda de tudo, em rascunho. Nome/código vêm do drawer.
   function duplicar(lista, origemId, { codigo, nome }) {
     const origem = porId(lista, origemId);
     const copia = clonar(origem);
@@ -307,9 +281,7 @@ const Cursos = (() => {
     copia.codigo = String(codigo).trim().toUpperCase();
     copia.nome = String(nome).trim();
     copia.status = 'rascunho';
-    copia.comercial.publicadoSite = false;
     copia.modulos = copia.modulos.map((m, i) => ({ ...m, id: `${copia.id}-m${i + 1}` }));
-    copia.materiais = copia.materiais.map((m, i) => ({ ...m, id: `${copia.id}-mt${i + 1}` }));
     return { lista: [...lista, copia], curso: copia };
   }
 
@@ -349,55 +321,6 @@ const Cursos = (() => {
     return atualizar(lista, cursoId, { modulos });
   }
 
-  // ---------- Materiais ----------
-
-  function limparMaterial(dados, existente = null) {
-    const tipo = dados.tipo;
-    return {
-      nome: String(dados.nome ?? '').trim(),
-      tipo,
-      url: tipo === 'arquivo' ? '' : String(dados.url ?? '').trim(),
-      arquivo: tipo === 'arquivo' ? (dados.arquivo ?? existente?.arquivo ?? null) : null,
-      duracaoMin: tipo === 'video' ? numero(dados.duracaoMin) : null,
-      descricao: String(dados.descricao ?? '').trim(),
-      moduloId: dados.moduloId || null,
-    };
-  }
-
-  function incluirMaterial(lista, cursoId, dados) {
-    const curso = porId(lista, cursoId);
-    const material = { id: novoId(curso.materiais, `${cursoId}-mt`), ...limparMaterial(dados) };
-    return atualizar(lista, cursoId, { materiais: [...curso.materiais, material] });
-  }
-
-  function atualizarMaterial(lista, cursoId, materialId, dados) {
-    const curso = porId(lista, cursoId);
-    return atualizar(lista, cursoId, { materiais: curso.materiais.map((m) => (m.id === materialId ? { ...m, ...limparMaterial(dados, m) } : m)) });
-  }
-
-  function removerMaterial(lista, cursoId, materialId) {
-    const curso = porId(lista, cursoId);
-    return atualizar(lista, cursoId, { materiais: curso.materiais.filter((m) => m.id !== materialId) });
-  }
-
-  function validarMaterial(dados, existente = null) {
-    const erros = [];
-    if (!String(dados.nome ?? '').trim()) erros.push({ campo: 'nome', mensagem: 'Informe o nome do material.' });
-    if (!TIPOS_MATERIAL.some((t) => t.id === dados.tipo)) { erros.push({ campo: 'tipo', mensagem: 'Escolha o tipo.' }); return erros; }
-    if (dados.tipo === 'arquivo') {
-      if (!dados.arquivo && !existente?.arquivo) erros.push({ campo: 'arquivo', mensagem: 'Envie o arquivo.' });
-    } else {
-      const url = String(dados.url ?? '').trim();
-      if (!url) erros.push({ campo: 'url', mensagem: dados.tipo === 'video' ? 'Cole o link do vídeo.' : 'Informe o endereço.' });
-      else if (!urlValida(url)) erros.push({ campo: 'url', mensagem: 'Endereço inválido — comece com http:// ou https://.' });
-    }
-    if (dados.tipo === 'video' && String(dados.duracaoMin ?? '').trim() !== '') {
-      const d = numero(dados.duracaoMin);
-      if (Number.isNaN(d) || d <= 0 || !Number.isInteger(d)) erros.push({ campo: 'duracaoMin', mensagem: 'Minutos inteiros (> 0).' });
-    }
-    return erros;
-  }
-
   // ---------- Seções ----------
 
   function atualizarDescricao(lista, id, dados) {
@@ -405,7 +328,6 @@ const Cursos = (() => {
       resumo: String(dados.resumo ?? '').trim(),
       descricao: String(dados.descricao ?? '').trim(),
       publicoAlvo: String(dados.publicoAlvo ?? '').trim(),
-      preRequisitosTexto: String(dados.preRequisitosTexto ?? '').trim(),
     });
   }
 
@@ -438,19 +360,8 @@ const Cursos = (() => {
         parcelasMax: numero(dados.parcelasMax),
         vagasMin: numero(dados.vagasMin),
         vagasMax: numero(dados.vagasMax),
-        turmaAberta: Boolean(dados.turmaAberta),
-        inCompany: Boolean(dados.inCompany),
-        publicadoSite: Boolean(dados.publicadoSite),
       },
     });
-  }
-
-  function definirPreRequisitos(lista, id, cursoIds) {
-    return atualizar(lista, id, { preRequisitoCursoIds: cursoIds.filter((x) => x !== id) });
-  }
-
-  function definirInstrutores(lista, id, instrutorIds) {
-    return atualizar(lista, id, { instrutorIds: [...instrutorIds] });
   }
 
   function definirSoftwares(lista, id, softwares) {
@@ -583,19 +494,18 @@ const Cursos = (() => {
   const recusarSugestao = (lista, cursoId, sugId, autor = '', motivo = '') => decidirSugestao(lista, cursoId, sugId, 'recusada', autor, motivo);
 
   function alterarStatus(lista, id, status) {
-    return atualizar(lista, id, { status, ...(status === 'inativo' ? { comercial: { ...porId(lista, id).comercial, publicadoSite: false } } : {}) });
+    return atualizar(lista, id, { status });
   }
 
   return {
     carregar, salvar, normalizar, porId, numero,
-    filtrar, formacoesDoCurso, todasTurmas, turmasDoCurso, dependentes, podeExcluir,
+    filtrar, formacoesDoCurso, todasTurmas, turmasDoCurso, podeExcluir,
     horasDistribuidas, situacaoHoras, pendencias,
-    validarDados, validarModulo, validarCertificado, validarComercial, validarMaterial,
+    validarDados, validarModulo, validarCertificado, validarComercial,
     incluir, atualizarDados, remover, nomeDeCopia, codigoDeCopia, duplicar,
     incluirModulo, atualizarModulo, removerModulo, moverModulo,
-    incluirMaterial, atualizarMaterial, removerMaterial, materialPendente,
     atualizarDescricao, atualizarCertificado, atualizarInfraestrutura, atualizarComercial,
-    definirPreRequisitos, definirInstrutores, alterarStatus,
+    alterarStatus,
     chaveSoftware, definirSoftwares, adicionarSoftwaresDoCatalogo, validarSoftwareLivre, validarSite, adicionarSoftwareLivre, atualizarObservacaoSoftware, removerSoftware,
     sugestoesRequisitos, sugestoesPendentes, sugerirRequisito, aceitarSugestao, recusarSugestao, textoSugestao,
   };

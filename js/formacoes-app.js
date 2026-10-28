@@ -581,7 +581,6 @@ function renderAbaCursos() {
   const f = atual();
   const t = Formacoes.totais(f, estado.cursos);
   const itens = Formacoes.cursosDe(f, estado.cursos);
-  const avisos = Formacoes.preRequisitosForaDeOrdem(f, estado.cursos);
   const acoes = document.getElementById('acoes-aba');
   const el = document.getElementById('conteudo-aba');
   // RN10: sequência só editável em rascunho. Fora disso a aba é somente leitura.
@@ -650,7 +649,6 @@ function renderAbaCursos() {
   const linha = (i, idx, podeMover) => {
     const c = i.curso;
     const sc = statusCurso(c.status);
-    const aviso = avisos.get(c.id);
     const arrasta = editavel && podeMover;
     const ajustada = i.cargaHoraria != null && Number(i.cargaHoraria) !== Number(c.cargaHoraria);
     return `
@@ -667,9 +665,7 @@ function renderAbaCursos() {
         </td>
         <td class="${TH}">
           <p class="truncate"><span class="font-mono text-xs text-slate-500 dark:text-neutral-400 mr-1.5">${esc(c.codigo)}</span><a href="curso.html?id=${c.id}" title="${esc(c.nome)}" class="text-sm font-medium text-slate-800 dark:text-neutral-100 hover:underline underline-offset-2">${esc(c.nome)}</a>${c.status === 'ativo' ? '' : ` ${pilula(PILULA[c.status], sc.nome, `Curso ${sc.nome.toLowerCase()} — ${sc.descricao}`)}`}${!editavel && !i.obrigatorio ? ` ${pilula(PILULA.neutra, 'Optativo', 'Não é obrigatório para concluir a formação')}` : ''}</p>
-          ${aviso
-            ? `<p class="text-xs ${AVISO} truncate" title="${esc(aviso.map((p) => p.nome).join(', '))}">Pré-requisito fora da sequência: ${esc(aviso.map((p) => p.codigo || p.nome).join(', '))}</p>`
-            : `<p class="text-xs text-slate-500 dark:text-neutral-400 truncate" title="${esc(c.resumo)}">${esc(c.resumo)}</p>`}
+          <p class="text-xs text-slate-500 dark:text-neutral-400 truncate" title="${esc(c.resumo)}">${esc(c.resumo)}</p>
         </td>
         ${comTurmas ? `<td class="${TH}">${celulaTurmas(c)}</td>` : ''}
         <td class="${TD}">${eixoDe(c.eixoId) ? `<span class="flex items-center gap-1.5 min-w-0">${pontoEixo(c.eixoId)}<span class="truncate">${esc(eixoDe(c.eixoId))}</span></span><span class="block text-xs text-slate-500 dark:text-neutral-400">${esc(nivelDe(c.nivel))}</span>` : esc(nivelDe(c.nivel))}</td>
@@ -1232,7 +1228,7 @@ function abrirModalNovaTurma(cursoId) {
   const d = {
     cursoId, formacaoId: f.id, tipo: 'formacao', codigo: '', agenda: null,
     salaId: referencia?.salaId ?? null,
-    instrutorId: curso.instrutorIds.length === 1 ? curso.instrutorIds[0] : null,
+    instrutorId: null,
     inicio: '', fim: '', vagas: referencia?.vagas ?? '', observacoes: '', status: null,
   };
   const ctx = { lista: estado.turmas, cursos: estado.cursos, formacoes: estado.lista, salas: estado.salas };

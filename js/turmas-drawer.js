@@ -50,15 +50,9 @@ const TurmaForm = (() => {
     return `<option value="" ${!valor ? 'selected' : ''}>Avulsa — turma aberta ou in company</option>${fs.map((f) => `<option value="${f.id}" ${f.id === valor ? 'selected' : ''}>${esc(f.codigo)} · ${esc(f.nome)}${f.status !== 'ativo' ? ' (não ativa)' : ''}</option>`).join('')}`;
   }
 
-  function opcoesInstrutor(ctx, cursoId, valor) {
-    const curso = cursoId ? Cursos.porId(ctx.cursos, cursoId) : null;
-    const ordenar = (xs) => [...xs].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-    const habilitados = ordenar(INSTRUTORES.filter((i) => curso?.instrutorIds.includes(i.id)));
-    const outros = ordenar(INSTRUTORES.filter((i) => !habilitados.includes(i)));
+  function opcoesInstrutor(valor) {
     const opt = (i) => `<option value="${i.id}" ${i.id === valor ? 'selected' : ''}>${esc(i.nome)} — ${esc(i.especialidade)}</option>`;
-    return `<option value="" ${!valor ? 'selected' : ''}>A definir</option>
-      ${habilitados.length ? `<optgroup label="Habilitados no curso">${habilitados.map(opt).join('')}</optgroup>` : ''}
-      ${outros.length ? `<optgroup label="${habilitados.length ? 'Outros instrutores' : 'Instrutores'}">${outros.map(opt).join('')}</optgroup>` : ''}`;
+    return `<option value="" ${!valor ? 'selected' : ''}>A definir</option>${[...INSTRUTORES].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(opt).join('')}`;
   }
 
   // Centro de receita padrão da turma (js/centros-receita.js); sem o módulo na página, o campo não aparece.
@@ -140,7 +134,7 @@ const TurmaForm = (() => {
       </div>
       <div>
         <label class="rotulo" for="tf-instrutorId">Instrutor ${OPCIONAL}</label>
-        <select id="tf-instrutorId" name="instrutorId" class="campo">${opcoesInstrutor(ctx, d.cursoId, d.instrutorId)}</select>
+        <select id="tf-instrutorId" name="instrutorId" class="campo">${opcoesInstrutor(d.instrutorId)}</select>
         ${ERRO('instrutorId')}
       </div>
       <div class="grid grid-cols-3 gap-3">
@@ -197,8 +191,6 @@ const TurmaForm = (() => {
 
     const aoMudarCurso = () => {
       const cursoId = cursoAtual();
-      const inst = campo('instrutorId');
-      inst.innerHTML = opcoesInstrutor(ctx, cursoId, inst.value);
       if (!formacaoFixa) {
         const sel = campo('formacaoId');
         sel.innerHTML = opcoesFormacao(ctx, cursoId, sel.value);
