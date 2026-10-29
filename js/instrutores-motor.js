@@ -288,22 +288,6 @@ const Instrutores = (() => {
     return atualizarInstrutor(lista, id, (i) => ({ ...i, pagamentos: i.pagamentos.filter((p) => p.id !== pagamentoId || p.pagoEm) }));
   }
 
-  // ---------- Documentos anuais, LGPD, tag ----------
-
-  const antecedentesDoAno = (i, ano = anoAtual()) => i.antecedentes.find((a) => a.ano === ano) ?? null;
-  const antecedentesEmDia = (i) => !!antecedentesDoAno(i);
-  function registrarAntecedentes(lista, id, dados) {
-    const ano = Number(dados.ano);
-    return atualizarInstrutor(lista, id, (i) => registrar({ ...i, antecedentes: [...i.antecedentes.filter((a) => a.ano !== ano), { id: `ant-${ano}`, ano, enviadoEm: dados.enviadoEm || hoje(), arquivo: String(dados.arquivo ?? '').trim() || `antecedentes-${ano}.pdf` }].sort((a, b) => b.ano - a.ano) }, `Declaração de antecedentes ${ano} recebida`));
-  }
-  function removerAntecedentes(lista, id, ano) {
-    return atualizarInstrutor(lista, id, (i) => ({ ...i, antecedentes: i.antecedentes.filter((a) => a.ano !== ano) }));
-  }
-  function atualizarTag(lista, id, dados) {
-    const possui = dados.possui === 'sim' || dados.possui === true;
-    return atualizarInstrutor(lista, id, (i) => registrar({ ...i, tagEstacionamento: { possui, identificacao: possui ? String(dados.identificacao ?? '').trim() : '', cedidaEm: possui ? dados.cedidaEm || '' : '', devolvidaEm: possui ? '' : dados.devolvidaEm || '' } }, possui ? 'Tag de estacionamento cedida' : 'Tag de estacionamento devolvida/não possui'));
-  }
-
   // ---------- Pendências (avisam; bloqueio real só em pagamento e contrato) ----------
 
   const semContaPessoal = (i) => !i.contaPessoal?.pix && !i.contaPessoal?.conta;
@@ -327,7 +311,6 @@ const Instrutores = (() => {
     }
     if (i.remuneracao === 'rpa' && semContaPessoal(i)) p.push('Sem PIX nem conta bancária');
     if (i.remuneracao !== 'folha' && !i.valoresHora.length) p.push('Sem valor hora');
-    if (!antecedentesEmDia(i)) p.push(`Declaração de antecedentes ${anoAtual()} pendente`);
     if (!usuarioDe(i)) p.push('Sem usuário de acesso');
     return p;
   }
@@ -339,7 +322,6 @@ const Instrutores = (() => {
     else if (!i.empresa) p.push('sem empresa (CNPJ) cadastrada');
     else if (!cnpjValido(i.empresa.cnpj)) p.push('CNPJ inválido');
     else if (!i.empresa.pix && !i.empresa.conta) p.push('sem PIX nem conta');
-    if (!antecedentesEmDia(i)) p.push(`declaração de antecedentes ${anoAtual()} pendente`);
     return p;
   }
 
@@ -355,7 +337,6 @@ const Instrutores = (() => {
         if (!situacao) return true;
         if (situacao === 'pendencias') return pendencias(i).length > 0;
         if (situacao === 'sem-empresa') return i.remuneracao === 'pj' && !i.empresa;
-        if (situacao === 'antecedentes') return !antecedentesEmDia(i);
         if (situacao === 'aguardando-nf') return i.pagamentos.some((p) => statusPagamento(p) === 'aguardando_nf');
         if (situacao === 'assinatura') return i.contratos.some((c) => c.status === 'assinatura');
         return true;
@@ -438,9 +419,8 @@ const Instrutores = (() => {
       status: 'ativo', remuneracao: 'pj', colaboradorId: null, foto: null, nomeSocial: '', apelido: '', nascimento: '', cpf: '', rg: '', especialidade: '', bio: '',
       endereco: { cep: '', logradouro: '', numero: '', complemento: '', bairro: '', cidade: '', uf: 'SC' },
       contato: { email: '', whatsapp: '', emergencia: { nome: '', telefone: '' } },
-      empresa: null, contaPessoal: null, custoHoraReferencia: null, valoresHora: [], contratos: [], pagamentos: [], antecedentes: [], lgpd: null,
+      empresa: null, contaPessoal: null, custoHoraReferencia: null, valoresHora: [], contratos: [], pagamentos: [], lgpd: null,
       acesso: { usuarioId: null },
-      tagEstacionamento: { possui: false, identificacao: '', cedidaEm: '', devolvidaEm: '' },
       observacoes: '', historico: [],
       ...dados,
     };
@@ -500,7 +480,6 @@ const Instrutores = (() => {
     contratoDe, totalContrato, horasContrato, contratosAtivos, podeEditarContrato, podeGerar, podeEnviarClicksign, podeReabrir, podeCancelarContrato, podeEncerrar, assinaturasPendentes,
     validarContrato, incluirContrato, atualizarItensContrato, ajustarItem, gerarDocumento, reabrirContrato, enviarClicksign, registrarAssinatura, cancelarContrato, encerrarContrato, removerContrato, itemDeTurma,
     pagamentosDoContrato, statusPagamento, totalPago, totalProgramado, podeProgramarPagamento, validarPagamento, incluirPagamento, validarNf, registrarNf, registrarPagamento, removerPagamento,
-    antecedentesDoAno, antecedentesEmDia, registrarAntecedentes, removerAntecedentes, atualizarTag,
     pendencias, pendenciasPagamento, filtrar, contagem,
     validarDados, validarContato, validarEndereco, validarEmpresa, validarContaPessoal, validarFaixa,
     incluir, atualizarDados, atualizarFoto, atualizarContato, atualizarEndereco, atualizarEmpresa, atualizarContaPessoal, removerEmpresa,

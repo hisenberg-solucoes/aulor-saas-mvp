@@ -109,9 +109,7 @@ function instrutorSeed(d) {
     valoresHora: [],
     contratos: [],
     pagamentos: [],
-    antecedentes: [],
     lgpd: null,
-    tagEstacionamento: { possui: false, identificacao: '', cedidaEm: '', devolvidaEm: '' },
     acesso: { usuarioId: null }, // usuário de acesso (js/permissoes-data.js); o de quem é da equipe mora no colaborador
     observacoes: '',
     historico: [],
@@ -119,7 +117,6 @@ function instrutorSeed(d) {
   };
 }
 const empresa = (cnpj, razaoSocial, extra = {}) => ({ cnpj, razaoSocial, banco: 'Viacredi', agencia: '0101', conta: '', pix: '', ...extra });
-const antecedente = (ano, enviadoEm, arquivo = `antecedentes-${ano}.pdf`) => ({ id: `ant-${ano}`, ano, enviadoEm, arquivo });
 const lgpdOk = (aceitoEm) => ({ aceitoEm, versao: LGPD_INSTRUTOR.versao });
 const evento = (em, texto) => ({ em, texto });
 
@@ -189,10 +186,8 @@ const INSTRUTORES_SEED = [
       contratoInstrutorSeed({ id: 'ci1-1', codigo: 'CI-2026-003', tipo: 'formacao', formacaoId: 'sup09', turmas: T_I1_SUP09, valoresHora: VH_I1, status: 'assinado', criadoEm: '2026-02-10', geradoEm: '2026-02-11', enviadoEm: '2026-02-11', instrutorAssinouEm: '2026-02-12', escolaAssinouEm: '2026-02-13', envelopeId: 'cs-7f3a91' }),
       contratoInstrutorSeed({ id: 'ci1-2', codigo: 'CI-2026-011', tipo: 'formacao', formacaoId: 'sup10', turmas: T_I1_SUP10, valoresHora: VH_I1, status: 'assinatura', criadoEm: '2026-08-03', geradoEm: '2026-08-04', enviadoEm: '2026-08-04', instrutorAssinouEm: '2026-08-05', envelopeId: 'cs-b21c40' }),
     ],
-    antecedentes: [antecedente(2025, '2025-02-03'), antecedente(2026, '2026-01-20')],
     lgpd: lgpdOk('2025-02-03'),
-    tagEstacionamento: { possui: true, identificacao: 'TAG-0142', cedidaEm: '2024-03-01', devolvidaEm: '' },
-    historico: [evento('2019-03-01', 'Cadastro criado'), evento('2026-01-20', 'Declaração de antecedentes 2026 recebida')],
+    historico: [evento('2019-03-01', 'Cadastro criado')],
   }),
   instrutorSeed({
     id: 'i2', acesso: { usuarioId: 'tatiana' }, nome: 'Tatiana Bezerra Sartori', apelido: 'Tati', nascimento: '1992-04-03', cpf: cpfSeed('482069137'), rg: '5.903.221',
@@ -206,7 +201,6 @@ const INSTRUTORES_SEED = [
       // PTG do Super DEV 8 (agosto/2026) — pagamentos em duas parcelas nas próximas semanas.
       contratoInstrutorSeed({ id: 'ci2-2', codigo: 'CI-2026-013', tipo: 'formacao', formacaoId: 'sup08', turmas: T_I2_SUP08, valoresHora: VH_I2, status: 'assinado', criadoEm: '2026-07-20', geradoEm: '2026-07-21', enviadoEm: '2026-07-21', instrutorAssinouEm: '2026-07-22', escolaAssinouEm: '2026-07-23', envelopeId: 'cs-2ab9e7' }),
     ],
-    antecedentes: [antecedente(2025, '2025-01-15'), antecedente(2026, '2026-02-02')],
     lgpd: lgpdOk('2025-01-15'),
     historico: [evento('2021-08-10', 'Cadastro criado')],
   }),
@@ -221,9 +215,7 @@ const INSTRUTORES_SEED = [
     contratos: [
       contratoInstrutorSeed({ id: 'ci3-1', codigo: 'CI-2025-018', tipo: 'formacao', formacaoId: 'sup08', turmas: T_I3_SUP08, valoresHora: VH_I3, status: 'assinado', criadoEm: '2025-09-01', geradoEm: '2025-09-02', enviadoEm: '2025-09-02', instrutorAssinouEm: '2025-09-03', escolaAssinouEm: '2025-09-03', envelopeId: 'cs-40aa17' }),
     ],
-    antecedentes: [antecedente(2025, '2025-03-10'), antecedente(2026, '2026-03-05')],
     lgpd: lgpdOk('2025-03-10'),
-    tagEstacionamento: { possui: true, identificacao: 'TAG-0157', cedidaEm: '2025-09-01', devolvidaEm: '' },
     historico: [evento('2020-02-01', 'Cadastro criado')],
   }),
   instrutorSeed({
@@ -233,7 +225,6 @@ const INSTRUTORES_SEED = [
     contato: { email: 'adriana.moraes@exemplo.com.br', whatsapp: '47988410407', emergencia: { nome: '', telefone: '' } },
     empresa: empresa(cnpjSeed('271869430001'), 'Moraes Desenvolvimento Humano Ltda', { conta: '41708-2', pix: cnpjSeed('271869430001') }),
     valoresHora: VH_I4,
-    antecedentes: [antecedente(2025, '2025-04-22')],
     lgpd: lgpdOk('2025-04-22'),
     historico: [evento('2022-05-12', 'Cadastro criado')],
   }),
@@ -247,7 +238,6 @@ const INSTRUTORES_SEED = [
     contratos: [
       contratoInstrutorSeed({ id: 'ci5-1', codigo: 'CI-2026-012', tipo: 'cursos', turmas: T_I5_AVULSAS, valoresHora: VH_I5, status: 'gerado', criadoEm: '2026-08-12', geradoEm: '2026-08-14' }),
     ],
-    antecedentes: [antecedente(2026, '2026-01-08')],
     lgpd: lgpdOk('2024-11-02'),
     historico: [evento('2024-11-02', 'Cadastro criado')],
   }),
@@ -258,7 +248,6 @@ const INSTRUTORES_SEED = [
     contato: { email: 'bruna.salgado@exemplo.com.br', whatsapp: '47988410611', emergencia: { nome: 'Carlos Salgado', telefone: '47988410612' } },
     empresa: null, // ainda sem empresa aberta → não pode receber
     valoresHora: VH_I6,
-    antecedentes: [antecedente(2025, '2025-06-30')],
     lgpd: null,
     historico: [evento('2025-06-30', 'Cadastro criado')],
   }),
@@ -272,7 +261,6 @@ const INSTRUTORES_SEED = [
     contratos: [
       contratoInstrutorSeed({ id: 'ci7-1', codigo: 'CI-2026-010', tipo: 'cursos', turmas: T_I7_GIT, valoresHora: VH_I7, status: 'rascunho', criadoEm: '2026-08-20' }),
     ],
-    antecedentes: [antecedente(2025, '2025-02-14'), antecedente(2026, '2026-02-10')],
     lgpd: lgpdOk('2025-02-14'),
     historico: [evento('2023-03-20', 'Cadastro criado')],
   }),
@@ -284,7 +272,6 @@ const INSTRUTORES_SEED = [
     contato: { email: 'francisco.bergamo@exemplo.com.br', whatsapp: '47988410815', emergencia: { nome: 'Helena Bergamo', telefone: '47988410816' } },
     empresa: empresa(cnpjSeed('736284190001'), 'F. Bergamo Treinamentos Ltda', { conta: '38471-5', pix: cnpjSeed('736284190001') }),
     valoresHora: VH_I8,
-    antecedentes: [antecedente(2026, '2026-08-18')],
     lgpd: lgpdOk('2026-08-18'),
     historico: [evento('2026-08-18', 'Cadastro criado')],
   }),
@@ -294,7 +281,6 @@ const INSTRUTORES_SEED = [
     custoHoraReferencia: 85,
     especialidade: 'Didática e acolhimento de turmas', bio: 'Coordenador pedagógico; dá a aula inaugural das formações e cobre falta de instrutor.',
     contato: { email: 'bruno.lima@proway.com.br', whatsapp: '47988745512', emergencia: { nome: '', telefone: '' } },
-    antecedentes: [antecedente(2026, '2026-02-10')],
     lgpd: lgpdOk('2026-02-10'),
     historico: [evento('2026-10-19', 'Papel de instrutor adicionado ao colaborador Bruno Lima')],
   }),
@@ -377,7 +363,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('626425100001'), 'Camila Ristow Treinamentos ME', { conta: '42571-2', pix: 'camila.ristow@exemplo.com.br' }),
     valoresHora: VH_I9,
     contratos: [contratoInstrutorSeed({ id: 'ci9-1', codigo: 'CI-2026-109', tipo: 'cursos', turmas: _turmasDo('i9', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I9, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-09a3838' }), contratoInstrutorSeed({ id: 'ci9-2', codigo: 'CI-2026-138', tipo: 'formacao', formacaoId: 'dg3b', turmas: _turmasDo('i9', (t) => t.formacaoId === 'dg3b'), valoresHora: VH_I9, status: 'assinado', criadoEm: '2026-07-20', geradoEm: '2026-07-21', enviadoEm: '2026-07-21', instrutorAssinouEm: '2026-07-22', escolaAssinouEm: '2026-07-23', envelopeId: 'cs-09f8365' }), contratoInstrutorSeed({ id: 'ci9-3', codigo: 'CI-2026-139', tipo: 'formacao', formacaoId: 'dg3c', turmas: _turmasDo('i9', (t) => t.formacaoId === 'dg3c'), valoresHora: VH_I9, status: 'assinatura', criadoEm: '2026-09-19', geradoEm: '2026-09-20', enviadoEm: '2026-09-20', envelopeId: 'cs-09f1359' })],
-    antecedentes: [antecedente(2026, '2026-03-15')],
     lgpd: lgpdOk('2025-07-25'),
     historico: [evento('2021-01-15', 'Cadastro criado')],
   }),
@@ -389,7 +374,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('869697890001'), 'Diego Lenzi Treinamentos ME', { conta: '22641-3', pix: 'diego.lenzi@exemplo.com.br' }),
     valoresHora: VH_I10,
     contratos: [contratoInstrutorSeed({ id: 'ci10-1', codigo: 'CI-2026-110', tipo: 'cursos', turmas: _turmasDo('i10', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I10, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-10a6150' }), contratoInstrutorSeed({ id: 'ci10-2', codigo: 'CI-2026-140', tipo: 'formacao', formacaoId: 'avpa', turmas: _turmasDo('i10', (t) => t.formacaoId === 'avpa'), valoresHora: VH_I10, status: 'assinado', criadoEm: '2026-06-23', geradoEm: '2026-06-24', enviadoEm: '2026-06-24', instrutorAssinouEm: '2026-06-25', escolaAssinouEm: '2026-06-26', envelopeId: 'cs-10f3749' })],
-    antecedentes: [antecedente(2026, '2026-02-24')],
     lgpd: lgpdOk('2025-03-26'),
     historico: [evento('2020-09-15', 'Cadastro criado')],
   }),
@@ -401,7 +385,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('782336780001'), 'Marcelo Kuhn Treinamentos ME', { conta: '38004-9', pix: 'marcelo.kuhn@exemplo.com.br' }),
     valoresHora: VH_I11,
     contratos: [contratoInstrutorSeed({ id: 'ci11-1', codigo: 'CI-2026-111', tipo: 'cursos', turmas: _turmasDo('i11', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I11, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-11a3195' }), contratoInstrutorSeed({ id: 'ci11-2', codigo: 'CI-2026-142', tipo: 'formacao', formacaoId: 'cada', turmas: _turmasDo('i11', (t) => t.formacaoId === 'cada'), valoresHora: VH_I11, status: 'assinado', criadoEm: '2026-05-23', geradoEm: '2026-05-24', enviadoEm: '2026-05-24', instrutorAssinouEm: '2026-05-25', escolaAssinouEm: '2026-05-26', envelopeId: 'cs-11f8087' }), contratoInstrutorSeed({ id: 'ci11-3', codigo: 'CI-2026-143', tipo: 'formacao', formacaoId: 'rpia', turmas: _turmasDo('i11', (t) => t.formacaoId === 'rpia'), valoresHora: VH_I11, status: 'assinado', criadoEm: '2026-07-21', geradoEm: '2026-07-22', enviadoEm: '2026-07-22', instrutorAssinouEm: '2026-07-23', escolaAssinouEm: '2026-07-24', envelopeId: 'cs-11f5250' })],
-    antecedentes: [antecedente(2026, '2026-01-10')],
     lgpd: lgpdOk('2025-07-16'),
     historico: [evento('2018-08-13', 'Cadastro criado')],
   }),
@@ -413,7 +396,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('391814320001'), 'Renata Pires Treinamentos ME', { conta: '84347-9', pix: 'renata.pires@exemplo.com.br' }),
     valoresHora: VH_I12,
     contratos: [contratoInstrutorSeed({ id: 'ci12-1', codigo: 'CI-2026-112', tipo: 'cursos', turmas: _turmasDo('i12', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I12, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-12a9071' })],
-    antecedentes: [antecedente(2026, '2026-01-24')],
     lgpd: lgpdOk('2025-02-11'),
     historico: [evento('2022-09-27', 'Cadastro criado')],
   }),
@@ -425,7 +407,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('705293030001'), 'Juliana Andrade Treinamentos ME', { conta: '76040-6', pix: 'ju.andrade@exemplo.com.br' }),
     valoresHora: VH_I13,
     contratos: [contratoInstrutorSeed({ id: 'ci13-1', codigo: 'CI-2026-113', tipo: 'cursos', turmas: _turmasDo('i13', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I13, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-13a3446' }), contratoInstrutorSeed({ id: 'ci13-2', codigo: 'CI-2026-146', tipo: 'formacao', formacaoId: 'xdpa', turmas: _turmasDo('i13', (t) => t.formacaoId === 'xdpa'), valoresHora: VH_I13, status: 'assinado', criadoEm: '2026-07-28', geradoEm: '2026-07-29', enviadoEm: '2026-07-29', instrutorAssinouEm: '2026-07-30', escolaAssinouEm: '2026-07-31', envelopeId: 'cs-13f6014' }), contratoInstrutorSeed({ id: 'ci13-3', codigo: 'CI-2026-147', tipo: 'formacao', formacaoId: 'expb', turmas: _turmasDo('i13', (t) => t.formacaoId === 'expb'), valoresHora: VH_I13, status: 'assinatura', criadoEm: '2026-08-18', geradoEm: '2026-08-19', enviadoEm: '2026-08-19', envelopeId: 'cs-13f7877' })],
-    antecedentes: [antecedente(2026, '2026-01-23')],
     lgpd: lgpdOk('2025-07-13'),
     historico: [evento('2018-02-21', 'Cadastro criado')],
   }),
@@ -437,7 +418,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('454955090001'), 'Leonardo Vieira Treinamentos ME', { conta: '52490-6', pix: 'leo.vieira@exemplo.com.br' }),
     valoresHora: VH_I14,
     contratos: [contratoInstrutorSeed({ id: 'ci14-1', codigo: 'CI-2026-114', tipo: 'cursos', turmas: _turmasDo('i14', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I14, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-14a3140' }), contratoInstrutorSeed({ id: 'ci14-2', codigo: 'CI-2026-148', tipo: 'formacao', formacaoId: 'md1a', turmas: _turmasDo('i14', (t) => t.formacaoId === 'md1a'), valoresHora: VH_I14, status: 'assinado', criadoEm: '2026-05-18', geradoEm: '2026-05-19', enviadoEm: '2026-05-19', instrutorAssinouEm: '2026-05-20', escolaAssinouEm: '2026-05-21', envelopeId: 'cs-14f2889' }), contratoInstrutorSeed({ id: 'ci14-3', codigo: 'CI-2026-149', tipo: 'formacao', formacaoId: 'brpa', turmas: _turmasDo('i14', (t) => t.formacaoId === 'brpa'), valoresHora: VH_I14, status: 'gerado', criadoEm: '2026-08-18', geradoEm: '2026-08-19' })],
-    antecedentes: [antecedente(2026, '2026-01-21')],
     lgpd: lgpdOk('2025-07-16'),
     historico: [evento('2019-07-22', 'Cadastro criado')],
   }),
@@ -449,7 +429,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('844289110001'), 'Patrícia Baumgarten Treinamentos ME', { conta: '99622-7', pix: 'patricia.baumgarten@exemplo.com.br' }),
     valoresHora: VH_I15,
     contratos: [contratoInstrutorSeed({ id: 'ci15-1', codigo: 'CI-2026-115', tipo: 'cursos', turmas: _turmasDo('i15', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I15, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-15a1399' })],
-    antecedentes: [antecedente(2026, '2026-03-18')],
     lgpd: lgpdOk('2025-07-22'),
     historico: [evento('2022-01-19', 'Cadastro criado')],
   }),
@@ -461,7 +440,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('685382120001'), 'Fernanda Kroeger Treinamentos ME', { conta: '91528-5', pix: 'fe.kroeger@exemplo.com.br' }),
     valoresHora: VH_I16,
     contratos: [contratoInstrutorSeed({ id: 'ci16-1', codigo: 'CI-2026-116', tipo: 'cursos', turmas: _turmasDo('i16', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I16, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-16a4007' }), contratoInstrutorSeed({ id: 'ci16-2', codigo: 'CI-2026-152', tipo: 'formacao', formacaoId: 'tx2a', turmas: _turmasDo('i16', (t) => t.formacaoId === 'tx2a'), valoresHora: VH_I16, status: 'assinado', criadoEm: '2026-08-10', geradoEm: '2026-08-11', enviadoEm: '2026-08-11', instrutorAssinouEm: '2026-08-12', escolaAssinouEm: '2026-08-13', envelopeId: 'cs-16f3997' })],
-    antecedentes: [antecedente(2026, '2026-03-24')],
     lgpd: lgpdOk('2025-09-24'),
     historico: [evento('2021-09-25', 'Cadastro criado')],
   }),
@@ -473,7 +451,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('412889930001'), 'Henrique Duarte Treinamentos ME', { conta: '58714-4', pix: 'henrique.duarte@exemplo.com.br' }),
     valoresHora: VH_I17,
     contratos: [contratoInstrutorSeed({ id: 'ci17-1', codigo: 'CI-2026-117', tipo: 'cursos', turmas: _turmasDo('i17', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I17, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-17a1274' }), contratoInstrutorSeed({ id: 'ci17-2', codigo: 'CI-2026-154', tipo: 'formacao', formacaoId: 'fpsa', turmas: _turmasDo('i17', (t) => t.formacaoId === 'fpsa'), valoresHora: VH_I17, status: 'assinado', criadoEm: '2026-07-27', geradoEm: '2026-07-28', enviadoEm: '2026-07-28', instrutorAssinouEm: '2026-07-29', escolaAssinouEm: '2026-07-30', envelopeId: 'cs-17f3767' }), contratoInstrutorSeed({ id: 'ci17-3', codigo: 'CI-2026-155', tipo: 'formacao', formacaoId: 'fdsa', turmas: _turmasDo('i17', (t) => t.formacaoId === 'fdsa'), valoresHora: VH_I17, status: 'assinado', criadoEm: '2026-02-21', geradoEm: '2026-02-22', enviadoEm: '2026-02-22', instrutorAssinouEm: '2026-02-23', escolaAssinouEm: '2026-02-24', envelopeId: 'cs-17f4161' })],
-    antecedentes: [antecedente(2026, '2026-03-12')],
     lgpd: lgpdOk('2025-01-26'),
     historico: [evento('2024-08-26', 'Cadastro criado')],
   }),
@@ -485,7 +462,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('036249710001'), 'Rafael Moser Treinamentos ME', { conta: '95627-5', pix: 'rafa.moser@exemplo.com.br' }),
     valoresHora: VH_I19,
     contratos: [contratoInstrutorSeed({ id: 'ci19-1', codigo: 'CI-2026-119', tipo: 'cursos', turmas: _turmasDo('i19', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I19, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-19a1346' })],
-    antecedentes: [antecedente(2026, '2026-02-27')],
     lgpd: lgpdOk('2025-05-10'),
     historico: [evento('2019-03-17', 'Cadastro criado')],
   }),
@@ -497,7 +473,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('077153780001'), 'Bianca Lemke Treinamentos ME', { conta: '92198-4', pix: 'bia.lemke@exemplo.com.br' }),
     valoresHora: VH_I20,
     contratos: [contratoInstrutorSeed({ id: 'ci20-1', codigo: 'CI-2026-120', tipo: 'cursos', turmas: _turmasDo('i20', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I20, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-20a4107' }), contratoInstrutorSeed({ id: 'ci20-2', codigo: 'CI-2026-160', tipo: 'formacao', formacaoId: 'md1a', turmas: _turmasDo('i20', (t) => t.formacaoId === 'md1a'), valoresHora: VH_I20, status: 'assinado', criadoEm: '2026-05-18', geradoEm: '2026-05-19', enviadoEm: '2026-05-19', instrutorAssinouEm: '2026-05-20', escolaAssinouEm: '2026-05-21', envelopeId: 'cs-20f9033' }), contratoInstrutorSeed({ id: 'ci20-3', codigo: 'CI-2026-161', tipo: 'formacao', formacaoId: 'md1b', turmas: _turmasDo('i20', (t) => t.formacaoId === 'md1b'), valoresHora: VH_I20, status: 'assinatura', criadoEm: '2026-09-22', geradoEm: '2026-09-23', enviadoEm: '2026-09-23', envelopeId: 'cs-20f6027' })],
-    antecedentes: [antecedente(2026, '2026-02-17')],
     lgpd: lgpdOk('2025-02-22'),
     historico: [evento('2021-02-10', 'Cadastro criado')],
   }),
@@ -509,7 +484,6 @@ INSTRUTORES_SEED.push(
     empresa: empresa(cnpjSeed('176521210001'), 'Vanessa Bertoldi Treinamentos ME', { conta: '89534-1', pix: 'vanessa.bertoldi@exemplo.com.br' }),
     valoresHora: VH_I18,
     contratos: [contratoInstrutorSeed({ id: 'ci18-1', codigo: 'CI-2026-118', tipo: 'cursos', turmas: _turmasDo('i18', (t) => t.tipo !== 'formacao' && t.fim >= '2026-07-01'), valoresHora: VH_I18, status: 'assinado', criadoEm: '2026-06-22', geradoEm: '2026-06-23', enviadoEm: '2026-06-23', instrutorAssinouEm: '2026-06-24', escolaAssinouEm: '2026-06-25', envelopeId: 'cs-18a1059' }), contratoInstrutorSeed({ id: 'ci18-2', codigo: 'CI-2026-156', tipo: 'formacao', formacaoId: 'fpsa', turmas: _turmasDo('i18', (t) => t.formacaoId === 'fpsa'), valoresHora: VH_I18, status: 'assinado', criadoEm: '2026-07-27', geradoEm: '2026-07-28', enviadoEm: '2026-07-28', instrutorAssinouEm: '2026-07-29', escolaAssinouEm: '2026-07-30', envelopeId: 'cs-18f8448' })],
-    antecedentes: [antecedente(2026, '2026-02-14')],
     lgpd: lgpdOk('2025-07-10'),
     historico: [evento('2023-09-17', 'Cadastro criado')],
   }),

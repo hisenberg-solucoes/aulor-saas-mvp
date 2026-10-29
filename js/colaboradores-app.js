@@ -448,18 +448,6 @@ function renderColaborador() {
         ${cabecalhoSecao('Observações', 'Avisos internos sobre a pessoa.', 'btn-editar-obs')}
         <div class="p-4 text-sm text-slate-800 dark:text-neutral-100 whitespace-pre-line">${valorOuVazio(c.observacoes, '<span class="text-slate-500 dark:text-neutral-400">Nenhuma.</span>')}</div>
       </section>
-
-      <section class="${CARTAO}">
-        ${cabecalhoSecao('Histórico', 'Admissão, afastamentos, desligamento e readmissão.', null)}
-        ${c.historico.length ? `
-        <ol class="p-4 space-y-2">
-          ${[...c.historico].sort((x, y) => y.em.localeCompare(x.em)).map((h) => `
-          <li class="flex items-baseline gap-3 text-sm">
-            <span class="text-xs text-slate-500 dark:text-neutral-400 tabular-nums w-20 shrink-0">${C.fmtData(h.em)}</span>
-            <span class="text-slate-800 dark:text-neutral-100">${esc(h.texto)}</span>
-          </li>`).join('')}
-        </ol>` : '<p class="p-4 text-sm text-slate-500 dark:text-neutral-400">Nada registrado.</p>'}
-      </section>
     </div>`;
 
   el.querySelector('#btn-editar').addEventListener('click', () => abrirDrawerColaborador(c.id));

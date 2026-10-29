@@ -26,10 +26,10 @@ test('folha: sem empresa, valor hora, contrato nem bloqueio de pagamento', () =>
 test('RPA: troca a empresa pela conta da própria pessoa', () => {
   const semConta = instrutor('i1', ", remuneracao: 'rpa', empresa: null");
   assert.ok(rodar(`Instrutores.pendencias(${semConta})`).includes('Sem PIX nem conta bancária'));
-  assert.deepEqual(rodar(`Instrutores.pendenciasPagamento(${semConta})`).filter((p) => !/antecedentes/.test(p)), ['sem PIX nem conta']);
+  assert.deepEqual(rodar(`Instrutores.pendenciasPagamento(${semConta})`), ['sem PIX nem conta']);
   const comPix = instrutor('i1', ", remuneracao: 'rpa', empresa: null, contaPessoal: { pix: 'andre@exemplo.com.br' }");
   assert.ok(!rodar(`Instrutores.pendencias(${comPix})`).some((p) => /empresa|PIX/.test(p)));
-  assert.deepEqual(rodar(`Instrutores.pendenciasPagamento(${comPix})`).filter((p) => !/antecedentes/.test(p)), []);
+  assert.deepEqual(rodar(`Instrutores.pendenciasPagamento(${comPix})`), []);
 });
 
 test('instrutor da equipe: CPF e nascimento ficam no colaborador', () => {

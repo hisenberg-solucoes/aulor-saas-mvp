@@ -59,7 +59,7 @@ const LINK = 'text-petrol-800 dark:text-sky-300 hover:underline';
 // Foco do teclado no link do registro acende a linha inteira, com o anel por dentro do cartão.
 const FOCO_LINHA = 'has-[.link-registro:focus-visible]:bg-slate-50 dark:has-[.link-registro:focus-visible]:bg-neutral-900 has-[.link-registro:focus-visible]:outline-2 has-[.link-registro:focus-visible]:-outline-offset-2 has-[.link-registro:focus-visible]:outline-[color:var(--f-foco)]';
 
-// Pílula só de exceção (Regra da Pílula de Exceção): ativo, empresa cadastrada e antecedentes em dia não se anunciam.
+// Pílula só de exceção (Regra da Pílula de Exceção): ativo e empresa cadastrada não se anunciam.
 const PILULA = {
   falta: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
   neutra: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
@@ -158,7 +158,6 @@ function renderLista() {
   const filtrando = f.busca || f.situacao || f.remuneracao;
   const SITUACOES = [
     { id: 'sem-empresa', nome: 'Sem empresa para pagamento' },
-    { id: 'antecedentes', nome: `Antecedentes ${Instrutores.anoAtual()} pendente` },
   ];
   const corSelect = (ativo) => (ativo ? 'border-[color:var(--f-foco)] text-slate-900 dark:text-neutral-100' : 'border-slate-300 dark:border-neutral-700 text-slate-700 dark:text-neutral-200');
   // PJ é o comum e mostra só a empresa; RPA e folha dizem o que são (Regra da Pílula de Exceção).
@@ -354,7 +353,7 @@ function alterarStatus(id, status) {
 // ---------- Aba Dados ----------
 
 function renderAbaDados(el, i) {
-  const e = i.endereco; const c = i.contato; const tag = i.tagEstacionamento;
+  const e = i.endereco; const c = i.contato;
   const turmas = Instrutores.turmasDoInstrutor(i.id);
   const pessoa = Instrutores.pessoaDe(i);
   const idade = Instrutores.idade(pessoa.nascimento);
@@ -401,15 +400,6 @@ function renderAbaDados(el, i) {
         </div>
       </section>
 
-      <section class="${CARTAO}">
-        ${cabecalhoSecao('Acesso ao prédio', 'Tag de estacionamento cedida pela empresa.', 'btn-editar-tag')}
-        <div class="px-4 pb-4 grid grid-cols-2 gap-4">
-          ${campo('Tag de estacionamento', tag.possui ? 'Possui' : 'Não possui')}
-          ${tag.possui ? campo('Identificação', vazio(tag.identificacao)) : ''}
-          ${tag.possui ? campo('Cedida em', tag.cedidaEm ? `<span class="tabular-nums">${esc(fmtData(tag.cedidaEm))}</span>` : vazio(null)) : (tag.devolvidaEm ? campo('Devolvida em', `<span class="tabular-nums">${esc(fmtData(tag.devolvidaEm))}</span>`) : '')}
-        </div>
-      </section>
-
       <section class="${CARTAO} overflow-hidden">
         ${cabecalhoSecao('Turmas', 'Turmas em que está escalado; a escala é feita na turma.', null)}
         ${turmas.length ? `
@@ -428,16 +418,10 @@ function renderAbaDados(el, i) {
         ${cabecalhoSecao('Observações', 'Avisos internos.', 'btn-editar-obs')}
         <div class="px-4 pb-4 text-sm text-slate-800 dark:text-neutral-100 whitespace-pre-line">${vazio(i.observacoes, '<span class="text-slate-500 dark:text-neutral-400">Nenhuma.</span>')}</div>
       </section>
-
-      <section class="${CARTAO}">
-        ${cabecalhoSecao('Histórico', 'Eventos do cadastro.', null)}
-        ${i.historico.length ? `<ol class="px-4 pb-4 space-y-2">${[...i.historico].reverse().map((h) => `<li class="flex items-baseline gap-3 text-sm"><span class="text-xs text-slate-500 dark:text-neutral-400 tabular-nums w-20 shrink-0">${esc(fmtData(h.em))}</span><span class="text-slate-800 dark:text-neutral-100">${esc(h.texto)}</span></li>`).join('')}</ol>` : listaVazia('Sem eventos.')}
-      </section>
     </div>`;
   el.querySelector('#btn-editar-dados').addEventListener('click', () => abrirDrawerInstrutor(i.id));
   el.querySelector('#btn-editar-contato').addEventListener('click', () => abrirDrawerContato());
   el.querySelector('#btn-editar-endereco').addEventListener('click', () => abrirDrawerEndereco());
-  el.querySelector('#btn-editar-tag').addEventListener('click', () => abrirDrawerTag());
   el.querySelector('#btn-editar-obs').addEventListener('click', () => abrirDrawerObservacoes());
   el.querySelector('#btn-vincular-acesso')?.addEventListener('click', () => abrirDrawerVincularAcesso());
   el.querySelector('#btn-desvincular-acesso')?.addEventListener('click', () => desvincularAcesso());
@@ -765,35 +749,6 @@ function abrirDrawerEndereco() {
       persistir(); renderInstrutor(); toast('Endereço atualizado.');
     },
   });
-}
-
-function abrirDrawerTag() {
-  const i = atual(); const t = i.tagEstacionamento;
-  const { form } = drawerFormulario({
-    id: 'form-tag', titulo: 'Tag de estacionamento', subtitulo: 'Tag do prédio cedida pela empresa para o instrutor estacionar.', rotulo: 'Salvar alterações',
-    corpo: `
-      <fieldset>
-        <legend class="rotulo">Possui tag?</legend>
-        ${cartoesRadio('possui', [{ id: 'sim', nome: 'Sim', descricao: 'Tag cedida pela empresa.' }, { id: 'nao', nome: 'Não', descricao: 'Não tem ou devolveu.' }], t.possui ? 'sim' : 'nao', 'grid-cols-2')}
-      </fieldset>
-      <div id="tag-sim" class="space-y-4 ${t.possui ? '' : 'hidden'}">
-        ${campoTexto('identificacao', 'Identificação da tag', t.identificacao, { max: 30, placeholder: 'Ex.: TAG-0142' })}
-        ${campoTexto('cedidaEm', 'Cedida em', t.cedidaEm, { tipo: 'date', opcional: true })}
-      </div>
-      <div id="tag-nao" class="${t.possui ? 'hidden' : ''}">
-        ${campoTexto('devolvidaEm', 'Devolvida em', t.devolvidaEm, { tipo: 'date', opcional: true })}
-      </div>`,
-    aoSalvar: (fd) => {
-      const d = Object.fromEntries(fd);
-      if (d.possui === 'sim' && !String(d.identificacao).trim()) return [{ campo: 'identificacao', mensagem: 'Identificação da tag.' }];
-      estado.lista = Instrutores.atualizarTag(estado.lista, i.id, d);
-      persistir(); renderInstrutor(); toast('Tag atualizada.');
-    },
-  });
-  form.querySelectorAll('[name="possui"]').forEach((r) => r.addEventListener('change', () => {
-    form.querySelector('#tag-sim').classList.toggle('hidden', r.value !== 'sim');
-    form.querySelector('#tag-nao').classList.toggle('hidden', r.value === 'sim');
-  }));
 }
 
 function abrirDrawerObservacoes() {
