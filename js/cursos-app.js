@@ -211,7 +211,6 @@ function renderLista() {
       <p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Catálogo pedagógico da escola. Cada curso tem carga horária, conteúdo programático, requisitos e valores de referência; depois vira turma aberta ou entra numa formação.</p>
     </div>
 
-    ${cartoesResumoCursos()}
     <div class="mb-4 flex flex-wrap items-center gap-2">
       ${busca('busca-curso', f.busca, 'Buscar por código, nome ou resumo', 'w-64')}
       <div class="ml-auto flex flex-wrap items-center gap-2">
@@ -1007,24 +1006,3 @@ function abrirModalObservacaoSoftware(chave) {
   estado.aba = abaValida;
   renderCurso();
 })();
-
-// ---------- Cards de resumo da lista (catálogo e turmas) ----------
-
-function cartoesResumoCursos() {
-  const ativos = estado.lista.filter((c) => c.status === 'ativo').length;
-  const turmas = Cursos.todasTurmas().filter((t) => t.status !== 'cancelada');
-  const hoje = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10); // data local do navegador
-  const andamento = turmas.filter((t) => t.inicio <= hoje && t.fim >= hoje).length;
-  const futuras = turmas.filter((t) => t.inicio > hoje).length;
-  const cartao = (rotulo, valor, sub) => `
-    <div class="${CARTAO} p-4 min-w-0">
-      <p class="text-xs font-medium text-slate-500 dark:text-neutral-400">${rotulo}</p>
-      <p class="font-display text-2xl font-semibold tabular-nums leading-none mt-1 text-slate-800 dark:text-neutral-100">${valor}</p>
-      <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1.5 truncate">${sub}</p>
-    </div>`;
-  return `
-    <div class="grid grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
-      ${cartao('Cursos ativos', String(ativos), `${estado.lista.length} no catálogo`)}
-      ${cartao('Turmas', String(turmas.length), `${andamento} em andamento · ${futuras} a começar`)}
-    </div>`;
-}
