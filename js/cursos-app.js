@@ -281,7 +281,6 @@ function renderCurso() {
   const pilulas = c.status === 'inativo' ? pilula(PILULA.inativo, 'Inativo', statusDe('inativo').descricao) : '';
   // Uma ação à vista; o resto no "Mais", com o motivo de cada item travado.
   const itensMais = [
-    { nome: 'Duplicar', detalhe: 'Cópia em rascunho com tudo igual', acao: () => abrirModalDuplicar(c.id) },
     c.status === 'ativo'
       ? { nome: 'Inativar', detalhe: 'Sai do catálogo; turmas e histórico continuam', acao: () => alterarStatus(c.id, 'inativo') }
       : { nome: 'Ativar', detalhe: pend.length ? `Libera para o comercial mesmo com ${plural(pend.length, 'pendência')}` : 'Libera para o comercial', acao: () => alterarStatus(c.id, 'ativo') },
@@ -711,32 +710,6 @@ function abrirModalCurso(id = null) {
       }
     },
   });
-}
-
-// Duplicar pede código e nome antes de criar.
-function abrirModalDuplicar(origemId) {
-  const origem = Cursos.porId(estado.lista, origemId);
-  const { form } = modalFormulario({
-    id: 'form-duplicar',
-    titulo: 'Duplicar curso',
-    subtitulo: `Cópia de <strong>${esc(origem.nome)}</strong> com tudo igual (${plural(origem.modulos.length, 'módulo')}, requisitos, comercial), em <strong>rascunho</strong>.`,
-    rotulo: 'Criar cópia',
-    foco: '#f-nome',
-    corpo: `
-      ${campoTexto('codigo', 'Código', Cursos.codigoDeCopia(estado.lista, origem.codigo), { max: 10 })}
-      ${campoTexto('nome', 'Nome', Cursos.nomeDeCopia(estado.lista, origem.nome), { max: 100 })}`,
-    aoSalvar: (fd) => {
-      const dados = { ...origem, codigo: fd.get('codigo') ?? '', nome: fd.get('nome') ?? '' };
-      const erros = Cursos.validarDados(dados, estado.lista, null).filter((e) => ['codigo', 'nome'].includes(e.campo));
-      if (erros.length) return erros;
-      const r = Cursos.duplicar(estado.lista, origemId, dados);
-      estado.lista = r.lista;
-      persistir();
-      toast(`"${r.curso.nome}" criado a partir de "${origem.nome}".`);
-      selecionar(r.curso.id);
-    },
-  });
-  form.querySelector('#f-nome').select();
 }
 
 function confirmarExclusao(id) {

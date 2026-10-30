@@ -261,33 +261,6 @@ const Cursos = (() => {
     return lista.filter((c) => c.id !== id);
   }
 
-  function nomeDeCopia(lista, nome) {
-    const base = `Cópia de ${nome}`;
-    if (!lista.some((c) => normalizar(c.nome) === normalizar(base))) return base;
-    let n = 2;
-    while (lista.some((c) => normalizar(c.nome) === normalizar(`${base} (${n})`))) n += 1;
-    return `${base} (${n})`;
-  }
-
-  function codigoDeCopia(lista, codigo) {
-    let n = 2;
-    const raiz = codigo.replace(/-\d+$/, '').slice(0, 7);
-    while (lista.some((c) => normalizar(c.codigo) === normalizar(`${raiz}-${n}`))) n += 1;
-    return `${raiz}-${n}`;
-  }
-
-  // Duplicar: cópia profunda de tudo, em rascunho. Nome/código vêm do drawer.
-  function duplicar(lista, origemId, { codigo, nome }) {
-    const origem = porId(lista, origemId);
-    const copia = clonar(origem);
-    copia.id = novoId(lista, 'c');
-    copia.codigo = String(codigo).trim().toUpperCase();
-    copia.nome = String(nome).trim();
-    copia.status = 'rascunho';
-    copia.modulos = copia.modulos.map((m, i) => ({ ...m, id: `${copia.id}-m${i + 1}` }));
-    return { lista: [...lista, copia], curso: copia };
-  }
-
   // ---------- Módulos (conteúdo programático) ----------
 
   function limparModulo(dados) {
@@ -505,7 +478,7 @@ const Cursos = (() => {
     filtrar, areasUsadas, formacoesDoCurso, todasTurmas, turmasDoCurso, podeExcluir,
     horasDistribuidas, situacaoHoras, pendencias,
     validarDados, validarModulo, validarCertificado, validarComercial,
-    incluir, atualizarDados, remover, nomeDeCopia, codigoDeCopia, duplicar,
+    incluir, atualizarDados, remover,
     incluirModulo, atualizarModulo, removerModulo, moverModulo,
     atualizarDescricao, atualizarCertificado, atualizarInfraestrutura, atualizarComercial,
     alterarStatus,
