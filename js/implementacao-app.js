@@ -6,7 +6,10 @@
 (function () {
   const D = IMPLEMENTACAO;
   const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const LADOS = [['web', 'Web'], ['api', 'API']];
+  const LADOS = [['web', 'Web'], ['admin', 'Admin'], ['api', 'API']];
+  // Só os lados que a tela (ou a raia) tem: as telas da escola não passam pelo admin, e as do admin não passam pelo web.
+  const ativos = (c) => LADOS.filter(([lado]) => c[lado].total);
+  const resumos = (c) => ativos(c).map(([lado, nome]) => `${nome}: ${resumo(c[lado])}.`).join(' ');
   const SITUACAO = { ok: 'Feito', parcial: 'Parcial', falta: 'Falta', na: '—' };
   const ICONE = {
     fechar: '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />',
@@ -44,6 +47,7 @@
   const FILTROS = {
     todas: () => true,
     web: (t) => comecada(t.c.web),
+    admin: (t) => comecada(t.c.admin),
     api: (t) => comecada(t.c.api),
     'so-web': (t) => t.c.api.total > 0 && completo(t.c.api) && !completo(t.c.web),
   };
@@ -61,11 +65,11 @@
   function cartao(t) {
     const so = soFaltaWeb(t);
     const ints = (t.integracoes ?? []).map((id) => integracoes[id].nome);
-    const rotulo = `${t.nome}. Web: ${resumo(t.c.web)}. API: ${resumo(t.c.api)}.${so ? ' Só falta o web.' : ''}`;
+    const rotulo = `${t.nome}. ${resumos(t.c)}${so ? ' Só falta o web.' : ''}`;
     return `<button type="button" class="no${so ? ' so-web' : ''}" data-id="${esc(t.id)}" aria-controls="ficha" aria-expanded="false" aria-label="${esc(rotulo)}">
       <span class="no-nome">${esc(t.nome)}</span>
-      <span class="no-sub">${esc(t.prototipo.join(' · '))}</span>
-      <span class="no-lados">${LADOS.map(([lado, nome]) => ladoLinha(t.c[lado], nome)).join('')}</span>
+      <span class="no-sub">${esc(t.prototipo.join(' · ') || t.admin)}</span>
+      <span class="no-lados">${ativos(t.c).map(([lado, nome]) => ladoLinha(t.c[lado], nome)).join('')}</span>
       ${so || ints.length ? `<span class="no-pe">${so ? '<span class="pilula pilula-aviso">Só falta o web</span>' : ''}${ints.length ? `${svg('tomada')}<span>${esc(ints.join(' · '))}</span>` : ''}</span>` : ''}
     </button>`;
   }
@@ -82,11 +86,11 @@
   }
 
   function cabecaRaia(id, nome, descricao, c) {
-    const rotulo = `Aproximar ${nome}: ${descricao}.${c ? ` Web: ${resumo(c.web)}. API: ${resumo(c.api)}.` : ''}`;
+    const rotulo = `Aproximar ${nome}: ${descricao}.${c ? ` ${resumos(c)}` : ''}`;
     return `<button type="button" class="raia-cabeca" data-aproximar="${esc(id)}" aria-label="${esc(rotulo)}">
       <span class="raia-nome">${esc(nome)}</span>
       <span class="raia-desc">${esc(descricao)}</span>
-      ${c ? `<span class="raia-lados">${LADOS.map(([lado, n]) => ladoLinha(c[lado], n)).join('')}</span>` : ''}
+      ${c ? `<span class="raia-lados">${ativos(c).map(([lado, n]) => ladoLinha(c[lado], n)).join('')}</span>` : ''}
     </button>`;
   }
 
@@ -132,9 +136,9 @@
   const fixas = mundo.querySelector('.arestas-fixas');
   let ligacoes = mundo.querySelector('.arestas-ligacoes');
 
-  const { data, web, api } = D.retrato;
+  const { data, web, admin, api } = D.retrato;
   const repo = (r) => `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(`${r.repo} ${r.commit}`)}</a>`;
-  document.getElementById('retrato').innerHTML = `Retrato de ${new Date(`${data}T12:00`).toLocaleDateString('pt-BR')}<span class="topo-repos"> · ${repo(web)} · ${repo(api)}</span>`;
+  document.getElementById('retrato').innerHTML = `Retrato de ${new Date(`${data}T12:00`).toLocaleDateString('pt-BR')}<span class="topo-repos"> · ${repo(web)} · ${repo(admin)} · ${repo(api)}</span>`;
 
   // ---------- Indicadores que destacam ----------
   let filtro = 'todas';
@@ -144,8 +148,9 @@
     const telasTxt = (k) => `${k}<small>${k === 1 ? 'tela' : 'telas'}</small>`;
     const comecadas = (k) => `${k} ${k === 1 ? 'tela começada' : 'telas começadas'}`;
     const celulas = [
-      { f: 'todas', rotulo: 'Telas no mapa', valor: telasTxt(telas.length), ctx: 'Entrada, cadastro pelo link, administrativo e os dois portais' },
+      { f: 'todas', rotulo: 'Telas no mapa', valor: telasTxt(telas.length), ctx: 'Admin da Aulor, Entrada, cadastro pelo link, administrativo e os dois portais' },
       { f: 'web', rotulo: 'Feito no web', valor: `${t.web.feitas}<small>de ${t.web.total} features</small>`, ctx: `${medidor(t.web)}${comecadas(n('web'))}` },
+      { f: 'admin', rotulo: 'Feito no admin', valor: `${t.admin.feitas}<small>de ${t.admin.total} features</small>`, ctx: `${medidor(t.admin)}${comecadas(n('admin'))}` },
       { f: 'api', rotulo: 'Feito na API', valor: `${t.api.feitas}<small>de ${t.api.total} features</small>`, ctx: `${medidor(t.api)}${comecadas(n('api'))}` },
       { f: 'so-web', rotulo: 'Só falta o web', valor: telasTxt(n('so-web')), ctx: 'A API já cobre a tela inteira', pendencia: true },
     ];
@@ -441,27 +446,29 @@
       if (ultima?.nome === f.parte) ultima.itens.push(f);
       else partes.push({ nome: f.parte, itens: [f] });
     }
+    const lados = ativos(t.c);
     return `<table class="tabela">
-      <colgroup><col><col style="width:84px"><col style="width:84px"></colgroup>
-      <thead><tr><th scope="col">Feature</th><th scope="col">Web</th><th scope="col">API</th></tr></thead>
+      <colgroup><col>${lados.map(() => '<col style="width:84px">').join('')}</colgroup>
+      <thead><tr><th scope="col">Feature</th>${lados.map(([, nome]) => `<th scope="col">${nome}</th>`).join('')}</tr></thead>
       ${partes.map((p) => `<tbody>
-        <tr class="tabela-parte"><th scope="colgroup" colspan="3">${esc(p.nome)}</th></tr>
+        <tr class="tabela-parte"><th scope="colgroup" colspan="${lados.length + 1}">${esc(p.nome)}</th></tr>
         ${p.itens.map((f) => `<tr>
           <td>${esc(f.nome)}${f.nota ? `<span class="tabela-nota">${esc(f.nota)}</span>` : ''}</td>
-          <td>${fase(f.web)}</td>
-          <td>${fase(f.api)}</td>
+          ${lados.map(([lado]) => `<td>${fase(f[lado])}</td>`).join('')}
         </tr>`).join('')}
       </tbody>`).join('')}
     </table>`;
   }
 
   // A raia vai junto: há telas de mesmo nome em portais diferentes (Financeiro, Início).
-  const linhaTela = (u) => `<li><span><button type="button" class="link" data-ir="${esc(u.id)}">${esc(u.nome)}</button><small>${esc(u.raia.nome)}</small></span><span class="no-conta">Web ${u.c.web.feitas}/${u.c.web.total} · API ${u.c.api.feitas}/${u.c.api.total}</span></li>`;
+  const linhaTela = (u) => `<li><span><button type="button" class="link" data-ir="${esc(u.id)}">${esc(u.nome)}</button><small>${esc(u.raia.nome)}</small></span><span class="no-conta">${ativos(u.c).map(([lado, nome]) => `${nome} ${u.c[lado].feitas}/${u.c[lado].total}`).join(' · ')}</span></li>`;
 
   function fichaTela(t) {
     const trilha = [t.raia.nome, t.grupo && t.grupo.nome !== t.raia.nome && t.grupo.nome !== t.nome ? t.grupo.nome : null].filter(Boolean).join(' › ');
-    const webTxt = t.web ? `${t.web}${t.webSituacao ? ` · ${t.webSituacao}` : ''}` : t.webSituacao ?? 'Sem rota no web';
-    const arquivos = (t.webArquivos ?? []).map((a) => `<li><a class="link" href="${esc(`https://github.com/hisenberg-solucoes/aulor-web/blob/${D.retrato.web.commit}/src/app/${a}`)}" target="_blank" rel="noopener">${esc(a)}</a></li>`).join('');
+    const webTxt = t.admin ? `${t.admin} no aulor-admin` : t.web ? `${t.web}${t.webSituacao ? ` · ${t.webSituacao}` : ''}` : t.webSituacao ?? 'Sem rota no web';
+    const arquivosDe = (lista, r) => (lista ?? []).map((a) => `<li><a class="link" href="${esc(`https://github.com/hisenberg-solucoes/${r.repo}/blob/${r.commit}/src/app/${a}`)}" target="_blank" rel="noopener">${esc(a)}</a></li>`).join('');
+    const arquivos = arquivosDe(t.webArquivos, D.retrato.web);
+    const arquivosAdmin = arquivosDe(t.adminArquivos, D.retrato.admin);
     const ints = (t.integracoes ?? []).map((id) => integracoes[id]);
     const rel = ligadas(t).map((id) => porId[id]);
     return `
@@ -470,12 +477,12 @@
         <h2 id="ficha-titulo" class="ficha-titulo" tabindex="-1">${esc(t.nome)}</h2>
         <p class="ficha-chips">
           <span>${svg('raia')}${esc(trilha)}</span>
-          <span>${svg('pagina')}<span>${t.prototipo.map((p) => `<a class="link" href="${esc(p)}" target="_blank" rel="noopener">${esc(p)}</a>`).join(', ')}</span></span>
+          ${t.prototipo.length ? `<span>${svg('pagina')}<span>${t.prototipo.map((p) => `<a class="link" href="${esc(p)}" target="_blank" rel="noopener">${esc(p)}</a>`).join(', ')}</span></span>` : ''}
           <span>${svg('rota')}${esc(webTxt)}</span>
         </p>
       </div>
       <div class="ficha-corpo">
-        <div class="ficha-medidores">${LADOS.map(([lado, nome]) => `
+        <div class="ficha-medidores">${ativos(t.c).map(([lado, nome]) => `
           <div class="ficha-medidor">
             <span class="ficha-medidor-rotulo">${nome}</span>
             <span class="ficha-medidor-valor">${t.c[lado].feitas} de ${t.c[lado].total}<small>${t.c[lado].parciais ? `${t.c[lado].parciais} ${t.c[lado].parciais > 1 ? 'parciais' : 'parcial'}` : 'feitas'}</small></span>
@@ -486,6 +493,7 @@
         ${secao('Depende de', ints.length ? `<ul class="lista-simples">${ints.map((i) => `<li><button type="button" class="link" data-ir-int="${i.id}">${esc(i.nome)}</button>${i.situacao === 'ok' ? fase('ok', 'Integrada') : fase('falta', 'Falta')}</li>`).join('')}</ul>` : '')}
         ${secao('Ligada a', rel.length ? `<ul class="lista-simples">${rel.map(linhaTela).join('')}</ul>` : '')}
         ${secao('No web', arquivos ? `<ul class="lista-codigo">${arquivos}</ul>` : '')}
+        ${secao('No admin', arquivosAdmin ? `<ul class="lista-codigo">${arquivosAdmin}</ul>` : '')}
         ${secao('Na API', t.endpoints?.length ? `<ul class="lista-codigo">${t.endpoints.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : '')}
         ${secao('Fora da V1', t.fora?.length ? `<p class="lista-fora">${t.fora.map((f) => `<span>${esc(f)}</span>`).join('')}</p>` : '')}
       </div>`;

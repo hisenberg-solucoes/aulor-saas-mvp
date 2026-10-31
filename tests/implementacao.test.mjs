@@ -30,8 +30,8 @@ test('a Entrada desce para pelo menos uma raia de portal', () => {
   assert.ok(D.raias.some((r) => r.portal));
 });
 
-test('toda feature diz a situação nos dois lados', () => {
-  const ruins = telas.flatMap((t) => (t.features.length ? t.features : [{}]).filter((f) => !SITUACOES.includes(f.web) || !SITUACOES.includes(f.api) || !f.parte || !f.nome).map(() => t.id));
+test('toda feature diz a situação nos três lados', () => {
+  const ruins = telas.flatMap((t) => (t.features.length ? t.features : [{}]).filter((f) => ['web', 'admin', 'api'].some((lado) => !SITUACOES.includes(f[lado])) || !f.parte || !f.nome).map(() => t.id));
   assert.deepEqual(ruins, []);
 });
 

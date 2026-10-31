@@ -205,7 +205,7 @@
     .no-nome { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--f-tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .no-sub { font-size: 12px; line-height: 16px; color: var(--f-tinta-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .no-lados { display: grid; gap: 6px; margin-top: 12px; }
-    .no-lado { display: grid; grid-template-columns: 28px 1fr 36px; align-items: center; gap: 8px; font-size: 12px; line-height: 16px; }
+    .no-lado { display: grid; grid-template-columns: 40px 1fr 36px; align-items: center; gap: 8px; font-size: 12px; line-height: 16px; }
     .no-lado-nome { font-weight: 500; color: var(--f-tinta-2); }
     .no-conta { text-align: right; font-variant-numeric: tabular-nums; color: var(--f-tinta-2); }
     .no-pe { display: flex; align-items: center; gap: 8px; min-width: 0; margin-top: auto; font-size: 12px; line-height: 16px; color: var(--f-tinta-3); }
@@ -292,7 +292,7 @@
     .grupo-telas > li:has(~ li .no.ativo)::before,
     .grupo-telas > li:has(~ li .no.ativo)::after { border-left-color: var(--m-marca); }
 
-    /* De longe: o nome e os dois medidores (web em cima, API embaixo), com o corpo calculado pelo zoom para
+    /* De longe: o nome e os dois medidores (web ou admin em cima, API embaixo), com o corpo calculado pelo zoom para
        ficar em ~12px na tela; o cobre de "só falta o web" vira ponto ao lado do medidor do web. */
     .longe .no-sub, .longe .no-pe, .longe .no-conta, .longe .no-uso, .longe .raia-desc, .longe .no-lado-nome, .longe .grupo-conta { display: none; }
     .longe .no { padding: 10px; }
@@ -436,7 +436,7 @@
       <span><i class="medidor-feito"></i>Feito</span>
       <span><i class="medidor-parcial"></i>Parcial</span>
       <span><i></i>Falta</span>
-      <span>Web em cima, API embaixo</span>
+      <span>Web ou admin em cima, API embaixo</span>
     </p>
   </section>
 

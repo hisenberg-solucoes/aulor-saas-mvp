@@ -1,17 +1,20 @@
 // ============================================================
 // Implementação da V1: cada tela do escopo (documento de 26/10/2026, com as decisões do ESCOPO_V1.md) e o que dela já existe no
-// aulor-web e na aulor-api. Retrato à mão, conferido nos commits de RETRATO: rotas e componentes
-// do web (src/app) e endpoints e docs/engineering da API. Ao atualizar, mude o retrato junto.
+// aulor-web, no aulor-admin e na aulor-api. Retrato à mão, conferido nos commits de RETRATO: rotas e componentes
+// do web e do admin (src/app) e endpoints e docs/engineering da API. Ao atualizar, mude o retrato junto.
 // Cada feature diz a situação em cada lado: 'ok' feito, 'parcial', 'falta' ou 'na' (não se aplica).
+// As telas da escola não passam pelo admin (F); as do admin da Aulor não passam pelo web (FA).
 // ============================================================
 
-const F = (parte, nome, web, api, nota) => ({ parte, nome, web, api, nota });
+const F = (parte, nome, web, api, nota) => ({ parte, nome, web, admin: 'na', api, nota });
+const FA = (parte, nome, admin, api, nota) => ({ parte, nome, web: 'na', admin, api, nota });
 
 const IMPLEMENTACAO = {
   retrato: {
-    data: '2026-10-28',
-    web: { repo: 'aulor-web', commit: '3d0877c', url: 'https://github.com/hisenberg-solucoes/aulor-web/commit/3d0877c' },
-    api: { repo: 'aulor-api', commit: 'bb4eee2', url: 'https://github.com/hisenberg-solucoes/aulor-api/commit/bb4eee2' },
+    data: '2026-10-31',
+    web: { repo: 'aulor-web', commit: '6984e39', url: 'https://github.com/hisenberg-solucoes/aulor-web/commit/6984e39' },
+    admin: { repo: 'aulor-admin', commit: 'e22b9ce', url: 'https://github.com/hisenberg-solucoes/aulor-admin/commit/e22b9ce' },
+    api: { repo: 'aulor-api', commit: '78e4a87', url: 'https://github.com/hisenberg-solucoes/aulor-api/commit/78e4a87' },
   },
 
   integracoes: [
@@ -26,6 +29,51 @@ const IMPLEMENTACAO = {
   // Raias do mapa, da esquerda para a direita; cada grupo é uma coluna, na ordem do menu do protótipo
   // (js/permissoes-data.js), que o menu do web ainda não segue. As raias com `portal` descem da Entrada.
   raias: [
+    {
+      // aulor-admin: o time da Aulor cria cada instituição antes de a escola entrar; não há tela no protótipo.
+      id: 'aulor', nome: 'Admin da Aulor', descricao: 'O time da Aulor cria e acompanha as instituições, em todas as instâncias da API',
+      grupos: [{
+        id: 'aulor', nome: 'Instituições',
+        telas: [
+          {
+            id: 'aulor-instituicoes', nome: 'Instituições', prototipo: [], admin: '/instituicoes',
+            adminArquivos: ['sign-in/sign-in.ts', 'sign-in/no-access.ts', 'access.guard.ts', 'shell/shell.ts', 'institutions/institutions.ts', 'institutions/institutions.api.ts', 'institutions/institutions.data.ts'],
+            endpoints: ['GET /v1/internal/tenants'],
+            integracoes: ['auth0'], liga: ['aulor-nova-instituicao', 'aulor-instituicao'],
+            features: [
+              FA('Entrada', 'Login pelo Auth0, só com a role platform_admin', 'ok', 'ok'),
+              FA('Lista', 'As instituições de todas as instâncias, com a falha de uma em aviso', 'ok', 'ok'),
+              FA('Lista', 'Indicadores que filtram (pedem ação, em provisionamento, ativas) e busca por nome ou slug', 'ok', 'ok'),
+            ],
+          },
+          {
+            id: 'aulor-nova-instituicao', nome: 'Nova instituição', prototipo: [], admin: '/instituicoes/nova',
+            adminArquivos: ['institutions/new-institution.ts'],
+            endpoints: ['POST /v1/internal/tenants', 'GET /v1/internal/tenants'],
+            integracoes: ['auth0'],
+            features: [
+              FA('Identificação', 'Instância, nome e slug conferido em todas as instâncias', 'ok', 'ok'),
+              FA('Identificação', 'Primeira unidade, marca e diretório Microsoft Entra (opcionais)', 'ok', 'ok'),
+              FA('Administrador', 'Convite ao primeiro Administrador, com a conferência do e-mail registrada', 'ok', 'ok'),
+            ],
+          },
+          {
+            id: 'aulor-instituicao', nome: 'Ficha da instituição', prototipo: [], admin: '/instituicoes/:instancia/:id',
+            adminArquivos: ['institutions/institution-detail.ts'],
+            endpoints: ['GET /v1/internal/tenants/{id}', 'POST /v1/internal/tenants/{id}/identity-organization', 'POST /v1/internal/tenants/{id}/invitations/{invitationId}/reissue', 'POST /v1/internal/tenants/{id}/invitations/{invitationId}/cancel'],
+            integracoes: ['auth0'], liga: ['entrada'],
+            features: [
+              FA('Ficha', 'Provisionamento passo a passo: Organization no Auth0 e aceite do convite inicial', 'ok', 'ok'),
+              FA('Recuperação', 'Tentar a Organization de novo', 'ok', 'ok'),
+              FA('Recuperação', 'Reemitir e cancelar o convite inicial', 'ok', 'ok', 'O Administrador aceita pela Entrada da escola, como o convite da equipe.'),
+              FA('Ficha', 'Editar os dados da instituição', 'falta', 'falta', 'Travado no "Mais": a API ainda não permite.'),
+              FA('Ficha', 'Suspender a instituição', 'falta', 'falta', 'Travado no "Mais": a API ainda não expõe.'),
+            ],
+          },
+        ],
+      }],
+    },
+
     {
       id: 'link', nome: 'Cadastro pelo link', descricao: 'Páginas abertas por um link enviado; o convite pede a entrada com o e-mail convidado',
       grupos: [{
@@ -52,14 +100,16 @@ const IMPLEMENTACAO = {
           },
           {
             // AULOR-007: substitui o link público do instrutor; não há formulário anônimo (D3).
-            id: 'convite-cadastro', nome: 'Convite de cadastro', prototipo: ['convite.html'],
+            id: 'convite-cadastro', nome: 'Convite de cadastro', prototipo: ['convite.html'], web: '/:slug/complete-seu-cadastro',
+            webArquivos: ['people/complete-registration.ts', 'institution/institution.ts', 'institution/institution.routes.ts'],
+            endpoints: ['POST /v1/invitations/confirmations', 'GET /v1/people/me/invitation', 'POST /v1/people/me/invitation/completion'],
             liga: ['instrutores', 'colaboradores'], integracoes: ['auth0'],
             features: [
               F('Entrada', 'Abre pelo e-mail do convite e entra com o e-mail convidado', 'ok', 'ok', 'Confirmação do convite de AULOR-002 (POST /v1/invitations/confirmations), que recusa outro e-mail.'),
-              F('Página', 'Complete seu cadastro: CPF, nascimento, nome social e contato', 'falta', 'falta', 'O convite de cadastro do People ainda não existe (TRD de AULOR-007).'),
-              F('Página', 'CPF que o acesso não prova fica com a coordenação, sem revelar ninguém', 'falta', 'falta'),
-              F('Página', 'Cadastro concluído e o que o perfil permite', 'falta', 'falta'),
-              F('Página', 'Convite pela ficha liga a pessoa ao acesso, sem formulário', 'falta', 'falta'),
+              F('Página', 'Complete seu cadastro: CPF, nascimento, nome social e contato', 'ok', 'ok', 'Fora do shell, a cada entrada na unidade até concluir; o instrutor informa também apelido, WhatsApp, e-mail e sobre.'),
+              F('Página', 'CPF que o acesso não prova fica com a coordenação, sem revelar ninguém', 'ok', 'ok', '409 people.registration_requires_coordination: "A escola vai concluir o seu cadastro".'),
+              F('Página', 'Cadastro concluído e o que o perfil permite', 'parcial', 'ok', '"Entrar no Aulor" leva sempre ao Início do administrativo; sem portal do professor, o instrutor não vai para lá.'),
+              F('Página', 'Convite pela ficha liga a pessoa ao acesso, sem formulário', 'ok', 'ok', 'A entrada conclui em silêncio, sem corpo.'),
             ],
           },
         ],
@@ -79,7 +129,7 @@ const IMPLEMENTACAO = {
               F('Tela', 'Saudação e unidade em uso', 'ok', 'ok'),
               F('Tela', 'Troca de unidade', 'ok', 'ok'),
               F('Tela', 'Atalhos para os módulos que o perfil vê', 'falta', 'ok', 'O web tem só a saudação. O menu esconde Alunos, Cursos, Colaboradores, Instrutores e Perfis; Formações e Turmas aparecem para todos.'),
-              F('Tela', 'Aviso de tela fora do perfil', 'parcial', 'ok', 'Só Alunos e Perfis tratam o 403, e com o "Acesso recusado" da escola inteira; não volta ao Início dizendo qual tela.'),
+              F('Tela', 'Aviso de tela fora do perfil', 'parcial', 'ok', 'Alunos, Cursos, Colaboradores, Instrutores e Perfis tratam o 403, com o "Acesso recusado" no lugar da tela; não volta ao Início dizendo qual tela.'),
             ],
           }],
         },
@@ -156,14 +206,14 @@ const IMPLEMENTACAO = {
           telas: [
             {
               id: 'cursos', nome: 'Cursos', prototipo: ['cursos.html', 'curso.html'], web: '/:slug/cursos',
-              webSituacao: 'Em construção',
-              endpoints: ['POST /v1/courses/search', 'GET /v1/courses/areas', 'POST /v1/courses', 'GET /v1/courses/{id}', 'PUT /v1/courses/{id}', 'POST /v1/courses/{id}/deactivate', 'POST /v1/courses/{id}/reactivate'],
+              webArquivos: ['courses/courses.ts', 'courses/new-course-dialog.ts', 'courses/course.ts', 'courses/course-details.ts', 'courses/course-prices-and-vacancies.ts', 'courses/course-syllabus.ts', 'courses/course-syllabus-edit.ts', 'courses/course-software.ts', 'courses/software-dialog.ts', 'courses/duplicate-course-dialog.ts'],
+              endpoints: ['POST /v1/courses/search', 'GET /v1/courses/areas', 'GET /v1/courses/software', 'POST /v1/courses', 'GET /v1/courses/{id}', 'PUT /v1/courses/{id}', 'POST /v1/courses/{id}/deactivate', 'POST /v1/courses/{id}/reactivate'],
               features: [
-                F('Lista', 'Busca e modalidade, sem indicadores de receita e margem', 'falta', 'ok'),
-                F('Novo curso', 'Nome, sigla, área, modalidades, carga e valor de referência', 'falta', 'ok'),
-                F('Dados gerais', 'Inativar e reativar', 'falta', 'ok'),
-                F('Conteúdo', 'Módulos e tópicos', 'falta', 'parcial', 'A API tem módulos com horas; faltam os tópicos.'),
-                F('Requisitos', 'Lista de softwares para o aluno instalar', 'falta', 'falta'),
+                F('Lista', 'Busca e modalidade, sem indicadores de receita e margem', 'ok', 'ok', 'Também filtra por nível, área e situação.'),
+                F('Novo curso', 'Nome, sigla, área, modalidades, carga e valor de referência', 'ok', 'ok'),
+                F('Dados gerais', 'Inativar e reativar', 'ok', 'ok', 'O "Mais" do web também tem Duplicar, que o protótipo tirou da V1.'),
+                F('Conteúdo', 'Módulos e tópicos', 'ok', 'ok', 'A soma das horas dos módulos fecha com a carga do curso.'),
+                F('Requisitos', 'Lista de softwares para o aluno instalar', 'ok', 'ok', 'Com sugestão dos nomes já usados na unidade.'),
               ],
               fora: ['Indicadores de receita e margem', 'Certificado', 'Sala e máquina'],
             },
@@ -185,7 +235,7 @@ const IMPLEMENTACAO = {
             {
               id: 'turmas', nome: 'Turmas', prototipo: ['turmas.html', 'turma.html'], web: '/:slug/turmas',
               webSituacao: 'Em construção', integracoes: ['meet'],
-              endpoints: ['POST /v1/classes/search', 'POST /v1/classes/course-options/search', 'POST /v1/classes/instructor-options/search', 'POST /v1/classes', 'GET /v1/classes/{id}', 'PUT /v1/classes/{id}', 'PUT /v1/classes/{id}/settings', 'POST /v1/classes/{id}/meeting-cancellations/preview', 'POST /v1/classes/{id}/meeting-cancellations', 'POST /v1/classes/{id}/meeting-restorations/preview', 'POST /v1/classes/{id}/meeting-restorations', 'POST /v1/classes/{id}/cancellation/preview', 'POST /v1/classes/{id}/cancellation', 'POST /v1/classes/{id}/reopening/preview', 'POST /v1/classes/{id}/reopening', 'POST /v1/classes/{id}/schedule-changes/preview', 'POST /v1/classes/{id}/schedule-changes'],
+              endpoints: ['POST /v1/classes/search', 'POST /v1/classes/course-options/search', 'POST /v1/classes/instructor-options/search', 'POST /v1/classes', 'GET /v1/classes/{id}', 'PUT /v1/classes/{id}', 'PUT /v1/classes/{id}/settings', 'POST /v1/classes/{id}/meeting-cancellations/preview', 'POST /v1/classes/{id}/meeting-cancellations', 'POST /v1/classes/{id}/meeting-restorations/preview', 'POST /v1/classes/{id}/meeting-restorations', 'POST /v1/classes/{id}/cancellation/preview', 'POST /v1/classes/{id}/cancellation', 'POST /v1/classes/{id}/reopening/preview', 'POST /v1/classes/{id}/reopening', 'POST /v1/classes/{id}/schedule-changes/preview', 'POST /v1/classes/{id}/schedule-changes', 'GET /v1/classes/{id}/software', 'PUT /v1/classes/{id}/software'],
               liga: ['formacoes', 'feriados', 'materiais-coord', 'centros-receita'],
               features: [
                 F('Lista', 'Busca e filtros, sem indicadores nem risco', 'falta', 'ok'),
@@ -194,7 +244,7 @@ const IMPLEMENTACAO = {
                 F('Aulas', 'Feriados ficam de fora ao gerar as aulas', 'falta', 'falta', 'A API cancela os encontros de um período (de–até), mas não há cadastro de feriados.'),
                 F('Aulas', 'Cancelar e desfazer encontros; cancelar e reabrir a turma', 'falta', 'ok'),
                 F('Aulas', 'Link do Google Meet de cada aula', 'falta', 'falta'),
-                F('Requisitos', 'Lista de softwares, a mesma do portal do aluno', 'falta', 'falta'),
+                F('Requisitos', 'Lista de softwares, a mesma do portal do aluno', 'falta', 'ok', 'A turma nasce com a lista do curso, troca a dela e a compara com a atual do curso.'),
                 F('Cadastro', 'Centro de receita da turma', 'falta', 'falta'),
               ],
               fora: ['Presenças', 'Dossiês', 'Avaliações', 'Indicadores de risco', 'Fórum da turma'],
@@ -266,36 +316,36 @@ const IMPLEMENTACAO = {
           telas: [
             {
               id: 'instrutores', nome: 'Instrutores', prototipo: ['instrutores.html', 'instrutor.html'], web: '/:slug/instrutores',
-              webSituacao: 'Em construção',
-              endpoints: ['POST /v1/instructors/search', 'POST /v1/instructors', 'PUT /v1/instructors/{id}', 'GET /v1/instructors/{id}', 'PUT /v1/instructors/{id}/identification', 'PUT /v1/instructors/{id}/contact', 'PUT /v1/instructors/{id}/notes', 'POST /v1/instructors/{id}/deactivation', 'POST /v1/instructors/{id}/reactivation', 'PUT /v1/instructors/{id}/unit-membership', 'DELETE /v1/instructors/{id}/unit-membership'],
+              webArquivos: ['people/instructors.ts', 'people/new-instructor-dialog.ts', 'people/invitation-dialog.ts', 'people/invitation-list.ts', 'people/instructor.ts', 'people/instructor-card.ts', 'people/system-access.ts', 'people/link-user-dialog.ts', 'people/person-invitation-dialog.ts'],
+              endpoints: ['POST /v1/instructors/search', 'POST /v1/instructors', 'PUT /v1/instructors/{id}', 'GET /v1/instructors/{id}', 'PUT /v1/instructors/{id}/identification', 'PUT /v1/instructors/{id}/contact', 'PUT /v1/instructors/{id}/notes', 'POST /v1/instructors/{id}/deactivation', 'POST /v1/instructors/{id}/reactivation', 'GET /v1/people/unit-membership-links', 'PUT /v1/instructors/{id}/unit-membership', 'DELETE /v1/instructors/{id}/unit-membership', 'POST /v1/instructors/invitations', 'POST /v1/instructors/invitations/search', 'GET /v1/instructors/invitations/{id}', 'PUT /v1/instructors/invitations/{id}', 'DELETE /v1/instructors/invitations/{id}', 'GET /v1/instructors/{id}/invitation', 'POST /v1/instructors/{id}/invitation', 'PUT /v1/instructors/{id}/invitation', 'DELETE /v1/instructors/{id}/invitation'],
               liga: ['convite-cadastro', 'turmas'],
               features: [
-                F('Lista', 'Busca, remuneração e recortes por pendência', 'falta', 'ok'),
-                F('Novo instrutor', 'Cadastro; CPF já cadastrado adiciona o papel', 'falta', 'ok'),
-                F('Convite', 'Convidar instrutor: nome, e-mail, remuneração e perfil', 'falta', 'falta', 'AULOR-007.'),
-                F('Convite', 'Convidados na lista, com selo, Reenviar e Cancelar', 'falta', 'falta'),
-                F('Ficha · Dados', 'Enviar convite a quem não tem usuário', 'falta', 'falta'),
-                F('Ficha · Dados', 'Identificação, contato e observações', 'falta', 'ok'),
-                F('Ficha · Dados', 'Inativar e reativar', 'falta', 'ok'),
-                F('Ficha · Dados', 'Pendências: nascimento, e-mail, WhatsApp e acesso', 'falta', 'ok'),
-                F('Ficha · Dados', 'Ligação com o usuário de acesso', 'falta', 'ok'),
+                F('Lista', 'Busca, remuneração e recortes por pendência', 'ok', 'ok'),
+                F('Novo instrutor', 'Cadastro; CPF já cadastrado adiciona o papel', 'ok', 'ok'),
+                F('Convite', 'Convidar instrutor: nome, e-mail, remuneração e perfil', 'ok', 'ok', 'AULOR-007.'),
+                F('Convite', 'Convidados na lista, com selo, Reenviar e Cancelar', 'ok', 'ok'),
+                F('Ficha · Dados', 'Enviar convite a quem não tem usuário', 'ok', 'ok', 'No cartão Acesso ao sistema, com Reenviar e Cancelar convite.'),
+                F('Ficha · Dados', 'Identificação, contato e observações', 'ok', 'ok'),
+                F('Ficha · Dados', 'Inativar e reativar', 'ok', 'ok'),
+                F('Ficha · Dados', 'Pendências: nascimento, e-mail, WhatsApp e acesso', 'ok', 'ok'),
+                F('Ficha · Dados', 'Ligação com o usuário de acesso', 'ok', 'ok', 'Vincular, desvincular e os perfis do usuário.'),
               ],
               fora: ['Calendário', 'Empresa e valor hora', 'Contratos', 'Pagamentos', 'Documentos'],
             },
             {
               id: 'colaboradores', nome: 'Colaboradores', prototipo: ['colaboradores.html', 'colaborador.html'], web: '/:slug/colaboradores',
-              webSituacao: 'Em construção',
-              endpoints: ['POST /v1/staff/search', 'GET /v1/staff/departments', 'POST /v1/staff', 'PUT /v1/staff/{id}', 'GET /v1/staff/{id}','PUT /v1/staff/{id}/personal-details', 'PUT /v1/staff/{id}/contact', 'PUT /v1/staff/{id}/position', 'PUT /v1/staff/{id}/notes', 'POST /v1/staff/{id}/leave', 'POST /v1/staff/{id}/return', 'POST /v1/staff/{id}/dismissal', 'POST /v1/staff/{id}/readmission', 'PUT /v1/staff/{id}/unit-membership', 'DELETE /v1/staff/{id}/unit-membership', 'POST /v1/invitations'],
+              webArquivos: ['people/staff.ts', 'people/new-staff-dialog.ts', 'people/invitation-dialog.ts', 'people/invitation-list.ts', 'people/staff-member.ts', 'people/staff-member-card.ts', 'people/staff-transition-dialog.ts', 'people/system-access.ts', 'people/link-user-dialog.ts', 'people/person-invitation-dialog.ts'],
+              endpoints: ['POST /v1/staff/search', 'GET /v1/staff/departments', 'POST /v1/staff', 'PUT /v1/staff/{id}', 'GET /v1/staff/{id}','PUT /v1/staff/{id}/personal-details', 'PUT /v1/staff/{id}/contact', 'PUT /v1/staff/{id}/position', 'PUT /v1/staff/{id}/notes', 'POST /v1/staff/{id}/leave', 'POST /v1/staff/{id}/return', 'POST /v1/staff/{id}/dismissal', 'POST /v1/staff/{id}/readmission', 'GET /v1/people/unit-membership-links', 'PUT /v1/staff/{id}/unit-membership', 'DELETE /v1/staff/{id}/unit-membership', 'POST /v1/staff/invitations', 'POST /v1/staff/invitations/search', 'GET /v1/staff/invitations/{id}', 'PUT /v1/staff/invitations/{id}', 'DELETE /v1/staff/invitations/{id}', 'GET /v1/staff/{id}/invitation', 'POST /v1/staff/{id}/invitation', 'PUT /v1/staff/{id}/invitation', 'DELETE /v1/staff/{id}/invitation'],
               liga: ['perfis', 'convite-cadastro'],
               features: [
-                F('Lista', 'Busca, departamento e recortes (afastados, desligados, com pendência)', 'falta', 'ok'),
-                F('Novo colaborador', 'Cadastro; CPF já cadastrado adiciona o papel', 'falta', 'ok'),
-                F('Convite', 'Convidar colaborador: cargo, departamento, admissão e perfil', 'falta', 'falta', 'AULOR-007.'),
-                F('Convite', 'Convidados na lista, com selo, Reenviar e Cancelar', 'falta', 'falta'),
-                F('Ficha', 'Dados pessoais, contato, cargo e observações', 'falta', 'ok'),
-                F('Ficha', 'Afastamento, desligamento e readmissão', 'falta', 'ok'),
-                F('Ficha', 'Usuário de acesso: vínculo com a unidade', 'falta', 'ok'),
-                F('Ficha', 'Enviar convite a quem não tem usuário, que liga no aceite', 'falta', 'falta', 'AULOR-007; hoje o web só confirma o convite e não emite.'),
+                F('Lista', 'Busca, departamento e recortes (afastados, desligados, com pendência)', 'ok', 'ok', 'O item da busca ainda não traz o afastamento nem o desligamento (aulor-api#193): a pílula fica sem detalhe e o desligado, sem tempo de casa.'),
+                F('Novo colaborador', 'Cadastro; CPF já cadastrado adiciona o papel', 'ok', 'ok'),
+                F('Convite', 'Convidar colaborador: cargo, departamento, admissão e perfil', 'ok', 'ok', 'AULOR-007.'),
+                F('Convite', 'Convidados na lista, com selo, Reenviar e Cancelar', 'ok', 'ok'),
+                F('Ficha', 'Dados pessoais, contato, cargo e observações', 'ok', 'ok'),
+                F('Ficha', 'Afastamento, desligamento e readmissão', 'ok', 'ok'),
+                F('Ficha', 'Usuário de acesso: vínculo com a unidade', 'ok', 'ok', 'Vincular, desvincular e os perfis do usuário.'),
+                F('Ficha', 'Enviar convite a quem não tem usuário, que liga no aceite', 'ok', 'ok', 'AULOR-007.'),
               ],
             },
           ],
@@ -344,7 +394,7 @@ const IMPLEMENTACAO = {
                 F('Lista', 'Cursos e turmas do aluno', 'falta', 'falta', 'Não há matrícula nem acesso do aluno na API.'),
                 F('Curso', 'Visão geral e conteúdo', 'falta', 'falta'),
                 F('Curso · Aulas', 'Aulas futuras, com o material bloqueado até a liberação', 'falta', 'parcial', 'A turma já tem as aulas, mas só para a equipe.'),
-                F('Curso', 'Materiais e requisitos: lista de softwares', 'falta', 'falta'),
+                F('Curso', 'Materiais e requisitos: lista de softwares', 'falta', 'parcial', 'A turma já tem a lista de softwares, só para a equipe; os materiais não existem.'),
               ],
               fora: ['Aba Certificado'],
             },
@@ -416,7 +466,7 @@ const IMPLEMENTACAO = {
             features: [
               F('Lista', 'Turmas do professor', 'falta', 'parcial', 'A busca de turmas filtra por instrutor, mas só para a equipe.'),
               F('Turma', 'Aulas da turma', 'falta', 'parcial', 'Idem.'),
-              F('Turma', 'Requisitos: lista de softwares', 'falta', 'falta'),
+              F('Turma', 'Requisitos: lista de softwares', 'falta', 'parcial', 'Idem: GET /v1/classes/{id}/software.'),
             ],
             fora: ['Calendário', 'Avaliações', 'Dossiês', 'Pagamentos', 'Contratos'],
           },
@@ -438,7 +488,7 @@ const IMPLEMENTACAO = {
 IMPLEMENTACAO.entrada = {
   id: 'entrada', nome: 'Entrada', prototipo: ['entrar.html'], web: '/-',
   webArquivos: ['session.ts', 'entry/entry.guard.ts', 'entry/callback.ts', 'entry/invitation.guard.ts', 'entry/invitation.ts', 'entry/signed-out.ts'],
-  endpoints: ['GET /v1/users/me', 'GET /v1/users/me/context', 'POST /v1/invitations/confirmations', 'GET /v1/people/me/roles'],
+  endpoints: ['GET /v1/users/me', 'GET /v1/users/me/context', 'POST /v1/invitations/confirmations', 'GET /v1/people/me/roles', 'GET /v1/people/me/invitation'],
   integracoes: ['auth0'],
   features: [
     F('Login', 'Login pelo Auth0 e saída', 'ok', 'ok'),
@@ -446,7 +496,7 @@ IMPLEMENTACAO.entrada = {
     F('Login', 'Escolha do portal: administrativo, aluno ou professor', 'falta', 'parcial', 'GET /v1/people/me/roles só responde a quem tem vínculo com a unidade (colaborador ou instrutor); o aluno não tem vínculo nem convite. O administrativo sai das permissões de /users/me/context.'),
     F('Primeiro acesso', 'Convite da equipe', 'ok', 'ok'),
     F('Primeiro acesso', 'Acesso do aluno', 'falta', 'falta', 'O aluno não tem usuário na API.'),
-    F('Primeiro acesso', 'Acesso do professor', 'falta', 'parcial', 'O instrutor já se liga a um usuário da unidade.'),
+    F('Primeiro acesso', 'Acesso do professor', 'parcial', 'ok', 'Pelo convite de cadastro do instrutor (AULOR-007), que o web já conclui; sem portal do professor, ele cai no Início do administrativo.'),
     F('Senha', 'Recuperação de senha', 'parcial', 'na', 'Fica com o "Esqueceu a senha?" do Auth0, na conexão de e-mail e senha; falta conferir no tenant.'),
   ],
 };
