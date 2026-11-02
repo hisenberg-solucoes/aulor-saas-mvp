@@ -96,7 +96,6 @@ const PILULA = {
   neutra: 'bg-slate-200 text-slate-600 border-slate-200 dark:bg-neutral-900 dark:text-neutral-400 dark:border-neutral-700',
   laranja: 'bg-laranja/10 text-laranja-escuro border-laranja/30 dark:bg-laranja/15 dark:text-laranja dark:border-laranja/40',
   vermelha: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800',
-  rosa: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 dark:border-fuchsia-800',
 };
 const FINANCEIRO_FILTRO = [{ id: 'devedor', nome: 'Devedores' }, { id: 'em-dia', nome: 'Em dia' }];
 const fmtMoeda = (v) => (v == null ? '' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
@@ -129,7 +128,8 @@ const convitePendente = (a) => Boolean(a.convite && !a.convite.preenchidoEm);
 const pilulaConvite = (a) => (convitePendente(a) ? pilula(PILULA.ambar, 'Aguardando aluno', `Link enviado em ${Clientes.fmtData(a.convite.criadoEm)} — o aluno ainda não preencheu`, ICONE.link) : '');
 const cadastroEmpresaPendente = (e) => Boolean(e.cadastro && !e.cadastro.preenchidoEm);
 const pilulaCadastroEmpresa = (e) => (cadastroEmpresaPendente(e) ? pilula(PILULA.ambar, 'Aguardando empresa', `Link enviado em ${Clientes.fmtData(e.cadastro.criadoEm)} — a empresa ainda não preencheu`, ICONE.link) : '');
-const pilulaNecessidades = (a, texto = 'Necessidades') => (Clientes.temNecessidades(a) ? pilula(PILULA.rosa, texto, resumoNecessidades(a)) : '');
+// Necessidades é dado do cadastro, não categoria: pílula neutra com ícone, para não disputar matiz com Menor de idade e Emergência.
+const pilulaNecessidades = (a, texto = 'Necessidades') => (Clientes.temNecessidades(a) ? pilula(PILULA.neutra, texto, resumoNecessidades(a), ICONE.acessibilidade.replace('h-5 w-5', 'h-3 w-3')) : '');
 
 // Etiqueta de categoria (.etiqueta-* em styles.css, DESIGN.md › Chips e tags): cor e ícone fixos, sempre com o texto.
 const ICONE_ETIQUETA = {
@@ -896,7 +896,7 @@ function cartaoNecessidades(a) {
         ${cabecalhoSecao('Necessidades e acessibilidade', 'PCD, saúde, aprendizagem — o que a turma e o instrutor precisam saber. Dado sensível (LGPD).', 'btn-editar-necessidades', tem ? 'Editar' : 'Informar')}
         <div class="p-4">
           ${tem ? `
-          <div class="flex flex-wrap gap-1.5 mb-4">${n.tipos.map((t) => pilula(PILULA.rosa, nomeNecessidade(t), TIPOS_NECESSIDADE.find((x) => x.id === t)?.descricao ?? '')).join('')}</div>
+          <div class="flex flex-wrap gap-1.5 mb-4">${n.tipos.map((t) => pilula(PILULA.neutra, nomeNecessidade(t), TIPOS_NECESSIDADE.find((x) => x.id === t)?.descricao ?? '')).join('')}</div>
           <div class="grid grid-cols-1 gap-4">
             ${campo('Detalhes', `<p class="whitespace-pre-line">${vazio(n.detalhes, '—')}</p>`)}
             ${campo('Como atender (sala, material, avaliação)', `<p class="whitespace-pre-line">${vazio(n.atendimento, '—')}</p>`)}
