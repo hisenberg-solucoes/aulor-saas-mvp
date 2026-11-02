@@ -65,9 +65,9 @@ const ICONE = {
 
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
 // Primário em petróleo: cobre é "é com você", nunca fundo de botão (Regra do Cobre).
-const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40';
+const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40';
 const BOTAO_CANCELAR = 'px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
-const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline';
+const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-900 dark:text-sky-300 hover:underline';
 const ICONE_BOTAO = 'inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-30 disabled:pointer-events-none';
 const ICONE_BOTAO_VERMELHO = `${ICONE_BOTAO} hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40`;
 // Foco dos campos: contorno e anel na cor de foco da marca (petróleo no claro, petróleo luz no escuro).
@@ -89,11 +89,11 @@ const LINHA_LISTA = `cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-900 
 
 const PILULA = {
   ativo: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
-  inativo: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-neutral-900 dark:text-neutral-400 dark:border-neutral-700',
-  petrol: 'bg-petrol-800/10 text-petrol-800 border-petrol-800/20 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
+  inativo: 'bg-slate-200 text-slate-600 border-slate-200 dark:bg-neutral-900 dark:text-neutral-400 dark:border-neutral-700',
+  petrol: 'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
   violeta: 'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800',
   ambar: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
-  neutra: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-neutral-900 dark:text-neutral-400 dark:border-neutral-700',
+  neutra: 'bg-slate-200 text-slate-600 border-slate-200 dark:bg-neutral-900 dark:text-neutral-400 dark:border-neutral-700',
   laranja: 'bg-laranja/10 text-laranja-escuro border-laranja/30 dark:bg-laranja/15 dark:text-laranja dark:border-laranja/40',
   vermelha: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800',
   rosa: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 dark:border-fuchsia-800',
@@ -244,7 +244,7 @@ function faixaFinanceira(tipo, x, f) {
       f.proprio ? `${esc(parcelas(f.proprio))} ${DE_QUEM[tipo]}${f.proprio.emAcordo ? ', com acordo de recuperação' : ''}` : '',
     ].filter(Boolean);
     return `
-    <div class="mb-4 flex items-start gap-3 rounded-lg bg-red-100 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+    <div class="mb-4 flex items-start gap-3 rounded-lg bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:text-red-200">
       <span class="shrink-0 text-red-600 dark:text-red-400">${ICONE.alerta}</span>
       <div><span class="font-medium">Devedor com a ProWay</span> — ${partes.join('; ')}.${f.manual && i.observacoes ? ` <span class="opacity-80">${esc(i.observacoes)}</span>` : ''} Não matricular em turma nova sem alinhar com o financeiro.${dosOutros ? ` ${dosOutros}` : ''}</div>
     </div>`;
@@ -617,7 +617,7 @@ function renderEmpresaDados() {
         <div class="p-4 grid grid-cols-2 gap-4">
           ${campo('E-mail', vazio(e.email))}
           ${campo('Telefone', vazio(Clientes.fmtTelefone(e.telefone)))}
-          ${campo('Site', e.site ? `<a href="https://${esc(e.site)}" target="_blank" rel="noopener" class="text-petrol-800 dark:text-sky-300 hover:underline">${esc(e.site)}</a>` : vazio('', '—'))}
+          ${campo('Site', e.site ? `<a href="https://${esc(e.site)}" target="_blank" rel="noopener" class="text-petrol-900 dark:text-sky-300 hover:underline">${esc(e.site)}</a>` : vazio('', '—'))}
           ${campo('Observações', `<p class="whitespace-pre-line">${vazio(e.observacoes, '—')}</p>`, 'col-span-2')}
         </div>
       </section>
@@ -777,7 +777,7 @@ function renderEmpresaHistorico() {
     const alunos = Contratos.alunosDe(ctx, c);
     return `
       <tr>
-        <td class="${TD}"><a href="contrato.html?id=${c.id}" class="font-mono text-sm font-medium text-petrol-800 dark:text-sky-300 hover:underline">${esc(c.codigo)}</a><br><span class="text-xs text-slate-400">${esc(Clientes.fmtData(c.criadoEm.slice(0, 10)))}</span></td>
+        <td class="${TD}"><a href="contrato.html?id=${c.id}" class="font-mono text-sm font-medium text-petrol-900 dark:text-sky-300 hover:underline">${esc(c.codigo)}</a><br><span class="text-xs text-slate-400">${esc(Clientes.fmtData(c.criadoEm.slice(0, 10)))}</span></td>
         <td class="${TD}">${esc(Contratos.descricao(ctx, c))}<br><span class="text-xs text-slate-400">${esc(Contratos.resumoVagasTexto(c))}${c.pacotes.length ? ` · ${c.pacotes.map((p) => esc(p.nome)).join(' · ')}` : ''}</span></td>
         <td class="${TD}">${alunos.map((x) => esc(x.nomeSocial || x.nome)).join(', ') || '<span class="text-slate-400">—</span>'}${Contratos.alunosAguardando(c).length ? `<br>${pilula(PILULA.ambar, `${Contratos.alunosAguardando(c).length} aguardando conferência`, 'Entraram pelo link do pacote e ainda não foram aprovados')}` : ''}</td>
         <td class="${TD} text-right tabular-nums whitespace-nowrap">${Contratos.fmtMoeda(t.final)}</td>
@@ -1003,7 +1003,7 @@ function renderAlunoContratos() {
     const outros = Contratos.alunoIdsDe(c).filter((id) => id !== a.id).length;
     return `
       <tr>
-        <td class="${TD}"><a href="contrato.html?id=${c.id}" class="font-mono text-sm font-medium text-petrol-800 dark:text-sky-300 hover:underline">${esc(c.codigo)}</a><br><span class="text-xs text-slate-400">${esc(Clientes.fmtData(c.criadoEm.slice(0, 10)))}</span></td>
+        <td class="${TD}"><a href="contrato.html?id=${c.id}" class="font-mono text-sm font-medium text-petrol-900 dark:text-sky-300 hover:underline">${esc(c.codigo)}</a><br><span class="text-xs text-slate-400">${esc(Clientes.fmtData(c.criadoEm.slice(0, 10)))}</span></td>
         <td class="${TD}"><span class="font-medium text-slate-800 dark:text-neutral-100">${esc(pacote?.nome ?? 'Pacote removido')}</span><br><span class="text-xs text-slate-400">${[...new Set(itens.map((it) => (it.formacaoId ? `Formação ${Contratos.formacaoDe(ctx, it.formacaoId)?.nome ?? ''}` : Contratos.cursoDe(ctx, it.cursoId)?.nome ?? 'Curso removido')))].map(esc).join(' · ') || 'Sem itens para este aluno'}${vinculo.ajustado ? ' · difere do pacote' : ''}</span></td>
         <td class="${TH}">${pilula(corVinculo[vinculo.situacao] ?? PILULA.neutra, nomeDe(SITUACOES_VINCULO, vinculo.situacao), vinculo.situacao === 'recusado' && vinculo.recusa?.motivo ? `Motivo: ${vinculo.recusa.motivo}` : vinculo.origem === 'link' ? 'Entrou pelo link do pacote' : 'Adicionado pela escola')}</td>
         <td class="${TD}">${c.contratante === 'empresa' ? 'Empresa' : c.contratante === 'particular' ? 'Particular' : '<span class="text-amber-700 dark:text-amber-300">Sem contratante</span>'}${outros > 0 ? `<br><span class="text-xs text-slate-400">+ ${plural(outros, 'outro aluno', 'outros alunos')}</span>` : ''}</td>

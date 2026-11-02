@@ -11,14 +11,14 @@ const L = Lancamentos;
 // ---------- Estilo (direção "Ficha em cartões": mesmas constantes de salas-app e contratos-app; ui-form lê BOTAO_PRI etc.) ----------
 const CARTAO = 'bg-white dark:bg-neutral-950 rounded-xl border border-slate-200/80 dark:border-neutral-800 shadow-[0_1px_2px_rgb(7_30_44/0.05)]';
 const CARTAO_OPCAO = 'cursor-pointer rounded-lg border p-3 has-[:checked]:border-petrol-800 dark:has-[:checked]:border-sky-400 has-[:checked]:bg-petrol-800/5 dark:has-[:checked]:bg-sky-950/40 border-slate-300 dark:border-neutral-700 hover:border-slate-400 dark:hover:border-neutral-500 transition';
-const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none';
+const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none';
 const BOTAO_PETROL = BOTAO_PRI;
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium whitespace-nowrap border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
 const BOTAO_FANTASMA = 'inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium whitespace-nowrap text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
 const BOTAO_PERIGO = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium whitespace-nowrap border border-red-200 dark:border-red-900 bg-white dark:bg-neutral-950 text-red-700 dark:text-red-400 hover:border-red-500 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30';
 const BOTAO_CANCELAR = 'px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
-const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline disabled:opacity-40 disabled:no-underline';
-const LINK = 'font-medium text-petrol-800 dark:text-sky-300 hover:underline underline-offset-2';
+const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-900 dark:text-sky-300 hover:underline disabled:opacity-40 disabled:no-underline';
+const LINK = 'font-medium text-petrol-900 dark:text-sky-300 hover:underline underline-offset-2';
 const CAMPO_BUSCA = 'h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 pl-8 pr-3 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-500 dark:placeholder:text-neutral-400 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20';
 const SELECT_FILTRO = 'h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-2.5 text-sm text-slate-700 dark:text-neutral-200 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400';
 const CAMPO_DATA = `${SELECT_FILTRO} tabular-nums`;
@@ -36,7 +36,7 @@ const APOIO = 'text-slate-500 dark:text-neutral-400'; // rótulo, subtítulo e v
 const APOIO_FUNDO = 'text-slate-600 dark:text-neutral-400'; // o mesmo papel direto sobre o fundo (6,93:1; o slate-500 dá 4,36:1)
 const AVISO = 'text-[color:var(--f-aviso)]'; // "é com você": cobre-tinta, sem âmbar paralelo
 const RUIM = 'text-red-700 dark:text-red-400'; // só vencido e saldo negativo (Regra do Azul e do Vermelho)
-const FAIXA_INFO = 'rounded-lg bg-petrol-800/10 dark:bg-sky-950/40 text-petrol-900 dark:text-sky-200 px-3 py-2 text-xs'; // próximo passo, sem contorno
+const FAIXA_INFO = 'rounded-lg bg-sky-100 dark:bg-sky-950/40 text-sky-800 dark:text-sky-200 px-3 py-2 text-xs'; // próximo passo, sem contorno
 const ERRO = (campo) => `<p data-erro="${campo}" class="text-xs text-red-600 dark:text-red-400 mt-1 hidden"></p>`;
 const OPCIONAL = `<span class="font-normal ${APOIO}">(opcional)</span>`;
 const ICONE_LUPA = '<svg class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 dark:text-neutral-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>';
@@ -53,7 +53,7 @@ const ICONE = {
 // Fase do lançamento (ciclo de vida): ponto na cor da fase + texto. Cancelado vira pílula neutra e apaga a linha.
 const PONTO_SITUACAO = { previsto: 'bg-slate-400 dark:bg-neutral-500', emitido: 'bg-sky-600 dark:bg-sky-400', vencido: 'bg-red-500', pago: 'bg-emerald-500', cancelado: 'border border-slate-400 dark:border-neutral-500' };
 const PONTO_CONCILIACAO = { conciliado: ['bg-emerald-500', 'Conciliado'], sugestao: ['border-2 border-laranja', 'Com sugestão'], sem_lancamento: ['bg-laranja', 'Sem lançamento'], transferencia: ['bg-slate-400 dark:bg-neutral-500', 'Transferência'], taxa: ['border border-slate-400 dark:border-neutral-500', 'Taxa do gateway'] };
-const PILULA = { neutra: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400' };
+const PILULA = { neutra: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400' };
 // Ícone do tipo (heroicons arrow-up/down-circle), em tinta: entrada e saída não levam cor, só sinal e posição.
 const CAMINHO_TIPO = { receita: 'm15 11.25-3-3m0 0-3 3m3-3v7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z', despesa: 'm9 12.75 3 3m0 0 3-3m-3 3v-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' };
 const iconeTipo = (tipo, tamanho = 'h-5 w-5') => (CAMINHO_TIPO[tipo] ? `<span class="inline-flex shrink-0 text-slate-500 dark:text-neutral-400"><svg class="${tamanho}" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="${CAMINHO_TIPO[tipo]}"/></svg></span>` : '');
@@ -430,7 +430,7 @@ function painelPeriodo(tipo, gatilho) {
   const el = abrirPainel(gatilho, `
     <div class="flex gap-4">
       <div class="w-40 shrink-0 border-r border-slate-100 dark:border-neutral-900 pr-3 space-y-0.5">
-        ${presetsPeriodo().map((p) => `<button type="button" data-preset="${p.id}" class="w-full text-left px-2.5 py-1.5 rounded-lg text-sm transition ${ativo?.id === p.id ? 'bg-petrol-800/10 text-petrol-800 dark:bg-sky-950/60 dark:text-sky-300 font-medium' : 'text-slate-700 dark:text-neutral-200 hover:bg-slate-100 dark:hover:bg-neutral-900'}">${esc(p.nome)}</button>`).join('')}
+        ${presetsPeriodo().map((p) => `<button type="button" data-preset="${p.id}" class="w-full text-left px-2.5 py-1.5 rounded-lg text-sm transition ${ativo?.id === p.id ? 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 font-medium' : 'text-slate-700 dark:text-neutral-200 hover:bg-slate-100 dark:hover:bg-neutral-900'}">${esc(p.nome)}</button>`).join('')}
       </div>
       <form id="pp-form" class="flex-1 min-w-0 space-y-3">
         <div class="grid grid-cols-2 gap-3">
@@ -1091,7 +1091,7 @@ function modalNf(id) {
 // ---------- Confirmações (destrutivas / em massa) ----------
 
 function modalConfirmacao({ titulo, corpo, rotulo, tom = 'vermelho', aoConfirmar, comMotivo = false, rotuloMotivo = 'Motivo' }) {
-  const cor = tom === 'vermelho' ? 'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400 dark:text-red-950' : 'bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800';
+  const cor = tom === 'vermelho' ? 'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400 dark:text-red-950' : 'bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950';
   const root = abrirModal(`
     <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800"><h3 id="confirmacao-titulo" class="font-display font-semibold text-slate-900 dark:text-neutral-100">${titulo}</h3></div>
     <div class="px-5 py-4 text-sm text-slate-700 dark:text-neutral-200 space-y-3">${corpo}${comMotivo ? `<div><label class="rotulo" for="motivo">${rotuloMotivo} ${OPCIONAL}</label><textarea id="motivo" rows="2" class="campo"></textarea></div>` : ''}</div>

@@ -26,8 +26,8 @@
   const APOIO = 'mt-1 text-sm text-slate-500 dark:text-neutral-400';
   const ROTULO = 'block text-xs font-medium text-slate-500 dark:text-neutral-400 mb-1';
   const CAMPO = 'w-full h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 text-sm text-slate-900 dark:text-neutral-100 placeholder:text-slate-400 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20 aria-[invalid=true]:border-red-500';
-  const BOTAO_PRI = 'w-full inline-flex justify-center items-center h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white transition';
-  const LINK = 'text-sm font-medium text-petrol-800 dark:text-sky-300 hover:underline';
+  const BOTAO_PRI = 'w-full inline-flex justify-center items-center h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white transition';
+  const LINK = 'text-sm font-medium text-petrol-900 dark:text-sky-300 hover:underline';
   const ICONE_ERRO = '<svg class="h-3.5 w-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>';
   const SETA = '<svg class="h-4 w-4 shrink-0 text-slate-500 dark:text-neutral-400" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>';
 

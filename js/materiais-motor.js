@@ -21,8 +21,8 @@ const Materiais = (() => {
   // Tom da pílula (DESIGN.md): liberado é o estado bom; programado é informação (neutra); não liberado
   // espera alguém liberar (aviso). Fica aqui para o administrativo e o Portal do Professor mostrarem igual.
   const SITUACOES = {
-    liberado: { nome: 'Liberado', descricao: 'O aluno já vê no portal.', cls: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300', ponto: 'bg-emerald-500' },
-    programado: { nome: 'Programado', descricao: 'Libera sozinho na data marcada.', cls: 'bg-slate-100 text-slate-700 dark:bg-neutral-900 dark:text-neutral-300', ponto: 'bg-slate-500 dark:bg-neutral-400' },
+    liberado: { nome: 'Liberado', descricao: 'O aluno já vê no portal.', cls: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', ponto: 'bg-emerald-500' },
+    programado: { nome: 'Programado', descricao: 'Libera sozinho na data marcada.', cls: 'bg-slate-200 text-slate-700 dark:bg-neutral-900 dark:text-neutral-300', ponto: 'bg-slate-500 dark:bg-neutral-400' },
     bloqueado: { nome: 'Não liberado', descricao: 'O aluno ainda não vê.', cls: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300', ponto: 'bg-amber-500' },
   };
 

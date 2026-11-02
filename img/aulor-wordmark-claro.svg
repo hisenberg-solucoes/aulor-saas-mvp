@@ -8,5 +8,5 @@
   <path id="letter-l" d="M224 8V92H292"/>
   <path id="letter-o" d="M374 8C338 8 320 24 320 50C320 78 338 92 374 92C410 92 428 78 428 50C428 24 410 8 374 8Z"/>
   <path id="letter-r-bowl" d="M462 92V8H504C533 8 550 21 550 42C550 62 533 73 506 73"/>
-  <path id="letter-r-leg" d="M506 73L556 94"/></defs><g fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" transform="translate(70 28) scale(1.04)"><use href="#letter-a"/><use href="#letter-u"/><use href="#letter-l"/><use href="#letter-o"/><use href="#letter-r-bowl"/><use href="#letter-r-leg"/></g>
+  <path id="letter-r-leg" d="M506 73L556 94"/></defs><g fill="none" stroke="#E6ECEF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" transform="translate(70 28) scale(1.04)"><use href="#letter-a"/><use href="#letter-u"/><use href="#letter-l"/><use href="#letter-o"/><use href="#letter-r-bowl"/><use href="#letter-r-leg"/></g>
 </svg>

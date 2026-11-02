@@ -2,7 +2,7 @@
 // Mesmo token e mesma gravação de cadastro-empresa.html (Clientes.preencherPelaEmpresa). Rascunho fica no sessionStorage.
 
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-10 px-4 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30';
-const BOTAO_LINK = 'text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline';
+const BOTAO_LINK = 'text-xs font-medium text-petrol-900 dark:text-sky-300 hover:underline';
 
 const PASSOS = [
   { id: 'empresa', titulo: 'Empresa', campos: ['cnpj', 'inscricaoEstadual', 'razaoSocial', 'nomeFantasia', 'segmento', 'porte'] },
@@ -171,7 +171,7 @@ function telaRevisao() {
       ${secao('Privacidade (LGPD)', '', `
         <label class="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="aceite" class="check mt-0.5" ${d.aceite ? 'checked' : ''}>
-          <span class="text-sm text-slate-800 dark:text-neutral-100">Declaro que tenho autorização para fornecer estes dados em nome da empresa e aceito o <a href="#" class="text-petrol-800 dark:text-sky-300 hover:underline">termo de uso e política de privacidade</a> da ProWay.</span>
+          <span class="text-sm text-slate-800 dark:text-neutral-100">Declaro que tenho autorização para fornecer estes dados em nome da empresa e aceito o <a href="#" class="text-petrol-900 dark:text-sky-300 hover:underline">termo de uso e política de privacidade</a> da ProWay.</span>
         </label>
         ${ERRO('aceite')}`)}
     </div>`;

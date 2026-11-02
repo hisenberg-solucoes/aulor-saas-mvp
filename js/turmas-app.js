@@ -50,9 +50,9 @@ const ICONE = {
 };
 
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
-const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40';
+const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40';
 const BOTAO_CANCELAR = 'px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
-const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline';
+const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-900 dark:text-sky-300 hover:underline';
 const CAMPO_BUSCA = 'h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 pl-8 pr-3 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-400 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20';
 const SELECT_FILTRO = 'h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-2.5 text-sm text-slate-700 dark:text-neutral-200 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400';
 const BOTAO_FANTASMA = 'inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
@@ -66,8 +66,8 @@ const FILTRO_ATIVO = 'border-petrol-800 dark:border-sky-400 text-petrol-800 dark
 
 // Pílula só de exceção (Regra da Pílula de Exceção): confirmada, em andamento e matriculado são o comum e não se anunciam.
 const PILULA = {
-  neutra: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
-  extra: 'bg-petrol-800/10 text-petrol-900 dark:bg-sky-950/60 dark:text-sky-200',
+  neutra: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  extra: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200',
   falta: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
   concluido: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
 };
@@ -112,9 +112,9 @@ function cabecalhoSecao(titulo, subtitulo, acaoHtml = '') {
 // Faixa do topo do registro: só quando alguém precisa agir (Regra da Faixa que Pede Ação). Sem contorno.
 function faixa(tom, html) {
   const cores = {
-    erro: 'bg-red-100 dark:bg-red-950/50 text-red-800 dark:text-red-200',
+    erro: 'bg-red-50 dark:bg-red-950/50 text-red-800 dark:text-red-200',
     aviso: 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200',
-    petrol: 'bg-petrol-800/10 dark:bg-sky-950/40 text-petrol-900 dark:text-sky-200',
+    petrol: 'bg-sky-100 dark:bg-sky-950/40 text-sky-800 dark:text-sky-200',
   };
   return `<div class="mb-4 flex items-start gap-3 rounded-lg px-4 py-3 text-sm ${cores[tom]}"><span class="shrink-0">${ICONE.alerta}</span><div class="min-w-0 flex-1">${html}</div></div>`;
 }
@@ -243,7 +243,7 @@ function renderLista() {
     <div class="mb-4 flex items-end justify-between gap-4">
       <div>
         <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100">Turmas</h2>
-        <p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Cada turma é um curso do catálogo acontecendo num período, com agenda, instrutor, sala e vagas. Turmas de formação nascem na linha do curso, em <a href="formacoes.html" class="text-petrol-800 dark:text-sky-300 hover:underline">Formações</a>.</p>
+        <p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Cada turma é um curso do catálogo acontecendo num período, com agenda, instrutor, sala e vagas. Turmas de formação nascem na linha do curso, em <a href="formacoes.html" class="text-petrol-900 dark:text-sky-300 hover:underline">Formações</a>.</p>
       </div>
       <button type="button" id="btn-nova" class="${BOTAO_PRI} shrink-0">${ICONE.mais} Nova turma</button>
     </div>
@@ -519,7 +519,7 @@ function renderAcompanhamento(t, { curso, formacao, sala, instrutor, m, agenda, 
           ${campo('Sala', sala ? `${esc(sala.nome)}<p class="text-xs text-slate-500 dark:text-neutral-400">${esc(TIPOS_SALA.find((x) => x.id === sala.tipo)?.nome ?? '')}${sala.capacidade?.alunos ? ` · ${sala.capacidade.alunos} lugares` : ''}</p>` : vazio(t.formato === 'online' ? 'turma online' : 'a definir'))}
           ${campo('Vagas', `<span class="tabular-nums">${t.vagas}</span>${m ? ` <span class="text-xs text-slate-500 dark:text-neutral-400">· ${m.ocupadas} ocupada${m.ocupadas === 1 ? '' : 's'}</span>` : ''}`)}
           ${campo('Centro de receita', t.centroReceitaId ? esc(CentrosReceita.nome(t.centroReceitaId) || 'centro removido') : vazio('nenhum'))}
-          ${campo('Google Meet', t.meetLink ? `<a href="${esc(t.meetLink)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline break-all">${esc(t.meetLink)} ${ICONE.externo}</a> <button type="button" data-copiar="${esc(t.meetLink)}" class="${BOTAO_LINK} ml-1" title="Copiar link">${ICONE.copiar} copiar</button><p class="text-xs text-slate-500 dark:text-neutral-400">Sala fixa da turma — instrutor e alunos online.${Turmas.ehMeet(t.meetLink) ? '' : ' Não é um endereço do Google Meet.'}</p>` : vazio(t.formato === 'presencial' ? 'não se aplica (presencial)' : 'a definir'), 'col-span-2')}
+          ${campo('Google Meet', t.meetLink ? `<a href="${esc(t.meetLink)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 font-mono text-xs text-petrol-900 dark:text-sky-300 hover:underline break-all">${esc(t.meetLink)} ${ICONE.externo}</a> <button type="button" data-copiar="${esc(t.meetLink)}" class="${BOTAO_LINK} ml-1" title="Copiar link">${ICONE.copiar} copiar</button><p class="text-xs text-slate-500 dark:text-neutral-400">Sala fixa da turma — instrutor e alunos online.${Turmas.ehMeet(t.meetLink) ? '' : ' Não é um endereço do Google Meet.'}</p>` : vazio(t.formato === 'presencial' ? 'não se aplica (presencial)' : 'a definir'), 'col-span-2')}
           ${campo('Observações', t.observacoes ? `<p class="whitespace-pre-line">${esc(t.observacoes)}</p>` : vazio('nenhuma'), 'col-span-2')}
         </div>
       </section>
@@ -550,7 +550,7 @@ function renderRequisitos(t) {
   // Herdado ou ajustado é contexto do cartão, não faixa: ninguém precisa agir só porque a lista difere do curso.
   const origem = r.herdado
     ? `Com os requisitos do curso${curso ? ` ${esc(curso.nome)}` : ''}, como estão no catálogo; ao mudar qualquer coisa, a lista passa a ser desta turma.`
-    : `Lista desta turma${r.atualizadoEm ? `, ajustada em ${fmtData(r.atualizadoEm)}${r.atualizadoPor ? ` por ${esc(r.atualizadoPor)}` : ''}` : ''}. ${!cmp.extras.length && !cmp.faltando.length ? 'Hoje é igual à do curso.' : `Em relação ao curso: ${[cmp.extras.length ? `${plural(cmp.extras.length, 'software só nesta turma', 'softwares só nesta turma')}` : '', cmp.faltando.length ? `${plural(cmp.faltando.length, 'do curso que não está aqui', 'do curso que não estão aqui')}` : ''].filter(Boolean).join(' · ')}. <button type="button" id="btn-recarregar-req" class="font-medium text-petrol-800 dark:text-sky-300 hover:underline">Voltar ao do curso</button>`}`;
+    : `Lista desta turma${r.atualizadoEm ? `, ajustada em ${fmtData(r.atualizadoEm)}${r.atualizadoPor ? ` por ${esc(r.atualizadoPor)}` : ''}` : ''}. ${!cmp.extras.length && !cmp.faltando.length ? 'Hoje é igual à do curso.' : `Em relação ao curso: ${[cmp.extras.length ? `${plural(cmp.extras.length, 'software só nesta turma', 'softwares só nesta turma')}` : '', cmp.faltando.length ? `${plural(cmp.faltando.length, 'do curso que não está aqui', 'do curso que não estão aqui')}` : ''].filter(Boolean).join(' · ')}. <button type="button" id="btn-recarregar-req" class="font-medium text-petrol-900 dark:text-sky-300 hover:underline">Voltar ao do curso</button>`}`;
 
   const linha = ({ item, cat, chave }) => `
     <li class="flex items-center gap-3 px-4 py-2">
@@ -838,7 +838,7 @@ function partesAula(t, a, hoje) {
     cancelada,
     ehHoje,
     local: t.formato === 'online'
-      ? (t.meetLink ? `<a href="${esc(t.meetLink)}" target="_blank" rel="noopener" class="text-petrol-800 dark:text-sky-300 hover:underline">Google Meet</a>` : 'Online')
+      ? (t.meetLink ? `<a href="${esc(t.meetLink)}" target="_blank" rel="noopener" class="text-petrol-900 dark:text-sky-300 hover:underline">Google Meet</a>` : 'Online')
       : `${salaA ? esc(salaA.nome) : vazio()}${t.formato === 'hibrido' ? ' <span class="text-xs text-slate-500 dark:text-neutral-400">· Meet</span>' : ''}`,
     conteudo: [...(a.moduloIds ?? []).map(moduloTitulo), a.conteudo].filter(Boolean).join(' · '),
     // Hoje em petróleo (o "você está aqui"); verde fica para a chamada feita.
@@ -849,7 +849,7 @@ function partesAula(t, a, hoje) {
     origem: a.origem && a.origem !== 'agenda' ? `<span class="ml-1.5 text-xs text-slate-500 dark:text-neutral-400">${a.origem === 'reposicao' ? 'reposição' : 'extra'}</span>` : '',
     motivo: cancelada && a.motivo ? `<p class="text-xs text-red-700 dark:text-red-400">${esc(Aulas.motivoDe(a.motivo.tipo))}${a.motivo.texto ? ` — ${esc(a.motivo.texto)}` : ''}</p>` : '',
     meet: a.meetUrl && !cancelada
-      ? `<a href="${esc(a.meetUrl)}" target="_blank" rel="noopener" class="font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline">${esc(a.meetUrl.replace('https://', ''))}</a> <button type="button" data-copiar="${esc(a.meetUrl)}" class="${BOTAO_LINK} ml-1" title="Copiar link">${ICONE.copiar} copiar</button>`
+      ? `<a href="${esc(a.meetUrl)}" target="_blank" rel="noopener" class="font-mono text-xs text-petrol-900 dark:text-sky-300 hover:underline">${esc(a.meetUrl.replace('https://', ''))}</a> <button type="button" data-copiar="${esc(a.meetUrl)}" class="${BOTAO_LINK} ml-1" title="Copiar link">${ICONE.copiar} copiar</button>`
       : TRACO,
   };
 }
@@ -930,7 +930,7 @@ function abrirDrawerAula(turmaId, aulaId) {
         <span class="mt-0.5 text-slate-400 dark:text-neutral-500">${m.tipo === 'link' ? ICONE.link : ICONE.arquivo}</span>
         <div class="min-w-0 flex-1">
           <p class="text-sm font-medium text-slate-900 dark:text-neutral-100 break-words">${esc(m.titulo)}</p>
-          <p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${m.tipo === 'link' ? `<a href="${esc(m.url)}" target="_blank" rel="noopener" class="text-petrol-800 dark:text-sky-300 hover:underline">${esc(m.url.replace(/^https?:\/\//, ''))}</a>` : esc(m.arquivo)}</p>
+          <p class="text-xs text-slate-500 dark:text-neutral-400 truncate">${m.tipo === 'link' ? `<a href="${esc(m.url)}" target="_blank" rel="noopener" class="text-petrol-900 dark:text-sky-300 hover:underline">${esc(m.url.replace(/^https?:\/\//, ''))}</a>` : esc(m.arquivo)}</p>
           ${m.descricao ? `<p class="mt-1 text-xs text-slate-600 dark:text-neutral-300">${esc(m.descricao)}</p>` : ''}
         </div>
         ${Materiais.pilula(m, hoje)}
@@ -1110,8 +1110,8 @@ function renderCalendarioAulas(t, aulas, hoje) {
   const porDia = new Map();
   aulas.forEach((a) => { if (!porDia.has(a.data)) porDia.set(a.data, []); porDia.get(a.data).push(a); });
   const COR = {
-    prevista: 'bg-petrol-800/10 text-petrol-900 border-petrol-800/30 dark:bg-sky-950/60 dark:text-sky-200 dark:border-sky-800',
-    hoje: 'bg-petrol-800 text-white border-petrol-800 dark:bg-areia dark:text-petrol-800 dark:border-areia',
+    prevista: 'bg-sky-100 text-sky-800 border-petrol-800/30 dark:bg-sky-950/60 dark:text-sky-200 dark:border-sky-800',
+    hoje: 'bg-petrol-800 text-white border-petrol-800 dark:bg-areia dark:text-petrol-950 dark:border-areia',
     realizada: 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-neutral-900 dark:text-neutral-400 dark:border-neutral-700',
     cancelada: 'bg-red-50 text-red-700 border-red-200 line-through dark:bg-red-950/60 dark:text-red-300 dark:border-red-800',
     reposicao: 'bg-violet-50 text-violet-900 border-violet-300 dark:bg-violet-950/60 dark:text-violet-200 dark:border-violet-800',
@@ -1197,7 +1197,7 @@ function renderMatriculas(t, m) {
             return `
             <tr class="${st === 'cancelada' || st === 'desistiu' ? 'linha-apagada' : ''}">
               <td class="${TD}"><a href="aluno.html?id=${l.alunoId}" target="_blank" class="font-medium text-slate-800 dark:text-neutral-100 hover:underline">${esc(a?.nomeSocial || a?.nome || 'Aluno removido')}</a>${situacao(st)}${l.matricula.codigo ? `<p class="font-mono text-xs text-slate-500 dark:text-neutral-400">${esc(l.matricula.codigo)}</p>` : ''}</td>
-              <td class="${TD} text-right whitespace-nowrap"><a href="contrato.html?id=${l.contrato.id}" target="_blank" class="inline-flex items-center gap-1 font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)} ${ICONE.externo}</a></td>
+              <td class="${TD} text-right whitespace-nowrap"><a href="contrato.html?id=${l.contrato.id}" target="_blank" class="inline-flex items-center gap-1 font-mono text-xs text-petrol-900 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)} ${ICONE.externo}</a></td>
             </tr>`;
           }).join('')}
         </tbody>

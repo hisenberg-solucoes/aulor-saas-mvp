@@ -37,7 +37,7 @@ const COR_FAIXA = {
   bom: { celula: 'bg-lime-100 text-lime-800 dark:bg-lime-950/60 dark:text-lime-300', ponto: 'bg-lime-400', texto: 'text-lime-700 dark:text-lime-400' },
   regular: { celula: 'bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300', ponto: 'bg-amber-400', texto: 'text-amber-700 dark:text-amber-400' },
   ruim: { celula: 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300', ponto: 'bg-red-500', texto: 'text-red-700 dark:text-red-400' },
-  vazio: { celula: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400', ponto: 'bg-slate-300', texto: 'text-slate-500 dark:text-neutral-400' },
+  vazio: { celula: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400', ponto: 'bg-slate-300', texto: 'text-slate-500 dark:text-neutral-400' },
 };
 Object.values(COR_FAIXA).forEach((c) => { c.pilula = c.celula; });
 
@@ -81,7 +81,7 @@ function legendaFaixas() {
 function toast(mensagem) {
   const root = document.getElementById('toast-root');
   const el = document.createElement('div');
-  el.className = 'toast-anim bg-petrol-900 text-white dark:bg-[#F5F0E8] dark:text-[#071E2C] text-sm px-4 py-2.5 rounded-lg shadow-lg';
+  el.className = 'toast-anim bg-petrol-900 text-white dark:bg-[#6ECCEC] dark:text-[#071E2C] text-sm px-4 py-2.5 rounded-lg shadow-lg';
   el.textContent = mensagem;
   root.appendChild(el);
   setTimeout(() => el.remove(), 2600);
@@ -386,7 +386,7 @@ function listaComentarios(comentarios, avaliacoesPorId, filtroTom, mostrarTurma 
     <div class="px-4 pb-4 flex items-center justify-center gap-3 text-xs text-slate-500 dark:text-neutral-400">
       <span>Mostrando ${visiveis.length} de ${lista.length}</span>
       <button type="button" data-mais-comentarios="${Math.min(restantes, COMENTARIOS_POR_PAGINA * 2)}" class="h-8 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition">Mostrar mais ${Math.min(restantes, COMENTARIOS_POR_PAGINA * 2)}</button>
-      <button type="button" data-mais-comentarios="${restantes}" class="text-petrol-800 dark:text-sky-300 hover:underline">Mostrar todos</button>
+      <button type="button" data-mais-comentarios="${restantes}" class="text-petrol-900 dark:text-sky-300 hover:underline">Mostrar todos</button>
     </div>` : ''}`;
 }
 
@@ -431,7 +431,7 @@ function chip(icone, conteudo, titulo = '') {
 // `opcoes.tom` = cor do nome do curso (sobre o fundo frio, slate-600, como em linkVoltar).
 function cabecalhoTurma(turma, media, opcoes = {}) {
   const instrutor = opcoes.linkInstrutor
-    ? `<a href="${opcoes.linkInstrutor}" class="font-medium text-petrol-800 dark:text-sky-300 hover:underline underline-offset-2 rounded ${AV_FOCO}">${esc(turma.instrutor)}</a>`
+    ? `<a href="${opcoes.linkInstrutor}" class="font-medium text-petrol-900 dark:text-sky-300 hover:underline underline-offset-2 rounded ${AV_FOCO}">${esc(turma.instrutor)}</a>`
     : `<span class="font-medium text-slate-700 dark:text-neutral-200">${esc(turma.instrutor)}</span>`;
   return `
     <div class="min-w-0 flex-1">

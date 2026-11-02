@@ -66,10 +66,10 @@ const PILULA_SIGNATARIO = { pendente: 'ambar', assinado: 'verde', recusado: 'ver
 
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
 // Primário em petróleo: cobre é "é com você", nunca fundo de botão (Regra do Cobre).
-const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none';
+const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none';
 const BOTAO_CANCELAR = 'px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
 const BOTAO_FANTASMA = 'inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
-const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline';
+const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-900 dark:text-sky-300 hover:underline';
 const ICONE_BOTAO = 'inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-30 disabled:pointer-events-none';
 const ICONE_BOTAO_VERMELHO = `${ICONE_BOTAO} hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40`;
 const CAMPO_BUSCA = 'h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 pl-8 pr-3 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-400 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20';
@@ -84,11 +84,11 @@ const FOCO_LINHA = 'has-[.link-registro:focus-visible]:bg-slate-50 dark:has-[.li
 
 const PILULA = {
   verde: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
-  petrol: 'bg-petrol-800/10 text-petrol-800 border-petrol-800/20 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
+  petrol: 'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
   violeta: 'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800',
   ambar: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
   vermelha: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800',
-  neutra: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-neutral-900 dark:text-neutral-400 dark:border-neutral-700',
+  neutra: 'bg-slate-200 text-slate-600 border-slate-200 dark:bg-neutral-900 dark:text-neutral-400 dark:border-neutral-700',
   laranja: 'bg-laranja/10 text-laranja-escuro border-laranja/30 dark:bg-laranja/15 dark:text-laranja dark:border-laranja/40',
 };
 const PILULA_STATUS = { rascunho: PILULA.neutra, aguardando: PILULA.ambar, comercial_ok: PILULA.petrol, adm_ok: PILULA.verde, cancelado: PILULA.neutra };
@@ -190,8 +190,8 @@ function faixa(tom, html) {
   const cores = {
     verde: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200',
     ambar: 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200',
-    vermelha: 'bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-200',
-    petrol: 'bg-petrol-800/10 dark:bg-sky-950/40 text-petrol-900 dark:text-sky-200',
+    vermelha: 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-200',
+    petrol: 'bg-sky-100 dark:bg-sky-950/40 text-sky-800 dark:text-sky-200',
     neutra: 'bg-slate-200/70 dark:bg-neutral-900 text-slate-700 dark:text-neutral-300',
   };
   const icone = { verde: ICONE.check, ambar: ICONE.alerta, vermelha: ICONE.alerta, petrol: ICONE.seta, neutra: '' }[tom];
@@ -238,7 +238,7 @@ function sincronizarClientes(alunoIds, c = atual()) {
   estado.ctx.responsaveis = estado.clientes.responsaveis;
 }
 
-const linkCliente = (tipo, id, texto) => vendedorExterno() ? esc(texto) : `<a href="${tipo}.html?id=${id}" class="inline-flex items-center gap-1 text-petrol-800 dark:text-sky-300 hover:underline" title="Abrir o cadastro">${esc(texto)} ${ICONE.externo}</a>`;
+const linkCliente = (tipo, id, texto) => vendedorExterno() ? esc(texto) : `<a href="${tipo}.html?id=${id}" class="inline-flex items-center gap-1 text-petrol-900 dark:text-sky-300 hover:underline" title="Abrir o cadastro">${esc(texto)} ${ICONE.externo}</a>`;
 const ROTULO_MINI = 'text-xs font-medium text-slate-500 dark:text-neutral-400';
 
 // Pílula do contratante: Empresa (petróleo) · Particular (violeta) · Sem contratante (âmbar).
@@ -393,7 +393,7 @@ function renderListaTurmas() {
               <td class="${TD} font-mono text-xs">${esc(l.matricula.codigo)}</td>
               <td class="${TD} font-medium text-slate-800 dark:text-neutral-100">${l.aluno ? linkCliente('aluno', l.aluno.id, l.aluno.nomeSocial || l.aluno.nome) : '<span class="text-slate-400">aluno removido</span>'}</td>
               <td class="${TH}">${pilula(PILULA_MATRICULA[l.matricula.status], nomeDe(STATUS_MATRICULA, l.matricula.status))}</td>
-              <td class="${TD}"><button type="button" data-abrir="${l.contrato.id}" class="font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</button></td>
+              <td class="${TD}"><button type="button" data-abrir="${l.contrato.id}" class="font-mono text-xs text-petrol-900 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</button></td>
               <td class="${TH}"><div class="flex gap-1.5">${pilulaStatus(l.contrato)}${pilulaSituacao(l.contrato)}</div></td>
               <td class="${TD_VALOR}">${moeda(l.valor)}</td>
             </tr>`).join('')}
@@ -533,7 +533,7 @@ function renderResumo() {
     const feito = Contratos.statusDe(c).ordem >= s.ordem && c.status !== 'cancelado';
     const atualEtapa = c.status === s.id;
     return `<li class="flex items-center gap-2 ${feito ? 'text-slate-800 dark:text-neutral-100' : 'text-slate-400'}">
-      <span class="h-5 w-5 shrink-0 rounded-full grid place-items-center text-[10px] font-semibold ${feito ? 'bg-petrol-800 dark:bg-sky-500 text-white dark:text-petrol-800' : 'border border-slate-300 dark:border-neutral-700'}">${feito ? '✓' : s.ordem + 1}</span>
+      <span class="h-5 w-5 shrink-0 rounded-full grid place-items-center text-[10px] font-semibold ${feito ? 'bg-petrol-800 dark:bg-sky-500 text-white dark:text-petrol-950' : 'border border-slate-300 dark:border-neutral-700'}">${feito ? '✓' : s.ordem + 1}</span>
       <span class="${atualEtapa ? 'font-semibold' : ''}">${esc(s.nome)}</span></li>`;
   };
   const tipoResp = { empresa: 'Empresa', responsavel: 'Responsável cadastrado', aluno: 'O próprio aluno', terceiro: r.tipo === 'terceiro' ? `Responsável (${r.parentesco || 'terceiro'}) por ${r.aluno?.nome ?? ''}` : '' }[r.tipo] ?? '';
@@ -636,7 +636,7 @@ function renderPacotes() {
     <button type="button" id="btn-desconto" class="${BOTAO_SEC}" ${editavel && c.pacotes.length ? '' : 'disabled'} title="${editavel ? 'Percentual sobre o valor base de todos os pacotes e dos alunos sem ajustes' : 'Só em rascunho'}">Desconto geral</button>
     <button type="button" id="btn-novo-aluno" class="${BOTAO_SEC}" title="Cadastra aqui mesmo, sem sair da venda — depois é só colocá-lo numa vaga">${ICONE.mais} ${emp ? `Cadastrar novo aluno na ${esc(Contratos.nomeEmpresa(emp))}` : 'Cadastrar novo aluno'}</button>
     ${c.pacotes.length > 1 ? `<button type="button" id="btn-recolher-pacotes" class="${BOTAO_SEC}" title="${todosRecolhidos ? 'Abrir o molde e os alunos de todos os pacotes' : 'Deixar só os cabeçalhos dos pacotes'}">${todosRecolhidos ? 'Expandir todos' : 'Recolher todos'}</button>` : ''}
-    ${!editavel ? `<span class="text-xs text-slate-600 dark:text-neutral-400">Moldes e valores travam depois de gerar o documento (vagas só aumentam; turmas mudam)${Contratos.podeReabrir(c) ? ' — <button type="button" id="btn-reabrir" class="text-petrol-800 dark:text-sky-300 hover:underline">reabrir para edição</button>' : '.'}</span>` : ''}` : '';
+    ${!editavel ? `<span class="text-xs text-slate-600 dark:text-neutral-400">Moldes e valores travam depois de gerar o documento (vagas só aumentam; turmas mudam)${Contratos.podeReabrir(c) ? ' — <button type="button" id="btn-reabrir" class="text-petrol-900 dark:text-sky-300 hover:underline">reabrir para edição</button>' : '.'}</span>` : ''}` : '';
 
   // Itens (matrículas) de um aluno — linhas como na versão anterior, dentro do cartão do pacote.
   const linhaItem = (it, grupo) => {
@@ -733,7 +733,7 @@ function renderPacotes() {
   const linhaVagaLivre = (p, vp) => `
       <li class="px-4 py-2.5 flex items-center gap-3">
         <div class="h-9 w-9 shrink-0 rounded-full border-2 border-dashed border-slate-300 dark:border-neutral-700 text-slate-400 grid place-items-center text-sm">+</div>
-        <p class="flex-1 text-sm text-slate-500 dark:text-neutral-400 border-b border-dashed border-slate-300 dark:border-neutral-700 pb-0.5">Vaga livre — entra pelo link ou por <button type="button" data-add-alunos="${p.id}" class="text-petrol-800 dark:text-sky-300 hover:underline">Adicionar alunos</button></p>
+        <p class="flex-1 text-sm text-slate-500 dark:text-neutral-400 border-b border-dashed border-slate-300 dark:border-neutral-700 pb-0.5">Vaga livre — entra pelo link ou por <button type="button" data-add-alunos="${p.id}" class="text-petrol-900 dark:text-sky-300 hover:underline">Adicionar alunos</button></p>
         <span class="text-sm tabular-nums text-slate-400" title="Vaga vazia é cobrada pelo valor do pacote">${moeda(vp)}</span>
       </li>`;
 
@@ -792,7 +792,7 @@ function renderPacotes() {
           <button type="button" data-remover-pacote="${p.id}" class="${ICONE_BOTAO_VERMELHO}" ${Contratos.podeRemoverPacote(c, p.id) ? '' : 'disabled'} title="${!editavel ? 'Só em rascunho' : temVinculos ? 'Há alunos vinculados a este pacote (inclusive recusados) — remova-os antes' : 'Remover pacote'}">${ICONE.lixeira}</button>
         </div>` : ''}
       </div>
-      ${recolhido ? `<p class="px-4 py-2 text-xs text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900 border-t border-slate-200 dark:border-neutral-800">${plural(p.itens.length, 'curso no molde', 'cursos no molde')} · ${plural(vinculos.length, 'aluno')}${recusados.length ? ` · ${plural(recusados.length, 'recusado')}` : ''} — <button type="button" data-toggle-pacote="${p.id}" class="text-petrol-800 dark:text-sky-300 hover:underline">mostrar</button></p>` : `
+      ${recolhido ? `<p class="px-4 py-2 text-xs text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900 border-t border-slate-200 dark:border-neutral-800">${plural(p.itens.length, 'curso no molde', 'cursos no molde')} · ${plural(vinculos.length, 'aluno')}${recusados.length ? ` · ${plural(recusados.length, 'recusado')}` : ''} — <button type="button" data-toggle-pacote="${p.id}" class="text-petrol-900 dark:text-sky-300 hover:underline">mostrar</button></p>` : `
       <table class="w-full text-left">
         <thead class="text-xs font-medium text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800">
           <tr><th class="${TH} pl-6">Molde do pacote</th><th class="${TH}">Turma</th><th class="${TH} text-right">Valor base</th><th class="${TH} text-right">Valor final</th></tr>
@@ -933,7 +933,7 @@ function renderCobranca() {
         ${emp?.cobranca.exigePedidoCompra ? `<p class="text-xs mt-1 ${c.cobranca.pedidoCompra ? 'text-slate-500 dark:text-neutral-400' : 'text-amber-700 dark:text-amber-300'}">PO: ${c.cobranca.pedidoCompra ? `<span class="font-mono">${esc(c.cobranca.pedidoCompra)}</span>` : 'exigido pela empresa, não informado'}</p>` : ''}
         ${emp && emp.cobranca.diaVencimento ? `<p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">Empresa prefere vencimento dia ${emp.cobranca.diaVencimento}${emp.cobranca.emailCobranca ? ` · ${esc(emp.cobranca.emailCobranca)}` : ''}</p>` : ''}
         ${pend.length ? `<p class="text-sm text-amber-800 dark:text-amber-300 mt-2">Emissão de boleto e NF travada: ${pend.map(esc).join(' · ')}</p>` : ''}
-        ${c.recuperacao ? `<p class="text-xs text-slate-600 dark:text-neutral-300 mt-2"><strong>Recuperação desde ${esc(Contratos.fmtData(c.recuperacao.desde))}:</strong> ${esc(c.recuperacao.acordo || 'sem detalhes')} · <button type="button" id="btn-encerrar-rec" class="text-petrol-800 dark:text-sky-300 hover:underline">encerrar</button></p>` : ''}
+        ${c.recuperacao ? `<p class="text-xs text-slate-600 dark:text-neutral-300 mt-2"><strong>Recuperação desde ${esc(Contratos.fmtData(c.recuperacao.desde))}:</strong> ${esc(c.recuperacao.acordo || 'sem detalhes')} · <button type="button" id="btn-encerrar-rec" class="text-petrol-900 dark:text-sky-300 hover:underline">encerrar</button></p>` : ''}
       </section>
     </div>
     ${tabela(['Parcela', 'Vencimento', 'R$ Valor', 'Situação', 'Detalhe', ''], c.parcelas.map(linha), c.status === 'rascunho' ? 'Defina a condição de pagamento para gerar as parcelas.' : 'Sem parcelas.')}
@@ -982,7 +982,7 @@ function renderDocumentos() {
         ${cabecalhoSecao('Contrato', c.documento ? `Versão ${c.documento.versao}, gerada em ${esc(Contratos.fmtDataHora(c.documento.geradoEm))}.${assinadoEnv ? ` Assinado no Clicksign (${esc(assinadoEnv.envelopeId)}).` : ''}` : 'Ainda não gerado. Prévia do que sairá no documento:', c.documento ? 'btn-baixar' : null, 'Baixar PDF')}
         <div class="p-6 font-serif text-sm leading-relaxed text-slate-800 dark:text-neutral-200 space-y-3 ${c.documento ? '' : 'opacity-70'}">
           ${modelo ? ModelosContrato.preencherHtml(modelo.texto, ModelosContrato.dadosDaVenda(c, ctx()), esc) : '<p class="text-slate-500 dark:text-neutral-400">Nenhum modelo de contrato ativo. Cadastre um em Modelos de contrato.</p>'}
-          <p class="text-xs font-display text-slate-500 dark:text-neutral-400">Modelo: ${modelo ? `<a href="modelo-contrato.html?id=${encodeURIComponent(modelo.id)}" class="text-petrol-800 dark:text-sky-300 hover:underline">${esc(modelo.nome)}</a>` : '—'}. Campos marcados ainda não têm dado na venda.</p>
+          <p class="text-xs font-display text-slate-500 dark:text-neutral-400">Modelo: ${modelo ? `<a href="modelo-contrato.html?id=${encodeURIComponent(modelo.id)}" class="text-petrol-900 dark:text-sky-300 hover:underline">${esc(modelo.nome)}</a>` : '—'}. Campos marcados ainda não têm dado na venda.</p>
           <div class="pt-3 border-t border-slate-200 dark:border-neutral-800">
             <p class="flex flex-wrap items-center gap-2"><strong>Anexo — alunos</strong> <span class="text-xs text-slate-500 dark:text-neutral-400">lista viva dos alunos aprovados; muda sem nova versão do documento${anexo.atualizadoEm ? ` · <span class="text-amber-700 dark:text-amber-300">anexo atualizado em ${esc(Contratos.fmtDataHora(anexo.atualizadoEm))}</span>` : ''}</span></p>
             ${anexo.aprovados.length ? `<ul class="list-disc pl-6 mt-1">${anexo.aprovados.map(linhaAnexo).join('')}</ul>` : `<p class="text-slate-400 mt-1">Nenhum aluno aprovado ainda${t.nAguardando ? ` (${t.nAguardando} aguardando conferência)` : ''}.</p>`}
@@ -1462,7 +1462,7 @@ function abrirModalContratante() {
           ${cartoesRadio('responsavelTipo', TIPOS_RESPONSAVEL_CONTRATO, tipoAtual)}
           <div data-sub="responsavel" class="${tipoAtual === 'responsavel' ? '' : 'hidden'}">
             ${listaSelecionavel('responsavelId', responsaveis.map((x) => ({ id: x.id, nome: x.nome, detalhe: `<span class="font-mono">${esc(Clientes.fmtCpf(x.cpf))}</span> · ${esc(x.email || 'sem e-mail')}`, busca: `${x.nome} ${x.cpf} ${x.email}`, direita: pendTxt(Clientes.pendenciasResponsavel(x).length) })), { selecionados: tipoAtual === 'responsavel' ? [c.responsavel.id] : [], placeholder: 'Buscar responsável por nome, CPF ou e-mail', vazioTxt: 'Nenhum responsável ativo.' })}
-            <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">${vendedorExterno() ? '' : 'Não achou? <a href="responsaveis.html" class="text-petrol-800 dark:text-sky-300 hover:underline">Cadastre em Responsáveis</a>. '}Os alunos da venda ficam vinculados a ele com o papel financeiro.</p>
+            <p class="text-xs text-slate-500 dark:text-neutral-400 mt-1">${vendedorExterno() ? '' : 'Não achou? <a href="responsaveis.html" class="text-petrol-900 dark:text-sky-300 hover:underline">Cadastre em Responsáveis</a>. '}Os alunos da venda ficam vinculados a ele com o papel financeiro.</p>
           </div>
           <div data-sub="aluno" class="${tipoAtual === 'aluno' ? '' : 'hidden'}">
             ${listaSelecionavel('alunoRespId', alunos.map((a) => ({ id: a.id, nome: a.nomeSocial || a.nome, detalhe: `<span class="font-mono">${esc(Clientes.fmtCpf(a.cpf))}</span> · ${esc(nomeDe(PAGADORES, a.pagador))}${a.pagador === 'terceiro' && a.responsavel?.nome ? ` (${esc(a.responsavel.nome)})` : ''}`, busca: `${a.nome} ${a.nomeSocial} ${a.cpf} ${a.email}`, direita: pendTxt(Clientes.pendenciasAluno(a, ctx().empresas).length) })), { selecionados: tipoAtual === 'aluno' ? [c.responsavel.id] : [], placeholder: 'Buscar aluno por nome, CPF ou e-mail', vazioTxt: 'Nenhum aluno ativo.' })}
@@ -2189,7 +2189,7 @@ function abrirSeletorFormacao(alunoId) {
 
 // `validarMotivo(texto)` → erros [{ campo: 'motivo', mensagem }] torna o motivo obrigatório (mostra o erro e não fecha).
 function modalConfirmacao({ titulo, corpo, rotulo, tom = 'vermelho', aoConfirmar, comMotivo = false, validarMotivo = null, rotuloMotivo = 'Motivo' }) {
-  const cor = tom === 'vermelho' ? 'bg-red-600 hover:bg-red-700' : 'bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800';
+  const cor = tom === 'vermelho' ? 'bg-red-600 hover:bg-red-700' : 'bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950';
   const root = abrirModal(`
     <div class="px-5 py-4 border-b border-slate-200 dark:border-neutral-800"><h3 class="font-display font-semibold text-slate-900 dark:text-neutral-100">${titulo}</h3></div>
     <div class="px-5 py-4 text-sm text-slate-700 dark:text-neutral-200 space-y-3">${corpo}${comMotivo ? `<div><label class="rotulo" for="motivo">${rotuloMotivo} ${validarMotivo ? '' : OPCIONAL}</label><textarea id="motivo" name="motivo" rows="2" class="campo"></textarea>${ERRO('motivo')}</div>` : ''}</div>
@@ -2355,7 +2355,7 @@ function confirmarEmissaoBoletos() {
 function renderTudo() {
   if (MODO === 'detalhe') {
     if (!atual()) location.replace('contratos.html?erro=nao-encontrado');
-    else if (!podeVer(atual())) document.getElementById('tela').innerHTML = `<div class="${CARTAO} px-4 py-10 text-center"><p class="font-medium text-slate-800 dark:text-neutral-100">Sem acesso a esta venda</p><p class="mt-1 text-sm text-slate-500 dark:text-neutral-400">Ela é de outro vendedor. <a href="${urlLista()}" class="text-petrol-800 dark:text-sky-300 hover:underline">Ver as suas vendas</a></p></div>`;
+    else if (!podeVer(atual())) document.getElementById('tela').innerHTML = `<div class="${CARTAO} px-4 py-10 text-center"><p class="font-medium text-slate-800 dark:text-neutral-100">Sem acesso a esta venda</p><p class="mt-1 text-sm text-slate-500 dark:text-neutral-400">Ela é de outro vendedor. <a href="${urlLista()}" class="text-petrol-900 dark:text-sky-300 hover:underline">Ver as suas vendas</a></p></div>`;
     else renderContrato();
     return;
   }

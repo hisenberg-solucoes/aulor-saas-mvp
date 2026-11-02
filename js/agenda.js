@@ -162,7 +162,7 @@ const Agenda = (() => {
       <div>
         <div class="flex items-center justify-between mb-1">
           <p class="rotulo mb-0">Dias e horários</p>
-          <button type="button" data-add-periodo class="inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline">+ Adicionar período</button>
+          <button type="button" data-add-periodo class="inline-flex items-center gap-1 text-xs font-medium text-petrol-900 dark:text-sky-300 hover:underline">+ Adicionar período</button>
         </div>
         <div data-periodos class="space-y-2">${agenda.periodos.map(linhaPeriodo).join('')}</div>
         <p data-periodos-vazio class="text-xs text-slate-400 ${agenda.periodos.length ? 'hidden' : ''}">Nenhum período. Ex.: Seg/Qua/Sex das 18:15 às 22:15; ou Sáb das 8:00 às 12:00 e das 13:00 às 19:00.</p>

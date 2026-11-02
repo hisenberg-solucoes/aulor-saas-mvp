@@ -30,7 +30,7 @@ const ICONE = {
   fechar: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>',
 };
 
-const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition';
+const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition';
 const BOTAO_PERIGO = 'inline-flex items-center h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-red-600 hover:bg-red-700 text-white shadow-sm transition';
 const BOTAO_CANCELAR = 'inline-flex items-center h-9 px-3.5 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
 const BOTAO_EXCLUIR = 'inline-flex items-center h-8 px-2.5 -ml-2.5 rounded-md text-sm font-medium text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition';
@@ -42,14 +42,14 @@ const TH = 'px-4 py-2.5';
 const TD = 'px-4 py-3 text-sm text-slate-600 dark:text-neutral-300 align-top';
 const THEAD = 'text-xs font-medium text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800';
 const FOCO_LINHA = 'has-[.link-registro:focus-visible]:bg-slate-50 dark:has-[.link-registro:focus-visible]:bg-neutral-900 has-[.link-registro:focus-visible]:outline-2 has-[.link-registro:focus-visible]:-outline-offset-2 has-[.link-registro:focus-visible]:outline-[color:var(--f-foco)]';
-const LINK = 'font-medium text-petrol-800 dark:text-sky-300 hover:underline underline-offset-2';
+const LINK = 'font-medium text-petrol-900 dark:text-sky-300 hover:underline underline-offset-2';
 const LINK_VALOR = 'hover:underline underline-offset-2'; // valor que leva ao Financeiro: tinta, sublinha no hover
 const APOIO = 'text-slate-500 dark:text-neutral-400'; // rótulo, subtítulo e vazio (4,76:1 no cartão)
 const APOIO_FUNDO = 'text-slate-600 dark:text-neutral-400'; // o mesmo papel direto sobre o fundo (6,93:1; o slate-500 dá 4,36:1)
 const AVISO = 'text-[color:var(--f-aviso)]';
 const TITULO = 'text-slate-900 dark:text-neutral-100';
 const VALOR = 'text-slate-800 dark:text-neutral-100';
-const PILULA_INATIVA = 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400';
+const PILULA_INATIVA = 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400';
 
 // ---------- Helpers ----------
 

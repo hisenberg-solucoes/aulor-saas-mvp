@@ -17,10 +17,10 @@
   const APOIO = 'text-xs text-slate-500 dark:text-neutral-400';
   const ROTULO = 'block text-xs font-medium text-slate-500 dark:text-neutral-400 mb-1';
   const CAMPO = 'w-full rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 text-sm text-slate-900 dark:text-neutral-100 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20 aria-[invalid=true]:border-red-500';
-  const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition disabled:opacity-40';
+  const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition disabled:opacity-40';
   const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition';
   const BOTAO_PERIGO = 'inline-flex items-center h-9 px-3.5 rounded-lg text-sm font-semibold bg-red-600 hover:bg-red-700 text-white dark:text-[#1A0D09] transition';
-  const PILULA = 'inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-300 whitespace-nowrap';
+  const PILULA = 'inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-300 whitespace-nowrap';
   const PONTO = '<span class="h-1.5 w-1.5 rounded-full bg-slate-500 dark:bg-neutral-400" aria-hidden="true"></span>';
   const ICONE_ERRO = '<svg class="h-3.5 w-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>';
   const pilula = (txt) => `<span class="${PILULA}">${PONTO}${esc(txt)}</span>`;
@@ -124,7 +124,7 @@
   function renderFicha() {
     const salvo = ModelosContrato.porId(params.get('id'));
     if (!salvo) {
-      tela.innerHTML = `<p class="text-sm text-slate-500 dark:text-neutral-400">Modelo não encontrado. <a href="modelos-contrato.html" class="text-petrol-800 dark:text-sky-300 hover:underline">Voltar aos modelos</a></p>`;
+      tela.innerHTML = `<p class="text-sm text-slate-500 dark:text-neutral-400">Modelo não encontrado. <a href="modelos-contrato.html" class="text-petrol-900 dark:text-sky-300 hover:underline">Voltar aos modelos</a></p>`;
       return;
     }
     estado.rascunho ??= JSON.parse(JSON.stringify(salvo));
@@ -255,7 +255,7 @@
       <div class="mb-4 flex flex-wrap items-end gap-3">
         <div><label for="venda" class="${ROTULO}">Venda usada na pré-visualização</label>
           <select id="venda" class="${CAMPO} h-9 w-96">${vendas.map((v) => `<option value="${esc(v.id)}" ${v.id === c.id ? 'selected' : ''}>${esc(v.codigo)} · ${esc(contratante(v))}</option>`).join('')}</select></div>
-        <a href="contrato.html?id=${encodeURIComponent(c.id)}&aba=documentos" class="h-9 inline-flex items-center text-sm font-medium text-petrol-800 dark:text-sky-300 hover:underline">Abrir a venda</a>
+        <a href="contrato.html?id=${encodeURIComponent(c.id)}&aba=documentos" class="h-9 inline-flex items-center text-sm font-medium text-petrol-900 dark:text-sky-300 hover:underline">Abrir a venda</a>
       </div>
       ${faltam.length ? `<p role="status" class="mb-4 rounded-lg bg-amber-50 dark:bg-amber-950 px-3 py-2 text-sm text-amber-700 dark:text-amber-300"><span class="font-medium">Faltam dados nesta venda:</span> ${esc(faltam.map((f) => rotulo[f] ?? f).join(', '))}. No contrato, esses campos saem marcados até a venda ser completada.</p>` : ''}
       <article class="${CARTAO} max-w-3xl p-8 font-registro text-[15px] leading-7 text-slate-800 dark:text-neutral-200 space-y-4">${ModelosContrato.preencherHtml(m.texto, dados, esc)}</article>`;

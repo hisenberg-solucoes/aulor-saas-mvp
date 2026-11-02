@@ -63,10 +63,10 @@ const ICONE = {
 };
 
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
-const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none';
+const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none';
 const BOTAO_FANTASMA = 'inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
 const BOTAO_CANCELAR = 'px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
-const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline';
+const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-900 dark:text-sky-300 hover:underline';
 const ICONE_BOTAO = 'inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-30 disabled:pointer-events-none';
 const ICONE_BOTAO_VERMELHO = `${ICONE_BOTAO} hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40`;
 const CAMPO_BUSCA = 'h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 pl-8 pr-3 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-400 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20';
@@ -86,8 +86,8 @@ const LINHA_GRUPO = 'bg-slate-50 dark:bg-neutral-900 border-y border-slate-200 d
 // Pílula só de exceção (Regra da Pílula de Exceção): ativa, no site, obrigatório e contrato conferido são o comum e não se anunciam.
 const PILULA = {
   rascunho: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
-  inativo: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
-  neutra: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  inativo: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  neutra: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
   falta: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
   divida: 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300',
 };
@@ -209,7 +209,7 @@ function campo(rotulo, valorHtml, largura = '') {
 function faixa(tom, html) {
   const cores = {
     aviso: 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200',
-    petrol: 'bg-petrol-800/10 dark:bg-sky-950/40 text-petrol-900 dark:text-sky-200',
+    petrol: 'bg-sky-100 dark:bg-sky-950/40 text-sky-800 dark:text-sky-200',
   };
   return `<div class="mb-4 flex items-start gap-3 rounded-lg px-4 py-3 text-sm ${cores[tom]}"><span class="shrink-0">${ICONE.alerta}</span><div class="min-w-0 flex-1">${html}</div></div>`;
 }
@@ -462,7 +462,7 @@ function renderAbaAlunos() {
       PILULA_CONTRATO[l.contrato.status] ? pilula(PILULA_CONTRATO[l.contrato.status], st?.curto ?? st?.nome ?? l.contrato.status, st?.descricao ?? '') : '',
       PILULA_COBRANCA[l.situacao] && sit ? pilula(PILULA_COBRANCA[l.situacao], sit.nome) : '',
     ].join('');
-    const contrato = `<a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-petrol-800 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a>`;
+    const contrato = `<a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-petrol-900 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a>`;
     let quem = '<span class="text-sm text-slate-500 dark:text-neutral-400">—</span>';
     let tipo = '';
     // Tipos de Contratos.responsavelFinanceiro: empresa, responsavel (cadastro), terceiro (no cadastro do aluno), aluno, ou null.
@@ -628,7 +628,7 @@ function renderAbaCursos() {
         ${editavel ? `<td class="${TH}">
           <button type="button" role="switch" aria-checked="${i.obrigatorio}" data-obrigatorio="${c.id}" aria-label="Obrigatório: ${esc(c.nome)}" title="${i.obrigatorio ? 'Obrigatório — clique para tornar optativo' : 'Optativo — clique para tornar obrigatório'}"
             class="inline-flex items-center gap-2 rounded-full text-sm text-slate-600 dark:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">
-            <span class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition ${i.obrigatorio ? 'bg-petrol-800 dark:bg-areia' : 'bg-white dark:bg-neutral-950 ring-1 ring-inset ring-slate-300 dark:ring-neutral-700'}"><span class="inline-block h-4 w-4 rounded-full shadow transition ${i.obrigatorio ? 'translate-x-[18px] bg-areia dark:bg-petrol-800' : 'translate-x-0.5 bg-slate-400 dark:bg-neutral-500'}"></span></span>
+            <span class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition ${i.obrigatorio ? 'bg-petrol-800 dark:bg-areia' : 'bg-white dark:bg-neutral-950 ring-1 ring-inset ring-slate-300 dark:ring-neutral-700'}"><span class="inline-block h-4 w-4 rounded-full shadow transition ${i.obrigatorio ? 'translate-x-[18px] bg-white dark:bg-petrol-950' : 'translate-x-0.5 bg-slate-400 dark:bg-neutral-500'}"></span></span>
             ${i.obrigatorio ? 'Obrigatório' : 'Optativo'}
           </button>
         </td>` : ''}
@@ -1031,13 +1031,13 @@ function abrirModalVerTurma(turmaId) {
       <td class="${TDM}"><a href="aluno.html?id=${l.alunoId}" target="_blank" class="text-slate-800 dark:text-neutral-100 hover:underline">${nomeAluno(l.alunoId)}</a></td>
       <td class="${TDM} text-slate-600 dark:text-neutral-300">${esc(NOME_MAT[l.matricula.status] ?? l.matricula.status)}</td>
       <td class="${TDM} font-mono text-xs text-slate-500 dark:text-neutral-400">${esc(l.matricula.codigo ?? '')}</td>
-      <td class="${TDM}"><a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a></td>
+      <td class="${TDM}"><a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-xs text-petrol-900 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a></td>
     </tr>`;
   const linhaFora = (l) => `
     <tr class="opacity-70">
       <td class="${TDM}"><a href="aluno.html?id=${l.alunoId}" target="_blank" class="text-slate-800 dark:text-neutral-100 hover:underline">${nomeAluno(l.alunoId)}</a></td>
       <td class="${TDM} text-slate-600 dark:text-neutral-300" colspan="2">Sem matrícula nesta turma<span class="ml-1.5 text-xs text-slate-500 dark:text-neutral-400">· ${esc(NOME_SIT(l.situacaoAluno).toLowerCase())} na formação</span></td>
-      <td class="${TDM}"><a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a></td>
+      <td class="${TDM}"><a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-xs text-petrol-900 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a></td>
     </tr>`;
   const diaNome = (id) => (Agenda.DIAS.find((d) => d.id === id)?.nome ?? id).slice(0, 3).toLowerCase();
   const hora = (h) => h.replace(':', 'h').replace(/h00$/, 'h');

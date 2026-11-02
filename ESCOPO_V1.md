@@ -23,7 +23,7 @@ Como cada decisão do documento "Aulor – Escopo da primeira versão (V1)" (26/
 
 ## Portais
 
-Os dois portais usam o shell e os papéis do `DESIGN.md` do aulor-web, os mesmos do administrativo (sidebar e barra de contexto em azul profundo, Atkinson Hyperlegible Next, cartões brancos sobre o fundo frio). O "hoje" vai em petróleo e o cobre fica só no que espera a pessoa. As telas são as do `snorlax-jornada`, recortadas para a V1.
+Os dois portais usam o shell e os papéis do `DESIGN.md` do aulor-web, os mesmos do administrativo (sidebar e barra de contexto em azul profundo, Atkinson Hyperlegible Next, cartões brancos sobre o fundo frio). O "hoje" vai em cerúleo e o cobre fica só no que espera a pessoa. As telas são as do `snorlax-jornada`, recortadas para a V1.
 
 | Portal | Como ficou |
 |---|---|

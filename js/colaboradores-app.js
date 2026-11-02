@@ -43,9 +43,9 @@ const ICONE = {
 
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
 // Primário em petróleo: cobre é "é com você", nunca fundo de botão (Regra do Cobre).
-const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40';
+const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40';
 const BOTAO_CANCELAR = 'px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
-const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline';
+const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-900 dark:text-sky-300 hover:underline';
 const BOTAO_PERIGO = 'px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 hover:bg-red-700 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40';
 // Ação de cartão: sem fundo nem contorno, na cor de rótulo; petróleo no hover.
 const BOTAO_FANTASMA = 'inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30';
@@ -64,11 +64,11 @@ const FOCO_LINHA = 'has-[.link-registro:focus-visible]:bg-slate-50 dark:has-[.li
 // Pílula só de exceção (Regra da Pílula de Exceção): ativo é o comum e não se anuncia.
 const PILULA = {
   afastado: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
-  desligado: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
-  docente: 'bg-petrol-800/10 text-petrol-900 dark:bg-sky-950/60 dark:text-sky-200',
+  desligado: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  docente: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200',
 };
 // Perfil de acesso é dado, não estado: tag em etiqueta; o desativado aparece riscado.
-const TAG = 'inline-flex items-center h-6 rounded px-2 text-xs font-medium bg-slate-100 text-slate-700 dark:bg-neutral-900 dark:text-neutral-300';
+const TAG = 'inline-flex items-center h-6 rounded px-2 text-xs font-medium bg-slate-200 text-slate-700 dark:bg-neutral-900 dark:text-neutral-300';
 const TAG_INATIVA = 'inline-flex items-center h-6 rounded px-2 text-xs font-medium bg-slate-50 text-slate-500 line-through dark:bg-neutral-900/60 dark:text-neutral-500';
 
 // ---------- Helpers ----------
@@ -240,7 +240,7 @@ function renderLista() {
     <div class="mb-4 flex items-start justify-between gap-6">
       <div>
         <h2 class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100">Colaboradores <span class="ml-1 text-base font-normal text-slate-600 dark:text-neutral-400 tabular-nums">${estado.lista.length}</span></h2>
-        <p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Equipe da escola: identificação, cargo, contato e o usuário de acesso ao sistema. Quem também dá aula leva o selo <em>Dá aula</em> e aparece em <a href="instrutores.html" class="text-petrol-800 dark:text-sky-300 hover:underline">Instrutores</a>, com o mesmo CPF.</p>
+        <p class="max-w-3xl text-sm text-slate-600 dark:text-neutral-400 mt-0.5">Equipe da escola: identificação, cargo, contato e o usuário de acesso ao sistema. Quem também dá aula leva o selo <em>Dá aula</em> e aparece em <a href="instrutores.html" class="text-petrol-900 dark:text-sky-300 hover:underline">Instrutores</a>, com o mesmo CPF.</p>
       </div>
       <div class="flex items-center gap-2 shrink-0">
         ${ConvitesUI.pode('colaborador', 'criar') ? `<button type="button" id="btn-convidar" class="${BOTAO_SEC}" title="O colaborador recebe o convite por e-mail, entra com ele e completa o próprio cadastro">${ICONE.convite} Convidar colaborador</button>` : ''}
@@ -434,7 +434,7 @@ function renderColaborador() {
       <section class="${CARTAO}">
         ${cabecalhoSecao('Contato', 'E-mail corporativo e celular de trabalho.', 'btn-editar-contato')}
         <div class="p-4 grid grid-cols-2 gap-4">
-          ${campo('E-mail corporativo', c.contato.email ? `<a href="mailto:${esc(c.contato.email)}" class="text-petrol-800 dark:text-sky-300 hover:underline">${esc(c.contato.email)}</a>` : valorOuVazio(null))}
+          ${campo('E-mail corporativo', c.contato.email ? `<a href="mailto:${esc(c.contato.email)}" class="text-petrol-900 dark:text-sky-300 hover:underline">${esc(c.contato.email)}</a>` : valorOuVazio(null))}
           ${campo('Celular', c.contato.celular ? `<span class="tabular-nums">${esc(C.fmtTelefone(c.contato.celular))}</span>` : valorOuVazio(null))}
         </div>
       </section>
