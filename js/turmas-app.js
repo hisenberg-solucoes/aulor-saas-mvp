@@ -69,15 +69,16 @@ const PILULA = {
   neutra: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
   extra: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200',
   falta: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
-  concluido: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
+  verde: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
 };
-// Situação: ponto na cor da fase + nome em texto. Âmbar espera ação; vazado é cancelada.
-const PONTO_SITUACAO = {
-  planejada: 'bg-amber-500',
-  confirmada: 'bg-sky-600 dark:bg-sky-400',
-  em_andamento: 'bg-emerald-500',
-  concluida: 'bg-slate-400 dark:bg-neutral-500',
-  cancelada: 'ring-1 ring-inset ring-slate-400 dark:ring-neutral-500',
+// Situação na lista: chip na cor da fase, porque a coluna é só isso e um ponto de 8px não deixa ler a cor.
+// Âmbar espera ação; vazado é cancelada. Na ficha vale a Pílula de Exceção (ver o cabeçalho).
+const PILULA_SITUACAO = {
+  planejada: PILULA.falta,
+  confirmada: PILULA.extra,
+  em_andamento: PILULA.verde,
+  concluida: PILULA.neutra,
+  cancelada: 'ring-1 ring-inset ring-slate-300 text-slate-500 dark:ring-neutral-600 dark:text-neutral-400',
 };
 const NOME_MATRICULA = { matriculado: 'Matriculado', concluido: 'Concluído', desistiu: 'Desistiu', cancelada: 'Cancelada' };
 
@@ -87,11 +88,7 @@ function pilula(classe, texto, titulo = '') {
   return `<span title="${esc(titulo)}" class="pilula inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs font-medium ${classe}">${esc(texto)}</span>`;
 }
 
-const ponto = (sit) => `<span class="inline-block h-2 w-2 shrink-0 rounded-full align-middle -mt-px ${PONTO_SITUACAO[sit]}"></span>`;
-
-function situacaoHtml(sit, s) {
-  return `<span title="${esc(s.descricao)}" class="inline-flex items-center gap-1.5 whitespace-nowrap text-sm text-slate-600 dark:text-neutral-300">${ponto(sit)}${esc(s.nome)}</span>`;
-}
+const situacaoHtml = (sit, s) => pilula(PILULA_SITUACAO[sit], s.nome, s.descricao);
 
 function chip(icone, conteudo, titulo = '') {
   return `<span title="${esc(titulo)}" class="inline-flex items-center gap-1.5 text-[13px] text-slate-600 dark:text-neutral-300"><span class="text-slate-400 dark:text-neutral-500">${icone}</span>${conteudo}</span>`;
@@ -1183,7 +1180,7 @@ function renderMatriculas(t, m) {
   // Matriculado é o comum e não ganha pílula; concluído é estado bom dentro de tabela (verde); desistiu e cancelada, neutras.
   // Na turma concluída, concluir é o comum e também não se anuncia.
   const turmaConcluida = Turmas.situacao(t) === 'concluida';
-  const situacao = (st) => (st === 'matriculado' || (st === 'concluido' && turmaConcluida) ? '' : ` ${pilula(st === 'concluido' ? PILULA.concluido : PILULA.neutra, NOME_MATRICULA[st] ?? st)}`);
+  const situacao = (st) => (st === 'matriculado' || (st === 'concluido' && turmaConcluida) ? '' : ` ${pilula(st === 'concluido' ? PILULA.verde : PILULA.neutra, NOME_MATRICULA[st] ?? st)}`);
   return `
     <div class="mt-3 overflow-x-auto">
       <table class="w-full text-left">
