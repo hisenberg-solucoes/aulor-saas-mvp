@@ -14,7 +14,7 @@
   const dataHora = (iso) => esc(Contratos.fmtDataHora(iso));
   const nomeDe = (lista, id) => lista.find((x) => x.id === id)?.nome ?? '';
   const plural = (n, um, varios = `${um}s`) => `${n} ${n === 1 ? um : varios}`;
-  const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
+  const ponto = chipEstado;
 
   const SITUACAO_MATRICULA = {
     concluido: { nome: 'Concluído', ponto: 'bg-sky-500' },

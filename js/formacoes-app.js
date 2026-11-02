@@ -90,25 +90,28 @@ const PILULA = {
   neutra: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
   falta: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
   divida: 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300',
+  verde: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
+  marca: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200',
+  vazada: 'ring-1 ring-inset ring-slate-300 text-slate-500 dark:ring-neutral-600 dark:text-neutral-400',
 };
 // Contrato: Adm OK é o fim do caminho e não se anuncia; o que ainda espera alguém é âmbar.
 const PILULA_CONTRATO = { rascunho: PILULA.neutra, aguardando: PILULA.falta, comercial_ok: PILULA.falta, cancelado: PILULA.neutra };
 // Cobrança: só a dívida aparece; vermelho é dívida do próprio contrato, âmbar o acordo de recuperação (Regra das Fontes Juntas).
 const PILULA_COBRANCA = { inadimplente: PILULA.divida, recuperante: PILULA.falta };
-// Fases de ciclo de vida: ponto na cor + texto, como a Situação das turmas. Âmbar espera ação; vazado saiu.
-const PONTO_TURMA = {
-  planejada: 'bg-amber-500',
-  confirmada: 'bg-sky-600 dark:bg-sky-400',
-  em_andamento: 'bg-emerald-500',
-  concluida: 'bg-slate-400 dark:bg-neutral-500',
-  cancelada: 'ring-1 ring-inset ring-slate-400 dark:ring-neutral-500',
+// Fases de ciclo de vida: chip na cor da fase, como a Situação das turmas (um ponto de 8px não deixa ler a cor). Âmbar espera ação; vazado saiu.
+const PILULA_TURMA = {
+  planejada: PILULA.falta,
+  confirmada: PILULA.marca,
+  em_andamento: PILULA.verde,
+  concluida: PILULA.neutra,
+  cancelada: PILULA.vazada,
 };
-const PONTO_ALUNO = {
-  cursando: 'bg-emerald-500',
-  congelada: 'bg-amber-500',
-  concluido: 'bg-slate-400 dark:bg-neutral-500',
-  desistiu: 'ring-1 ring-inset ring-slate-400 dark:ring-neutral-500',
-  cancelada: 'ring-1 ring-inset ring-slate-400 dark:ring-neutral-500',
+const PILULA_ALUNO = {
+  cursando: PILULA.verde,
+  congelada: PILULA.falta,
+  concluido: PILULA.neutra,
+  desistiu: PILULA.vazada,
+  cancelada: PILULA.vazada,
 };
 
 // ---------- Helpers ----------
@@ -116,8 +119,6 @@ const PONTO_ALUNO = {
 function pilula(classe, texto, titulo = '') {
   return `<span title="${esc(titulo)}" class="pilula inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs font-medium ${classe}">${esc(texto)}</span>`;
 }
-
-const ponto = (classe) => `<span class="inline-block h-2 w-2 shrink-0 rounded-full align-middle -mt-px ${classe}"></span>`;
 
 function chip(icone, conteudo, titulo = '') {
   return `<span title="${esc(titulo)}" class="inline-flex items-center gap-1.5 text-[13px] text-slate-600 dark:text-neutral-300"><span class="text-slate-400 dark:text-neutral-500">${icone}</span>${conteudo}</span>`;
@@ -488,7 +489,7 @@ function renderAbaAlunos() {
     const saiu = l.situacaoAluno === 'desistiu' || l.situacaoAluno === 'cancelada';
     const sa = SITUACOES_ALUNO.find((s) => s.id === l.situacaoAluno);
     return `
-      <div class="flex items-center justify-between gap-2"><span class="inline-flex items-center gap-1.5 whitespace-nowrap text-sm text-slate-600 dark:text-neutral-300">${ponto(PONTO_ALUNO[l.situacaoAluno] ?? PONTO_ALUNO.cursando)}${esc(sa?.nome ?? l.situacaoAluno)}</span><span class="text-xs tabular-nums text-slate-500 dark:text-neutral-400" title="${pct}% dos cursos">${p.concluidas}/${p.total}</span></div>
+      <div class="flex items-center justify-between gap-2">${pilula(PILULA_ALUNO[l.situacaoAluno] ?? PILULA_ALUNO.cursando, sa?.nome ?? l.situacaoAluno)}<span class="text-xs tabular-nums text-slate-500 dark:text-neutral-400" title="${pct}% dos cursos">${p.concluidas}/${p.total}</span></div>
       <div class="relative h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 mt-1.5"><span class="absolute inset-y-0 left-0 rounded-full ${saiu ? 'bg-slate-400 dark:bg-neutral-600' : 'bg-slate-700 dark:bg-neutral-300'}" style="width:${pct}%"></span></div>
       ${p.desistiu ? `<p class="text-xs ${AVISO} mt-1">${plural(p.desistiu, 'curso')} não cursado${p.desistiu === 1 ? '' : 's'}</p>` : ''}`;
   };
@@ -589,7 +590,7 @@ function renderAbaCursos() {
     const turma = (x) => {
       const sit = Turmas.situacao(x);
       const s = Turmas.situacaoDe(sit);
-      return `<button type="button" data-ver-turma="${x.id}" title="${esc(`${s.nome} · ${x.turno} · ${Contratos.fmtData(x.inicio)} a ${Contratos.fmtData(x.fim)} — clique para ver alunos e aulas`)}" class="flex items-center gap-1.5 whitespace-nowrap rounded text-xs text-slate-700 dark:text-neutral-200 hover:text-petrol-800 dark:hover:text-sky-300 hover:underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">${ponto(PONTO_TURMA[sit])}<span class="font-mono">${esc(x.codigo)}</span><span class="tabular-nums text-slate-500 dark:text-neutral-400">${Contratos.fmtData(x.inicio).slice(0, 5)}–${Contratos.fmtData(x.fim).slice(0, 5)}</span></button>`;
+      return `<button type="button" data-ver-turma="${x.id}" title="${esc(`${s.nome} · ${x.turno} · ${Contratos.fmtData(x.inicio)} a ${Contratos.fmtData(x.fim)} — clique para ver alunos e aulas`)}" class="flex items-center gap-1.5 whitespace-nowrap rounded text-xs text-slate-700 dark:text-neutral-200 hover:text-petrol-800 dark:hover:text-sky-300 hover:underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">${pilula(PILULA_TURMA[sit], s.nome)}<span class="font-mono">${esc(x.codigo)}</span><span class="tabular-nums text-slate-500 dark:text-neutral-400">${Contratos.fmtData(x.inicio).slice(0, 5)}–${Contratos.fmtData(x.fim).slice(0, 5)}</span></button>`;
     };
     return `
       <div class="flex items-start justify-between gap-1">
@@ -1068,7 +1069,7 @@ function abrirModalVerTurma(turmaId) {
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
             <h3 id="titulo-modal-turma" class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100"><span class="font-mono text-base text-slate-500 dark:text-neutral-400 mr-1.5">${esc(t.codigo)}</span>${esc(curso?.nome ?? '')}</h3>
-            <span title="${esc(s.descricao)}" class="inline-flex items-center gap-1.5 whitespace-nowrap text-sm text-slate-600 dark:text-neutral-300">${ponto(PONTO_TURMA[sit])}${esc(s.nome)}</span>
+            ${pilula(PILULA_TURMA[sit], s.nome, s.descricao)}
           </div>
           <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">Turma de <span class="font-mono text-xs">${esc(f.codigo)}</span> ${esc(f.nome)}</p>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">

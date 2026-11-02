@@ -50,10 +50,18 @@ const ICONE = {
   alerta: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>',
 };
 
-// Fase do lançamento (ciclo de vida): ponto na cor da fase + texto. Cancelado vira pílula neutra e apaga a linha.
-const PONTO_SITUACAO = { previsto: 'bg-slate-400 dark:bg-neutral-500', emitido: 'bg-sky-600 dark:bg-sky-400', vencido: 'bg-red-500', pago: 'bg-emerald-500', cancelado: 'border border-slate-400 dark:border-neutral-500' };
-const PONTO_CONCILIACAO = { conciliado: ['bg-emerald-500', 'Conciliado'], sugestao: ['border-2 border-laranja', 'Com sugestão'], sem_lancamento: ['bg-laranja', 'Sem lançamento'], transferencia: ['bg-slate-400 dark:bg-neutral-500', 'Transferência'], taxa: ['border border-slate-400 dark:border-neutral-500', 'Taxa do gateway'] };
-const PILULA = { neutra: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400' };
+const PILULA = {
+  neutra: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  marca: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200',
+  verde: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
+  vermelha: 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300',
+  ambar: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
+  vazada: 'ring-1 ring-inset ring-slate-300 text-slate-500 dark:ring-neutral-600 dark:text-neutral-400',
+};
+// Fase do lançamento (ciclo de vida): chip na cor da fase, porque um ponto de 8px não deixa ler a cor. Cancelado apaga a linha.
+const PILULA_SITUACAO = { previsto: PILULA.neutra, emitido: PILULA.marca, vencido: PILULA.vermelha, pago: PILULA.verde };
+// Conciliação: cobre cheio espera lançamento; cobre vazado tem sugestão para conferir; taxa vazada é do gateway.
+const PILULA_CONCILIACAO = { conciliado: [PILULA.verde, 'Conciliado'], sugestao: ['ring-1 ring-inset ring-laranja/60 text-amber-800 dark:text-amber-300', 'Com sugestão'], sem_lancamento: [PILULA.ambar, 'Sem lançamento'], transferencia: [PILULA.neutra, 'Transferência'], taxa: [PILULA.vazada, 'Taxa do gateway'] };
 // Ícone do tipo (heroicons arrow-up/down-circle), em tinta: entrada e saída não levam cor, só sinal e posição.
 const CAMINHO_TIPO = { receita: 'm15 11.25-3-3m0 0-3 3m3-3v7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z', despesa: 'm9 12.75 3 3m0 0 3-3m-3 3v-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' };
 const iconeTipo = (tipo, tamanho = 'h-5 w-5') => (CAMINHO_TIPO[tipo] ? `<span class="inline-flex shrink-0 text-slate-500 dark:text-neutral-400"><svg class="${tamanho}" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="${CAMINHO_TIPO[tipo]}"/></svg></span>` : '');
@@ -84,7 +92,7 @@ const fimMes = () => L.periodoDe({ de: mesAtual(), ate: mesAtual() }).ate;
 const pontoSituacao = (l) => {
   const s = L.situacao(l);
   if (s === 'cancelado') return pilula(PILULA.neutra, 'Cancelado');
-  return `<span class="inline-flex items-center gap-1.5 whitespace-nowrap ${s === 'vencido' ? `${RUIM} font-medium` : 'text-slate-700 dark:text-neutral-300'}"><span class="h-2 w-2 rounded-full shrink-0 ${PONTO_SITUACAO[s]}" aria-hidden="true"></span>${esc(L.situacaoDe(l).nome)}</span>`;
+  return pilula(PILULA_SITUACAO[s], L.situacaoDe(l).nome);
 };
 function pilula(classe, texto, titulo = '') {
   return `<span ${titulo ? `title="${esc(titulo)}"` : ''} class="pilula inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs font-medium ${classe}">${esc(texto)}</span>`;
@@ -925,7 +933,7 @@ function modalFatura(id) {
   if (!l?.asaas) { toast('Lançamento sem cobrança Asaas.'); return; }
   const a = l.asaas;
   const st = L.nomeDe(L.STATUS_ASAAS, a.status);
-  const corSt = { PENDING: 'bg-sky-600 dark:bg-sky-400', RECEIVED: 'bg-emerald-500', OVERDUE: 'bg-red-500', REFUNDED: 'bg-slate-400' }[a.status] ?? 'bg-slate-400';
+  const corSt = { PENDING: PILULA.marca, RECEIVED: PILULA.verde, OVERDUE: PILULA.vermelha, REFUNDED: PILULA.neutra }[a.status] ?? PILULA.neutra;
   const copiar = (rot, valor, chave) => `
     <div>
       <p class="rotulo">${rot}</p>
@@ -949,7 +957,7 @@ function modalFatura(id) {
             <p class="font-display font-semibold text-slate-900 dark:text-neutral-100">ProWay Treinamentos</p>
             <p class="text-xs ${APOIO}">Beneficiário · Blumenau/SC</p>
           </div>
-          <span class="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-neutral-300"><span class="h-2 w-2 rounded-full ${corSt}"></span>${st}</span>
+          ${pilula(corSt, st)}
         </div>
         <dl class="mt-3 grid grid-cols-2 gap-y-1.5 text-xs">
           <dt class="${APOIO}">Pagador</dt><dd class="text-slate-800 dark:text-neutral-100">${esc(l.pessoa?.nome ?? '')}<span class="block ${APOIO} tabular-nums">${esc(l.pessoa?.documento ?? '')}</span></dd>
@@ -1214,7 +1222,7 @@ function htmlConciliacao() {
   const pendentes = res.comSugestao + res.semLancamento + res.semMovimento;
   const itens = r.itens.filter(FILTROS_CONCILIACAO[c.filtro] ?? FILTROS_CONCILIACAO.todos);
   if (c.filtro === 'pendentes') itens.sort((a, b) => ORDEM_CONCILIACAO[a.situacao] - ORDEM_CONCILIACAO[b.situacao] || a.movimento.data.localeCompare(b.movimento.data));
-  const situacao = (s) => { const [cor, nome] = PONTO_CONCILIACAO[s] ?? ['bg-slate-300', s]; return `<span class="inline-flex items-center gap-1.5 whitespace-nowrap text-slate-700 dark:text-neutral-300"><span class="h-2 w-2 rounded-full shrink-0 ${cor}" aria-hidden="true"></span>${nome}</span>`; };
+  const situacao = (s) => { const [classe, nome] = PILULA_CONCILIACAO[s] ?? [PILULA.neutra, s]; return pilula(classe, nome); };
   const linha = (it) => {
     const m = it.movimento; const l = it.lancamento;
     const divergente = l && Math.abs(L.valorFinal(l) - m.valor) > 0.01;

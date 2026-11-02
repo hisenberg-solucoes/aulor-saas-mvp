@@ -116,7 +116,7 @@
   function fecharModal() { $('modal-root').innerHTML = ''; }
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('modal-root').firstChild) fecharModal(); });
 
-  const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
+  const ponto = chipEstado;
   const horasTexto = (h) => (Number.isInteger(h) ? `${h} h` : `${String(h.toFixed(1)).replace('.', ',')} h`);
 
   // Situação da aula para o aluno: futura / hoje / realizada.

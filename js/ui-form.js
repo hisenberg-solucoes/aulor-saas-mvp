@@ -20,10 +20,10 @@ function normalizarTexto(texto) {
   return String(texto ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 }
 
-// Status em texto com ponto colorido — na tabela, chip só para a área.
-const PONTO_STATUS = { ativo: 'bg-emerald-500', rascunho: 'bg-amber-500', inativo: 'bg-slate-400 dark:bg-neutral-600' };
+// Status em chip na cor da fase: um ponto de 8px não deixa ler a cor.
+const PILULA_STATUS = { ativo: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300', rascunho: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300', inativo: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400' };
 function pontoStatus(status, texto, titulo = '') {
-  return `<span title="${esc(titulo)}" class="inline-flex items-center gap-1.5 text-sm text-slate-600 dark:text-neutral-300"><span class="h-2 w-2 rounded-full shrink-0 ${PONTO_STATUS[status] ?? PONTO_STATUS.inativo}"></span>${esc(texto)}</span>`;
+  return `<span title="${esc(titulo)}" class="pilula inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs font-medium ${PILULA_STATUS[status] ?? PILULA_STATUS.inativo}">${esc(texto)}</span>`;
 }
 
 function mostrarErros(form, erros) {

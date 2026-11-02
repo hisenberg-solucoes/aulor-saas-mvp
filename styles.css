@@ -100,9 +100,9 @@ html.dark .ficha-inverso {
   --f-marca-tinta: #005C82; /* link: um degrau abaixo do primário para não apagar em 12px */
   --f-foco: #00658D;
   --f-cobre: #C47A3A;
-  --f-cobre-tinta: #985824; /* cobre como texto: o oficial dá 3:1 sobre o chão */
+  --f-cobre-tinta: #A24E00; /* cobre como texto: o oficial dá 3,4:1 sobre o chão; mais croma que o #985824 do ADR */
   --f-bom: #2F7A55;
-  --f-ruim: #B4452F;
+  --f-ruim: #BE2517;
   --f-sobre-ruim: #FFFFFF;
   --f-aviso: var(--f-cobre-tinta); /* atenção é cobre; sem âmbar paralelo */
   --f-etiqueta: #E4EDF0;
@@ -174,20 +174,20 @@ html.dark {
   --color-red-50: #F8ECEA; /* bad-tint */
   --color-red-100: #FFDCD4; /* chip e faixa de erro */
   --color-red-200: #FFC7BC;
-  --color-red-500: #B4452F; /* bad */
-  --color-red-600: #B4452F;
-  --color-red-700: #B4452F;
-  --color-red-800: #9D3723; /* bad-ink: texto sobre a tinta do chip */
-  --color-red-900: #9D3723;
+  --color-red-500: #BE2517; /* bad: mais croma que o #B4452F do ADR, que apagava no claro */
+  --color-red-600: #BE2517;
+  --color-red-700: #BE2517;
+  --color-red-800: #BE2517; /* no chip dá 4,7 */
+  --color-red-900: #BE2517;
   --color-amber-50: #F9F2EB; /* warning-tint */
-  --color-amber-100: #FFE6D1; /* chip: o cobre-tinta passa AA (4,7) só até aqui */
+  --color-amber-100: #FFE6D1; /* chip: o cobre-tinta passa AA (4,8) só até aqui */
   --color-amber-200: #FBCDAA;
   --color-amber-400: #C47A3A; /* copper: ponto e traço */
   --color-amber-500: #C47A3A;
-  --color-amber-600: #985824; /* copper-ink: texto de aviso */
-  --color-amber-700: #985824;
-  --color-amber-800: #985824;
-  --color-amber-900: #985824;
+  --color-amber-600: #A24E00; /* copper-ink: cobre como texto, mais croma que o #985824 do ADR */
+  --color-amber-700: #A24E00;
+  --color-amber-800: #A24E00;
+  --color-amber-900: #A24E00;
   --color-sky-50: #E6F7FE; /* tinta da marca no claro: faixa */
   --color-sky-100: #CDEEFD; /* selection: fundo do chip da marca */
   --color-sky-200: #AFE0F7;

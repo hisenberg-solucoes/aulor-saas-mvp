@@ -22,7 +22,7 @@
     cancelada: { nome: 'Cancelada', ponto: 'bg-red-500' },
   };
   const ICONE_RELOGIO = '<svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
-  const ponto =(cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
+  const ponto = chipEstado;
   const situacao = (id) => ponto(PONTO[id] ?? 'bg-slate-400', SIT[id]?.nome ?? id);
   const barra = (pct, concluido = false) => `<div class="barra-progresso"><div class="h-full rounded-full ${concluido ? 'bg-slate-400 dark:bg-neutral-600' : 'bg-petrol-800 dark:bg-sky-400'}" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
   const chipArea = (area) => (area ? `<span class="inline-flex items-center rounded-full border border-slate-200 dark:border-neutral-800 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:text-neutral-300">${esc(area)}</span>` : '');

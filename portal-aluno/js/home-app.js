@@ -161,7 +161,7 @@
             <p class="font-medium text-slate-900 dark:text-neutral-100 truncate"><a href="curso.html?turma=${encodeURIComponent(m.turma.id)}" class="after:absolute after:inset-0">${esc(m.curso?.nome ?? m.turma.codigo)}</a> <span class="font-mono text-xs text-slate-400 ml-1">${esc(m.turma.codigo)}</span></p>
             <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">${periodo}${detalhe ? ` · ${detalhe}` : ''}</p>
           </div>
-          <p class="shrink-0 inline-flex items-center gap-1.5 text-sm text-slate-600 dark:text-neutral-300"><span class="h-2 w-2 rounded-full ${s.ponto}"></span>${s.nome}</p>
+          <p class="shrink-0">${chipEstado(s.ponto, s.nome)}</p>
         </div>
         <div class="mt-3 flex items-center gap-3">
           <div class="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden"><div class="h-full rounded-full ${concluido ? 'bg-slate-400 dark:bg-neutral-600' : 'bg-petrol-800 dark:bg-sky-400'}" style="width:${barra}%"></div></div>
