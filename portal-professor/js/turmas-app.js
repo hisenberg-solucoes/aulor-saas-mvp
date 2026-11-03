@@ -38,7 +38,7 @@
     cancelada: { nome: 'Cancelada', ponto: 'bg-red-500' },
   };
 
-  const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
+  const ponto = chipEstado;
   const situacaoTurma = (id) => { const s = SITUACAO[id] ?? SITUACAO.planejada; return ponto(s.ponto, s.nome); };
   const barra = (pct, concluido = false) => `<div class="barra-progresso"><div class="h-full rounded-full ${concluido ? 'bg-slate-400 dark:bg-neutral-600' : 'bg-petrol-800 dark:bg-sky-400'}" style="width:${Math.max(0, Math.min(100, pct))}%"></div></div>`;
   const vazio = (msg) => `<div class="cartao p-8 text-center text-sm text-slate-500 dark:text-neutral-400">${msg}</div>`;
@@ -46,7 +46,7 @@
   const linkTurma = (t) => `turma.html?id=${encodeURIComponent(t.turma.id)}`;
   // Dia e dia da semana da aula (a data por extenso vai no texto ao lado).
   const blocoData = (a) => `
-    <div class="shrink-0 w-12 text-center rounded-lg ${a.situacaoAula === 'hoje' ? 'bg-petrol-800 text-white dark:bg-areia dark:text-petrol-800' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5" aria-hidden="true">
+    <div class="shrink-0 w-12 text-center rounded-lg ${a.situacaoAula === 'hoje' ? 'bg-petrol-800 text-white dark:bg-areia dark:text-petrol-950' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5" aria-hidden="true">
       <p class="text-lg font-display font-semibold leading-none tabular-nums">${new Date(`${a.data}T12:00:00`).getDate()}</p>
       <p class="text-[11px] mt-0.5">${esc(PortalProfessor.diaSemana(a.data).slice(0, 3))}</p>
     </div>`;
@@ -67,7 +67,7 @@
     el.className = `toast-anim pointer-events-auto flex items-center gap-3 rounded-lg bg-slate-900 dark:bg-neutral-800 text-white text-sm shadow-lg ${acao ? 'pl-4 pr-1.5 py-1.5' : 'px-4 py-2'}`;
     el.append(Object.assign(document.createElement('span'), { textContent: msg }));
     if (acao) {
-      const b = Object.assign(document.createElement('button'), { type: 'button', textContent: acao.rotulo, className: 'h-8 px-2.5 rounded-md font-semibold text-areia hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60' });
+      const b = Object.assign(document.createElement('button'), { type: 'button', textContent: acao.rotulo, className: 'h-8 px-2.5 rounded-md font-semibold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60' });
       b.addEventListener('click', () => { el.remove(); acao.fn(); });
       el.append(b);
     }
@@ -235,8 +235,8 @@
     const abertos = new Set(grupos(ts).filter((g) => g.itens.some((t) => grupoDe(t) !== 'concluida')).map((g) => g.chave));
     const CHEVRON = (aberto) => `<svg class="h-4 w-4 shrink-0 text-slate-400 transition ${aberto ? 'rotate-90' : ''}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>`;
     const pilula = (cls, texto) => `<span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${cls}">${esc(texto)}</span>`;
-    const PIL_FORMACAO = 'bg-petrol-800/10 text-petrol-900 border-petrol-800/20 dark:bg-sky-950/60 dark:text-sky-200 dark:border-sky-800';
-    const PIL_NEUTRA = 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700';
+    const PIL_FORMACAO = 'bg-sky-100 text-sky-800 border-petrol-800/20 dark:bg-sky-950/60 dark:text-sky-200 dark:border-sky-800';
+    const PIL_NEUTRA = 'bg-slate-200 text-slate-700 border-slate-200 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700';
     // Dado compacto do cabeçalho: rótulo em caixa alta ao lado do valor, numa linha só.
     const mini = (rotulo, valor, sub = '') => `<div class="flex items-baseline gap-1.5 whitespace-nowrap"><span class="rotulo">${rotulo}</span><span class="text-sm font-medium text-slate-900 dark:text-neutral-100 tabular-nums">${valor}</span>${sub ? `<span class="text-xs text-slate-500 dark:text-neutral-400">${sub}</span>` : ''}</div>`;
 
@@ -261,7 +261,7 @@
               <button type="button" aria-expanded="${aberto}" class="-ml-1 flex items-center gap-1.5 rounded px-1 py-0.5 font-display font-semibold text-slate-800 dark:text-neutral-100">${CHEVRON(aberto)}${esc(g.nome)}</button>
               ${g.codigo ? `<span class="font-mono text-xs text-slate-500 dark:text-neutral-400">${esc(g.codigo)}</span>` : ''}
               ${pilula(g.avulsas ? PIL_NEUTRA : PIL_FORMACAO, g.avulsas ? 'Avulsas' : 'Formação')}
-              ${andamento ? pilula('bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800', `${andamento} em andamento`) : ''}
+              ${andamento ? pilula('bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800', `${andamento} em andamento`) : ''}
             </div>
             <div class="ml-auto flex flex-wrap items-center gap-x-6 gap-y-1.5">
               ${mini('Turmas', n, detalhe ? `· ${detalhe}` : '')}
@@ -374,10 +374,10 @@
     const dadoCab = (r, v) => `<div><p class="rotulo">${esc(r)}</p><div class="text-sm text-slate-800 dark:text-neutral-100 mt-0.5">${v}</div></div>`;
     // Situação como pílula (cores por situação) e dois blocos numéricos: alunos e aulas.
     const PILULA_SIT = {
-      em_andamento: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
-      confirmada: 'bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
-      planejada: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700',
-      concluida: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700',
+      em_andamento: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+      confirmada: 'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
+      planejada: 'bg-slate-200 text-slate-700 border-slate-200 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700',
+      concluida: 'bg-slate-200 text-slate-700 border-slate-200 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700',
       cancelada: 'bg-red-50 text-red-800 border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800',
     };
     const sit = SITUACAO[d.situacao] ?? SITUACAO.planejada;

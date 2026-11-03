@@ -39,9 +39,9 @@ const ICONE = {
 
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
 // Primário em petróleo: cobre é "é com você", nunca fundo de botão (Regra do Cobre).
-const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none';
+const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none';
 const BOTAO_CANCELAR = 'px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
-const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline';
+const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-900 dark:text-sky-300 hover:underline';
 // Botão pequeno com texto, dentro de linha de tabela (Registrar NF, Pagar, Ver).
 // Ação de cartão: sem fundo nem contorno, na cor de rótulo; petróleo no hover.
 const BOTAO_FANTASMA = 'inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30';
@@ -55,15 +55,15 @@ const TD = 'px-4 py-2.5 text-sm text-slate-600 dark:text-neutral-300';
 const THEAD = 'text-xs font-medium text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800';
 const APOIO = 'text-xs text-slate-500 dark:text-neutral-400';
 const AVISO = 'text-[color:var(--f-cobre-tinta)]';
-const LINK = 'text-petrol-800 dark:text-sky-300 hover:underline';
+const LINK = 'text-petrol-900 dark:text-sky-300 hover:underline';
 // Foco do teclado no link do registro acende a linha inteira, com o anel por dentro do cartão.
 const FOCO_LINHA = 'has-[.link-registro:focus-visible]:bg-slate-50 dark:has-[.link-registro:focus-visible]:bg-neutral-900 has-[.link-registro:focus-visible]:outline-2 has-[.link-registro:focus-visible]:-outline-offset-2 has-[.link-registro:focus-visible]:outline-[color:var(--f-foco)]';
 
 // Pílula só de exceção (Regra da Pílula de Exceção): ativo e empresa cadastrada não se anunciam.
 const PILULA = {
   falta: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
-  neutra: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
-  extra: 'bg-petrol-800/10 text-petrol-900 dark:bg-sky-950/60 dark:text-sky-200',
+  neutra: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  extra: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200',
 };
 
 // ---------- Helpers ----------
@@ -430,7 +430,7 @@ function renderAbaDados(el, i) {
 
 // ---------- Acesso ao sistema ----------
 
-const TAG = 'inline-flex items-center h-6 rounded px-2 text-xs font-medium bg-slate-100 text-slate-700 dark:bg-neutral-900 dark:text-neutral-300';
+const TAG = 'inline-flex items-center h-6 rounded px-2 text-xs font-medium bg-slate-200 text-slate-700 dark:bg-neutral-900 dark:text-neutral-300';
 const pessoaDoConvite = (i) => ({ id: i.id, nome: i.nomeSocial || i.nome, email: i.contato.email });
 
 // O usuário é da pessoa: quem é da equipe usa o do colaborador. Sem usuário, o convite pela ficha (GAC-6 de AULOR-007).

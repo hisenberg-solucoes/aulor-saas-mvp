@@ -6,6 +6,7 @@
   <title>Aulor · Portal do Aluno · Calendário</title>
   <!-- Tailwind v4 (browser build — em produção, usar o build via PostCSS/Vite) -->
   <script src="../js/tema.js"></script>
+  <script src="../js/estado.js"></script>
   <script src="../js/tooltip.js" defer></script>
   <script src="js/menu.js" defer></script>
   <script src="../js/menu-portal.js" defer></script>
@@ -15,11 +16,11 @@
 
     @theme {
       --color-petrol-700: #15526B;
-      --color-petrol-800: #0F3D4E;
-      --color-petrol-900: #0B2D3C;
+      --color-petrol-800: #006E96;
+      --color-petrol-900: #005C82;
       --color-petrol-950: #071E2C;
-      --color-areia: #F5F0E8;
-      --color-fundo: #F3F5F6; /* petróleo a 5% sobre branco: neutro frio da paleta */
+      --color-areia: #6ECCEC; /* nome herdado: é o cerúleo claro do primário no escuro */
+      --color-fundo: #F3F5F6; /* azul profundo a 5% sobre branco: neutro frio da paleta */
       --color-neutral-925: #111111;
       --font-sans: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
       --font-display: 'Atkinson Hyperlegible Next', ui-sans-serif, sans-serif;
@@ -29,7 +30,7 @@
     .titulo-secao { @apply font-display font-semibold text-slate-900 dark:text-neutral-100; }
     .rotulo { @apply text-xs font-medium text-slate-500 dark:text-neutral-400; }
     .campo { @apply rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 py-1.5 text-sm text-slate-700 dark:text-neutral-200 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20; }
-    .link { @apply text-sm font-medium text-petrol-800 dark:text-sky-300 hover:underline; }
+    .link { @apply text-sm font-medium text-petrol-900 dark:text-sky-300 hover:underline; }
     .surgir { animation: surgir 0.35s ease both; }
     @keyframes surgir { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @media (prefers-reduced-motion: reduce) { .surgir { animation: none; } }

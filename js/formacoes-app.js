@@ -63,10 +63,10 @@ const ICONE = {
 };
 
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
-const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none';
+const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none';
 const BOTAO_FANTASMA = 'inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
 const BOTAO_CANCELAR = 'px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
-const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline';
+const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-900 dark:text-sky-300 hover:underline';
 const ICONE_BOTAO = 'inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-30 disabled:pointer-events-none';
 const ICONE_BOTAO_VERMELHO = `${ICONE_BOTAO} hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40`;
 const CAMPO_BUSCA = 'h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 pl-8 pr-3 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-400 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20';
@@ -86,29 +86,32 @@ const LINHA_GRUPO = 'bg-slate-50 dark:bg-neutral-900 border-y border-slate-200 d
 // Pílula só de exceção (Regra da Pílula de Exceção): ativa, no site, obrigatório e contrato conferido são o comum e não se anunciam.
 const PILULA = {
   rascunho: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
-  inativo: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
-  neutra: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  inativo: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  neutra: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
   falta: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
   divida: 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300',
+  verde: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
+  marca: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200',
+  vazada: 'ring-1 ring-inset ring-slate-300 text-slate-500 dark:ring-neutral-600 dark:text-neutral-400',
 };
 // Contrato: Adm OK é o fim do caminho e não se anuncia; o que ainda espera alguém é âmbar.
 const PILULA_CONTRATO = { rascunho: PILULA.neutra, aguardando: PILULA.falta, comercial_ok: PILULA.falta, cancelado: PILULA.neutra };
 // Cobrança: só a dívida aparece; vermelho é dívida do próprio contrato, âmbar o acordo de recuperação (Regra das Fontes Juntas).
 const PILULA_COBRANCA = { inadimplente: PILULA.divida, recuperante: PILULA.falta };
-// Fases de ciclo de vida: ponto na cor + texto, como a Situação das turmas. Âmbar espera ação; vazado saiu.
-const PONTO_TURMA = {
-  planejada: 'bg-amber-500',
-  confirmada: 'bg-sky-600 dark:bg-sky-400',
-  em_andamento: 'bg-emerald-500',
-  concluida: 'bg-slate-400 dark:bg-neutral-500',
-  cancelada: 'ring-1 ring-inset ring-slate-400 dark:ring-neutral-500',
+// Fases de ciclo de vida: chip na cor da fase, como a Situação das turmas (um ponto de 8px não deixa ler a cor). Âmbar espera ação; vazado saiu.
+const PILULA_TURMA = {
+  planejada: PILULA.falta,
+  confirmada: PILULA.marca,
+  em_andamento: PILULA.verde,
+  concluida: PILULA.neutra,
+  cancelada: PILULA.vazada,
 };
-const PONTO_ALUNO = {
-  cursando: 'bg-emerald-500',
-  congelada: 'bg-amber-500',
-  concluido: 'bg-slate-400 dark:bg-neutral-500',
-  desistiu: 'ring-1 ring-inset ring-slate-400 dark:ring-neutral-500',
-  cancelada: 'ring-1 ring-inset ring-slate-400 dark:ring-neutral-500',
+const PILULA_ALUNO = {
+  cursando: PILULA.verde,
+  congelada: PILULA.falta,
+  concluido: PILULA.neutra,
+  desistiu: PILULA.vazada,
+  cancelada: PILULA.vazada,
 };
 
 // ---------- Helpers ----------
@@ -116,8 +119,6 @@ const PONTO_ALUNO = {
 function pilula(classe, texto, titulo = '') {
   return `<span title="${esc(titulo)}" class="pilula inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs font-medium ${classe}">${esc(texto)}</span>`;
 }
-
-const ponto = (classe) => `<span class="inline-block h-2 w-2 shrink-0 rounded-full align-middle -mt-px ${classe}"></span>`;
 
 function chip(icone, conteudo, titulo = '') {
   return `<span title="${esc(titulo)}" class="inline-flex items-center gap-1.5 text-[13px] text-slate-600 dark:text-neutral-300"><span class="text-slate-400 dark:text-neutral-500">${icone}</span>${conteudo}</span>`;
@@ -209,7 +210,7 @@ function campo(rotulo, valorHtml, largura = '') {
 function faixa(tom, html) {
   const cores = {
     aviso: 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200',
-    petrol: 'bg-petrol-800/10 dark:bg-sky-950/40 text-petrol-900 dark:text-sky-200',
+    petrol: 'bg-sky-100 dark:bg-sky-950/40 text-sky-800 dark:text-sky-200',
   };
   return `<div class="mb-4 flex items-start gap-3 rounded-lg px-4 py-3 text-sm ${cores[tom]}"><span class="shrink-0">${ICONE.alerta}</span><div class="min-w-0 flex-1">${html}</div></div>`;
 }
@@ -462,7 +463,7 @@ function renderAbaAlunos() {
       PILULA_CONTRATO[l.contrato.status] ? pilula(PILULA_CONTRATO[l.contrato.status], st?.curto ?? st?.nome ?? l.contrato.status, st?.descricao ?? '') : '',
       PILULA_COBRANCA[l.situacao] && sit ? pilula(PILULA_COBRANCA[l.situacao], sit.nome) : '',
     ].join('');
-    const contrato = `<a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-petrol-800 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a>`;
+    const contrato = `<a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-petrol-900 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a>`;
     let quem = '<span class="text-sm text-slate-500 dark:text-neutral-400">—</span>';
     let tipo = '';
     // Tipos de Contratos.responsavelFinanceiro: empresa, responsavel (cadastro), terceiro (no cadastro do aluno), aluno, ou null.
@@ -488,7 +489,7 @@ function renderAbaAlunos() {
     const saiu = l.situacaoAluno === 'desistiu' || l.situacaoAluno === 'cancelada';
     const sa = SITUACOES_ALUNO.find((s) => s.id === l.situacaoAluno);
     return `
-      <div class="flex items-center justify-between gap-2"><span class="inline-flex items-center gap-1.5 whitespace-nowrap text-sm text-slate-600 dark:text-neutral-300">${ponto(PONTO_ALUNO[l.situacaoAluno] ?? PONTO_ALUNO.cursando)}${esc(sa?.nome ?? l.situacaoAluno)}</span><span class="text-xs tabular-nums text-slate-500 dark:text-neutral-400" title="${pct}% dos cursos">${p.concluidas}/${p.total}</span></div>
+      <div class="flex items-center justify-between gap-2">${pilula(PILULA_ALUNO[l.situacaoAluno] ?? PILULA_ALUNO.cursando, sa?.nome ?? l.situacaoAluno)}<span class="text-xs tabular-nums text-slate-500 dark:text-neutral-400" title="${pct}% dos cursos">${p.concluidas}/${p.total}</span></div>
       <div class="relative h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 mt-1.5"><span class="absolute inset-y-0 left-0 rounded-full ${saiu ? 'bg-slate-400 dark:bg-neutral-600' : 'bg-slate-700 dark:bg-neutral-300'}" style="width:${pct}%"></span></div>
       ${p.desistiu ? `<p class="text-xs ${AVISO} mt-1">${plural(p.desistiu, 'curso')} não cursado${p.desistiu === 1 ? '' : 's'}</p>` : ''}`;
   };
@@ -589,7 +590,7 @@ function renderAbaCursos() {
     const turma = (x) => {
       const sit = Turmas.situacao(x);
       const s = Turmas.situacaoDe(sit);
-      return `<button type="button" data-ver-turma="${x.id}" title="${esc(`${s.nome} · ${x.turno} · ${Contratos.fmtData(x.inicio)} a ${Contratos.fmtData(x.fim)} — clique para ver alunos e aulas`)}" class="flex items-center gap-1.5 whitespace-nowrap rounded text-xs text-slate-700 dark:text-neutral-200 hover:text-petrol-800 dark:hover:text-sky-300 hover:underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">${ponto(PONTO_TURMA[sit])}<span class="font-mono">${esc(x.codigo)}</span><span class="tabular-nums text-slate-500 dark:text-neutral-400">${Contratos.fmtData(x.inicio).slice(0, 5)}–${Contratos.fmtData(x.fim).slice(0, 5)}</span></button>`;
+      return `<button type="button" data-ver-turma="${x.id}" title="${esc(`${s.nome} · ${x.turno} · ${Contratos.fmtData(x.inicio)} a ${Contratos.fmtData(x.fim)} — clique para ver alunos e aulas`)}" class="flex items-center gap-1.5 whitespace-nowrap rounded text-xs text-slate-700 dark:text-neutral-200 hover:text-petrol-800 dark:hover:text-sky-300 hover:underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">${pilula(PILULA_TURMA[sit], s.nome)}<span class="font-mono">${esc(x.codigo)}</span><span class="tabular-nums text-slate-500 dark:text-neutral-400">${Contratos.fmtData(x.inicio).slice(0, 5)}–${Contratos.fmtData(x.fim).slice(0, 5)}</span></button>`;
     };
     return `
       <div class="flex items-start justify-between gap-1">
@@ -628,7 +629,7 @@ function renderAbaCursos() {
         ${editavel ? `<td class="${TH}">
           <button type="button" role="switch" aria-checked="${i.obrigatorio}" data-obrigatorio="${c.id}" aria-label="Obrigatório: ${esc(c.nome)}" title="${i.obrigatorio ? 'Obrigatório — clique para tornar optativo' : 'Optativo — clique para tornar obrigatório'}"
             class="inline-flex items-center gap-2 rounded-full text-sm text-slate-600 dark:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30">
-            <span class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition ${i.obrigatorio ? 'bg-petrol-800 dark:bg-areia' : 'bg-white dark:bg-neutral-950 ring-1 ring-inset ring-slate-300 dark:ring-neutral-700'}"><span class="inline-block h-4 w-4 rounded-full shadow transition ${i.obrigatorio ? 'translate-x-[18px] bg-areia dark:bg-petrol-800' : 'translate-x-0.5 bg-slate-400 dark:bg-neutral-500'}"></span></span>
+            <span class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition ${i.obrigatorio ? 'bg-petrol-800 dark:bg-areia' : 'bg-white dark:bg-neutral-950 ring-1 ring-inset ring-slate-300 dark:ring-neutral-700'}"><span class="inline-block h-4 w-4 rounded-full shadow transition ${i.obrigatorio ? 'translate-x-[18px] bg-white dark:bg-petrol-950' : 'translate-x-0.5 bg-slate-400 dark:bg-neutral-500'}"></span></span>
             ${i.obrigatorio ? 'Obrigatório' : 'Optativo'}
           </button>
         </td>` : ''}
@@ -1031,13 +1032,13 @@ function abrirModalVerTurma(turmaId) {
       <td class="${TDM}"><a href="aluno.html?id=${l.alunoId}" target="_blank" class="text-slate-800 dark:text-neutral-100 hover:underline">${nomeAluno(l.alunoId)}</a></td>
       <td class="${TDM} text-slate-600 dark:text-neutral-300">${esc(NOME_MAT[l.matricula.status] ?? l.matricula.status)}</td>
       <td class="${TDM} font-mono text-xs text-slate-500 dark:text-neutral-400">${esc(l.matricula.codigo ?? '')}</td>
-      <td class="${TDM}"><a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a></td>
+      <td class="${TDM}"><a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-xs text-petrol-900 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a></td>
     </tr>`;
   const linhaFora = (l) => `
     <tr class="opacity-70">
       <td class="${TDM}"><a href="aluno.html?id=${l.alunoId}" target="_blank" class="text-slate-800 dark:text-neutral-100 hover:underline">${nomeAluno(l.alunoId)}</a></td>
       <td class="${TDM} text-slate-600 dark:text-neutral-300" colspan="2">Sem matrícula nesta turma<span class="ml-1.5 text-xs text-slate-500 dark:text-neutral-400">· ${esc(NOME_SIT(l.situacaoAluno).toLowerCase())} na formação</span></td>
-      <td class="${TDM}"><a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-xs text-petrol-800 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a></td>
+      <td class="${TDM}"><a href="contrato.html?id=${l.contrato.id}" target="_blank" class="font-mono text-xs text-petrol-900 dark:text-sky-300 hover:underline">${esc(l.contrato.codigo)}</a></td>
     </tr>`;
   const diaNome = (id) => (Agenda.DIAS.find((d) => d.id === id)?.nome ?? id).slice(0, 3).toLowerCase();
   const hora = (h) => h.replace(':', 'h').replace(/h00$/, 'h');
@@ -1068,7 +1069,7 @@ function abrirModalVerTurma(turmaId) {
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
             <h3 id="titulo-modal-turma" class="font-display text-xl font-semibold text-slate-900 dark:text-neutral-100"><span class="font-mono text-base text-slate-500 dark:text-neutral-400 mr-1.5">${esc(t.codigo)}</span>${esc(curso?.nome ?? '')}</h3>
-            <span title="${esc(s.descricao)}" class="inline-flex items-center gap-1.5 whitespace-nowrap text-sm text-slate-600 dark:text-neutral-300">${ponto(PONTO_TURMA[sit])}${esc(s.nome)}</span>
+            ${pilula(PILULA_TURMA[sit], s.nome, s.descricao)}
           </div>
           <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">Turma de <span class="font-mono text-xs">${esc(f.codigo)}</span> ${esc(f.nome)}</p>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">

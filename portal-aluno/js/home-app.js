@@ -68,7 +68,7 @@
       rotulo: hojeMesmo ? 'Aula de hoje' : 'Próxima aula',
       titulo: `${esc(m.curso?.nome ?? m.turma.codigo)}`,
       texto: `${esc(PortalAluno.rotuloDia(a.data, hoje))} · ${esc(a.inicio)}–${esc(a.fim)}${local ? ` · ${esc(local)}` : ''}${m.instrutor ? `<br>com ${esc(m.instrutor.nome)}` : ''}`,
-      acao: `${meet ? `<a href="${esc(m.turma.meetLink)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition">${ICONE_CAMERA}Entrar no Meet</a> ` : ''}<a href="${urlAula(m.turma.id, a)}" class="link${meet ? ' ml-2' : ''}">Ver aula</a>`,
+      acao: `${meet ? `<a href="${esc(m.turma.meetLink)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition">${ICONE_CAMERA}Entrar no Meet</a> ` : ''}<a href="${urlAula(m.turma.id, a)}" class="link${meet ? ' ml-2' : ''}">Ver aula</a>`,
       tom: hojeMesmo ? 'hoje' : 'neutro',
     });
   }
@@ -161,7 +161,7 @@
             <p class="font-medium text-slate-900 dark:text-neutral-100 truncate"><a href="curso.html?turma=${encodeURIComponent(m.turma.id)}" class="after:absolute after:inset-0">${esc(m.curso?.nome ?? m.turma.codigo)}</a> <span class="font-mono text-xs text-slate-400 ml-1">${esc(m.turma.codigo)}</span></p>
             <p class="text-sm text-slate-500 dark:text-neutral-400 mt-0.5">${periodo}${detalhe ? ` · ${detalhe}` : ''}</p>
           </div>
-          <p class="shrink-0 inline-flex items-center gap-1.5 text-sm text-slate-600 dark:text-neutral-300"><span class="h-2 w-2 rounded-full ${s.ponto}"></span>${s.nome}</p>
+          <p class="shrink-0">${chipEstado(s.ponto, s.nome)}</p>
         </div>
         <div class="mt-3 flex items-center gap-3">
           <div class="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden"><div class="h-full rounded-full ${concluido ? 'bg-slate-400 dark:bg-neutral-600' : 'bg-petrol-800 dark:bg-sky-400'}" style="width:${barra}%"></div></div>
@@ -230,7 +230,7 @@
       const local = localDe(a, m);
       return `
         <a href="${urlAula(m.turma.id, a)}" class="flex items-center gap-4 px-5 py-3 hover:bg-slate-50 dark:hover:bg-neutral-900/60 transition">
-          <div class="shrink-0 w-12 text-center rounded-lg ${a.data === hoje ? 'bg-petrol-800 text-white dark:bg-areia dark:text-petrol-800' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
+          <div class="shrink-0 w-12 text-center rounded-lg ${a.data === hoje ? 'bg-petrol-800 text-white dark:bg-areia dark:text-petrol-950' : 'bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-neutral-300'} py-1.5">
             <p class="text-lg font-display font-semibold leading-none tabular-nums">${d.getDate()}</p>
             <p class="text-[11px] mt-0.5">${esc(PortalAluno.diaSemana(a.data).slice(0, 3))}</p>
           </div>

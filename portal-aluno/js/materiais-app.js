@@ -15,7 +15,7 @@
 
   const SIT = PortalAluno.SITUACOES_MATRICULA;
   const PONTO = { concluida: 'bg-slate-400', em_andamento: 'bg-emerald-500', a_iniciar: 'bg-sky-500', desistiu: 'bg-amber-500', cancelada: 'bg-red-500' };
-  const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
+  const ponto = chipEstado;
   const situacao = (id) => ponto(PONTO[id] ?? 'bg-slate-400', SIT[id]?.nome ?? id);
 
   // Tipos do material da aula (js/materiais-motor.js).

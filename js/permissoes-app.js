@@ -94,7 +94,7 @@ function icone(d, classe = 'h-4 w-4', traco = 1.75) {
   return `<svg class="${classe} shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="${traco}" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="${d}" /></svg>`;
 }
 
-const BOTAO_PRI = 'inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-petrol-800 hover:bg-petrol-900 text-white dark:bg-areia dark:hover:bg-white dark:text-petrol-800 shadow-sm transition';
+const BOTAO_PRI = 'inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-petrol-800 hover:bg-petrol-900 text-white dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 shadow-sm transition';
 const BOTAO_SEC = 'inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium whitespace-nowrap border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition disabled:opacity-40 disabled:pointer-events-none';
 const BOTAO_PERIGO = 'inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-red-600 hover:bg-red-700 text-white shadow-sm transition';
 const BOTAO_CANCELAR = 'inline-flex items-center h-9 px-3.5 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
@@ -106,7 +106,7 @@ const CARTAO = 'bg-white dark:bg-neutral-950 rounded-xl border border-slate-200/
 const POPOVER = 'absolute top-full mt-1 rounded-[10px] border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-[0_12px_32px_-12px_rgba(0,0,0,.28)] p-1.5';
 const ITEM_POPOVER = 'w-full flex items-center gap-2 px-2 rounded-md text-left text-sm transition hover:bg-slate-100 dark:hover:bg-neutral-900';
 const BARRA = 'flex-none mb-4 flex flex-wrap items-center gap-2';
-const LINK = 'font-medium text-petrol-800 dark:text-sky-300 hover:underline underline-offset-2';
+const LINK = 'font-medium text-petrol-900 dark:text-sky-300 hover:underline underline-offset-2';
 const APOIO = 'text-slate-500 dark:text-neutral-400'; // rótulo, subtítulo e vazio (4,76:1 no cartão)
 const APOIO_FUNDO = 'text-slate-600 dark:text-neutral-400'; // o mesmo papel direto sobre o fundo (6,93:1; o slate-500 dá 4,36:1)
 const TITULO = 'text-slate-900 dark:text-neutral-100';
@@ -115,8 +115,8 @@ const COBRE_TINTA = 'text-[color:var(--f-cobre-tinta)]'; // "é com você": cobr
 const THEAD = 'text-xs font-medium text-slate-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-900';
 const LINHA_HOVER = 'hover:bg-slate-50 dark:hover:bg-neutral-900';
 const PILULA = {
-  neutra: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
-  extra: 'bg-petrol-800/10 text-petrol-900 dark:bg-sky-950/60 dark:text-sky-200',
+  neutra: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  extra: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-200',
 };
 // Chips de ação: liberada em seleção petróleo com ✓ (Chips do DESIGN), livre em contorno.
 const CHIP = 'inline-flex items-center gap-1 h-7 px-2.5 rounded-md border text-[12.5px] font-medium transition';
@@ -181,8 +181,8 @@ function cartaoVazio(html) {
 }
 
 const CORES_AVATAR = [
-  'bg-petrol-800/10 text-petrol-800 dark:bg-sky-950/60 dark:text-sky-300',
-  'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-300',
+  'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300',
+  'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-300',
 ];
 
 function corAvatar(id) {
@@ -209,7 +209,7 @@ const TAG_SEM_PERFIL = `<span class="shrink-0 rounded px-1.5 text-[11.5px] leadi
 
 // ---------- Toasts ----------
 
-// Contraste máximo do modo (ficha-inverso): azul profundo com areia no claro, o contrário no escuro.
+// Contraste máximo do modo (ficha-inverso): azul profundo com branco frio no claro, o contrário no escuro.
 function toast(mensagem, tipo = 'ok') {
   const ponto = { ok: 'bg-[color:var(--f-bom)]', alerta: 'bg-[color:var(--f-aviso)]', erro: 'bg-[color:var(--f-ruim)]' };
   const item = document.createElement('div');
@@ -362,7 +362,7 @@ function abrirModalDuplicarPerfil(perfilOrigem) {
 
 // ---------- Componentes ----------
 
-// Interruptor: ligado em marca com bolinha sobre-marca (petróleo/areia; areia/petróleo no escuro),
+// Interruptor: ligado em marca com bolinha sobre-marca (cerúleo/branco; cerúleo claro/azul profundo no escuro),
 // desligado em branco com contorno e bolinha na cor de rótulo.
 function switchHtml(ligado, atributos, titulo, tamanho = 'normal') {
   const [trilho, botao, desloca] = tamanho === 'mini'
@@ -370,8 +370,8 @@ function switchHtml(ligado, atributos, titulo, tamanho = 'normal') {
     : ['h-5 w-9', 'h-4 w-4', 'translate-x-4'];
   return `
     <button type="button" role="switch" aria-checked="${ligado}" ${atributos} title="${esc(titulo)}" aria-label="${esc(titulo)}"
-      class="relative inline-flex ${trilho} shrink-0 rounded-full align-middle transition-colors ${ligado ? 'bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white' : 'bg-white dark:bg-neutral-950 ring-1 ring-inset ring-slate-300 dark:ring-neutral-700 hover:ring-slate-500 dark:hover:ring-neutral-500'}">
-      <span class="absolute top-0.5 left-0.5 ${botao} rounded-full transition-transform ${ligado ? `${desloca} bg-areia dark:bg-petrol-800` : 'bg-slate-500 dark:bg-neutral-400'}"></span>
+      class="relative inline-flex ${trilho} shrink-0 rounded-full align-middle transition-colors ${ligado ? 'bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB]' : 'bg-white dark:bg-neutral-950 ring-1 ring-inset ring-slate-300 dark:ring-neutral-700 hover:ring-slate-500 dark:hover:ring-neutral-500'}">
+      <span class="absolute top-0.5 left-0.5 ${botao} rounded-full transition-transform ${ligado ? `${desloca} bg-white dark:bg-petrol-950` : 'bg-slate-500 dark:bg-neutral-400'}"></span>
     </button>`;
 }
 

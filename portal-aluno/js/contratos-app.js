@@ -14,7 +14,7 @@
   const dataHora = (iso) => esc(Contratos.fmtDataHora(iso));
   const nomeDe = (lista, id) => lista.find((x) => x.id === id)?.nome ?? '';
   const plural = (n, um, varios = `${um}s`) => `${n} ${n === 1 ? um : varios}`;
-  const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
+  const ponto = chipEstado;
 
   const SITUACAO_MATRICULA = {
     concluido: { nome: 'Concluído', ponto: 'bg-sky-500' },
@@ -443,7 +443,7 @@
     renderDetalhe(b);
   }
 
-  const passos = (atual, nomes) => `<ol class="flex items-center gap-2 text-xs px-5 pt-4">${nomes.map((n, i) => `<li class="flex items-center gap-1.5 ${i + 1 === atual ? 'text-slate-900 dark:text-neutral-100 font-medium' : 'text-slate-400'}"><span class="h-5 w-5 rounded-full grid place-items-center text-[11px] ${i + 1 < atual ? 'bg-slate-900 text-white dark:bg-neutral-100 dark:text-black' : i + 1 === atual ? 'bg-petrol-800 text-white dark:bg-areia dark:text-petrol-800' : 'bg-slate-200 dark:bg-neutral-800'}">${i + 1 < atual ? '✓' : i + 1}</span>${esc(n)}</li>${i < nomes.length - 1 ? '<li class="w-6 h-px bg-slate-200 dark:bg-neutral-800"></li>' : ''}`).join('')}</ol>`;
+  const passos = (atual, nomes) => `<ol class="flex items-center gap-2 text-xs px-5 pt-4">${nomes.map((n, i) => `<li class="flex items-center gap-1.5 ${i + 1 === atual ? 'text-slate-900 dark:text-neutral-100 font-medium' : 'text-slate-400'}"><span class="h-5 w-5 rounded-full grid place-items-center text-[11px] ${i + 1 < atual ? 'bg-slate-900 text-white dark:bg-neutral-100 dark:text-black' : i + 1 === atual ? 'bg-petrol-800 text-white dark:bg-areia dark:text-petrol-950' : 'bg-slate-200 dark:bg-neutral-800'}">${i + 1 < atual ? '✓' : i + 1}</span>${esc(n)}</li>${i < nomes.length - 1 ? '<li class="w-6 h-px bg-slate-200 dark:bg-neutral-800"></li>' : ''}`).join('')}</ol>`;
 
   // Corpo da simulação da rescisão (regras, tabela, totais e faixa de saldo). Usado no passo 2 do pedido de
   // cancelamento (com o select de destino do saldo) e no modal avulso "Quanto custaria cancelar hoje" (sem ele).

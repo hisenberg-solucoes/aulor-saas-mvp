@@ -27,7 +27,7 @@
     quitado: { nome: 'Quitado', ponto: 'bg-slate-400', texto: 'Todas as parcelas foram pagas.' },
     sem_cobrancas: { nome: 'Sem cobranças', ponto: 'bg-slate-400', texto: 'Nenhum contrato com parcelas no seu nome.' },
   };
-  const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
+  const ponto = chipEstado;
 
   function toast(msg) {
     const el = document.createElement('div');

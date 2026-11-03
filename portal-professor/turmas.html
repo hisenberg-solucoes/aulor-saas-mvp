@@ -6,6 +6,7 @@
   <title>Aulor · Portal do Professor · Minhas turmas</title>
   <!-- Tailwind v4 (browser build — em produção, usar o build via PostCSS/Vite) -->
   <script src="../js/tema.js"></script>
+  <script src="../js/estado.js"></script>
   <script src="../js/tooltip.js" defer></script>
   <script src="js/menu.js" defer></script>
   <script src="../js/menu-portal.js" defer></script>
@@ -15,11 +16,11 @@
 
     @theme {
       --color-petrol-700: #15526B;
-      --color-petrol-800: #0F3D4E;
-      --color-petrol-900: #0B2D3C;
+      --color-petrol-800: #006E96;
+      --color-petrol-900: #005C82;
       --color-petrol-950: #071E2C;
-      --color-areia: #F5F0E8;
-      --color-fundo: #F3F5F6; /* petróleo a 5% sobre branco: neutro frio da paleta */
+      --color-areia: #6ECCEC; /* nome herdado: é o cerúleo claro do primário no escuro */
+      --color-fundo: #F3F5F6; /* azul profundo a 5% sobre branco: neutro frio da paleta */
       --color-neutral-925: #111111;
       --font-sans: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
       --font-display: 'Atkinson Hyperlegible Next', ui-sans-serif, sans-serif;
@@ -28,12 +29,12 @@
     .cartao { @apply bg-white dark:bg-neutral-950 rounded-xl border border-slate-200/80 dark:border-neutral-800 shadow-[0_1px_2px_rgb(7_30_44/0.05)] dark:shadow-none; }
     .titulo-secao { @apply font-display font-semibold text-slate-900 dark:text-neutral-100; }
     .rotulo { @apply text-xs font-medium text-slate-500 dark:text-neutral-400; }
-    .link { @apply text-sm font-medium text-petrol-800 dark:text-sky-300 hover:underline; }
+    .link { @apply text-sm font-medium text-petrol-900 dark:text-sky-300 hover:underline; }
     .tabela th { @apply px-4 py-2.5 text-left text-xs font-medium text-slate-500 dark:text-neutral-400; }
     .tabela td { @apply px-4 py-2.5 text-sm text-slate-700 dark:text-neutral-200 align-middle; }
     .tabela tbody tr { @apply border-t border-slate-200 dark:border-neutral-800; }
     .botao-sec { @apply inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none; }
-    .botao-pri { @apply inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none; }
+    .botao-pri { @apply inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40 disabled:opacity-40 disabled:pointer-events-none; }
     .barra-progresso { @apply h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden; }
     .campo { @apply rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 py-1.5 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-400 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20; }
     .surgir { animation: surgir 0.35s ease both; }

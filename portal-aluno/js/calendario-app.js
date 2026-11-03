@@ -75,7 +75,7 @@
 
   const chipAula = (a) => `
     <button type="button" data-dia="${a.data}" title="${esc(`${a.inicio}–${a.fim} · ${a.matricula.curso?.nome ?? a.matricula.turma.codigo}`)}" aria-label="${esc(`${a.inicio}–${a.fim} · ${a.matricula.curso?.nome ?? a.matricula.turma.codigo}`)}"
-      class="w-full flex items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] leading-tight bg-petrol-800/10 text-petrol-900 dark:bg-sky-500/20 dark:text-sky-200 hover:bg-petrol-800/20 dark:hover:bg-sky-500/30 transition">
+      class="w-full flex items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] leading-tight bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-200 hover:bg-petrol-800/20 dark:hover:bg-sky-500/30 transition">
       <span class="tabular-nums shrink-0">${esc(a.inicio)}</span><span class="font-medium truncate">${esc(a.matricula.curso?.nome ?? a.matricula.turma.codigo)}</span>
     </button>${a.data === hoje && meetDe(a.matricula) ? `<a href="${esc(meetDe(a.matricula))}" target="_blank" rel="noopener" data-meet class="block rounded px-1.5 py-0.5 text-[11px] font-medium text-white bg-petrol-800 dark:bg-sky-600 hover:bg-petrol-900 dark:hover:bg-sky-500 transition">Entrar no Meet</a>` : ''}`;
 
@@ -93,7 +93,7 @@
       const borda = `${i % 7 ? 'border-l' : ''} ${i >= 7 ? 'border-t' : ''} border-slate-100 dark:border-neutral-900`;
       const fundo = !d.doMes ? 'bg-slate-50/70 dark:bg-neutral-925' : fimSemana ? 'bg-slate-50/40 dark:bg-neutral-950' : 'bg-white dark:bg-neutral-950';
       const numero = ehHoje
-        ? 'h-6 w-6 rounded-full bg-petrol-800 text-white dark:bg-areia dark:text-petrol-800 font-semibold grid place-items-center'
+        ? 'h-6 w-6 rounded-full bg-petrol-800 text-white dark:bg-areia dark:text-petrol-950 font-semibold grid place-items-center'
         : `${d.doMes ? 'text-slate-700 dark:text-neutral-200' : 'text-slate-400 dark:text-neutral-600'} ${feriado ? 'font-semibold' : ''}`;
       return `
         <div data-celula="${d.iso}" class="${borda} ${fundo} min-h-[6.5rem] p-1.5 flex flex-col gap-1 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-neutral-900/70 transition ${d.doMes ? '' : 'opacity-70'}">
@@ -116,7 +116,7 @@
   function fecharModal() { $('modal-root').innerHTML = ''; }
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('modal-root').firstChild) fecharModal(); });
 
-  const ponto = (cor, texto) => `<span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full ${cor} shrink-0"></span>${esc(texto)}</span>`;
+  const ponto = chipEstado;
   const horasTexto = (h) => (Number.isInteger(h) ? `${h} h` : `${String(h.toFixed(1)).replace('.', ',')} h`);
 
   // Situação da aula para o aluno: futura / hoje / realizada.

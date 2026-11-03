@@ -75,9 +75,9 @@ html.dark {
 }
 
 /* ---------- Ficha: direção do redesenho V1 (hoje em perfis.html e perfil.html) ----------
-   Paleta oficial: azul profundo #071E2C, petróleo #0F3D4E, cobre #C47A3A, areia #F5F0E8,
-   cinza #64727A. Papel em areia e divisórias no lugar de cards; branco só no que fica acima
-   da página (campos, menus, modais, controles). Petróleo na tinta, no primário e na seleção;
+   Paleta oficial (ADR-0008 do aulor-web): azul profundo #071E2C, cerúleo #006E96, cobre #C47A3A,
+   cinza #64727A. Papel frio derivado do azul profundo e divisórias no lugar de cards; branco só no que fica acima
+   da página (campos, menus, modais, controles). Azul profundo na tinta; cerúleo no primário, no link e na seleção;
    cobre só no que espera por você. Cada página mapeia estes valores em utilitários
    (bg-papel, border-linha, text-tinta…) no @theme inline e marca a área com .ficha.
    .ficha-inverso aplica os tokens do modo oposto (o toast é escuro no claro e claro no escuro).
@@ -85,27 +85,27 @@ html.dark {
    nos dois modos). */
 :root,
 html.dark .ficha-inverso {
-  --f-papel: #F5F0E8;
+  --f-papel: #F3F5F6;
   --f-elevado: #FFFFFF;
-  --f-faixa: #F0EADF;
-  --f-linha: #E4DCCF;
-  --f-linha-forte: #D6CCBC;
+  --f-faixa: #EEF3F5;
+  --f-linha: #E0E8EB;
+  --f-linha-forte: #C8D3D8;
   --f-tinta: #071E2C;
   --f-tinta-2: #4E5B61;
-  --f-tinta-3: #5E6C74; /* cinza oficial escurecido o mínimo para passar AA sobre areia (4,8:1) */
-  --f-realce: #EDE6DA;
-  --f-selecao: #DFE8EB;
-  --f-marca: #0F3D4E;
-  --f-sobre-marca: #F5F0E8;
-  --f-marca-tinta: #0F3D4E;
-  --f-foco: #0F3D4E;
+  --f-tinta-3: #5E6C74; /* cinza oficial escurecido o mínimo para passar AA sobre o chão (5,4:1) */
+  --f-realce: #F5F8FA;
+  --f-selecao: #CDEEFD;
+  --f-marca: #006E96;
+  --f-sobre-marca: #FFFFFF;
+  --f-marca-tinta: #005C82; /* link: um degrau abaixo do primário para não apagar em 12px */
+  --f-foco: #00658D;
   --f-cobre: #C47A3A;
-  --f-cobre-tinta: #985824; /* cobre como texto: o oficial dá 3:1 sobre areia */
+  --f-cobre-tinta: #A24E00; /* cobre como texto: o oficial dá 3,4:1 sobre o chão; mais croma que o #985824 do ADR */
   --f-bom: #2F7A55;
-  --f-ruim: #B4452F;
+  --f-ruim: #BE2517;
   --f-sobre-ruim: #FFFFFF;
   --f-aviso: var(--f-cobre-tinta); /* atenção é cobre; sem âmbar paralelo */
-  --f-etiqueta: #EAE3D7;
+  --f-etiqueta: #E4EDF0;
   --f-etiqueta-tinta: #3F4B50;
   --f-veu: rgb(7 30 44 / 0.32);
 }
@@ -113,21 +113,21 @@ html.dark .ficha-inverso {
 html.dark,
 .ficha-inverso,
 .shell {
-  /* Azul profundo como papel; areia como tinta, a assinatura da marca sobre fundo escuro. */
+  /* Azul profundo como papel, branco frio como tinta e cerúleo claro na ação. */
   --f-papel: #071E2C;
   --f-elevado: #0C2838;
   --f-faixa: #0A2332;
   --f-linha: #16313F;
   --f-linha-forte: #224050;
-  --f-tinta: #F5F0E8;
+  --f-tinta: #E6ECEF;
   --f-tinta-2: #AAB6BB;
   --f-tinta-3: #8D9BA1;
   --f-realce: #0E2B3B;
-  --f-selecao: #123A4B;
-  --f-marca: #F5F0E8;
-  --f-sobre-marca: #0F3D4E;
-  --f-marca-tinta: #9CC3D1;
-  --f-foco: #9CC3D1;
+  --f-selecao: #003F5A;
+  --f-marca: #6ECCEC;
+  --f-sobre-marca: #071E2C;
+  --f-marca-tinta: #6ECCEC;
+  --f-foco: #6ECCEC;
   --f-cobre: #C47A3A;
   --f-cobre-tinta: #E2A56D;
   --f-bom: #6CC496;
@@ -142,14 +142,14 @@ html.dark,
 /* Conteúdo no escuro (DESIGN.md do aulor-web): o chão (paper-dark) e o cartão (raised-dark) sobem um
    degrau de claridade acima do azul profundo do shell, que fica com o conjunto acima (.shell). */
 html.dark {
-  --f-papel: #122938;
-  --f-elevado: #143040;
-  --f-faixa: #122B3A;
-  --f-realce: #173444;
-  --f-etiqueta: #183847;
-  --f-linha: #1E3947;
-  --f-linha-forte: #2A4858;
-  --f-selecao: #1B4253;
+  --f-papel: #1B2932;
+  --f-elevado: #212F38;
+  --f-faixa: #1D2B34;
+  --f-realce: #25333C;
+  --f-etiqueta: #28363F;
+  --f-linha: #2A3740;
+  --f-linha-forte: #3B4951;
+  --f-selecao: #114355;
 }
 
 /* ---------- Cores do Tailwind → papéis do aulor-web ----------
@@ -164,52 +164,62 @@ html.dark {
   --color-slate-600: #4E5B61;
   --color-slate-500: #5E6C74; /* ink-3 */
   --color-emerald-50: #EAF2EE; /* good-tint */
-  --color-emerald-100: #EAF2EE;
+  --color-emerald-100: #CFF2DE; /* chip: tinta visível; -50 segue como faixa */
+  --color-emerald-200: #B6E4CA; /* borda de chip e de aviso */
   --color-emerald-500: #2F7A55; /* good */
   --color-emerald-600: #2F7A55;
   --color-emerald-700: #2F7A55;
-  --color-emerald-800: #2F7A55;
-  --color-emerald-900: #2F7A55;
+  --color-emerald-800: #1F613C; /* good-ink: texto sobre a tinta do chip */
+  --color-emerald-900: #1F613C;
   --color-red-50: #F8ECEA; /* bad-tint */
-  --color-red-100: #F8ECEA;
-  --color-red-500: #B4452F; /* bad */
-  --color-red-600: #B4452F;
-  --color-red-700: #B4452F;
-  --color-red-800: #B4452F;
-  --color-red-900: #B4452F;
+  --color-red-100: #FFDCD4; /* chip e faixa de erro */
+  --color-red-200: #FFC7BC;
+  --color-red-500: #BE2517; /* bad: mais croma que o #B4452F do ADR, que apagava no claro */
+  --color-red-600: #BE2517;
+  --color-red-700: #BE2517;
+  --color-red-800: #BE2517; /* no chip dá 4,7 */
+  --color-red-900: #BE2517;
   --color-amber-50: #F9F2EB; /* warning-tint */
-  --color-amber-100: #F9F2EB;
+  --color-amber-100: #FFE6D1; /* chip: o cobre-tinta passa AA (4,8) só até aqui */
+  --color-amber-200: #FBCDAA;
   --color-amber-400: #C47A3A; /* copper: ponto e traço */
   --color-amber-500: #C47A3A;
-  --color-amber-600: #985824; /* copper-ink: texto de aviso */
-  --color-amber-700: #985824;
-  --color-amber-800: #985824;
-  --color-amber-900: #985824;
+  --color-amber-600: #A24E00; /* copper-ink: cobre como texto, mais croma que o #985824 do ADR */
+  --color-amber-700: #A24E00;
+  --color-amber-800: #A24E00;
+  --color-amber-900: #A24E00;
+  --color-sky-50: #E6F7FE; /* tinta da marca no claro: faixa */
+  --color-sky-100: #CDEEFD; /* selection: fundo do chip da marca */
+  --color-sky-200: #AFE0F7;
+  --color-sky-500: #006E96; /* brand: ponto de estado */
+  --color-sky-600: #006E96;
+  --color-sky-800: #005C82; /* texto do chip da marca e link */
+  --color-sky-900: #005C82;
 }
 
 html.dark {
-  --color-black: #122938; /* paper-dark: chão e véu */
-  --color-neutral-950: #143040; /* raised-dark: cartão, campo, menu */
-  --color-neutral-925: #143040;
-  --color-neutral-900: #173444; /* highlight-dark: hover e pílula neutra */
-  --color-neutral-800: #2A4858; /* line-strong-dark: contorno do cartão e divisórias */
-  --color-neutral-700: #2A4858;
+  --color-black: #1B2932; /* paper-dark: chão e véu */
+  --color-neutral-950: #212F38; /* raised-dark: cartão, campo, menu */
+  --color-neutral-925: #212F38;
+  --color-neutral-900: #25333C; /* highlight-dark: hover e pílula neutra */
+  --color-neutral-800: #3B4951; /* line-strong-dark: contorno do cartão e divisórias */
+  --color-neutral-700: #3B4951;
   --color-neutral-600: #8D9BA1; /* ink-3-dark: contorno de controle */
   --color-neutral-500: #8D9BA1;
   --color-neutral-400: #8D9BA1;
   --color-neutral-300: #AAB6BB; /* ink-2-dark */
   --color-neutral-200: #CBD5D9; /* tag-ink-dark */
-  --color-neutral-100: #F5F0E8; /* sand: tinta */
-  --color-neutral-50: #F5F0E8;
-  --color-sky-100: #9CC3D1; /* petrol-light: acento de ação */
-  --color-sky-200: #9CC3D1;
-  --color-sky-300: #9CC3D1;
-  --color-sky-400: #9CC3D1;
-  --color-sky-500: #9CC3D1;
-  --color-sky-600: #1B4253; /* selection-dark: no protótipo é o fundo sólido (avatar, selo) com texto branco */
-  --color-sky-800: #1B4253; /* selection-dark */
-  --color-sky-900: #1B4253;
-  --color-sky-950: #1B4253;
+  --color-neutral-100: #E6ECEF; /* ink-dark: tinta */
+  --color-neutral-50: #E6ECEF;
+  --color-sky-100: #6ECCEC; /* cerulean-light: acento de ação */
+  --color-sky-200: #6ECCEC;
+  --color-sky-300: #6ECCEC;
+  --color-sky-400: #6ECCEC;
+  --color-sky-500: #6ECCEC;
+  --color-sky-600: #114355; /* selection-dark: no protótipo é o fundo sólido (avatar, selo) com texto branco */
+  --color-sky-800: #114355; /* selection-dark */
+  --color-sky-900: #114355;
+  --color-sky-950: #114355;
   --color-emerald-950: #1E4049; /* good-tint-dark */
   --color-emerald-900: #1E4049;
   --color-emerald-200: #6CC496; /* good-dark */
@@ -707,18 +717,18 @@ html:not(.dark) .shell-tema-sol {
 }
 
 /* Etiqueta de categoria (DESIGN.md do aulor-web, Chips e tags): 24px, 4px de canto, Label forte, ícone de
-   13px e o nome; fundo no -tint, texto e ícone na cor. Legal = azul, Financeiro = água, Emergência = vinho,
+   13px e o nome; fundo no -tint, texto e ícone na cor. Legal = azul, Financeiro = oliva, Emergência = vinho,
    Menor de idade = violeta. Nunca é controle nem estado. */
 :root {
   --cat-blue: #2750A2; --cat-blue-tint: #D9EAFF;
-  --cat-water: #006366; --cat-water-tint: #CCF2F3;
+  --cat-olive: #4F5C1B; --cat-olive-tint: #E4EDCC;
   --cat-wine: #87305F; --cat-wine-tint: #FFDFED;
   --cat-violet: #663E8E; --cat-violet-tint: #F0E3FF;
 }
 
 html.dark {
   --cat-blue: #ACCEFF; --cat-blue-tint: #2E3E5C;
-  --cat-water: #8CDEE1; --cat-water-tint: #1E4647;
+  --cat-olive: #C8D4A6; --cat-olive-tint: #3A4125;
   --cat-wine: #FEB4D6; --cat-wine-tint: #533342;
   --cat-violet: #DCBEFF; --cat-violet-tint: #453756;
 }
@@ -743,6 +753,6 @@ html.dark {
 }
 
 .etiqueta-legal { color: var(--cat-blue); background: var(--cat-blue-tint); }
-.etiqueta-financeiro { color: var(--cat-water); background: var(--cat-water-tint); }
+.etiqueta-financeiro { color: var(--cat-olive); background: var(--cat-olive-tint); }
 .etiqueta-emergencia { color: var(--cat-wine); background: var(--cat-wine-tint); }
 .etiqueta-menor { color: var(--cat-violet); background: var(--cat-violet-tint); }

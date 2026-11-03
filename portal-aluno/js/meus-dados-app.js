@@ -115,7 +115,7 @@
     $('cab-nome').textContent = nome;
     $('cab-email').textContent = a.email || 'Sem e-mail cadastrado';
     const s = situacaoCadastro(a);
-    $('cab-situacao').innerHTML = s ? `<span class="inline-flex items-start gap-1.5 text-slate-700 dark:text-neutral-200"><span class="h-2 w-2 mt-1.5 shrink-0 rounded-full ${s.cor}"></span>${esc(s.texto)}</span>` : '';
+    $('cab-situacao').innerHTML = s ? `${chipEstado(s.cor, s.texto)}` : '';
     $('cab-acoes').innerHTML = `<button type="button" data-acao="editar-contato" class="botao-sec">Editar contato</button><button type="button" data-acao="senha" class="botao-sec">Alterar senha</button>`;
   }
 
@@ -533,7 +533,7 @@
           ${sols.length ? `<ul class="divide-y divide-slate-100 dark:divide-neutral-900">${sols.map((s) => { const st = STATUS[s.status] ?? { nome: s.status, cor: 'bg-slate-400' }; return `
             <li class="py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
               <div><p class="font-medium text-slate-800 dark:text-neutral-100">${esc(TIPOS_PRIVACIDADE[s.tipo] ?? s.tipo)}</p><p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Pedido em ${esc(C.fmtData(s.em.slice(0, 10)))}${s.dados?.motivo ? ` · ${esc(s.dados.motivo)}` : ''}</p></div>
-              <div class="flex items-center gap-3"><span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full ${st.cor}"></span>${st.nome}</span>${s.status === 'em_analise' ? `<button type="button" data-desistir="${s.id}" class="link">Desistir</button>` : ''}</div>
+              <div class="flex items-center gap-3">${chipEstado(st.cor, st.nome)}${s.status === 'em_analise' ? `<button type="button" data-desistir="${s.id}" class="link">Desistir</button>` : ''}</div>
             </li>`; }).join('')}</ul>`
             : '<p class="text-sm text-slate-500 dark:text-neutral-400">Nenhuma solicitação feita. A secretaria responde em até 15 dias.</p>'}`)}
       </div>`;

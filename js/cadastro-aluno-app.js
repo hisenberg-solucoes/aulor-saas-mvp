@@ -93,7 +93,7 @@ function render(dados, a, { modo = 'aluno', empresa = null, token, contrato = nu
       ${secao('Privacidade (LGPD)', '', `
         <label class="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="aceite" class="check mt-0.5">
-          <span class="text-sm text-slate-800 dark:text-neutral-100">Li e aceito o <a href="#" class="text-petrol-800 dark:text-sky-300 hover:underline">termo de uso e política de privacidade</a> da ProWay. <span class="text-xs text-slate-500 dark:text-neutral-400">Obrigatório — seus dados são usados para contrato, certificado e comunicação do curso.</span></span>
+          <span class="text-sm text-slate-800 dark:text-neutral-100">Li e aceito o <a href="#" class="text-petrol-900 dark:text-sky-300 hover:underline">termo de uso e política de privacidade</a> da ProWay. <span class="text-xs text-slate-500 dark:text-neutral-400">Obrigatório — seus dados são usados para contrato, certificado e comunicação do curso.</span></span>
         </label>
         ${ERRO('aceite')}
         <label class="flex items-start gap-3 cursor-pointer">

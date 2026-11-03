@@ -41,10 +41,10 @@ const ICONE = {
 };
 
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
-const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40';
+const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/40';
 const BOTAO_FANTASMA = 'inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-40 disabled:pointer-events-none';
 const BOTAO_CANCELAR = 'px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
-const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-800 dark:text-sky-300 hover:underline';
+const BOTAO_LINK = 'inline-flex items-center gap-1 text-xs font-medium text-petrol-900 dark:text-sky-300 hover:underline';
 const ICONE_BOTAO = 'inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-400 hover:text-petrol-800 dark:hover:text-sky-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol-800/30 disabled:opacity-30 disabled:pointer-events-none';
 const ICONE_BOTAO_VERMELHO = `${ICONE_BOTAO} hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40`;
 const CAMPO_BUSCA = 'h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 pl-8 pr-3 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-400 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20';
@@ -62,8 +62,8 @@ const CHECK = 'check';
 const PILULA = {
   ativo: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
   rascunho: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
-  inativo: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
-  neutra: 'bg-slate-100 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  inativo: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
+  neutra: 'bg-slate-200 text-slate-600 dark:bg-neutral-900 dark:text-neutral-400',
 };
 
 // ---------- Helpers ----------
@@ -162,7 +162,7 @@ function cabecalhoSecao(titulo, subtitulo, idBotao, rotulo = 'Editar') {
 function faixa(tom, html) {
   const cores = {
     aviso: 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200',
-    petrol: 'bg-petrol-800/10 dark:bg-sky-950/40 text-petrol-900 dark:text-sky-200',
+    petrol: 'bg-sky-100 dark:bg-sky-950/40 text-sky-800 dark:text-sky-200',
   };
   return `<div class="mb-4 flex items-start gap-3 rounded-lg px-4 py-3 text-sm ${cores[tom]}"><span class="shrink-0">${ICONE.alerta}</span><div class="min-w-0 flex-1">${html}</div></div>`;
 }
@@ -352,7 +352,7 @@ function removerComDesfazer(novaLista, mensagem) {
   const el = document.createElement('div');
   el.setAttribute('role', 'status');
   el.className = 'toast-anim flex items-center gap-3 bg-petrol-900 text-white text-sm pl-4 pr-1.5 py-1.5 rounded-lg shadow-lg';
-  el.innerHTML = `<span>${esc(mensagem)}</span><button type="button" class="h-7 px-2.5 rounded-md font-semibold text-areia hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">Desfazer</button>`;
+  el.innerHTML = `<span>${esc(mensagem)}</span><button type="button" class="h-7 px-2.5 rounded-md font-semibold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">Desfazer</button>`;
   el.querySelector('button').addEventListener('click', () => {
     el.remove();
     if (estado.lista !== novaLista) { toast('Não dá para desfazer: o curso mudou depois da remoção.'); return; }

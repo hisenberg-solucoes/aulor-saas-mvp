@@ -29,14 +29,14 @@ const ICONE = {
 
 // O anel de foco vem da regra da página (--f-foco); os campos usam o próprio contorno.
 const BOTAO_SEC = 'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium whitespace-nowrap border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition disabled:opacity-40 disabled:pointer-events-none';
-const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-white dark:text-petrol-800 text-white shadow-sm transition';
+const BOTAO_PRI = 'inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-petrol-800 hover:bg-petrol-900 dark:bg-areia dark:hover:bg-[#8CDFFB] dark:text-petrol-950 text-white shadow-sm transition';
 const BOTAO_ICONE = 'inline-grid place-items-center h-9 w-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-slate-600 dark:text-neutral-300 hover:border-petrol-800 dark:hover:border-sky-400 hover:text-petrol-800 dark:hover:text-sky-300 transition';
 const BOTAO_FECHAR = 'inline-grid place-items-center h-8 w-8 rounded-md text-slate-500 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-neutral-100 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
 const BOTAO_CANCELAR = 'inline-flex items-center h-9 px-3.5 rounded-lg text-sm font-medium text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition';
 const BOTAO_PERIGO = 'inline-flex items-center h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap bg-red-600 hover:bg-red-700 text-white shadow-sm transition';
 const BOTAO_EXCLUIR = 'inline-flex items-center h-8 px-2.5 -ml-2.5 rounded-md text-sm font-medium text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition';
-const BOTAO_LINK = 'inline-flex items-center gap-1 text-sm font-medium text-petrol-800 dark:text-sky-300 hover:underline underline-offset-2 rounded-sm';
-const LINK = 'font-medium text-petrol-800 dark:text-sky-300 hover:underline underline-offset-2';
+const BOTAO_LINK = 'inline-flex items-center gap-1 text-sm font-medium text-petrol-900 dark:text-sky-300 hover:underline underline-offset-2 rounded-sm';
+const LINK = 'font-medium text-petrol-900 dark:text-sky-300 hover:underline underline-offset-2';
 const CAMPO_BUSCA = 'h-9 w-64 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 pl-8 pr-3 text-sm text-slate-700 dark:text-neutral-200 placeholder:text-slate-500 dark:placeholder:text-neutral-400 focus:outline-none focus:border-petrol-800 dark:focus:border-sky-400 focus:ring-2 focus:ring-petrol-800/20 dark:focus:ring-sky-400/20';
 const SELECT_FILTRO = 'h-9 rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-2.5 text-sm text-slate-700 dark:text-neutral-200 focus:border-petrol-800 dark:focus:border-sky-400';
 const FILTRO_ATIVO = 'border-petrol-800 dark:border-sky-400 text-petrol-800 dark:text-sky-300';
@@ -138,7 +138,7 @@ function gravarUrl() {
 function faixa(tom, html, acao = '') {
   const cores = {
     aviso: 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200',
-    passo: 'bg-petrol-800/10 dark:bg-sky-950/40 text-petrol-900 dark:text-sky-100',
+    passo: 'bg-sky-100 dark:bg-sky-950/40 text-sky-800 dark:text-sky-100',
   };
   return `<div class="mb-4 flex items-start gap-3 rounded-lg px-4 py-3 text-sm ${cores[tom]}"><span class="shrink-0">${tom === 'aviso' ? ICONE.alerta : ICONE.info}</span><div class="min-w-0 flex-1 self-center">${html}</div>${acao}</div>`;
 }
@@ -494,7 +494,7 @@ function toastDesfazer(mensagem, antes) {
   const el = document.createElement('div');
   el.setAttribute('role', 'status');
   el.className = 'toast-anim flex items-center gap-3 bg-petrol-900 text-white text-sm pl-4 pr-1.5 py-1.5 rounded-lg shadow-lg';
-  el.innerHTML = `<span>${esc(mensagem)}</span><button type="button" class="h-7 px-2.5 rounded-md font-semibold text-areia hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">Desfazer</button>`;
+  el.innerHTML = `<span>${esc(mensagem)}</span><button type="button" class="h-7 px-2.5 rounded-md font-semibold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">Desfazer</button>`;
   el.querySelector('button').addEventListener('click', () => {
     el.remove();
     if (estado.lista !== depois) { toast('Não dá para desfazer: a lista mudou depois.'); return; }
